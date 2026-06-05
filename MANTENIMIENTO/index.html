@@ -48,17 +48,6 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Tarjeta Glassmorphism clara */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 30px 60px -12px rgba(66, 29, 142, 0.15), inset 0 1px 0 rgba(255,255,255,0.5);
-            transform: translateZ(0); 
-            will-change: transform;
-        }
-
         /* Efecto de resplandor sutil detrás de la imagen */
         .glow-effect {
             position: absolute;
@@ -154,8 +143,8 @@
     <!-- Huellitas decorativas en el fondo ('fixed' para no afectar el scroll) -->
     <div id="paws-container" class="fixed inset-0 z-0 overflow-hidden"></div>
 
-    <!-- Contenedor Principal Modo Claro, totalmente responsivo -->
-    <main class="glass-card w-full max-w-[440px] rounded-[30px] sm:rounded-[40px] p-6 sm:p-8 md:p-10 relative z-10 text-center flex flex-col items-center my-auto shadow-2xl">
+    <!-- Contenedor Principal (Sin tarjeta, fluyendo directo en el fondo) -->
+    <main class="w-full max-w-[440px] p-4 sm:p-6 md:p-8 relative z-10 text-center flex flex-col items-center my-auto">
         
         <!-- Logo -->
         <div class="flex flex-col items-center mb-5 sm:mb-6 select-none">
