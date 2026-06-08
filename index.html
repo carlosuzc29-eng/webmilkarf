@@ -2,8 +2,11 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Milkarf® - Alimentación natural y evolutiva BARF para perros y gatos. Calculadora nutricional gratuita.">
+    <!-- Ajuste de color del navegador según el tema -->
+    <meta name="theme-color" content="#f5f0e8" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0d0718" media="(prefers-color-scheme: dark)">
     <title>Milkarf® · Alimentación Natural</title>
 
     <!-- Preconnect para recursos externos críticos -->
@@ -20,6 +23,7 @@
 
     <script>
         tailwind.config = {
+            darkMode: 'media', // Habilita el modo oscuro automático según el sistema
             theme: {
                 extend: {
                     colors: {
@@ -50,11 +54,46 @@
     </script>
 
     <style>
+        /* Variables base para transiciones suaves de tema */
+        :root {
+            --bg-body: #f5f0e8;
+            --text-main: #1f2937;
+        }
+
+        /* Variables Modo Oscuro */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-body: #0d0718; /* Morado noche muy oscuro */
+                --text-main: #f3f4f6;
+            }
+            .btn-opt {
+                background: #180e29 !important;
+                border-color: #2e1060 !important;
+                color: #faf8ff !important;
+            }
+            .btn-opt:hover {
+                border-color: #b9cb25 !important;
+                opacity: 1 !important;
+            }
+            .btn-opt.active {
+                background: #421d8e !important;
+                border-color: #b9cb25 !important;
+                color: #ffffff !important;
+                box-shadow: 0 4px 12px rgba(185, 203, 37, 0.2) !important;
+            }
+        }
+
         body {
-            background-color: #f5f0e8;
+            background-color: var(--bg-body);
+            color: var(--text-main);
             overflow: hidden;
             width: 100vw;
-            height: 100vh;
+            height: 100dvh; /* 100dvh previene errores con barras de navegación en Android Safari/Chrome */
+            overscroll-behavior: none; /* Evita pull-to-refresh problemático en Android */
+            /* Aceleración de repintado global */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            transition: background-color 0.4s ease, color 0.4s ease;
         }
 
         /* === LIENZO PREZI 3D === */
@@ -77,12 +116,14 @@
             flex-direction: column;
             align-items: center;
             overflow-y: auto;
-            /* will-change evita recalcular paint en cada frame de la animación */
+            overscroll-behavior-y: contain; /* Controla el rebote del scroll en móviles */
+            -webkit-overflow-scrolling: touch; /* Scroll nativo ultra suave en móviles iOS/Android */
             will-change: transform, opacity;
             transition: transform 1.2s cubic-bezier(0.25, 1, 0.3, 1), opacity 0.8s cubic-bezier(0.25, 1, 0.3, 1);
             opacity: 0;
             pointer-events: none;
             backface-visibility: hidden;
+            transform: translateZ(0); /* Forzar GPU */
         }
 
         .view.active {
@@ -120,6 +161,7 @@
             color: #421d8e;
             opacity: 0.6;
             transition: all 0.2s ease;
+            transform: translateZ(0);
         }
         .btn-opt:hover { border-color: #421d8e; opacity: 0.9; }
         .btn-opt.active {
@@ -168,14 +210,14 @@
 
         /* === CARRITO FAB === */
         @keyframes fabPop {
-            0%   { transform: scale(1); }
-            40%  { transform: scale(1.25); }
-            70%  { transform: scale(0.92); }
-            100% { transform: scale(1); }
+            0%   { transform: scale(1) translateZ(0); }
+            40%  { transform: scale(1.25) translateZ(0); }
+            70%  { transform: scale(0.92) translateZ(0); }
+            100% { transform: scale(1) translateZ(0); }
         }
         #cart-fab.pop { animation: fabPop 0.45s cubic-bezier(0.34,1.56,0.64,1); }
         #cart-badge { transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); }
-        #cart-fab.pop #cart-badge { transform: scale(1.3); }
+        #cart-fab.pop #cart-badge { transform: scale(1.3) translateZ(0); }
 
         /* === BOTONES DE CONTACTO === */
         .paw-contact-btn {
@@ -191,6 +233,7 @@
             overflow: hidden;
             width: 100%;
             border: 1px solid rgba(255,255,255,0.15);
+            transform: translateZ(0);
         }
         .paw-contact-btn::before {
             content: '';
@@ -200,11 +243,11 @@
             pointer-events: none;
         }
         .paw-contact-btn:hover {
-            transform: translateY(-5px) scale(1.015);
+            transform: translateY(-5px) scale(1.015) translateZ(0);
             filter: brightness(1.08);
         }
-        .paw-contact-btn:hover .paw-icon-wrap { transform: rotate(-12deg) scale(1.1); }
-        .paw-contact-btn:active { transform: scale(0.97); }
+        .paw-contact-btn:hover .paw-icon-wrap { transform: rotate(-12deg) scale(1.1) translateZ(0); }
+        .paw-contact-btn:active { transform: scale(0.97) translateZ(0); }
 
         .paw-contact-btn .paw-icon-wrap {
             width: 58px;
@@ -219,6 +262,7 @@
             transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
             position: relative;
             z-index: 1;
+            will-change: transform;
         }
         .paw-contact-btn .paw-text-col { display: flex; flex-direction: column; gap: 2px; position: relative; z-index: 1; }
         .paw-contact-btn .paw-deco { position: absolute; opacity: 0.07; pointer-events: none; }
@@ -226,31 +270,32 @@
         .paw-contact-btn .paw-sub { font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 12px; color: rgba(255,255,255,0.75); }
         .paw-contact-btn .paw-cta { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-top: 4px; }
         .paw-contact-btn .arrow-icon { margin-left: auto; opacity: 0.5; position: relative; z-index: 1; transition: transform 0.25s ease, opacity 0.25s ease; }
-        .paw-contact-btn:hover .arrow-icon { transform: translateX(4px); opacity: 0.9; }
+        .paw-contact-btn:hover .arrow-icon { transform: translateX(4px) translateZ(0); opacity: 0.9; }
 
         /* Huellitas flotantes */
-        @keyframes pawFloat1 { 0%,100%{transform:translate(0,0) rotate(-15deg)} 50%{transform:translate(0,-16px) rotate(-8deg)} }
-        @keyframes pawFloat2 { 0%,100%{transform:translate(0,0) rotate(20deg)} 50%{transform:translate(6px,-12px) rotate(28deg)} }
-        @keyframes pawFloat3 { 0%,100%{transform:translate(0,0) rotate(-30deg)} 50%{transform:translate(-4px,-20px) rotate(-22deg)} }
-        @keyframes pawFloat4 { 0%,100%{transform:translate(0,0) rotate(5deg)} 33%{transform:translate(4px,-10px) rotate(12deg)} 66%{transform:translate(-4px,-6px) rotate(-2deg)} }
-        .paw-float { animation: pawFloat1 4s ease-in-out infinite; }
+        @keyframes pawFloat1 { 0%,100%{transform:translate3d(0,0,0) rotate(-15deg)} 50%{transform:translate3d(0,-16px,0) rotate(-8deg)} }
+        @keyframes pawFloat2 { 0%,100%{transform:translate3d(0,0,0) rotate(20deg)} 50%{transform:translate3d(6px,-12px,0) rotate(28deg)} }
+        @keyframes pawFloat3 { 0%,100%{transform:translate3d(0,0,0) rotate(-30deg)} 50%{transform:translate3d(-4px,-20px,0) rotate(-22deg)} }
+        @keyframes pawFloat4 { 0%,100%{transform:translate3d(0,0,0) rotate(5deg)} 33%{transform:translate3d(4px,-10px,0) rotate(12deg)} 66%{transform:translate3d(-4px,-6px,0) rotate(-2deg)} }
+        .paw-float { animation: pawFloat1 4s ease-in-out infinite; will-change: transform; }
     </style>
 </head>
-<body class="text-gray-800 antialiased font-sans">
+<body class="antialiased font-sans">
 
     <!-- MENÚ HAMBURGUESA -->
     <div class="fixed top-6 right-6 z-50 flex items-center justify-center">
         <button id="menu-toggle-btn"
-            class="w-12 h-12 flex flex-col justify-center items-center gap-1.5 bg-white border border-purple-border/30 shadow-lg hover:shadow-xl rounded-full cursor-pointer z-50 transition-all duration-300"
+            class="w-12 h-12 flex flex-col justify-center items-center gap-1.5 bg-white dark:bg-[#180e29] border border-purple-border/30 dark:border-purple-dark/50 shadow-lg hover:shadow-xl rounded-full cursor-pointer z-50 transition-all duration-300"
             onclick="toggleMenu()" aria-label="Abrir menú" aria-expanded="false">
-            <span class="bar w-6 h-1 bg-purple rounded-full transition-all duration-300 origin-center"></span>
-            <span class="bar w-6 h-1 bg-purple rounded-full transition-all duration-300 origin-center"></span>
-            <span class="bar w-6 h-1 bg-purple rounded-full transition-all duration-300 origin-center"></span>
+            <span class="bar w-6 h-1 bg-purple dark:bg-purple-light rounded-full transition-all duration-300 origin-center"></span>
+            <span class="bar w-6 h-1 bg-purple dark:bg-purple-light rounded-full transition-all duration-300 origin-center"></span>
+            <span class="bar w-6 h-1 bg-purple dark:bg-purple-light rounded-full transition-all duration-300 origin-center"></span>
         </button>
     </div>
 
+    <!-- MÁSCARA DEL MENÚ -->
     <nav id="nav-overlay"
-        class="fixed inset-0 w-full h-full bg-purple-dark/95 backdrop-blur-md z-40 flex justify-center items-center opacity-0 pointer-events-none transition-all duration-500"
+        class="fixed inset-0 w-full h-full bg-purple-dark/95 dark:bg-[#080312]/95 backdrop-blur-md z-40 flex justify-center items-center opacity-0 pointer-events-none transition-all duration-500"
         aria-hidden="true">
         <ul class="nav-links space-y-6 text-center">
             <li><a href="#" class="text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" onclick="navigateTo('view-home')">Inicio</a></li>
@@ -258,6 +303,7 @@
             <li><a href="#" class="text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" onclick="navigateTo('view-calc')">Calculadora Nutricional</a></li>
             <li><a href="#" class="text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" onclick="navigateTo('view-perros')">Línea Perros</a></li>
             <li><a href="#" class="text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" onclick="navigateTo('view-gatos')">Línea Gatos</a></li>
+            <li><a href="#" class="text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" onclick="navigateTo('view-snacks')">Snacks Naturales</a></li>
             <li><a href="#" class="text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" onclick="navigateTo('view-faq')">Guía de Transición & Filosofía</a></li>
             <li><a href="#" class="text-2xl md:text-3xl font-extrabold text-green hover:text-white tracking-wider uppercase block flex items-center gap-3 justify-center" onclick="navigateTo('view-cart')">🛒 Mi Carrito <span id="nav-cart-badge" class="hidden text-sm bg-pink text-white rounded-full px-2 py-0.5"></span></a></li>
             <li><a href="#" class="text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" onclick="navigateTo('view-contacto')">🐾 Contacto</a></li>
@@ -270,27 +316,26 @@
         <!-- VISTA INICIO -->
         <section id="view-home" class="view active">
             <!-- Huellitas decorativas flotantes -->
-            <i data-lucide="paw-print" class="paw-float absolute top-20 left-4 w-8 h-8 text-purple/10 pointer-events-none" aria-hidden="true"></i>
-            <i data-lucide="paw-print" class="paw-float absolute top-40 right-8 w-6 h-6 text-green/20 pointer-events-none" style="animation-delay:.8s" aria-hidden="true"></i>
-            <i data-lucide="paw-print" class="paw-float absolute bottom-32 left-10 w-10 h-10 text-pink/10 pointer-events-none" style="animation-delay:1.6s" aria-hidden="true"></i>
-            <i data-lucide="paw-print" class="paw-float absolute bottom-20 right-6 w-5 h-5 text-purple/15 pointer-events-none" style="animation-delay:2.4s" aria-hidden="true"></i>
+            <i data-lucide="paw-print" class="paw-float absolute top-20 left-4 w-8 h-8 text-purple/10 dark:text-white/5 pointer-events-none" aria-hidden="true"></i>
+            <i data-lucide="paw-print" class="paw-float absolute top-40 right-8 w-6 h-6 text-green/20 dark:text-green/10 pointer-events-none" style="animation-delay:.8s" aria-hidden="true"></i>
+            <i data-lucide="paw-print" class="paw-float absolute bottom-32 left-10 w-10 h-10 text-pink/10 dark:text-pink/5 pointer-events-none" style="animation-delay:1.6s" aria-hidden="true"></i>
 
             <div class="max-w-4xl w-full mx-auto flex flex-col items-center">
                 <div class="flex flex-col items-center mb-6">
                     <div class="w-16 h-16 bg-purple rounded-3xl flex items-center justify-center shadow-lg mb-4 text-white">
                         <i data-lucide="paw-print" class="w-9 h-9 text-green"></i>
                     </div>
-                    <h1 class="text-6xl md:text-8xl font-black tracking-tight text-purple-dark select-none">Milkarf<span class="text-green">®</span></h1>
+                    <h1 class="text-6xl md:text-8xl font-black tracking-tight text-purple-dark dark:text-white select-none">Milkarf<span class="text-green">®</span></h1>
                     <p class="text-sm md:text-md font-extrabold text-pink uppercase tracking-[0.25em] mt-1 select-none">Alimentación <span class="text-green">NATURAL</span> para mascotas</p>
                 </div>
 
                 <button onclick="navigateTo('view-mision')"
-                    class="mb-8 flex items-center gap-3 bg-white border border-purple-border px-6 py-3.5 rounded-full text-purple hover:text-pink hover:border-pink/40 font-extrabold text-sm tracking-wide shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+                    class="mb-8 flex items-center gap-3 bg-white dark:bg-[#180e29] border border-purple-border dark:border-purple-dark/50 px-6 py-3.5 rounded-full text-purple dark:text-purple-light hover:text-pink hover:border-pink/40 font-extrabold text-sm tracking-wide shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">
                     <i data-lucide="sparkles" class="w-4 h-4 text-pink"></i> ¿Quiénes somos y cuál es nuestra misión?
                 </button>
 
                 <!-- Banner Calculadora -->
-                <div class="w-full max-w-2xl bg-gradient-to-br from-purple to-purple-dark text-white rounded-3xl p-6 md:p-8 flex items-center justify-between shadow-2xl border border-white/10 transition-all duration-300 select-none cursor-pointer mb-6"
+                <div class="w-full max-w-2xl bg-gradient-to-br from-purple to-purple-dark dark:from-[#2e1060] dark:to-[#180e29] text-white rounded-3xl p-6 md:p-8 flex items-center justify-between shadow-2xl border border-purple/20 dark:border-purple/40 transition-all duration-300 select-none cursor-pointer mb-6"
                     onclick="navigateTo('view-calc')">
                     <div class="flex items-center gap-5">
                         <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-green">
@@ -314,7 +359,7 @@
                         <div class="absolute inset-0 w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
                             style="background-image: url('https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=600&auto=format&fit=crop');"
                             role="img" aria-label="Perro feliz"></div>
-                        <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/90 via-purple-dark/40 to-transparent z-10"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/90 dark:from-[#080312]/95 via-purple-dark/40 dark:via-[#080312]/50 to-transparent z-10"></div>
                         <div class="absolute bottom-6 left-6 z-20 text-left">
                             <span class="text-[10px] font-black text-green tracking-wider uppercase block mb-1">Evolución</span>
                             <h2 class="text-2xl font-black text-white leading-tight">Línea<br>Perros</h2>
@@ -326,7 +371,7 @@
                         <div class="absolute inset-0 w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
                             style="background-image: url('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=600&auto=format&fit=crop');"
                             role="img" aria-label="Gato descansando"></div>
-                        <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/90 via-purple-dark/40 to-transparent z-10"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/90 dark:from-[#080312]/95 via-purple-dark/40 dark:via-[#080312]/50 to-transparent z-10"></div>
                         <div class="absolute bottom-6 left-6 z-20 text-left">
                             <span class="text-[10px] font-black text-green tracking-wider uppercase block mb-1">Instinto</span>
                             <h2 class="text-2xl font-black text-white leading-tight">Línea<br>Gatos</h2>
@@ -352,7 +397,7 @@
                             alt="Dueño feliz con su perro"
                             class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                             loading="lazy" decoding="async">
-                        <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/95 via-purple/60 to-transparent z-10"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/95 dark:from-[#080312]/95 via-purple/60 dark:via-[#1e1035]/60 to-transparent z-10"></div>
                         <div class="absolute bottom-6 left-6 z-20 text-left">
                             <span class="text-[10px] font-black text-green tracking-wider uppercase block mb-1">Escríbenos</span>
                             <h2 class="text-base font-black text-white leading-tight">Contáctanos</h2>
@@ -363,18 +408,18 @@
                         </div>
                     </div>
 
-                    <!-- Snacks (NUEVO EN INICIO) -->
-                    <div class="relative w-[230px] h-[280px] rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group cursor-default">
+                    <!-- Snacks (Interactivo ahora) -->
+                    <div class="relative w-[230px] h-[280px] rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group cursor-pointer" onclick="navigateTo('view-snacks')">
                         <img src="https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?q=80&w=600&auto=format&fit=crop"
                             alt="Perrito recibiendo un snack"
-                            class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80"
+                            class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90"
                             loading="lazy" decoding="async">
-                        <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/95 via-purple-dark/50 to-transparent z-10"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/95 dark:from-[#080312]/95 via-purple-dark/40 to-transparent z-10"></div>
                         
-                        <!-- Etiqueta Próximamente -->
+                        <!-- Etiqueta Descubre más -->
                         <div class="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none">
-                            <div class="bg-pink text-white text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest shadow-lg shadow-pink/40 flex items-center gap-2 transform -translate-y-4">
-                                <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> Próximamente
+                            <div class="bg-pink text-white text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest shadow-lg shadow-pink/40 flex items-center gap-2 transform -translate-y-4 group-hover:scale-105 transition-transform">
+                                <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> Ver Beneficios
                             </div>
                         </div>
 
@@ -385,21 +430,35 @@
                     </div>
 
                 </div>
+
+                <!-- PIE DE PÁGINA (Footer en vista Inicio) -->
+                <footer class="mt-16 w-full max-w-3xl border-t border-purple-border/30 dark:border-purple-dark/50 pt-8 pb-4 flex flex-col items-center gap-4 text-center">
+                    <div class="flex items-center gap-2 text-purple dark:text-purple-light">
+                        <i data-lucide="award" class="w-5 h-5 text-green"></i>
+                        <span class="font-black text-sm uppercase tracking-widest">Producto Artesanal</span>
+                    </div>
+                    <p class="text-xs font-semibold text-purple/60 dark:text-purple-light/60 max-w-md">Elaborado con ingredientes 100% reales, crudos y frescos. Nutrición evolutiva certificada para el bienestar integral de tu mascota.</p>
+                    <div class="flex gap-4 mt-2">
+                        <a href="https://wa.link/pwe23z" target="_blank" aria-label="WhatsApp" class="w-10 h-10 rounded-full bg-green/10 dark:bg-green/20 text-green flex items-center justify-center hover:bg-green hover:text-purple-dark transition-all"><i data-lucide="message-circle" class="w-5 h-5"></i></a>
+                        <a href="https://www.instagram.com/milkarfood?igsh=MW1iaTFuZHg3dXowdQ%3D%3D&utm_source=qr" target="_blank" aria-label="Instagram" class="w-10 h-10 rounded-full bg-pink/10 dark:bg-pink/20 text-pink flex items-center justify-center hover:bg-pink hover:text-white transition-all"><i data-lucide="instagram" class="w-5 h-5"></i></a>
+                    </div>
+                    <p class="text-[10px] text-purple/40 dark:text-purple-light/40 mt-4">© 2026 Milkarf®. Todos los derechos reservados.</p>
+                </footer>
             </div>
         </section>
 
         <!-- VISTA MISIÓN -->
         <section id="view-mision" class="view next">
             <div class="max-w-2xl w-full mb-6">
-                <button class="flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple hover:bg-purple hover:text-white transition-all duration-300" onclick="navigateTo('view-home')">
+                <button class="flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-purple-light dark:border-purple-light dark:hover:bg-purple-light dark:hover:text-purple hover:bg-purple hover:text-white transition-all duration-300" onclick="navigateTo('view-home')">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Inicio
                 </button>
-                <h2 class="text-3xl md:text-4xl font-black text-purple-dark mt-4">Nuestra Esencia</h2>
+                <h2 class="text-3xl md:text-4xl font-black text-purple-dark dark:text-white mt-4">Nuestra Esencia</h2>
                 <p class="text-sm font-bold text-pink uppercase tracking-widest mt-1">El origen de la salud animal</p>
             </div>
 
             <div class="max-w-2xl w-full space-y-6">
-                <div class="rounded-3xl p-6 md:p-8 bg-gradient-to-br from-purple-dark to-purple text-white shadow-xl relative overflow-hidden text-left">
+                <div class="rounded-3xl p-6 md:p-8 bg-gradient-to-br from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#180e29] text-white shadow-xl relative overflow-hidden text-left">
                     <div class="absolute -right-8 -bottom-8 text-white/5"><i data-lucide="heart" class="w-40 h-40"></i></div>
                     <h3 class="text-green text-xl md:text-2xl font-black mb-4">¿Quiénes Somos?</h3>
                     <p class="text-purple-light/95 text-sm md:text-base leading-relaxed relative z-10">
@@ -408,15 +467,15 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-                    <div class="bg-white border border-purple-border/30 rounded-2xl p-6 shadow-md">
+                    <div class="bg-white dark:bg-[#180e29] border border-purple-border/30 dark:border-purple-dark/50 rounded-2xl p-6 shadow-md">
                         <div class="w-10 h-10 rounded-full bg-pink/10 flex items-center justify-center text-pink mb-3"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
-                        <h4 class="text-purple-dark font-extrabold text-sm mb-1">Nutrición Científica</h4>
-                        <p class="text-xs text-gray-500">Diseñado estrictamente bajo las normativas nutricionales globales del NRC para garantizar un balance biológico perfecto.</p>
+                        <h4 class="text-purple-dark dark:text-white font-extrabold text-sm mb-1">Nutrición Científica</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Diseñado estrictamente bajo las normativas nutricionales globales del NRC para garantizar un balance biológico perfecto.</p>
                     </div>
-                    <div class="bg-white border border-purple-border/30 rounded-2xl p-6 shadow-md">
+                    <div class="bg-white dark:bg-[#180e29] border border-purple-border/30 dark:border-purple-dark/50 rounded-2xl p-6 shadow-md">
                         <div class="w-10 h-10 rounded-full bg-green/10 flex items-center justify-center text-green-dark mb-3"><i data-lucide="leaf" class="w-5 h-5"></i></div>
-                        <h4 class="text-purple-dark font-extrabold text-sm mb-1">Ingredientes Locales Reales</h4>
-                        <p class="text-xs text-gray-500">Utilizamos únicamente carne de res premium, pollo de granja, vegetales frescos y aceites de primera prensa en frío.</p>
+                        <h4 class="text-purple-dark dark:text-white font-extrabold text-sm mb-1">Ingredientes Locales Reales</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Utilizamos únicamente carne de res premium, pollo de granja, vegetales frescos y aceites de primera prensa en frío.</p>
                     </div>
                 </div>
             </div>
@@ -425,19 +484,19 @@
         <!-- VISTA CALCULADORA -->
         <section id="view-calc" class="view next">
             <div class="max-w-2xl w-full mb-6">
-                <button class="flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple hover:bg-purple hover:text-white transition-all duration-300" onclick="navigateTo('view-home')">
+                <button class="flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-purple-light dark:border-purple-light dark:hover:bg-purple-light dark:hover:text-purple hover:bg-purple hover:text-white transition-all duration-300" onclick="navigateTo('view-home')">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Inicio
                 </button>
             </div>
 
             <div class="max-w-md w-full mb-8 text-center select-none">
-                <div class="text-3xl font-black text-purple uppercase tracking-tight">Milkarf<span class="text-green">.</span></div>
-                <div class="text-[10px] font-bold tracking-[0.2em] text-purple/40 uppercase mt-1">Alimentación saludable para mascotas</div>
-                <h1 class="text-2xl font-black text-purple-dark mt-4">Calculadora de Porción</h1>
+                <div class="text-3xl font-black text-purple dark:text-purple-light uppercase tracking-tight">Milkarf<span class="text-green">.</span></div>
+                <div class="text-[10px] font-bold tracking-[0.2em] text-purple/40 dark:text-purple-light/50 uppercase mt-1">Alimentación saludable para mascotas</div>
+                <h1 class="text-2xl font-black text-purple-dark dark:text-white mt-4">Calculadora de Porción</h1>
             </div>
 
-            <div class="max-w-md w-full bg-white rounded-[32px] shadow-2xl border border-purple-border/20 mb-8">
-                <div class="bg-gradient-to-br from-purple-dark to-purple p-6 relative overflow-hidden select-none rounded-t-[32px]">
+            <div class="max-w-md w-full bg-white dark:bg-[#180e29] rounded-[32px] shadow-2xl border border-purple-border/20 dark:border-purple-dark/40 mb-8">
+                <div class="bg-gradient-to-br from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#180e29] p-6 relative overflow-hidden select-none rounded-t-[32px]">
                     <div class="absolute -right-6 -bottom-6 text-white/5"><i data-lucide="scale-3d" class="w-24 h-24"></i></div>
                     <div class="text-[11px] font-extrabold text-green tracking-widest uppercase mb-1">Calcula su ración BARF</div>
                     <div class="text-xs text-white/75 font-semibold">100% natural, diseñado a la medida de tu mascota.</div>
@@ -446,7 +505,7 @@
                 <div class="p-6 space-y-6">
                     <!-- Paso 1: Etapa de vida -->
                     <div>
-                        <div class="text-[10px] font-bold text-purple/50 tracking-wider uppercase mb-3 flex items-center gap-2 text-left">
+                        <div class="text-[10px] font-bold text-purple/50 dark:text-purple-light/50 tracking-wider uppercase mb-3 flex items-center gap-2 text-left">
                             <span class="w-5 h-5 bg-purple text-white text-[10px] font-black rounded-full flex items-center justify-center">1</span> Etapa de vida
                         </div>
                         <div class="flex gap-2 w-full" id="etapa-group">
@@ -457,7 +516,7 @@
 
                         <!-- Sub-opciones: edad cachorro -->
                         <div id="sub-cachorro" class="hidden mt-4">
-                            <div class="text-[10px] font-bold text-purple/50 tracking-wider uppercase mb-2 flex items-center gap-2 text-left">
+                            <div class="text-[10px] font-bold text-purple/50 dark:text-purple-light/50 tracking-wider uppercase mb-2 flex items-center gap-2 text-left">
                                 <span class="w-5 h-5 bg-green text-purple-dark text-[10px] font-black rounded-full flex items-center justify-center">↳</span> Edad del cachorro
                             </div>
                             <div class="grid grid-cols-2 gap-2" id="edad-group">
@@ -470,7 +529,7 @@
 
                         <!-- Sub-opciones: condición adulto/senior -->
                         <div id="sub-actividad" class="hidden mt-4">
-                            <div class="text-[10px] font-bold text-purple/50 tracking-wider uppercase mb-2 flex items-center gap-2 text-left">
+                            <div class="text-[10px] font-bold text-purple/50 dark:text-purple-light/50 tracking-wider uppercase mb-2 flex items-center gap-2 text-left">
                                 <span class="w-5 h-5 bg-pink text-white text-[10px] font-black rounded-full flex items-center justify-center">↳</span> Condición y actividad
                             </div>
                             <div class="flex flex-col gap-2" id="actividad-group">
@@ -479,28 +538,28 @@
                                 <button id="btn-actividad-normal" class="btn-opt text-left" onclick="selectSubOpt('actividad', 'normal', this)">🚶 Activo (1–2 paseos al día)</button>
                                 <button class="btn-opt text-left" onclick="selectSubOpt('actividad', 'alto', this)">🏃 Muy activo (deporte / trabajo)</button>
                             </div>
-                            <div id="actividad-desc" class="hidden mt-3 bg-purple-light border border-purple-border/30 rounded-2xl p-3 text-xs font-semibold text-purple/70 leading-relaxed"></div>
+                            <div id="actividad-desc" class="hidden mt-3 bg-purple-light dark:bg-[#22163b] border border-purple-border/30 dark:border-purple-dark/50 rounded-2xl p-3 text-xs font-semibold text-purple/70 dark:text-purple-light/70 leading-relaxed"></div>
                         </div>
                     </div>
 
                     <!-- Paso 2: Peso -->
                     <div>
-                        <div class="text-[10px] font-bold text-purple/50 tracking-wider uppercase mb-3 flex items-center gap-2 text-left">
+                        <div class="text-[10px] font-bold text-purple/50 dark:text-purple-light/50 tracking-wider uppercase mb-3 flex items-center gap-2 text-left">
                             <span class="w-5 h-5 bg-purple text-white text-[10px] font-black rounded-full flex items-center justify-center">2</span> Peso del perro
                         </div>
                         <div class="flex items-center gap-3">
                             <input type="number" id="pesoInput" min="0.5" max="90" step="0.5"
-                                class="flex-1 p-4 rounded-2xl bg-purple-light border-2 border-purple-border/50 text-2xl font-black text-purple outline-none focus:border-purple transition-all text-center"
+                                class="flex-1 p-4 rounded-2xl bg-purple-light dark:bg-[#22163b] border-2 border-purple-border/50 dark:border-purple-dark/60 text-2xl font-black text-purple dark:text-white outline-none focus:border-purple transition-all text-center"
                                 placeholder="0" aria-label="Peso de la mascota en kilogramos">
-                            <span class="text-lg font-black text-purple/40 uppercase">kg</span>
+                            <span class="text-lg font-black text-purple/40 dark:text-purple-light/50 uppercase">kg</span>
                         </div>
                         <div class="flex gap-2 mt-3">
-                            <button id="btn-menos" class="flex-1 bg-white border-2 border-purple-border/50 hover:border-purple text-purple hover:bg-purple-light font-black p-2.5 rounded-xl transition-all text-lg">−</button>
-                            <button id="btn-mas"   class="flex-1 bg-white border-2 border-purple-border/50 hover:border-purple text-purple hover:bg-purple-light font-black p-2.5 rounded-xl transition-all text-lg">+</button>
+                            <button id="btn-menos" class="flex-1 bg-white dark:bg-[#22163b] border-2 border-purple-border/50 dark:border-purple-dark/60 hover:border-purple text-purple dark:text-purple-light hover:bg-purple-light dark:hover:bg-[#2a1b47] font-black p-2.5 rounded-xl transition-all text-lg">−</button>
+                            <button id="btn-mas"   class="flex-1 bg-white dark:bg-[#22163b] border-2 border-purple-border/50 dark:border-purple-dark/60 hover:border-purple text-purple dark:text-purple-light hover:bg-purple-light dark:hover:bg-[#2a1b47] font-black p-2.5 rounded-xl transition-all text-lg">+</button>
                         </div>
                     </div>
 
-                    <button class="w-full p-5 bg-gradient-to-r from-purple-dark to-purple hover:from-purple hover:to-purple-dark text-white font-extrabold text-sm tracking-wide rounded-2xl shadow-lg shadow-purple/30 hover:shadow-xl transition-all flex items-center justify-center gap-2 select-none" onclick="calcularRacion()">
+                    <button class="w-full p-5 bg-gradient-to-r from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#421d8e] hover:from-purple hover:to-purple-dark text-white font-extrabold text-sm tracking-wide rounded-2xl shadow-lg shadow-purple/30 dark:shadow-[#2e1060]/50 hover:shadow-xl transition-all flex items-center justify-center gap-2 select-none" onclick="calcularRacion()">
                         <i data-lucide="sparkles" class="w-5 h-5 text-green"></i> Calcular Ración
                     </button>
 
@@ -508,7 +567,7 @@
 
                     <!-- RESULTADOS -->
                     <div id="tu-resultado" class="result text-left">
-                        <div class="bg-purple-light rounded-[24px] border border-purple-border/30 overflow-hidden shadow-xl">
+                        <div class="bg-purple-light dark:bg-[#22163b] rounded-[24px] border border-purple-border/30 dark:border-purple-dark/40 overflow-hidden shadow-xl">
                             <div id="result-top" class="p-6 text-center text-white">
                                 <div id="result-label" class="text-[9px] font-extrabold tracking-widest uppercase mb-1 opacity-70">Debe comer diariamente</div>
                                 <div id="result-grams" class="text-6xl font-black tracking-tight select-all">0</div>
@@ -517,80 +576,80 @@
                             </div>
 
                             <div class="p-6 space-y-4">
-                                <div class="flex justify-between items-center pb-3 border-b border-purple-border/30 text-xs md:text-sm">
-                                    <span class="font-semibold text-purple/65">Energía Diaria (DER)</span>
-                                    <span class="font-black text-purple" id="r-kcal">0 kcal/día</span>
+                                <div class="flex justify-between items-center pb-3 border-b border-purple-border/30 dark:border-purple-dark/50 text-xs md:text-sm">
+                                    <span class="font-semibold text-purple/65 dark:text-purple-light/70">Energía Diaria (DER)</span>
+                                    <span class="font-black text-purple dark:text-white" id="r-kcal">0 kcal/día</span>
                                 </div>
-                                <div class="flex justify-between items-center pb-3 border-b border-purple-border/30 text-xs md:text-sm">
-                                    <span class="font-semibold text-purple/65">Repartido en</span>
-                                    <span class="font-black text-purple" id="r-comidas">0 veces</span>
+                                <div class="flex justify-between items-center pb-3 border-b border-purple-border/30 dark:border-purple-dark/50 text-xs md:text-sm">
+                                    <span class="font-semibold text-purple/65 dark:text-purple-light/70">Repartido en</span>
+                                    <span class="font-black text-purple dark:text-white" id="r-comidas">0 veces</span>
                                 </div>
-                                <div class="flex justify-between items-center pb-3 border-b border-purple-border/30 text-xs md:text-sm">
-                                    <span class="font-semibold text-purple/65">Cada porción de</span>
-                                    <span class="font-black text-purple" id="r-por-comida">0g</span>
+                                <div class="flex justify-between items-center pb-3 border-b border-purple-border/30 dark:border-purple-dark/50 text-xs md:text-sm">
+                                    <span class="font-semibold text-purple/65 dark:text-purple-light/70">Cada porción de</span>
+                                    <span class="font-black text-purple dark:text-white" id="r-por-comida">0g</span>
                                 </div>
 
                                 <!-- Equivalencia diaria en bolsas -->
-                                <div class="bg-purple-border/15 rounded-2xl p-5 space-y-3 border border-purple-border/30">
-                                    <div class="text-[9px] font-black tracking-widest text-purple/60 uppercase">Equivalencia aproximada en bolsas diarias</div>
+                                <div class="bg-purple-border/15 dark:bg-[#180e29]/50 rounded-2xl p-5 space-y-3 border border-purple-border/30 dark:border-purple-dark/50">
+                                    <div class="text-[9px] font-black tracking-widest text-purple/60 dark:text-purple-light/60 uppercase">Equivalencia aproximada en bolsas diarias</div>
                                     <div class="grid grid-cols-3 gap-3">
-                                        <div class="bg-white border border-purple-border/30 rounded-xl p-3 text-center shadow-sm">
-                                            <div class="text-lg font-black text-purple" id="b-250">0</div>
-                                            <div class="text-[9px] font-bold text-purple/40 uppercase mt-1">Bolsas 250g</div>
+                                        <div class="bg-white dark:bg-[#180e29] border border-purple-border/30 dark:border-purple-dark/50 rounded-xl p-3 text-center shadow-sm">
+                                            <div class="text-lg font-black text-purple dark:text-white" id="b-250">0</div>
+                                            <div class="text-[9px] font-bold text-purple/40 dark:text-purple-light/50 uppercase mt-1">Bolsas 250g</div>
                                         </div>
-                                        <div class="bg-white border border-purple-border/30 rounded-xl p-3 text-center shadow-sm">
-                                            <div class="text-lg font-black text-purple" id="b-550">0</div>
-                                            <div class="text-[9px] font-bold text-purple/40 uppercase mt-1">Bolsas 550g</div>
+                                        <div class="bg-white dark:bg-[#180e29] border border-purple-border/30 dark:border-purple-dark/50 rounded-xl p-3 text-center shadow-sm">
+                                            <div class="text-lg font-black text-purple dark:text-white" id="b-550">0</div>
+                                            <div class="text-[9px] font-bold text-purple/40 dark:text-purple-light/50 uppercase mt-1">Bolsas 550g</div>
                                         </div>
-                                        <div class="bg-white border border-purple-border/30 rounded-xl p-3 text-center shadow-sm">
-                                            <div class="text-lg font-black text-purple" id="b-850">0</div>
-                                            <div class="text-[9px] font-bold text-purple/40 uppercase mt-1">Bolsas 850g</div>
+                                        <div class="bg-white dark:bg-[#180e29] border border-purple-border/30 dark:border-purple-dark/50 rounded-xl p-3 text-center shadow-sm">
+                                            <div class="text-lg font-black text-purple dark:text-white" id="b-850">0</div>
+                                            <div class="text-[9px] font-bold text-purple/40 dark:text-purple-light/50 uppercase mt-1">Bolsas 850g</div>
                                         </div>
                                     </div>
-                                    <div class="text-[10px] leading-relaxed text-purple/60 font-semibold mt-2">💡 Combina los tamaños de bolsas como prefieras para cubrir sus gramos diarios.</div>
+                                    <div class="text-[10px] leading-relaxed text-purple/60 dark:text-purple-light/60 font-semibold mt-2">💡 Combina los tamaños de bolsas como prefieras para cubrir sus gramos diarios.</div>
                                 </div>
 
                                 <!-- Plan Mensual -->
-                                <div class="bg-green/10 rounded-2xl p-4 space-y-3 border border-green/20">
-                                    <div class="text-[9px] font-black tracking-widest text-green-dark uppercase flex items-center gap-2">
+                                <div class="bg-green/10 dark:bg-green/5 rounded-2xl p-4 space-y-3 border border-green/20 dark:border-green/20">
+                                    <div class="text-[9px] font-black tracking-widest text-green-dark dark:text-green uppercase flex items-center gap-2">
                                         <i data-lucide="calendar" class="w-3.5 h-3.5 shrink-0"></i> Plan de Pedido Mensual
                                     </div>
                                     <div class="grid grid-cols-2 gap-2 text-left">
-                                        <div class="bg-white rounded-xl p-3 shadow-sm border border-green/10 min-w-0">
-                                            <span class="text-[9px] font-bold text-purple/40 uppercase block leading-tight mb-1">Kilos / mes</span>
-                                            <span class="text-base font-black text-purple-dark leading-none" id="plan-kilos-mes">0.0 kg</span>
+                                        <div class="bg-white dark:bg-[#180e29] rounded-xl p-3 shadow-sm border border-green/10 dark:border-green/10 min-w-0">
+                                            <span class="text-[9px] font-bold text-purple/40 dark:text-purple-light/50 uppercase block leading-tight mb-1">Kilos / mes</span>
+                                            <span class="text-base font-black text-purple-dark dark:text-white leading-none" id="plan-kilos-mes">0.0 kg</span>
                                         </div>
-                                        <div class="bg-white rounded-xl p-3 shadow-sm border border-green/10 min-w-0">
-                                            <span class="text-[9px] font-bold text-purple/40 uppercase block leading-tight mb-1">Porciones / mes</span>
-                                            <span class="text-base font-black text-purple-dark leading-none" id="plan-porciones-mes">0</span>
+                                        <div class="bg-white dark:bg-[#180e29] rounded-xl p-3 shadow-sm border border-green/10 dark:border-green/10 min-w-0">
+                                            <span class="text-[9px] font-bold text-purple/40 dark:text-purple-light/50 uppercase block leading-tight mb-1">Porciones / mes</span>
+                                            <span class="text-base font-black text-purple-dark dark:text-white leading-none" id="plan-porciones-mes">0</span>
                                         </div>
                                     </div>
-                                    <div class="text-[8px] font-black tracking-widest text-purple/40 uppercase">Bolsas para todo el mes:</div>
+                                    <div class="text-[8px] font-black tracking-widest text-purple/40 dark:text-purple-light/50 uppercase">Bolsas para todo el mes:</div>
                                     <div class="grid grid-cols-3 gap-2">
-                                        <div class="bg-white rounded-xl p-2 text-center shadow-sm border border-green/10">
-                                            <div class="text-sm font-black text-purple leading-none" id="plan-b250-mes">0</div>
-                                            <div class="text-[7px] font-bold text-purple/45 uppercase mt-1 leading-tight">Bolsas<br>250g</div>
+                                        <div class="bg-white dark:bg-[#180e29] rounded-xl p-2 text-center shadow-sm border border-green/10 dark:border-green/10">
+                                            <div class="text-sm font-black text-purple dark:text-white leading-none" id="plan-b250-mes">0</div>
+                                            <div class="text-[7px] font-bold text-purple/45 dark:text-purple-light/50 uppercase mt-1 leading-tight">Bolsas<br>250g</div>
                                         </div>
-                                        <div class="bg-white rounded-xl p-2 text-center shadow-sm border border-green/10">
-                                            <div class="text-sm font-black text-purple leading-none" id="plan-b550-mes">0</div>
-                                            <div class="text-[7px] font-bold text-purple/45 uppercase mt-1 leading-tight">Bolsas<br>550g</div>
+                                        <div class="bg-white dark:bg-[#180e29] rounded-xl p-2 text-center shadow-sm border border-green/10 dark:border-green/10">
+                                            <div class="text-sm font-black text-purple dark:text-white leading-none" id="plan-b550-mes">0</div>
+                                            <div class="text-[7px] font-bold text-purple/45 dark:text-purple-light/50 uppercase mt-1 leading-tight">Bolsas<br>550g</div>
                                         </div>
-                                        <div class="bg-white rounded-xl p-2 text-center shadow-sm border border-green/10">
-                                            <div class="text-sm font-black text-purple leading-none" id="plan-b850-mes">0</div>
-                                            <div class="text-[7px] font-bold text-purple/45 uppercase mt-1 leading-tight">Bolsas<br>850g</div>
+                                        <div class="bg-white dark:bg-[#180e29] rounded-xl p-2 text-center shadow-sm border border-green/10 dark:border-green/10">
+                                            <div class="text-sm font-black text-purple dark:text-white leading-none" id="plan-b850-mes">0</div>
+                                            <div class="text-[7px] font-bold text-purple/45 dark:text-purple-light/50 uppercase mt-1 leading-tight">Bolsas<br>850g</div>
                                         </div>
                                     </div>
-                                    <div class="text-[10px] leading-relaxed text-purple-dark/80 font-medium">💡 Esta proyección te permite planificar tu compra mensual y optimizar la congelación.</div>
+                                    <div class="text-[10px] leading-relaxed text-purple-dark/80 dark:text-purple-light/70 font-medium">💡 Esta proyección te permite planificar tu compra mensual y optimizar la congelación.</div>
                                 </div>
 
-                                <div id="r-note" class="bg-green-light border-l-4 border-green text-[10px] leading-relaxed text-purple-dark/85 font-medium p-4 rounded-r-xl"></div>
-                                <div class="text-[10px] text-purple/50 font-semibold leading-relaxed">⚠️ Cantidades orientativas según las recomendaciones del NRC (National Research Council). Observa a tu mascota 2 semanas y ajusta según su condición corporal.</div>
+                                <div id="r-note" class="bg-green-light dark:bg-[#1b2a14] border-l-4 border-green text-[10px] leading-relaxed text-purple-dark/85 dark:text-purple-light/85 font-medium p-4 rounded-r-xl"></div>
+                                <div class="text-[10px] text-purple/50 dark:text-purple-light/50 font-semibold leading-relaxed">⚠️ Cantidades orientativas según las recomendaciones del NRC (National Research Council). Observa a tu mascota 2 semanas y ajusta según su condición corporal.</div>
                             </div>
                         </div>
 
                         <!-- Botón ir a productos -->
                         <button onclick="navigateTo('view-perros')"
-                            class="mt-4 w-full flex items-center justify-center gap-3 bg-gradient-to-r from-purple-dark to-purple hover:from-purple hover:to-pink text-white rounded-2xl p-5 shadow-lg shadow-purple/30 transition-all duration-300 active:scale-[0.98]">
+                            class="mt-4 w-full flex items-center justify-center gap-3 bg-gradient-to-r from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#421d8e] hover:from-purple hover:to-pink text-white rounded-2xl p-5 shadow-lg shadow-purple/30 dark:shadow-[#2e1060]/50 transition-all duration-300 active:scale-[0.98]">
                             <i data-lucide="beef" class="w-6 h-6 shrink-0 text-green"></i>
                             <div class="text-left">
                                 <span class="block font-black text-sm">Ver línea de alimentos para perros</span>
@@ -603,23 +662,75 @@
             </div>
         </section>
 
+        <!-- VISTA SNACKS NATURALES -->
+        <section id="view-snacks" class="view next">
+            <div class="max-w-2xl w-full mb-6">
+                <button class="flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-purple-light dark:border-purple-light dark:hover:bg-purple-light dark:hover:text-purple hover:bg-purple hover:text-white transition-all duration-300" onclick="navigateTo('view-home')">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Inicio
+                </button>
+                <h2 class="text-3xl md:text-4xl font-black text-purple-dark dark:text-white mt-4">Snacks Naturales</h2>
+                <p class="text-sm font-bold text-pink uppercase tracking-widest mt-1">El premio que nutre y estimula</p>
+            </div>
+
+            <div class="max-w-2xl w-full space-y-6 pb-8">
+                <!-- Info banner -->
+                <div class="rounded-3xl p-6 md:p-8 bg-gradient-to-br from-pink-dark to-pink dark:from-[#7a184e] dark:to-[#b31c71] text-white shadow-xl relative overflow-hidden text-left">
+                    <div class="absolute -right-8 -bottom-8 text-white/10"><i data-lucide="bone" class="w-40 h-40"></i></div>
+                    <h3 class="text-white text-xl md:text-2xl font-black mb-4 flex items-center gap-2"><i data-lucide="badge-check" class="text-green w-6 h-6"></i> Calidad Certificada</h3>
+                    <p class="text-pink-light/95 text-sm md:text-base leading-relaxed relative z-10 font-medium">
+                        A diferencia de los premios comerciales repletos de harinas, azúcares y conservantes, los snacks deshidratados 100% naturales ofrecen beneficios científicamente comprobados para la salud de tu mascota. Son el complemento perfecto para una dieta evolutiva y un refuerzo positivo inigualable.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                    <div class="bg-white dark:bg-[#180e29] border border-purple-border/30 dark:border-purple-dark/50 rounded-2xl p-5 shadow-md">
+                        <div class="w-10 h-10 rounded-full bg-green/10 flex items-center justify-center text-green-dark dark:text-green mb-3"><i data-lucide="smile" class="w-5 h-5"></i></div>
+                        <h4 class="text-purple-dark dark:text-white font-extrabold text-sm mb-1">Salud Dental</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">La masticación de texturas deshidratadas ayuda a remover el sarro de forma mecánica y fortalece las encías naturalmente.</p>
+                    </div>
+                    <div class="bg-white dark:bg-[#180e29] border border-purple-border/30 dark:border-purple-dark/50 rounded-2xl p-5 shadow-md">
+                        <div class="w-10 h-10 rounded-full bg-purple/10 flex items-center justify-center text-purple dark:text-purple-light mb-3"><i data-lucide="brain" class="w-5 h-5"></i></div>
+                        <h4 class="text-purple-dark dark:text-white font-extrabold text-sm mb-1">Estimulación Mental</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Roer reduce el estrés y la ansiedad, liberando endorfinas que relajan profundamente a tu mascota manteniéndolo ocupado.</p>
+                    </div>
+                    <div class="bg-white dark:bg-[#180e29] border border-purple-border/30 dark:border-purple-dark/50 rounded-2xl p-5 shadow-md">
+                        <div class="w-10 h-10 rounded-full bg-pink/10 flex items-center justify-center text-pink mb-3"><i data-lucide="shield-x" class="w-5 h-5"></i></div>
+                        <h4 class="text-purple-dark dark:text-white font-extrabold text-sm mb-1">0% Aditivos</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Totalmente libres de glicerina, colorantes o saborizantes artificiales que irritan su sistema digestivo a largo plazo.</p>
+                    </div>
+                    <div class="bg-white dark:bg-[#180e29] border border-purple-border/30 dark:border-purple-dark/50 rounded-2xl p-5 shadow-md">
+                        <div class="w-10 h-10 rounded-full bg-green/10 flex items-center justify-center text-green-dark dark:text-green mb-3"><i data-lucide="drumstick" class="w-5 h-5"></i></div>
+                        <h4 class="text-purple-dark dark:text-white font-extrabold text-sm mb-1">Proteína Intacta</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">El proceso de deshidratación a baja temperatura asegura que se conserven todas las vitaminas y minerales esenciales de la carne.</p>
+                    </div>
+                </div>
+
+                <!-- Launch Banner -->
+                <div class="bg-gradient-to-r from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#180e29] border border-green rounded-2xl p-6 text-center mt-6 shadow-lg shadow-purple/20 dark:shadow-[#2e1060]/50">
+                    <span class="inline-block bg-green text-purple-dark text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest mb-3 animate-pulse">Próximo Lanzamiento</span>
+                    <h4 class="text-xl font-black text-white mb-2">Línea Oficial de Snacks Milkarf</h4>
+                    <p class="text-xs text-white/80 font-medium max-w-sm mx-auto">Estamos horneando artesanalmente y a baja temperatura las mejores recompensas para ellos. ¡Muy pronto podrás agregarlas a tu carrito de compras!</p>
+                </div>
+            </div>
+        </section>
+
         <!-- VISTA LÍNEA PERROS -->
         <section id="view-perros" class="view next">
             <div class="max-w-2xl w-full mb-6">
-                <button class="flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple hover:bg-purple hover:text-white transition-all duration-300" onclick="navigateTo('view-home')">
+                <button class="flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-purple-light dark:border-purple-light dark:hover:bg-purple-light dark:hover:text-purple hover:bg-purple hover:text-white transition-all duration-300" onclick="navigateTo('view-home')">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Inicio
                 </button>
-                <h2 class="text-3xl font-black text-purple-dark mt-4">Menús para Perros</h2>
+                <h2 class="text-3xl font-black text-purple-dark dark:text-white mt-4">Menús para Perros</h2>
                 <p class="text-sm font-bold text-pink uppercase tracking-widest mt-1">Nutrición Evolutiva Adaptada</p>
             </div>
 
             <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 justify-center mt-4 pb-8">
 
                 <!-- Producto: Pollo -->
-                <div class="bg-white rounded-3xl overflow-hidden shadow-2xl border border-purple-border/20 flex flex-col h-full">
-                    <div class="h-[240px] relative bg-purple/10 overflow-hidden select-none">
+                <div class="bg-white dark:bg-[#180e29] rounded-3xl overflow-hidden shadow-2xl dark:shadow-[#0d0718] border border-purple-border/20 dark:border-purple-dark/40 flex flex-col h-full">
+                    <div class="h-[240px] relative bg-purple/10 dark:bg-[#22163b] overflow-hidden select-none">
                         <!-- Imagen de Pollo optimizada localmente -->
-                        <img src="images/Gemini_Generated_Image_18qpp218qpp218qp.webp"
+                        <img src="https://i.ibb.co/6c4y1x46/Gemini-Generated-Image-t11r31t11r31t11r.jpg"
                             alt="Menú de Pollo con Zanahoria"
                             class="w-full h-full object-cover"
                             loading="lazy" decoding="async">
@@ -627,31 +738,31 @@
                     </div>
                     <div class="p-6 space-y-6 flex-grow flex flex-col justify-between">
                         <div class="text-left space-y-2">
-                            <h3 class="text-2xl font-black text-purple-dark">Pollo con Zanahoria</h3>
-                            <p class="text-sm text-gray-500 font-medium leading-relaxed">
+                            <h3 class="text-2xl font-black text-purple-dark dark:text-white">Pollo con Zanahoria</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
                                 <strong>Ingredientes:</strong> Muslos de pollo, patas de pollo (calcio natural), mollejas de pollo, vísceras selectas, zanahoria fresca, semillas de chía, omega 3, vitamina E, kelp y aceite de oliva.
                             </p>
                         </div>
                         <div class="space-y-4">
                             <div class="text-left">
-                                <span class="text-[10px] font-black tracking-widest text-purple/50 uppercase block mb-2">Presentación:</span>
+                                <span class="text-[10px] font-black tracking-widest text-purple/50 dark:text-purple-light/50 uppercase block mb-2">Presentación:</span>
                                 <div class="grid grid-cols-3 gap-2" id="weight-group-pollo">
-                                    <button class="p-3 text-xs font-extrabold text-purple-dark border-2 border-green rounded-xl bg-green" onclick="selectWeightPollo('250gr', this)">250g</button>
-                                    <button class="p-3 text-xs font-extrabold text-purple border-2 border-purple-border/50 rounded-xl bg-white opacity-60" onclick="selectWeightPollo('550gr', this)">550g</button>
-                                    <button class="p-3 text-xs font-extrabold text-purple border-2 border-purple-border/50 rounded-xl bg-white opacity-60" onclick="selectWeightPollo('850gr', this)">850g</button>
+                                    <button class="p-3 text-xs font-extrabold text-purple-dark border-2 border-green rounded-xl bg-green opacity-100" onclick="selectWeightPollo('250gr', this)">250g</button>
+                                    <button class="p-3 text-xs font-extrabold text-purple dark:text-purple-light border-2 border-purple-border/50 dark:border-purple-dark/50 rounded-xl bg-white dark:bg-[#22163b] opacity-60" onclick="selectWeightPollo('550gr', this)">550g</button>
+                                    <button class="p-3 text-xs font-extrabold text-purple dark:text-purple-light border-2 border-purple-border/50 dark:border-purple-dark/50 rounded-xl bg-white dark:bg-[#22163b] opacity-60" onclick="selectWeightPollo('850gr', this)">850g</button>
                                 </div>
                             </div>
-                            <div class="border-t border-purple-border/20 pt-5 space-y-4">
+                            <div class="border-t border-purple-border/20 dark:border-purple-dark/40 pt-5 space-y-4">
                                 <div class="flex items-center justify-between">
                                     <div class="text-left">
-                                        <span class="text-[10px] font-bold tracking-widest text-purple/40 uppercase block mb-0.5">Precio unitario</span>
-                                        <h4 id="price-pollo" class="text-3xl font-black text-purple-dark">$2.50</h4>
+                                        <span class="text-[10px] font-bold tracking-widest text-purple/40 dark:text-purple-light/50 uppercase block mb-0.5">Precio unitario</span>
+                                        <h4 id="price-pollo" class="text-3xl font-black text-purple-dark dark:text-white">$2.50</h4>
                                     </div>
                                     <!-- Selector cantidad -->
-                                    <div class="flex items-center gap-2 bg-purple-light border border-purple-border/40 rounded-2xl p-1">
-                                        <button onclick="changeQty('pollo', -1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white text-purple font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">−</button>
-                                        <span id="qty-pollo" class="w-8 text-center font-black text-purple text-sm select-none">1</span>
-                                        <button onclick="changeQty('pollo', +1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white text-purple font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">+</button>
+                                    <div class="flex items-center gap-2 bg-purple-light dark:bg-[#22163b] border border-purple-border/40 dark:border-purple-dark/50 rounded-2xl p-1">
+                                        <button onclick="changeQty('pollo', -1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-[#180e29] text-purple dark:text-purple-light font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">−</button>
+                                        <span id="qty-pollo" class="w-8 text-center font-black text-purple dark:text-white text-sm select-none">1</span>
+                                        <button onclick="changeQty('pollo', +1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-[#180e29] text-purple dark:text-purple-light font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">+</button>
                                     </div>
                                 </div>
                                 <button onclick="addToCart('pollo')"
@@ -664,8 +775,8 @@
                 </div>
 
                 <!-- Producto: Res -->
-                <div class="bg-white rounded-3xl overflow-hidden shadow-2xl border border-purple-border/20 flex flex-col h-full">
-                    <div class="h-[240px] relative bg-purple/10 overflow-hidden select-none">
+                <div class="bg-white dark:bg-[#180e29] rounded-3xl overflow-hidden shadow-2xl dark:shadow-[#0d0718] border border-purple-border/20 dark:border-purple-dark/40 flex flex-col h-full">
+                    <div class="h-[240px] relative bg-purple/10 dark:bg-[#22163b] overflow-hidden select-none">
                         <!-- Imagen de Carne de Res generada en ImgBB -->
                         <img src="https://i.ibb.co/TDrCtyGr/Gemini-Generated-Image-51ffg751ffg751ff.jpg"
                             alt="Menú de Carne de Res con Calabacín"
@@ -675,30 +786,30 @@
                     </div>
                     <div class="p-6 space-y-6 flex-grow flex flex-col justify-between">
                         <div class="text-left space-y-2">
-                            <h3 class="text-2xl font-black text-purple-dark">Carne de Res con Calabacín</h3>
-                            <p class="text-sm text-gray-500 font-medium leading-relaxed">
+                            <h3 class="text-2xl font-black text-purple-dark dark:text-white">Carne de Res con Calabacín</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
                                 <strong>Ingredientes:</strong> Carne de res premium magra cruda, corazón, vísceras selectas, patas de pollo (calcio natural), calabacín fresco, semillas de chía, omega 3, vitamina E, kelp y aceite de oliva.
                             </p>
                         </div>
                         <div class="space-y-4">
                             <div class="text-left">
-                                <span class="text-[10px] font-black tracking-widest text-purple/50 uppercase block mb-2">Presentación:</span>
+                                <span class="text-[10px] font-black tracking-widest text-purple/50 dark:text-purple-light/50 uppercase block mb-2">Presentación:</span>
                                 <div class="grid grid-cols-3 gap-2" id="weight-group-res">
-                                    <button class="p-3 text-xs font-extrabold text-purple-dark border-2 border-green rounded-xl bg-green" onclick="selectWeightRes('250gr', this)">250g</button>
-                                    <button class="p-3 text-xs font-extrabold text-purple border-2 border-purple-border/50 rounded-xl bg-white opacity-60" onclick="selectWeightRes('550gr', this)">550g</button>
-                                    <button class="p-3 text-xs font-extrabold text-purple border-2 border-purple-border/50 rounded-xl bg-white opacity-60" onclick="selectWeightRes('850gr', this)">850g</button>
+                                    <button class="p-3 text-xs font-extrabold text-purple-dark border-2 border-green rounded-xl bg-green opacity-100" onclick="selectWeightRes('250gr', this)">250g</button>
+                                    <button class="p-3 text-xs font-extrabold text-purple dark:text-purple-light border-2 border-purple-border/50 dark:border-purple-dark/50 rounded-xl bg-white dark:bg-[#22163b] opacity-60" onclick="selectWeightRes('550gr', this)">550g</button>
+                                    <button class="p-3 text-xs font-extrabold text-purple dark:text-purple-light border-2 border-purple-border/50 dark:border-purple-dark/50 rounded-xl bg-white dark:bg-[#22163b] opacity-60" onclick="selectWeightRes('850gr', this)">850g</button>
                                 </div>
                             </div>
-                            <div class="border-t border-purple-border/20 pt-5 space-y-4">
+                            <div class="border-t border-purple-border/20 dark:border-purple-dark/40 pt-5 space-y-4">
                                 <div class="flex items-center justify-between">
                                     <div class="text-left">
-                                        <span class="text-[10px] font-bold tracking-widest text-purple/40 uppercase block mb-0.5">Precio unitario</span>
-                                        <h4 id="price-res" class="text-3xl font-black text-purple-dark">$3.00</h4>
+                                        <span class="text-[10px] font-bold tracking-widest text-purple/40 dark:text-purple-light/50 uppercase block mb-0.5">Precio unitario</span>
+                                        <h4 id="price-res" class="text-3xl font-black text-purple-dark dark:text-white">$3.00</h4>
                                     </div>
-                                    <div class="flex items-center gap-2 bg-purple-light border border-purple-border/40 rounded-2xl p-1">
-                                        <button onclick="changeQty('res', -1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white text-purple font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">−</button>
-                                        <span id="qty-res" class="w-8 text-center font-black text-purple text-sm select-none">1</span>
-                                        <button onclick="changeQty('res', +1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white text-purple font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">+</button>
+                                    <div class="flex items-center gap-2 bg-purple-light dark:bg-[#22163b] border border-purple-border/40 dark:border-purple-dark/50 rounded-2xl p-1">
+                                        <button onclick="changeQty('res', -1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-[#180e29] text-purple dark:text-purple-light font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">−</button>
+                                        <span id="qty-res" class="w-8 text-center font-black text-purple dark:text-white text-sm select-none">1</span>
+                                        <button onclick="changeQty('res', +1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-[#180e29] text-purple dark:text-purple-light font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">+</button>
                                     </div>
                                 </div>
                                 <button onclick="addToCart('res')"
@@ -716,64 +827,64 @@
         <!-- VISTA LÍNEA GATOS -->
         <section id="view-gatos" class="view next">
             <div class="max-w-2xl w-full mb-6">
-                <button class="flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple hover:bg-purple hover:text-white transition-all duration-300" onclick="navigateTo('view-home')">
+                <button class="flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-purple-light dark:border-purple-light dark:hover:bg-purple-light dark:hover:text-purple hover:bg-purple hover:text-white transition-all duration-300" onclick="navigateTo('view-home')">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Inicio
                 </button>
-                <h2 class="text-3xl font-black text-purple-dark mt-4">Línea de Nutrición Felina</h2>
+                <h2 class="text-3xl font-black text-purple-dark dark:text-white mt-4">Línea de Nutrición Felina</h2>
             </div>
             <div class="flex flex-col items-center justify-center max-w-lg w-full mx-auto select-none py-12">
                 <div class="w-24 h-24 bg-pink/10 rounded-full flex items-center justify-center text-pink mb-6">
                     <i data-lucide="sparkles" class="w-12 h-12"></i>
                 </div>
-                <h2 class="text-5xl font-black text-purple-dark tracking-tight leading-none mb-4">Próximamente...</h2>
-                <p class="text-sm text-gray-500 leading-relaxed max-w-sm text-center">La evolución de la nutrición felina real y balanceada está en pleno desarrollo. ¡Síguenos en nuestras redes para ser el primero en enterarte del lanzamiento!</p>
+                <h2 class="text-5xl font-black text-purple-dark dark:text-white tracking-tight leading-none mb-4">Próximamente...</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-sm text-center">La evolución de la nutrición felina real y balanceada está en pleno desarrollo. ¡Síguenos en nuestras redes para ser el primero en enterarte del lanzamiento!</p>
             </div>
         </section>
 
         <!-- VISTA FILOSOFÍA / FAQ -->
         <section id="view-faq" class="view next">
             <div class="max-w-2xl w-full mb-6">
-                <button class="flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple hover:bg-purple hover:text-white transition-all duration-300" onclick="navigateTo('view-home')">
+                <button class="flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-purple-light dark:border-purple-light dark:hover:bg-purple-light dark:hover:text-purple hover:bg-purple hover:text-white transition-all duration-300" onclick="navigateTo('view-home')">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Inicio
                 </button>
-                <h2 class="text-3xl font-black text-purple-dark mt-4">Nutrición real y honesta.</h2>
+                <h2 class="text-3xl font-black text-purple-dark dark:text-white mt-4">Nutrición real y honesta.</h2>
             </div>
 
             <div class="max-w-2xl w-full space-y-6">
-                <div class="rounded-3xl p-6 md:p-8 border-l-8 border-green bg-white shadow-xl">
-                    <h3 class="text-purple-dark text-xl md:text-2xl font-black mb-3">Filosofía Milkarf®</h3>
-                    <p class="text-gray-600 text-sm md:text-base leading-relaxed mb-4 font-medium text-left">
+                <div class="rounded-3xl p-6 md:p-8 border-l-8 border-green bg-white dark:bg-[#180e29] shadow-xl dark:shadow-[#0d0718]">
+                    <h3 class="text-purple-dark dark:text-white text-xl md:text-2xl font-black mb-3">Filosofía Milkarf®</h3>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm md:text-base leading-relaxed mb-4 font-medium text-left">
                         Preparamos comida natural y fresca para tu peludo, con ingredientes reales y el balance biológico que su cuerpo necesita por evolución. Desafiamos lo no convencional: <strong>cero conservantes, cero rellenos artificiales.</strong> Solo pollo, carne de res, vegetales selectos, vísceras ricas en nutrientes, chía y aceite de oliva.
                     </p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6 border-t border-purple-border/20 pt-6 text-left">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6 border-t border-purple-border/20 dark:border-purple-dark/50 pt-6 text-left">
                         <div class="space-y-1">
-                            <h4 class="text-pink font-extrabold text-sm flex items-center gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-green-dark"></i> Rigor Nutricional</h4>
-                            <p class="text-xs text-gray-500 font-medium">Formulado bajo estándares científicos del NRC para garantizar un balance biológico perfecto.</p>
+                            <h4 class="text-pink font-extrabold text-sm flex items-center gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-green-dark dark:text-green"></i> Rigor Nutricional</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Formulado bajo estándares científicos del NRC para garantizar un balance biológico perfecto.</p>
                         </div>
                         <div class="space-y-1">
-                            <h4 class="text-pink font-extrabold text-sm flex items-center gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-green-dark"></i> Ración Exacta</h4>
-                            <p class="text-xs text-gray-500 font-medium">Determinamos el volumen idóneo según sus factores biológicos para mantener un peso ideal.</p>
+                            <h4 class="text-pink font-extrabold text-sm flex items-center gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-green-dark dark:text-green"></i> Ración Exacta</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Determinamos el volumen idóneo según sus factores biológicos para mantener un peso ideal.</p>
                         </div>
                     </div>
                 </div>
 
-                <h3 class="text-xl md:text-2xl font-black text-purple-dark text-left">Guía de transición</h3>
+                <h3 class="text-xl md:text-2xl font-black text-purple-dark dark:text-white text-left">Guía de transición</h3>
 
                 <div class="space-y-3 pb-8">
                     <!-- Acordeón 1: Viene de perrarina -->
-                    <div class="bg-white border border-purple-border/30 rounded-2xl shadow-sm overflow-hidden border-l-4 border-purple">
-                        <button class="accordion-header w-full flex justify-between items-center p-5 font-black text-purple-dark text-left text-sm md:text-base outline-none" onclick="toggleAccordion(this)">
+                    <div class="bg-white dark:bg-[#180e29] border border-purple-border/30 dark:border-purple-dark/50 rounded-2xl shadow-sm overflow-hidden border-l-4 border-purple">
+                        <button class="accordion-header w-full flex justify-between items-center p-5 font-black text-purple-dark dark:text-white text-left text-sm md:text-base outline-none" onclick="toggleAccordion(this)">
                             🐾 Si viene de comer perrarina
                             <i data-lucide="chevron-down" class="w-5 h-5 text-pink transition-transform duration-300 shrink-0"></i>
                         </button>
                         <div class="accordion-content max-h-0 opacity-0 overflow-hidden transition-all duration-500">
-                            <div class="p-5 pt-0 text-sm leading-relaxed text-gray-600 font-medium space-y-3 text-left">
-                                <div class="bg-purple-light rounded-xl p-4 space-y-2.5 border border-purple-border/20">
-                                    <p><strong class="text-purple-dark">• Días 1 - 2:</strong> Porción pequeña de Milkarf por la mañana, perrarina después (separadas por 6h).</p>
-                                    <p><strong class="text-purple-dark">• Días 3 - 5:</strong> Aumenta Milkarf, reduce perrarina.</p>
-                                    <p><strong class="text-purple-dark">• Días 6 - 7:</strong> Sustitución completa si hay buena tolerancia.</p>
+                            <div class="p-5 pt-0 text-sm leading-relaxed text-gray-600 dark:text-gray-400 font-medium space-y-3 text-left">
+                                <div class="bg-purple-light dark:bg-[#22163b] rounded-xl p-4 space-y-2.5 border border-purple-border/20 dark:border-purple-dark/40">
+                                    <p><strong class="text-purple-dark dark:text-white">• Días 1 - 2:</strong> Porción pequeña de Milkarf por la mañana, perrarina después (separadas por 6h).</p>
+                                    <p><strong class="text-purple-dark dark:text-white">• Días 3 - 5:</strong> Aumenta Milkarf, reduce perrarina.</p>
+                                    <p><strong class="text-purple-dark dark:text-white">• Días 6 - 7:</strong> Sustitución completa si hay buena tolerancia.</p>
                                 </div>
-                                <div class="bg-pink-light border-l-4 border-pink text-pink-dark p-4 rounded-r-xl text-xs font-bold flex items-start gap-2">
+                                <div class="bg-pink-light dark:bg-[#351025] border-l-4 border-pink text-pink-dark dark:text-pink-light p-4 rounded-r-xl text-xs font-bold flex items-start gap-2">
                                     <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0 mt-0.5"></i>
                                     <span>Recomendación: No mezclar en el mismo plato (procesos digestivos diferentes).</span>
                                 </div>
@@ -782,28 +893,28 @@
                     </div>
 
                     <!-- Acordeón 2: Ya consume natural -->
-                    <div class="bg-white border border-purple-border/30 rounded-2xl shadow-sm overflow-hidden border-l-4 border-green">
-                        <button class="accordion-header w-full flex justify-between items-center p-5 font-black text-purple-dark text-left text-sm md:text-base outline-none" onclick="toggleAccordion(this)">
+                    <div class="bg-white dark:bg-[#180e29] border border-purple-border/30 dark:border-purple-dark/50 rounded-2xl shadow-sm overflow-hidden border-l-4 border-green">
+                        <button class="accordion-header w-full flex justify-between items-center p-5 font-black text-purple-dark dark:text-white text-left text-sm md:text-base outline-none" onclick="toggleAccordion(this)">
                             🥗 Si ya consume alimento natural
                             <i data-lucide="chevron-down" class="w-5 h-5 text-pink transition-transform duration-300 shrink-0"></i>
                         </button>
                         <div class="accordion-content max-h-0 opacity-0 overflow-hidden transition-all duration-500">
-                            <div class="p-5 pt-0 text-sm leading-relaxed text-gray-600 font-medium text-left">
-                                <div class="bg-green-light rounded-xl p-4 border border-green/20 mb-1">
-                                    <p><strong class="text-green-dark">Incorporación directa desde el día 1.</strong> Al estar su microbiota adaptada a la proteína cruda, puedes dar Milkarf directamente sin transición.</p>
+                            <div class="p-5 pt-0 text-sm leading-relaxed text-gray-600 dark:text-gray-400 font-medium text-left">
+                                <div class="bg-green-light dark:bg-[#1a2e1a] rounded-xl p-4 border border-green/20 mb-1">
+                                    <p><strong class="text-green-dark dark:text-green">Incorporación directa desde el día 1.</strong> Al estar su microbiota adaptada a la proteína cruda, puedes dar Milkarf directamente sin transición.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Acordeón 3: Heces blandas -->
-                    <div class="bg-white border border-purple-border/30 rounded-2xl shadow-sm overflow-hidden border-l-4 border-pink">
-                        <button class="accordion-header w-full flex justify-between items-center p-5 font-black text-purple-dark text-left text-sm md:text-base outline-none" onclick="toggleAccordion(this)">
+                    <div class="bg-white dark:bg-[#180e29] border border-purple-border/30 dark:border-purple-dark/50 rounded-2xl shadow-sm overflow-hidden border-l-4 border-pink">
+                        <button class="accordion-header w-full flex justify-between items-center p-5 font-black text-purple-dark dark:text-white text-left text-sm md:text-base outline-none" onclick="toggleAccordion(this)">
                             💬 Nota importante sobre heces
                             <i data-lucide="chevron-down" class="w-5 h-5 text-pink transition-transform duration-300 shrink-0"></i>
                         </button>
                         <div class="accordion-content max-h-0 opacity-0 overflow-hidden transition-all duration-500">
-                            <div class="p-5 pt-0 text-sm leading-relaxed text-gray-600 font-medium text-left space-y-3">
+                            <div class="p-5 pt-0 text-sm leading-relaxed text-gray-600 dark:text-gray-400 font-medium text-left space-y-3">
                                 <p>Es normal que las heces estén un poco blandas al inicio por la adaptación de la microbiota. Si persiste o son muy líquidas, consultar con veterinario.</p>
                             </div>
                         </div>
@@ -815,20 +926,20 @@
         <!-- VISTA CARRITO -->
         <section id="view-cart" class="view next">
             <div class="max-w-2xl w-full mb-6">
-                <button class="flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple hover:bg-purple hover:text-white transition-all duration-300" onclick="navigateTo('view-perros')">
+                <button class="flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-purple-light dark:border-purple-light dark:hover:bg-purple-light dark:hover:text-purple hover:bg-purple hover:text-white transition-all duration-300" onclick="navigateTo('view-perros')">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> Seguir comprando
                 </button>
-                <h2 class="text-3xl font-black text-purple-dark mt-4">Tu Carrito</h2>
+                <h2 class="text-3xl font-black text-purple-dark dark:text-white mt-4">Tu Carrito</h2>
                 <p class="text-sm font-bold text-pink uppercase tracking-widest mt-1">Revisa tu pedido antes de confirmar</p>
             </div>
 
             <!-- Estado vacío -->
             <div id="cart-empty" class="flex flex-col items-center justify-center py-16 select-none max-w-sm w-full">
-                <div class="w-20 h-20 bg-purple-light rounded-full flex items-center justify-center mb-4">
-                    <i data-lucide="shopping-cart" class="w-10 h-10 text-purple/30"></i>
+                <div class="w-20 h-20 bg-purple-light dark:bg-[#22163b] rounded-full flex items-center justify-center mb-4">
+                    <i data-lucide="shopping-cart" class="w-10 h-10 text-purple/30 dark:text-purple-light/30"></i>
                 </div>
-                <p class="text-purple/40 font-extrabold text-lg">Tu carrito está vacío</p>
-                <p class="text-purple/30 font-semibold text-sm mt-1">Agrega productos desde la línea de perros</p>
+                <p class="text-purple/40 dark:text-purple-light/50 font-extrabold text-lg">Tu carrito está vacío</p>
+                <p class="text-purple/30 dark:text-purple-light/40 font-semibold text-sm mt-1">Agrega productos desde la línea de perros</p>
                 <button onclick="navigateTo('view-perros')" class="mt-6 px-6 py-3 bg-purple text-white font-extrabold rounded-2xl text-sm hover:bg-pink transition-all">
                     Ver productos
                 </button>
@@ -839,34 +950,34 @@
 
             <!-- Resumen total -->
             <div id="cart-summary" class="hidden w-full max-w-lg space-y-4 pb-8">
-                <div class="bg-white rounded-3xl border border-purple-border/30 shadow-xl p-6 space-y-3">
-                    <div class="text-[10px] font-black tracking-widest text-purple/50 uppercase mb-2">Resumen del pedido</div>
-                    <div id="cart-summary-lines" class="space-y-2 text-sm border-b border-purple-border/20 pb-4"></div>
+                <div class="bg-white dark:bg-[#180e29] rounded-3xl border border-purple-border/30 dark:border-purple-dark/50 shadow-xl p-6 space-y-3">
+                    <div class="text-[10px] font-black tracking-widest text-purple/50 dark:text-purple-light/50 uppercase mb-2">Resumen del pedido</div>
+                    <div id="cart-summary-lines" class="space-y-2 text-sm border-b border-purple-border/20 dark:border-purple-dark/40 pb-4"></div>
                     <div class="flex justify-between items-center pt-2">
-                        <span class="font-extrabold text-purple-dark text-base">Total</span>
+                        <span class="font-extrabold text-purple-dark dark:text-white text-base">Total</span>
                         <span id="cart-total" class="text-2xl font-black text-pink">$0.00</span>
                     </div>
                 </div>
 
                 <!-- Nota de delivery -->
-                <div class="flex items-start gap-3 bg-purple-light border border-purple-border/30 rounded-2xl p-4">
+                <div class="flex items-start gap-3 bg-purple-light dark:bg-[#22163b] border border-purple-border/30 dark:border-purple-dark/50 rounded-2xl p-4">
                     <span class="text-xl shrink-0">📦</span>
-                    <p class="text-xs font-semibold text-purple/70 leading-relaxed">
-                        El <strong class="text-purple-dark">costo del delivery es aparte</strong> y varía según tu zona. Te lo informaremos al confirmar el pedido.
+                    <p class="text-xs font-semibold text-purple/70 dark:text-purple-light/80 leading-relaxed">
+                        El <strong class="text-purple-dark dark:text-white">costo del delivery es aparte</strong> y varía según tu zona. Te lo informaremos al confirmar el pedido.
                     </p>
                 </div>
 
                 <!-- Ubicación -->
-                <div class="bg-white border border-purple-border/30 rounded-2xl p-4 space-y-3">
-                    <div class="text-[10px] font-black tracking-widest text-purple/50 uppercase flex items-center gap-2">
+                <div class="bg-white dark:bg-[#180e29] border border-purple-border/30 dark:border-purple-dark/50 rounded-2xl p-4 space-y-3">
+                    <div class="text-[10px] font-black tracking-widest text-purple/50 dark:text-purple-light/50 uppercase flex items-center gap-2">
                         <i data-lucide="map-pin" class="w-3.5 h-3.5 shrink-0"></i> Tu ubicación para el delivery
                     </div>
                     <button id="location-btn" onclick="captureLocation()"
-                        class="w-full flex items-center justify-center gap-2 border-2 border-dashed border-purple/30 hover:border-purple text-purple font-extrabold text-sm py-3.5 rounded-xl transition-all hover:bg-purple-light active:scale-[0.98]">
+                        class="w-full flex items-center justify-center gap-2 border-2 border-dashed border-purple/30 dark:border-purple-light/30 hover:border-purple dark:hover:border-purple-light text-purple dark:text-purple-light font-extrabold text-sm py-3.5 rounded-xl transition-all hover:bg-purple-light dark:hover:bg-[#22163b] active:scale-[0.98]">
                         <i data-lucide="map-pin" class="w-4 h-4 shrink-0"></i>
                         <span id="location-btn-text">Marcar mi ubicación en el mapa</span>
                     </button>
-                    <div id="location-status" class="hidden text-xs font-semibold text-purple/60 leading-relaxed"></div>
+                    <div id="location-status" class="hidden text-xs font-semibold text-purple/60 dark:text-purple-light/70 leading-relaxed"></div>
                 </div>
 
                 <button onclick="finalizarPedido()"
@@ -876,7 +987,7 @@
                 </button>
 
                 <button onclick="clearCart()"
-                    class="w-full text-center text-xs font-bold text-purple/40 hover:text-pink transition-all py-2">
+                    class="w-full text-center text-xs font-bold text-purple/40 dark:text-purple-light/40 hover:text-pink dark:hover:text-pink transition-all py-2">
                     Vaciar carrito
                 </button>
             </div>
@@ -887,19 +998,19 @@
             <!-- Huellitas decorativas -->
             <i data-lucide="paw-print" class="paw-float absolute top-16 right-6 w-12 h-12 text-green/15 pointer-events-none" aria-hidden="true"></i>
             <i data-lucide="paw-print" class="paw-float absolute top-48 left-4 w-8 h-8 text-pink/10 pointer-events-none" style="animation-delay:1s" aria-hidden="true"></i>
-            <i data-lucide="paw-print" class="paw-float absolute bottom-24 right-10 w-10 h-10 text-purple/10 pointer-events-none" style="animation-delay:2s" aria-hidden="true"></i>
+            <i data-lucide="paw-print" class="paw-float absolute bottom-24 right-10 w-10 h-10 text-purple/10 dark:text-white/5 pointer-events-none" style="animation-delay:2s" aria-hidden="true"></i>
 
             <div class="max-w-sm w-full mb-8">
-                <button class="flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple hover:bg-purple hover:text-white transition-all duration-300" onclick="navigateTo('view-home')">
+                <button class="flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-purple-light dark:border-purple-light dark:hover:bg-purple-light dark:hover:text-purple hover:bg-purple hover:text-white transition-all duration-300" onclick="navigateTo('view-home')">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Inicio
                 </button>
                 <div class="mt-6 text-center">
                     <div class="flex items-center justify-center gap-2 mb-2">
                         <i data-lucide="paw-print" class="w-7 h-7 text-green"></i>
-                        <h2 class="text-3xl font-black text-purple-dark">¡Hablemos!</h2>
+                        <h2 class="text-3xl font-black text-purple-dark dark:text-white">¡Hablemos!</h2>
                         <i data-lucide="paw-print" class="w-7 h-7 text-green"></i>
                     </div>
-                    <p class="text-sm font-semibold text-purple/50">Estamos aquí para ayudarte a nutrir a tu peludo</p>
+                    <p class="text-sm font-semibold text-purple/50 dark:text-purple-light/60">Estamos aquí para ayudarte a nutrir a tu peludo</p>
                 </div>
             </div>
 
@@ -939,7 +1050,7 @@
 
                 <!-- Nota de pie -->
                 <div class="text-center pt-4">
-                    <div class="flex items-center justify-center gap-2 text-purple/30">
+                    <div class="flex items-center justify-center gap-2 text-purple/30 dark:text-purple-light/30">
                         <i data-lucide="paw-print" class="w-4 h-4"></i>
                         <span class="text-xs font-bold">Milkarf® · Alimentación saludable para mascotas</span>
                         <i data-lucide="paw-print" class="w-4 h-4"></i>
@@ -959,16 +1070,8 @@
             class="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] bg-pink text-white text-[11px] font-black rounded-full flex items-center justify-center shadow-md px-1">0</span>
     </button>
 
-    <!-- Lucide Icons (defer para no bloquear render) -->
-    <script src="https://unpkg.com/lucide@latest" defer></script>
-
+    <!-- Script Principal -->
     <script>
-    // ── Esperar a que Lucide esté disponible y crear íconos una sola vez ──
-    document.addEventListener('DOMContentLoaded', () => {
-        lucide.createIcons();
-        initApp();
-    });
-
     // ── Constantes y caché de elementos DOM ──
     const WA_NUMBER    = '584121791137';
     const WA_LINK      = 'https://wa.link/pwe23z';
@@ -977,7 +1080,6 @@
     const PRICES_POLLO = { '250gr': '$2.50', '550gr': '$5.00', '850gr': '$7.00' };
     const PRICES_RES   = { '250gr': '$3.00', '550gr': '$7.00', '850gr': '$10.00' };
 
-    // Se cachean una vez para no llamar querySelector en cada interacción
     const DOM = {};
 
     function cacheDOM() {
@@ -1013,7 +1115,6 @@
         DOM.subActividad  = document.getElementById('sub-actividad');
     }
 
-    // ── Estado calculadora ──
     const state = {
         etapa: null,
         cachorroEdad: null,
@@ -1024,7 +1125,6 @@
     let currentWeightRes   = '250gr';
     let menuOpen = false;
 
-    // ── Descripciones de actividad ──
     const ACT_DESC = {
         esterilizado_bajo: '✂️ <b>Esterilizado/a o castrado/a:</b> Su metabolismo es más lento tras la cirugía. Incluye perros con bajo apetito, razas pequeñas o tendencia al sobrepeso.',
         bajo:   '😴 <b>Poco activo:</b> Duerme mucho, sedentario, pocos paseos al día.',
@@ -1032,7 +1132,6 @@
         alto:   '🏃 <b>Muy activo:</b> Perros de trabajo, deporte canino, mucha energía o paseos largos diarios.'
     };
 
-    // ── Navegación ──
     function navigateTo(targetId) {
         DOM.views.forEach(view => {
             view.classList.remove('active', 'prev', 'next');
@@ -1047,7 +1146,6 @@
         if (menuOpen) toggleMenu();
     }
 
-    // ── Menú hamburguesa ──
     function toggleMenu() {
         menuOpen = !menuOpen;
         DOM.menuToggleBtn.setAttribute('aria-expanded', menuOpen);
@@ -1069,7 +1167,6 @@
         });
     }
 
-    // ── Acordeón ──
     function toggleAccordion(header) {
         const content = header.nextElementSibling;
         const icon    = header.querySelector('i');
@@ -1081,7 +1178,6 @@
         if (icon) icon.style.transform = isOpen ? '' : 'rotate(180deg)';
     }
 
-    // ── Selectores de botones ──
     function activateBtn(btn) {
         btn.parentElement.querySelectorAll('button').forEach(b => {
             b.classList.remove('active');
@@ -1097,7 +1193,6 @@
         state.cachorroEdad = null;
         state.actividad   = null;
 
-        // Limpiar sub-grupos
         document.querySelectorAll('#edad-group button, #actividad-group button').forEach(b => {
             b.classList.remove('active'); b.classList.add('opacity-60');
         });
@@ -1125,7 +1220,6 @@
         DOM.errorMsg.classList.remove('visible');
     }
 
-    // ── Peso +/- ──
     function initPesoBtns() {
         document.getElementById('btn-menos').addEventListener('click', () => {
             const inp = DOM.pesoInput;
@@ -1137,7 +1231,6 @@
         });
     }
 
-    // ── Calculadora ──
     function showError(msg) {
         DOM.errorMsg.textContent = msg;
         DOM.errorMsg.classList.add('visible');
@@ -1155,7 +1248,6 @@
 
         const rer = 70 * Math.pow(peso, 0.75);
 
-        // Factores según el NRC (National Research Council)
         const FACTORES_CACHORRO = { '2-4': 3.0, '4-6': 2.5, '6-9': 2.0, '9-12': 1.8 };
         const FACTORES_ADULTO   = { esterilizado_bajo: 1.2, bajo: 1.4, normal: 1.6, alto: 2.0 };
         const FACTORES_SENIOR   = { esterilizado_bajo: 1.1, bajo: 1.2, normal: 1.4, alto: 1.6 };
@@ -1180,15 +1272,13 @@
         }
 
         const der       = Math.round(rer * factor);
-        const gramos    = Math.round(der / 1.25);   // 1 250 kcal/kg Milkarf
+        const gramos    = Math.round(der / 1.25);
         const porComida = Math.round(gramos / comidas);
 
-        // Equivalencias diarias en bolsas (fracción)
         DOM.b250.textContent = (Math.round((gramos / 250) * 10) / 10);
         DOM.b550.textContent = (Math.round((gramos / 550) * 10) / 10);
         DOM.b850.textContent = (Math.round((gramos / 850) * 10) / 10);
 
-        // Plan mensual
         const totalGMes = gramos * 30;
         DOM.planKilosMes.textContent = (totalGMes / 1000).toFixed(1) + ' kg';
         DOM.planPorMes.textContent   = (comidas * 30);
@@ -1196,7 +1286,6 @@
         DOM.planB550Mes.textContent  = Math.ceil(totalGMes / 550);
         DOM.planB850Mes.textContent  = Math.ceil(totalGMes / 850);
 
-        // Colores por etapa
         const COLORS = {
             cachorro: { bg: 'linear-gradient(135deg,#32147a,#421d8e)', text: '#b9cb25' },
             adulto:   { bg: 'linear-gradient(135deg,#b81472,#d72b8f)', text: '#ffffff' },
@@ -1211,7 +1300,6 @@
         DOM.rComidas.textContent        = `${comidas} veces al día`;
         DOM.rPorComida.textContent      = `${porComida} g por comida`;
 
-        // Nota contextual
         const NOTAS = {
             cachorro: '<b>Tip cachorro:</b> Recalcula cada pocos meses — sus necesidades cambian rápido al crecer.',
             adulto_alto: '<b>Perro muy activo:</b> Si sigue perdiendo peso en 2 semanas, aumenta un 10% la porción.',
@@ -1223,48 +1311,21 @@
                       : state.actividad === 'alto'  ? 'adulto_alto'
                       : 'default';
         DOM.rNote.innerHTML = NOTAS[notaKey];
-
-        // WhatsApp (Mensaje limpio sin emojis)
-        const b250M = Math.ceil(totalGMes / 250);
-        const b550M = Math.ceil(totalGMes / 550);
-        const b850M = Math.ceil(totalGMes / 850);
-        const waMsg = `¡Hola Milkarf! He calculado la porción de mi mascota:
-
-Datos:
-- Peso: ${peso} kg
-- Etapa: ${etapaLabel} (${subLabel})
-
-Ración Diaria BARF:
-- Gramos/día: ${gramos}g
-- Tomas al día: ${comidas}
-- Por comida: ${porComida}g
-- DER: ${der} kcal/día
-
-Plan Mensual (30 días):
-- Total: ${(totalGMes/1000).toFixed(1)} kg
-- Porciones: ${comidas*30}
-- Solo en 250g: ${b250M} bolsas
-- Solo en 550g: ${b550M} bolsas
-- Solo en 850g: ${b850M} bolsas
-
-Quiero asesoría sobre los menús ideales.`;
         
-        // Mostrar resultado
         DOM.resultDiv.classList.add('visible');
         DOM.resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    // ── Catálogo de productos ──
     const qtys = { pollo: 1, res: 1 };
 
     function selectWeightPollo(weightKey, btn) {
         currentWeightPollo = weightKey;
         DOM.weightGrpPollo.querySelectorAll('button').forEach(b => {
             b.classList.remove('bg-green', 'text-purple-dark', 'border-green', 'opacity-100');
-            b.classList.add('bg-white', 'text-purple', 'border-purple-border/50', 'opacity-60');
+            b.classList.add('bg-white', 'dark:bg-[#22163b]', 'text-purple', 'dark:text-purple-light', 'border-purple-border/50', 'dark:border-purple-dark/50', 'opacity-60');
         });
+        btn.classList.remove('bg-white', 'dark:bg-[#22163b]', 'text-purple', 'dark:text-purple-light', 'border-purple-border/50', 'dark:border-purple-dark/50', 'opacity-60');
         btn.classList.add('bg-green', 'text-purple-dark', 'border-green', 'opacity-100');
-        btn.classList.remove('bg-white', 'text-purple', 'border-purple-border/50', 'opacity-60');
         updateProductPollo();
     }
 
@@ -1272,10 +1333,10 @@ Quiero asesoría sobre los menús ideales.`;
         currentWeightRes = weightKey;
         DOM.weightGrpRes.querySelectorAll('button').forEach(b => {
             b.classList.remove('bg-green', 'text-purple-dark', 'border-green', 'opacity-100');
-            b.classList.add('bg-white', 'text-purple', 'border-purple-border/50', 'opacity-60');
+            b.classList.add('bg-white', 'dark:bg-[#22163b]', 'text-purple', 'dark:text-purple-light', 'border-purple-border/50', 'dark:border-purple-dark/50', 'opacity-60');
         });
+        btn.classList.remove('bg-white', 'dark:bg-[#22163b]', 'text-purple', 'dark:text-purple-light', 'border-purple-border/50', 'dark:border-purple-dark/50', 'opacity-60');
         btn.classList.add('bg-green', 'text-purple-dark', 'border-green', 'opacity-100');
-        btn.classList.remove('bg-white', 'text-purple', 'border-purple-border/50', 'opacity-60');
         updateProductRes();
     }
 
@@ -1284,16 +1345,10 @@ Quiero asesoría sobre los menús ideales.`;
         document.getElementById(`qty-${product}`).textContent = qtys[product];
     }
 
-    function updateProductPollo() {
-        DOM.pricePollo.textContent = PRICES_POLLO[currentWeightPollo];
-    }
+    function updateProductPollo() { DOM.pricePollo.textContent = PRICES_POLLO[currentWeightPollo]; }
+    function updateProductRes() { DOM.priceRes.textContent = PRICES_RES[currentWeightRes]; }
 
-    function updateProductRes() {
-        DOM.priceRes.textContent = PRICES_RES[currentWeightRes];
-    }
-
-    // ── Carrito ──
-    const cart = []; // { key, name, weight, unitPrice, qty }
+    const cart = [];
 
     function addToCart(product) {
         const isPollo = product === 'pollo';
@@ -1305,12 +1360,7 @@ Quiero asesoría sobre los menús ideales.`;
         const key     = `${product}-${weight}`;
 
         const existing = cart.find(i => i.key === key);
-        if (existing) {
-            existing.qty += qty;
-        } else {
-            cart.push({ key, name, weight, unitPrice, qty });
-        }
-
+        if (existing) { existing.qty += qty; } else { cart.push({ key, name, weight, unitPrice, qty }); }
         updateCartUI();
         showCartFeedback(name, weight, qty);
     }
@@ -1337,32 +1387,25 @@ Quiero asesoría sobre los menús ideales.`;
         const totalItems = cart.reduce((s, i) => s + i.qty, 0);
         const totalPrice = cart.reduce((s, i) => s + i.unitPrice * i.qty, 0);
 
-        // Badge flotante
         const fab = document.getElementById('cart-fab');
         const badge = document.getElementById('cart-badge');
         const navBadge = document.getElementById('nav-cart-badge');
         
         if (totalItems > 0) {
-            // Eliminar ocultamiento duro, agregar clases de visualización suave
             fab.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
             fab.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
-
-            // Animación "pop" cada vez que se actualiza el carrito
             fab.classList.remove('pop');
-            void fab.offsetWidth; // fuerza reflow para reiniciar animación
+            void fab.offsetWidth; 
             fab.classList.add('pop');
             badge.textContent = totalItems;
-            
             navBadge.textContent = totalItems + ' item' + (totalItems > 1 ? 's' : '');
             navBadge.classList.remove('hidden');
         } else {
-            // Ocultamiento suave
             fab.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
             fab.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
             navBadge.classList.add('hidden');
         }
 
-        // Vista carrito
         const emptyEl    = document.getElementById('cart-empty');
         const itemsCont  = document.getElementById('cart-items-container');
         const summaryEl  = document.getElementById('cart-summary');
@@ -1379,41 +1422,36 @@ Quiero asesoría sobre los menús ideales.`;
         itemsCont.classList.remove('hidden');
         summaryEl.classList.remove('hidden');
 
-        // Render ítems
         itemsCont.innerHTML = cart.map(item => `
-            <div class="bg-white rounded-2xl border border-purple-border/30 shadow-md p-4 flex items-center gap-4">
+            <div class="bg-white dark:bg-[#180e29] rounded-2xl border border-purple-border/30 dark:border-purple-dark/50 shadow-md p-4 flex items-center gap-4">
                 <div class="flex-1 min-w-0">
-                    <div class="font-extrabold text-purple-dark text-sm truncate">${item.name}</div>
-                    <div class="text-[11px] font-bold text-purple/50 uppercase mt-0.5">${item.weight} · $${item.unitPrice.toFixed(2)} c/u</div>
+                    <div class="font-extrabold text-purple-dark dark:text-white text-sm truncate">${item.name}</div>
+                    <div class="text-[11px] font-bold text-purple/50 dark:text-purple-light/50 uppercase mt-0.5">${item.weight} · $${item.unitPrice.toFixed(2)} c/u</div>
                 </div>
-                <div class="flex items-center gap-2 bg-purple-light border border-purple-border/30 rounded-xl p-0.5">
-                    <button onclick="changeCartQty('${item.key}',-1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white text-purple font-black hover:bg-purple hover:text-white transition-all text-base">−</button>
-                    <span class="w-6 text-center font-black text-purple text-sm">${item.qty}</span>
-                    <button onclick="changeCartQty('${item.key}',+1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white text-purple font-black hover:bg-purple hover:text-white transition-all text-base">+</button>
+                <div class="flex items-center gap-2 bg-purple-light dark:bg-[#22163b] border border-purple-border/30 dark:border-purple-dark/50 rounded-xl p-0.5">
+                    <button onclick="changeCartQty('${item.key}',-1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-[#180e29] text-purple dark:text-purple-light font-black hover:bg-purple hover:text-white transition-all text-base">−</button>
+                    <span class="w-6 text-center font-black text-purple dark:text-white text-sm">${item.qty}</span>
+                    <button onclick="changeCartQty('${item.key}',+1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white dark:bg-[#180e29] text-purple dark:text-purple-light font-black hover:bg-purple hover:text-white transition-all text-base">+</button>
                 </div>
                 <div class="text-right min-w-[52px]">
-                    <div class="font-black text-purple-dark text-sm">$${(item.unitPrice * item.qty).toFixed(2)}</div>
+                    <div class="font-black text-purple-dark dark:text-white text-sm">$${(item.unitPrice * item.qty).toFixed(2)}</div>
                     <button onclick="removeFromCart('${item.key}')" class="text-[10px] font-bold text-pink/60 hover:text-pink mt-0.5">Quitar</button>
                 </div>
             </div>
         `).join('');
 
-        // Render resumen
         summaryLines.innerHTML = cart.map(item =>
-            `<div class="flex justify-between text-purple/70">
-                <span>${item.qty}× ${item.name} <span class="text-purple/40">(${item.weight})</span></span>
-                <span class="font-bold text-purple-dark">$${(item.unitPrice * item.qty).toFixed(2)}</span>
+            `<div class="flex justify-between text-purple/70 dark:text-purple-light/70">
+                <span>${item.qty}× ${item.name} <span class="text-purple/40 dark:text-purple-light/50">(${item.weight})</span></span>
+                <span class="font-bold text-purple-dark dark:text-white">$${(item.unitPrice * item.qty).toFixed(2)}</span>
             </div>`
         ).join('');
 
         document.getElementById('cart-total').textContent = `$${totalPrice.toFixed(2)}`;
-
-        // Re-render íconos Lucide en el nuevo DOM
         lucide.createIcons();
     }
 
     function showCartFeedback(name, weight, qty) {
-        // Toast de confirmación
         const toast = document.createElement('div');
         toast.className = 'fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] bg-purple text-white text-xs font-extrabold px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2 transition-all';
         toast.innerHTML = `✅ ${qty}× ${name} ${weight} agregado`;
@@ -1421,7 +1459,6 @@ Quiero asesoría sobre los menús ideales.`;
         setTimeout(() => toast.remove(), 2200);
     }
 
-    // ── Ubicación ──
     let userLocation = null;
 
     function captureLocation() {
@@ -1440,7 +1477,6 @@ Quiero asesoría sobre los menús ideales.`;
 
         btnText.textContent = 'Obteniendo ubicación…';
         btn.disabled = true;
-        // Estilo "cargando"
         btn.classList.remove('border-purple/30', 'text-purple');
         btn.classList.add('border-purple', 'text-purple', 'opacity-60');
 
@@ -1450,14 +1486,12 @@ Quiero asesoría sobre los menús ideales.`;
                 var lng = pos.coords.longitude;
                 userLocation = 'https://maps.google.com/maps?q=' + lat + ',' + lng;
 
-                // Actualizar botón a estado "marcado"
                 btn.classList.remove('border-dashed', 'border-purple', 'opacity-60');
-                btn.classList.add('border-solid', 'border-green', 'text-green-dark', 'bg-green/5');
-
+                btn.classList.add('border-solid', 'border-green', 'text-green-dark', 'dark:text-green', 'bg-green/5');
                 btnText.textContent = check + ' Ubicación marcada correctamente';
                 status.innerHTML =
                     pin + ' <a href="' + userLocation + '" target="_blank" rel="noopener noreferrer"'
-                    + ' style="text-decoration:underline;font-weight:700;color:#421d8e;"'>
+                    + ' style="text-decoration:underline;font-weight:700;color:inherit;">'
                     + 'Ver mi punto en Google Maps</a>';
                 status.classList.remove('hidden');
                 btn.disabled = false;
@@ -1479,31 +1513,22 @@ Quiero asesoría sobre los menús ideales.`;
         );
     }
 
-    // ── Carrito: finalizar pedido ──
-
     function finalizarPedido() {
         if (cart.length === 0) return;
         const total = cart.reduce((s, i) => s + i.unitPrice * i.qty, 0);
-
-        // Creamos las líneas del pedido sin emojis
         const lineas = cart.map(i => {
             return `- ${i.qty}x ${i.name} (${i.weight}) — $${(i.unitPrice * i.qty).toFixed(2)}`;
         }).join('\n');
 
-        // Construcción del mensaje de texto plano
         let msg = `*Hola Milkarf!* Quiero realizar el siguiente pedido:\n\n*PEDIDO:*\n${lineas}\n\n*TOTAL: $${total.toFixed(2)}*`;
 
         if (userLocation) {
             msg += `\n\n*Mi ubicación para el delivery:*\n${userLocation}`;
         }
-
         msg += `\n\nPor favor confírmenme disponibilidad. ¡Gracias!`;
-
-        // Procesamos la URL limpia
         window.open('https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
     }
 
-    // ── Huellitas flotantes — SVG realista + trayectorias caóticas ──
     const PAW_SVG_TPL = function(color) {
         return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="' + color + '">'
             + '<path d="M50 88 C33 88 18 76 18 62 C18 50 32 42 50 42 C68 42 82 50 82 62 C82 76 67 88 50 88Z"/>'
@@ -1515,13 +1540,12 @@ Quiero asesoría sobre los menús ideales.`;
     };
 
     function initFloatingPaws() {
-        // Limpiar patas anteriores
         document.querySelectorAll('.paw-bg-el').forEach(function(el) { el.remove(); });
         var oldStyle = document.getElementById('paw-keyframes-style');
         if (oldStyle) oldStyle.remove();
 
         var COLORS   = ['#421d8e', '#b9cb25', '#d72b8f', '#2e1060', '#829112'];
-        var COUNT    = 20;
+        var COUNT    = window.innerWidth < 640 ? 10 : 20; // Optimización de fluidez
         var W        = window.innerWidth;
         var H        = window.innerHeight;
         var cssRules = [];
@@ -1537,7 +1561,7 @@ Quiero asesoría sobre los menús ideales.`;
             var midDX   = endDX * 0.5 + (Math.random() - 0.5) * 180;
             var midDY   = endDY * 0.5 + (Math.random() - 0.5) * 180;
             var rot     = (Math.random() > 0.5 ? 1 : -1) * (140 + Math.random() * 220);
-            var opacity = (0.07 + Math.random() * 0.10).toFixed(3);
+            var opacity = (0.05 + Math.random() * 0.08).toFixed(3);
             var dur     = (8 + Math.random() * 12).toFixed(1);
             var delay   = -(Math.random() * parseFloat(dur));
             var color   = COLORS[i % COLORS.length];
@@ -1545,11 +1569,11 @@ Quiero asesoría sobre los menús ideales.`;
 
             cssRules.push(
                 '@keyframes ' + name + ' {'
-                + '0%   { transform:translate(0,0) rotate(0deg); opacity:0; }'
+                + '0%   { transform:translate3d(0,0,0) rotate(0deg); opacity:0; }'
                 + '8%   { opacity:' + opacity + '; }'
-                + '48%  { transform:translate(' + midDX.toFixed(1) + 'px,' + midDY.toFixed(1) + 'px) rotate(' + (rot * 0.45).toFixed(0) + 'deg); opacity:' + opacity + '; }'
+                + '48%  { transform:translate3d(' + midDX.toFixed(1) + 'px,' + midDY.toFixed(1) + 'px, 0) rotate(' + (rot * 0.45).toFixed(0) + 'deg); opacity:' + opacity + '; }'
                 + '90%  { opacity:' + (opacity * 0.5).toFixed(3) + '; }'
-                + '100% { transform:translate(' + endDX.toFixed(1) + 'px,' + endDY.toFixed(1) + 'px) rotate(' + rot.toFixed(0) + 'deg); opacity:0; }'
+                + '100% { transform:translate3d(' + endDX.toFixed(1) + 'px,' + endDY.toFixed(1) + 'px, 0) rotate(' + rot.toFixed(0) + 'deg); opacity:0; }'
                 + '}'
             );
 
@@ -1575,7 +1599,6 @@ Quiero asesoría sobre los menús ideales.`;
         document.head.appendChild(styleEl);
     }
 
-    // ── Inicialización ──
     function initApp() {
         cacheDOM();
         DOM.rNote = document.getElementById('r-note');
@@ -1584,6 +1607,15 @@ Quiero asesoría sobre los menús ideales.`;
         updateProductRes();
         initFloatingPaws();
     }
+    
+    // Carga robusta de Lucide (Soluciona posibles fallos en webviews Android)
+    var script = document.createElement('script');
+    script.src = "https://unpkg.com/lucide@latest";
+    script.onload = function() {
+        lucide.createIcons();
+        initApp();
+    };
+    document.head.appendChild(script);
     </script>
 </body>
 </html>
