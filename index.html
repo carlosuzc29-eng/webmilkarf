@@ -58,11 +58,11 @@
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden; /* Evita el scroll global que causa el cuadro en blanco */
-            overscroll-behavior-y: none; /* Evita el pull-to-refresh en Android */
+            overflow: hidden; /* Evita el scroll global que causa los saltos de viewport en móviles */
         }
 
         body {
+            position: relative;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
@@ -84,7 +84,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            padding: 80px 24px 80px;
+            padding: 80px 24px 120px; /* Aumentado el padding inferior para asegurar scroll completo */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -132,6 +132,21 @@
             opacity: 0.6;
             transition: all 0.2s ease;
             transform: translateZ(0);
+        }
+        .btn-opt.active {
+            background-color: #421d8e !important;
+            border-color: #421d8e !important;
+            color: #ffffff !important;
+            opacity: 1 !important;
+            box-shadow: 0 4px 12px rgba(66,29,142,0.3) !important;
+        }
+        @media (prefers-color-scheme: dark) {
+            .btn-opt.active {
+                background-color: #b9cb25 !important;
+                border-color: #b9cb25 !important;
+                color: #2e1060 !important;
+                box-shadow: 0 4px 12px rgba(185,203,37,0.2) !important;
+            }
         }
         /* El modo oscuro para estos botones se maneja vía Tailwind classes inline */
 
@@ -249,7 +264,7 @@
                     <!-- Línea Perros -->
                     <div class="relative w-[230px] h-[280px] rounded-3xl overflow-hidden shadow-xl dark:shadow-purple/10 hover:shadow-2xl transition-all duration-300 group cursor-pointer" onclick="navigateTo('view-perros')">
                         <div class="absolute inset-0 w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                            style="background-image: url('https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=600&auto=format&fit=crop');" role="img" aria-label="Perro feliz"></div>
+                            style="background-image: url('https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=600&auto=format&fit=crop');" role="img" aria-label="Menús de Perros"></div>
                         <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/90 via-purple-dark/40 dark:from-[#0d0718]/95 dark:via-[#0d0718]/50 to-transparent z-10"></div>
                         <div class="absolute bottom-6 left-6 z-20 text-left">
                             <span class="text-[10px] font-black text-green tracking-wider uppercase block mb-1">Evolución</span>
@@ -547,8 +562,9 @@
                 <!-- Producto 1: Pollo -->
                 <div class="bg-white dark:bg-darkcard rounded-3xl overflow-hidden shadow-2xl dark:shadow-purple/10 border border-purple-border/20 dark:border-purple/20 flex flex-col h-full">
                     <div class="h-[240px] relative bg-purple/10 dark:bg-purple/20 overflow-hidden select-none">
-                        <!-- IMAGEN ACTUALIZADA DE POLLO -->
-                        <img src="Gemini_Generated_Image_p554u5p554u5p554.jpg"
+                        <!-- IMAGEN ACTUALIZADA DE POLLO DESDE IMGBB -->
+                        <img src="https://i.ibb.co/hJP9yxd7/Gemini-Generated-Image-p554u5p554u5p554.jpg"
+                            onerror="this.src='https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=600&auto=format&fit=crop'"
                             alt="Menú de Pollo con Zanahoria"
                             class="w-full h-full object-cover"
                             loading="lazy" decoding="async">
@@ -594,8 +610,9 @@
                 <!-- Producto 2: Res -->
                 <div class="bg-white dark:bg-darkcard rounded-3xl overflow-hidden shadow-2xl dark:shadow-purple/10 border border-purple-border/20 dark:border-purple/20 flex flex-col h-full">
                     <div class="h-[240px] relative bg-purple/10 dark:bg-purple/20 overflow-hidden select-none">
-                        <!-- IMAGEN ACTUALIZADA DE RES -->
-                        <img src="Gemini_Generated_Image_5fkask5fkask5fka.jpg"
+                        <!-- IMAGEN ACTUALIZADA DE RES DESDE IMGBB -->
+                        <img src="https://i.ibb.co/JFjvhsXw/Gemini-Generated-Image-5fkask5fkask5fka.jpg"
+                            onerror="this.src='https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=600&auto=format&fit=crop'"
                             alt="Menú de Carne de Res con Calabacín"
                             class="w-full h-full object-cover"
                             loading="lazy" decoding="async">
@@ -999,6 +1016,11 @@
     }
 
     function calcularRacion() {
+        // Cierra el teclado en móviles antes de hacer el cálculo para evitar bugs visuales
+        if (document.activeElement) {
+            document.activeElement.blur();
+        }
+
         DOM.errorMsg.classList.remove('visible');
         const peso = parseFloat(DOM.pesoInput.value);
 
@@ -1070,7 +1092,15 @@
         DOM.rNote.innerHTML = NOTAS[notaKey];
         
         DOM.resultDiv.classList.add('visible');
-        DOM.resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        
+        // Timeout para esperar que el teclado del movil baje y el navegador ajuste la pantalla
+        setTimeout(() => {
+            const view = document.getElementById('view-calc');
+            view.scrollTo({
+                top: view.scrollHeight,
+                behavior: 'smooth'
+            });
+        }, 350);
     }
 
     const qtys = { pollo: 1, res: 1 };
