@@ -44,8 +44,8 @@
         body { position: relative; background-color: #f5f0e8; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         @media (prefers-color-scheme: dark) { body { background-color: #0d0718; } }
 
-        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number], input[type=text], input[type=tel], input[type=email], input[type=password] { -moz-appearance: textfield; }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; margin: 0; }
+        input[type=number], input[type=text], input[type=tel], input[type=email], input[type=password], input[type=date] { -moz-appearance: textfield; appearance: textfield; }
 
         #prezi-canvas { position: absolute; inset: 0; perspective: 1500px; z-index: 2; }
         
@@ -107,7 +107,6 @@
     <!-- PANTALLA DE CARGA (PRELOADER) -->
     <div id="preloader" class="fixed inset-0 z-[99999] bg-[#f5f0e8] dark:bg-darkbg flex flex-col items-center justify-center transition-opacity duration-700">
         <div class="mb-4">
-            <!-- LOGO INTEGRADO -->
             <img src="logo.png" alt="Milkarf Logo" class="w-24 h-24 object-contain animate-bounce" onerror="this.outerHTML='<div class=\'w-16 h-16 bg-purple dark:bg-darkcard rounded-3xl flex items-center justify-center shadow-lg text-white dark:border dark:border-purple/30 animate-bounce\'><i data-lucide=\'paw-print\' class=\'w-9 h-9 text-green\'></i></div>'">
         </div>
         <h1 class="text-4xl md:text-5xl font-black tracking-tight text-purple-dark dark:text-white mb-6">Milkarf</h1>
@@ -128,7 +127,7 @@
                     <i data-lucide="user" class="w-4 h-4 text-pink transition-colors duration-300"></i>
                     <span class="text-[11px] sm:text-xs">Entrar</span>
                 </div>
-                <!-- Estado: Logueado (Dashboard en Botón) -->
+                <!-- Estado: Logueado -->
                 <div id="top-auth-logged-in" class="hidden flex items-center gap-2">
                     <div id="top-pets-icons" class="text-[10px] sm:text-xs bg-purple/10 dark:bg-purple/20 px-2 py-1 rounded-lg border border-purple/10 flex items-center gap-0.5">🐾</div>
                     <div class="flex flex-col items-start text-left">
@@ -141,7 +140,6 @@
             
             <!-- Menú Desplegable -->
             <div id="auth-dropdown-menu" class="absolute top-14 left-0 w-56 bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-2xl shadow-xl py-2 hidden opacity-0 transition-all duration-200 origin-top-left transform scale-95 z-[100]">
-                <!-- Opciones Desconectado -->
                 <div id="dropdown-logged-out">
                     <button class="w-full text-left px-4 py-3 text-sm font-bold text-purple-dark dark:text-white hover:bg-purple/5 transition-colors" data-action="open-login">
                         <i data-lucide="log-in" class="w-4 h-4 inline-block mr-2 opacity-70"></i> Iniciar Sesión
@@ -150,7 +148,6 @@
                         <i data-lucide="user-plus" class="w-4 h-4 inline-block mr-2 opacity-70"></i> Registrarse
                     </button>
                 </div>
-                <!-- Opciones Conectado -->
                 <div id="dropdown-logged-in" class="hidden">
                     <div class="px-4 py-3 border-b border-purple-border/30 dark:border-purple/20 mb-1 bg-purple/5 dark:bg-purple/10">
                         <p class="text-[10px] text-purple/60 dark:text-gray-400 font-black uppercase tracking-widest">Mi Perfil</p>
@@ -167,7 +164,7 @@
         </div>
     </div>
 
-    <!-- MENÚ HAMBURGUESA -->
+    <!-- MENÚ HAMBURGUESA GENERAL -->
     <div class="fixed top-6 right-6 z-50 flex items-center justify-center">
         <button id="menu-toggle-btn" onclick="window.toggleMenu()" class="w-12 h-12 flex flex-col justify-center items-center gap-1.5 bg-white/90 dark:bg-darkcard/90 backdrop-blur-md border border-purple-border/30 dark:border-purple/30 shadow-lg hover:shadow-xl rounded-full cursor-pointer transition-all duration-300 transform translateZ(0)" aria-label="Abrir menú" aria-expanded="false">
             <span class="bar w-6 h-1 bg-purple dark:bg-green rounded-full transition-all duration-300 origin-center"></span>
@@ -176,8 +173,10 @@
         </button>
     </div>
 
+    <!-- CAPA DEL MENÚ DESPLEGABLE -->
     <nav id="nav-overlay" class="fixed inset-0 bg-purple-dark/95 dark:bg-[#07020d]/95 backdrop-blur-md z-40 flex justify-center items-center opacity-0 pointer-events-none transition-all duration-300" aria-hidden="true">
-        <ul class="nav-links space-y-6 text-center">
+        <!-- MENÚ PRINCIPAL (CLIENTES) -->
+        <ul id="main-nav-links" class="nav-links space-y-6 text-center">
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-home">Inicio</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-mision">Misión</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-calc">Calculadora Nutricional</a></li>
@@ -188,10 +187,16 @@
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-faq">Guía de Transición</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-green hover:text-white tracking-wider uppercase block flex items-center gap-3 justify-center" data-target="view-cart">🛒 Mi Carrito</a></li>
         </ul>
+        
+        <!-- MENÚ ADMIN (EXCLUSIVO) -->
+        <ul id="admin-nav-links" class="nav-links space-y-6 text-center hidden">
+            <li class="mb-4"><div class="inline-block bg-pink/20 text-pink px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border border-pink/30">Modo Administrador</div></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="window.switchAdminTab('pedidos'); window.toggleMenu();">📊 Control de Pedidos</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="window.switchAdminTab('usuarios'); window.toggleMenu();">👥 Directorio & Canjes</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="window.switchAdminTab('cumples'); window.toggleMenu();">🎂 Radar de Cumpleaños</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300 mt-8 pt-8 border-t border-white/10"><a href="#" class="text-xl font-extrabold text-gray-400 hover:text-white tracking-wider uppercase block" onclick="window.salirAdmin(); window.toggleMenu();"><i data-lucide="log-out" class="w-5 h-5 inline-block mr-2"></i> Cerrar Panel</a></li>
+        </ul>
     </nav>
-
-    <!-- SECRET ADMIN TRIGGER (Oculto - Se accede ahora desde el boton auth top) -->
-    <div id="secret-admin-trigger" class="hidden" aria-label="Admin Trigger"></div>
 
     <div id="prezi-canvas">
         
@@ -705,8 +710,9 @@
                                     <p class="text-[10px] uppercase tracking-wider font-bold opacity-80">Nivel Actual</p>
                                     <p class="text-lg font-black" id="ben-user-level">Cachorro 🐾</p>
                                 </div>
-                                <div class="text-right">
-                                    <p class="text-3xl font-black"><span id="ben-user-pts">0</span> <span class="text-sm opacity-80">pts</span></p>
+                                <div class="text-right flex flex-col items-end">
+                                    <p class="text-[10px] uppercase tracking-wider font-bold opacity-80 mb-0.5">Disponibles</p>
+                                    <p class="text-3xl font-black leading-none"><span id="ben-user-pts">0</span> <span class="text-sm opacity-80">pts</span></p>
                                 </div>
                             </div>
                             <!-- Progress Bar -->
@@ -731,36 +737,42 @@
                         </button>
                     </div>
 
-                    <!-- Lista de Niveles -->
+                    <!-- Lista de Niveles ACTUALIZADA CON REGLAS -->
                     <div class="space-y-4 mt-8 pt-6 border-t border-purple/10">
-                        <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider">¿Cómo funcionan los niveles?</h4>
-                        <p class="text-xs text-gray-500 font-medium">Gana 1 punto por cada $1 en compras. A medida que tu mascota crece en Milkarf, desbloquean mejores beneficios.</p>
+                        <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider">Milkarf Points & Niveles</h4>
+                        <p class="text-xs text-gray-500 font-medium">Gana 1 punto base por cada $1 de compra. Los puntos se canjean por regalos (snacks, bolsas extra), nunca por descuento en factura. Tu nivel es un logro de por vida y NO baja al canjear puntos.</p>
                         
                         <div class="bg-purple-light dark:bg-[#0d0718] p-4 rounded-xl border border-purple-border/50 dark:border-purple/20 space-y-3">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-purple/10 flex items-center justify-center text-purple font-black text-xl shrink-0">🐾</div>
+                                <div class="w-10 h-10 rounded-full bg-green/20 flex items-center justify-center text-green-dark font-black text-xl shrink-0">🐾</div>
                                 <div>
-                                    <h5 class="font-black text-purple-dark dark:text-white text-sm">Cachorro (0 - 100 pts)</h5>
-                                    <p class="text-xs text-gray-500 font-medium">Descuento de bienvenida 20% en tu primera compra.</p>
+                                    <h5 class="font-black text-purple-dark dark:text-white text-sm">Cachorro (Nivel 1)</h5>
+                                    <p class="text-[11px] text-gray-500 font-medium leading-tight mt-1">Bienvenida 20% (1° compra), Guía de transición, Puntos 1x.</p>
                                 </div>
                             </div>
                             <hr class="border-purple-border/30 dark:border-purple/10">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-full bg-pink/10 flex items-center justify-center text-pink font-black text-xl shrink-0">🐕</div>
                                 <div>
-                                    <h5 class="font-black text-pink-dark dark:text-pink text-sm">Explorador (101 - 500 pts)</h5>
-                                    <p class="text-xs text-gray-500 font-medium">5% de descuento fijo y sorpresas en el mes de tu mascota.</p>
+                                    <h5 class="font-black text-pink-dark dark:text-pink text-sm">Consentido (Nivel 2)</h5>
+                                    <p class="text-[11px] text-gray-500 font-medium leading-tight mt-1">Regalos en el mes de cumpleaños de tu mascota, Acceso anticipado, Puntos 1x.</p>
                                 </div>
                             </div>
                             <hr class="border-purple-border/30 dark:border-purple/10">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-green/20 flex items-center justify-center text-green-dark font-black text-xl shrink-0">👑</div>
+                                <div class="w-10 h-10 rounded-full bg-purple/10 flex items-center justify-center text-purple font-black text-xl shrink-0">👑</div>
                                 <div>
-                                    <h5 class="font-black text-green-dark dark:text-green text-sm">Líder (500+ pts)</h5>
-                                    <p class="text-xs text-gray-500 font-medium">10% de descuento fijo, envíos gratis y acceso prioritario a snacks.</p>
+                                    <h5 class="font-black text-purple-dark dark:text-white text-sm">Milkarf VIP (Nivel 3)</h5>
+                                    <p class="text-[11px] text-gray-500 font-medium leading-tight mt-1">Puntos 1.5x, Envío gratis (pedidos ≥$20 zona urbana), Treat de regalo cada N pedidos, Prioridad.</p>
                                 </div>
                             </div>
                         </div>
+
+                        <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider mt-6">¿Cómo sumar más puntos?</h4>
+                        <ul class="text-xs text-gray-500 font-medium space-y-2 list-disc pl-4">
+                            <li><strong>Referido con aval de su veterinario:</strong> Bonus de puntos (activa el canal clínico).</li>
+                            <li><strong>Testimonio con foto antes/después:</strong> Bonus de puntos por ayudarnos a crecer.</li>
+                        </ul>
                     </div>
                 </div>
                 <!-- ESPACIADOR INFERIOR -->
@@ -913,7 +925,7 @@
             </div>
         </section>
 
-        <!-- PANEL DE ADMINISTRACIÓN (OCULTO) -->
+        <!-- PANEL DE ADMINISTRACIÓN (NUEVO DISEÑO CON CANJES Y CUMPLEAÑOS) -->
         <section id="view-admin" class="view next">
             <div class="view-wrapper">
                 <div class="max-w-3xl w-full mb-6 text-center md:text-left">
@@ -926,10 +938,11 @@
                 </div>
 
                 <div class="max-w-3xl w-full">
-                    <!-- TABS ADMIN -->
-                    <div class="flex gap-4 border-b border-purple-border/50 dark:border-purple/20 mb-6 pb-2 justify-center md:justify-start">
-                        <button id="tab-admin-pedidos" onclick="window.switchAdminTab('pedidos')" class="text-sm font-black text-purple dark:text-white border-b-2 border-purple transition-colors pb-2">Pedidos</button>
-                        <button id="tab-admin-usuarios" onclick="window.switchAdminTab('usuarios')" class="text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-purple transition-colors pb-2">Usuarios Registrados</button>
+                    <!-- TABS ADMIN SCROLL -->
+                    <div class="flex gap-4 border-b border-purple-border/50 dark:border-purple/20 mb-6 pb-2 overflow-x-auto custom-scroll">
+                        <button id="tab-admin-pedidos" onclick="window.switchAdminTab('pedidos')" class="text-sm font-black text-purple dark:text-white border-b-2 border-purple transition-colors pb-2 whitespace-nowrap">Pedidos</button>
+                        <button id="tab-admin-usuarios" onclick="window.switchAdminTab('usuarios')" class="text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-purple transition-colors pb-2 whitespace-nowrap">Usuarios Registrados</button>
+                        <button id="tab-admin-cumples" onclick="window.switchAdminTab('cumples')" class="text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-purple transition-colors pb-2 whitespace-nowrap">Cumpleaños 🎂</button>
                     </div>
 
                     <div id="admin-orders-container" class="space-y-4 pb-20">
@@ -938,6 +951,10 @@
 
                     <div id="admin-users-container" class="space-y-4 pb-20 hidden">
                         <p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando usuarios de Firebase...</p>
+                    </div>
+
+                    <div id="admin-birthdays-container" class="space-y-4 pb-20 hidden">
+                        <p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando próximos cumpleaños...</p>
                     </div>
                 </div>
                 <!-- ESPACIADOR INFERIOR -->
@@ -954,6 +971,7 @@
     </div>
 
     <!-- MODALES EXTRAS (ADMIN) -->
+    <!-- LOGIN ADMIN -->
     <div id="modal-admin-login" class="fixed inset-0 z-[1002] bg-black/80 backdrop-blur-md hidden items-center justify-center opacity-0 transition-opacity duration-300 p-4">
         <div id="modal-admin-box" class="bg-white dark:bg-darkcard w-full max-w-sm rounded-[2rem] shadow-2xl p-8 transform scale-95 transition-transform duration-300 text-center border border-pink/50 relative pointer-events-auto flex flex-col">
             <button id="btn-cerrar-modal-admin" onclick="window.cerrarModalAdmin()" class="absolute top-5 right-5 text-gray-400 hover:text-pink transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
@@ -967,9 +985,46 @@
         </div>
     </div>
 
+    <!-- MODAL CANJE ADMIN -->
+    <div id="modal-admin-canje" class="fixed inset-0 z-[1003] bg-black/80 backdrop-blur-md hidden items-center justify-center opacity-0 transition-opacity duration-300 p-4">
+        <div id="modal-admin-canje-box" class="bg-white dark:bg-darkcard w-full max-w-sm rounded-[2rem] shadow-2xl p-6 transform scale-95 transition-transform duration-300 relative pointer-events-auto flex flex-col text-left border border-green/50">
+            <button onclick="window.cerrarModalCanje()" class="absolute top-5 right-5 text-gray-400 hover:text-pink transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-green/20 rounded-full flex items-center justify-center text-green-dark"><i data-lucide="gift" class="w-5 h-5"></i></div>
+                <div>
+                    <h3 class="text-lg font-black text-purple-dark dark:text-white leading-tight">Canjear Puntos</h3>
+                    <p id="canje-user-name" class="text-xs text-gray-500 font-bold truncate max-w-[200px]"></p>
+                </div>
+            </div>
+            
+            <div class="bg-purple/5 p-4 rounded-xl border border-purple/10 mb-4 flex justify-between items-center">
+                <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Puntos Disponibles</span>
+                <span id="canje-user-pts" class="text-xl font-black text-purple dark:text-white">0</span>
+            </div>
+
+            <input type="hidden" id="canje-uid">
+
+            <div class="space-y-3">
+                <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">Seleccionar Regalo / Canje</label>
+                <select id="canje-item" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-purple-dark dark:text-white" onchange="document.getElementById('canje-costo').value = this.value;">
+                    <option value="" disabled selected>Elige un regalo del catálogo...</option>
+                    <option value="100">Snack de Hígado (100 pts)</option>
+                    <option value="150">Treat Deshidratado (150 pts)</option>
+                    <option value="300">Bolsa 250g Extra (300 pts)</option>
+                    <option value="custom">Otro (Ingreso manual)</option>
+                </select>
+                
+                <input type="number" id="canje-costo" placeholder="Puntos a descontar" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-center">
+            </div>
+
+            <button id="btn-ejecutar-canje" onclick="window.procesarCanje()" class="w-full bg-green text-purple-dark hover:bg-[#a6b621] font-black text-sm py-3.5 rounded-xl transition-all shadow-md mt-6">Confirmar y Descontar</button>
+        </div>
+    </div>
+
     <!-- MODAL INICIO SESION / REGISTRO UNIFICADO -->
     <div id="modal-auth" class="fixed inset-0 z-[1002] bg-black/60 backdrop-blur-sm hidden items-center justify-center opacity-0 transition-opacity duration-300 p-4">
-        <div id="modal-auth-box" class="bg-white dark:bg-darkcard w-full max-w-sm rounded-[2rem] shadow-2xl p-6 relative text-center border border-purple-border/30 dark:border-purple/20 pointer-events-auto flex flex-col max-h-[90dvh] transform scale-95 transition-transform duration-300">
+        <div id="modal-auth-box" class="bg-white dark:bg-darkcard w-full max-w-sm rounded-[2rem] shadow-2xl p-6 relative text-center border border-purple-border/30 dark:border-purple/20 pointer-events-auto flex flex-col max-h-[90vh] transform scale-95 transition-transform duration-300">
             <button id="btn-cerrar-modal-auth" onclick="window.cerrarModalAuth()" class="absolute top-5 right-5 text-gray-400 hover:text-pink transition-colors z-20"><i data-lucide="x" class="w-5 h-5"></i></button>
             
             <div class="shrink-0 mb-4">
@@ -987,7 +1042,7 @@
                     </div>
 
                     <!-- FORMULARIO LOGIN -->
-                    <form id="form-login" onsubmit="event.preventDefault();" class="space-y-3 mb-4">
+                    <form id="form-login" onsubmit="event.preventDefault();" class="space-y-3 mb-4 text-left">
                         <input type="email" id="auth-email-login" placeholder="Correo electrónico" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
                         <input type="password" id="auth-pass-login" placeholder="Contraseña" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
                         <button id="btn-login-email" onclick="window.loginConEmail()" type="button" class="w-full bg-purple hover:bg-pink text-white font-extrabold text-sm py-3.5 rounded-xl transition-all active:scale-95 shadow-md mt-1">Iniciar Sesión</button>
@@ -1007,11 +1062,14 @@
                             <input type="text" id="reg-pet-nombre" placeholder="Nombre (Ej. Firulais)" class="w-full bg-white dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple">
                             
                             <div class="flex gap-2">
-                                <input type="text" id="reg-pet-edad" placeholder="Edad (ej. 2 años)" class="w-1/2 bg-white dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple">
+                                <input type="text" id="reg-pet-edad" placeholder="Edad (2 años)" class="w-1/2 bg-white dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple">
                                 <input type="number" id="reg-pet-peso" placeholder="Peso (kg)" class="w-1/2 bg-white dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-center">
                             </div>
                             
-                            <input type="text" id="reg-pet-raza" placeholder="Raza (Opcional)" class="w-full bg-white dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple">
+                            <div class="flex gap-2">
+                                <input type="text" id="reg-pet-raza" placeholder="Raza (Opcional)" class="w-1/2 bg-white dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple">
+                                <input type="date" id="reg-pet-cumple" title="Fecha de Nacimiento" class="w-1/2 bg-white dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold text-gray-500 outline-none focus:border-purple">
+                            </div>
                         </div>
 
                         <div class="pt-2 space-y-3">
@@ -1037,7 +1095,7 @@
                 </div>
 
                 <!-- PASO 2: PERFIL DE MASCOTA (Solo para los que entran con Google y no tienen mascota registrada) -->
-                <div id="form-pet-profile" class="space-y-3 hidden text-left w-full pb-2">
+                <div id="form-pet-profile" class="space-y-3 hidden text-left w-full mt-2 pb-2">
                     <h4 class="text-sm font-black text-purple-dark dark:text-white text-center mb-2">¡Último paso!</h4>
                     <p class="text-[10px] text-gray-500 text-center mb-4 font-medium leading-relaxed">Completa los datos de tu peludo para brindarle atención personalizada y finalizar tu registro.</p>
                     
@@ -1054,7 +1112,10 @@
                         <input type="number" id="pet-peso" placeholder="Peso (kg)" class="w-1/2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-center">
                     </div>
                     
-                    <input type="text" id="pet-raza" placeholder="Raza (Opcional)" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple">
+                    <div class="flex gap-2">
+                        <input type="text" id="pet-raza" placeholder="Raza (Opcional)" class="w-1/2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple">
+                        <input type="date" id="pet-cumple" title="Fecha de Nacimiento" class="w-1/2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold text-gray-500 outline-none focus:border-purple">
+                    </div>
                     
                     <div id="pet-error" class="hidden mt-2 text-xs font-bold text-pink bg-pink/10 border border-pink/20 p-3 rounded-lg text-center leading-tight"></div>
 
@@ -1157,6 +1218,7 @@
                         const docSnap = await getDoc(userRef);
                         if(docSnap.exists()) {
                             let data = docSnap.data();
+                            // Fix legacy data sin arrays
                             if (data.mascota_nombre && !data.mascotas) {
                                 data.mascotas = [{
                                     id: Date.now().toString(),
@@ -1164,13 +1226,16 @@
                                     nombre: data.mascota_nombre,
                                     edad: data.mascota_edad || '',
                                     peso: data.mascota_peso || '',
-                                    raza: data.mascota_raza || 'Mestizo'
+                                    raza: data.mascota_raza || 'Mestizo',
+                                    cumple: ''
                                 }];
                                 setDoc(userRef, { mascotas: data.mascotas }, { merge: true });
                             }
+                            // Init hist points if missing
+                            data.puntos_historicos = data.puntos_historicos || data.puntos || 0;
                             window.currentUser.data = data;
                         } else {
-                            window.currentUser.data = { puntos: 0, mascotas: [] };
+                            window.currentUser.data = { puntos: 0, puntos_historicos: 0, mascotas: [] };
                         }
                     } catch(e) { console.warn(e); }
                 }
@@ -1256,7 +1321,6 @@
             if(!btn || !overlay) return;
 
             const bars = btn.querySelectorAll('.bar');
-            const links = overlay.querySelectorAll('.nav-links li');
             
             btn.setAttribute('aria-expanded', window.menuOpen);
             overlay.setAttribute('aria-hidden', !window.menuOpen);
@@ -1272,6 +1336,10 @@
                 bars[2].classList.toggle('-rotate-45');
                 bars[2].classList.toggle('-translate-y-2.5');
             }
+            
+            // Animación dinámica seleccionando solo la lista activa (normal o admin)
+            const activeList = window.isAdmin ? document.getElementById('admin-nav-links') : document.getElementById('main-nav-links');
+            const links = activeList ? activeList.querySelectorAll('li') : [];
             
             links.forEach((li, i) => {
                 setTimeout(() => {
@@ -1292,12 +1360,12 @@
         };
 
         // =========================================================================================
-        // LÓGICA DE AUTENTICACIÓN Y NIVELES
+        // LÓGICA DE AUTENTICACIÓN Y NIVELES (HISTÓRICOS)
         // =========================================================================================
-        window.getLevelInfo = function(pts) {
-            if(pts < 101) return { nombre: "Cachorro 🐾", color: "text-green", bg: "bg-green" };
-            if(pts < 501) return { nombre: "Explorador 🐕", color: "text-pink", bg: "bg-pink" };
-            return { nombre: "Líder 👑", color: "text-purple", bg: "bg-purple" };
+        window.getLevelInfo = function(ptsHist) {
+            if(ptsHist < 101) return { nombre: "Cachorro 🐾", color: "text-green", bg: "bg-green" };
+            if(ptsHist < 501) return { nombre: "Consentido 🐕", color: "text-pink", bg: "bg-pink" };
+            return { nombre: "Milkarf VIP 👑", color: "text-purple", bg: "bg-purple" };
         };
 
         window.abrirModalAgregarMascota = function() {
@@ -1376,13 +1444,13 @@
             if (err) err.classList.add('hidden');
 
             if(tab === 'login') {
-                if (btnLogin) btnLogin.className = "flex-1 text-sm font-black border-b-2 border-purple text-purple dark:text-white transition-colors";
-                if (btnReg) btnReg.className = "flex-1 text-sm font-bold text-gray-400 dark:text-gray-500 border-b-2 border-transparent transition-colors hover:text-purple";
+                if (btnLogin) btnLogin.className = "flex-1 pb-2 text-sm font-black border-b-2 border-purple text-purple dark:text-white transition-colors";
+                if (btnReg) btnReg.className = "flex-1 pb-2 text-sm font-bold text-gray-400 dark:text-gray-500 border-b-2 border-transparent transition-colors hover:text-purple";
                 if (formLogin) formLogin.classList.remove('hidden');
                 if (formReg) formReg.classList.add('hidden');
             } else {
-                if (btnReg) btnReg.className = "flex-1 text-sm font-black border-b-2 border-purple text-purple dark:text-white transition-colors";
-                if (btnLogin) btnLogin.className = "flex-1 text-sm font-bold text-gray-400 dark:text-gray-500 border-b-2 border-transparent transition-colors hover:text-purple";
+                if (btnReg) btnReg.className = "flex-1 pb-2 text-sm font-black border-b-2 border-purple text-purple dark:text-white transition-colors";
+                if (btnLogin) btnLogin.className = "flex-1 pb-2 text-sm font-bold text-gray-400 dark:text-gray-500 border-b-2 border-transparent transition-colors hover:text-purple";
                 if (formReg) formReg.classList.remove('hidden');
                 if (formLogin) formLogin.classList.add('hidden');
             }
@@ -1413,15 +1481,15 @@
 
             if (window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email)) {
                 
-                // Si está conectado pero no tiene mascota, y NO está registrando la mascota
                 if ((!window.currentUser.data || !window.currentUser.data.mascotas || window.currentUser.data.mascotas.length === 0) && !window.isRegisteringPet) {
                     window.mostrarFormularioMascota();
                     return;
                 }
 
                 const primerNombre = window.currentUser.displayName ? window.currentUser.displayName.split(' ')[0] : (window.currentUser.email ? window.currentUser.email.split('@')[0] : 'Usuario');
-                const puntos = window.currentUser.data?.puntos || 0;
-                const levelInfo = window.getLevelInfo(puntos);
+                const puntosDisp = window.currentUser.data?.puntos || 0;
+                const puntosHist = window.currentUser.data?.puntos_historicos || puntosDisp;
+                const levelInfo = window.getLevelInfo(puntosHist);
                 const mascotas = window.currentUser.data?.mascotas || [];
                 
                 if(loggedOutMenu) loggedOutMenu.classList.add('hidden');
@@ -1434,7 +1502,8 @@
                 if(topText) topText.textContent = primerNombre;
                 
                 if(topPts) {
-                    topPts.textContent = puntos + ' pts';
+                    topPts.textContent = puntosDisp + ' pts';
+                    topPts.classList.remove('hidden');
                 }
 
                 if(topPetsIcons) {
@@ -1451,24 +1520,20 @@
                 const benUserLevel = document.getElementById('ben-user-level');
                 if(benUserLevel) benUserLevel.textContent = levelInfo.nombre;
                 const benUserPts = document.getElementById('ben-user-pts');
-                if(benUserPts) benUserPts.textContent = puntos;
+                if(benUserPts) benUserPts.textContent = puntosDisp;
                 
-                let nextMilestone = puntos > 100 ? (puntos > 500 ? "Max" : 501) : 101;
+                let nextMilestone = puntosHist > 100 ? (puntosHist > 500 ? "Max" : 501) : 101;
                 const benProgress = document.getElementById('ben-progress');
                 const benPtsNext = document.getElementById('ben-pts-next');
 
                 if (nextMilestone !== "Max") {
-                    if(benProgress) benProgress.style.width = Math.min((puntos / nextMilestone) * 100, 100) + '%';
-                    if(benPtsNext) benPtsNext.textContent = `A ${nextMilestone - puntos} pts de tu próximo nivel`;
+                    if(benProgress) benProgress.style.width = Math.min((puntosHist / nextMilestone) * 100, 100) + '%';
+                    if(benPtsNext) benPtsNext.textContent = `Puntos Históricos: ${puntosHist} (Faltan ${nextMilestone - puntosHist} para subir de nivel)`;
                 } else {
                     if(benProgress) benProgress.style.width = '100%';
-                    if(benPtsNext) benPtsNext.textContent = `¡Felicidades! Tienes el nivel máximo`;
+                    if(benPtsNext) benPtsNext.textContent = `Puntos Históricos: ${puntosHist} (¡Nivel Máximo Alcanzado!)`;
                 }
 
-                const calcPetWrapper = document.getElementById('calc-pet-selector-wrapper');
-                const calcPetList = document.getElementById('calc-pet-selector-list');
-                
-                // NÚCLEO MULTIESPECIES DASHBOARD
                 const dashboardPetsList = document.getElementById('dashboard-pets-list');
                 const btnAddPetView = document.getElementById('btn-add-pet-view');
                 if (btnAddPetView) btnAddPetView.classList.remove('hidden');
@@ -1482,45 +1547,11 @@
                                 </div>
                                 <div class="min-w-0">
                                     <h5 class="font-black text-purple-dark dark:text-white text-base truncate">${p.nombre}</h5>
-                                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-0.5 truncate">${p.peso}kg · ${p.edad} · ${p.raza}</p>
+                                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-0.5 truncate">${p.peso}kg · ${p.edad} ${p.cumple ? `· Nac: ${p.cumple}` : ''}</p>
                                 </div>
                             </div>
                         `).join('');
                     }
-
-                    if(calcPetWrapper) calcPetWrapper.classList.remove('hidden');
-                    if(calcPetList) {
-                        calcPetList.innerHTML = mascotas.map(pet => `
-                            <button class="calc-pet-chip px-4 py-2 bg-white dark:bg-darkcard border border-purple-border/50 dark:border-purple/30 rounded-full text-xs font-bold text-purple dark:text-white hover:border-purple transition-all" data-nombre="${pet.nombre}" data-peso="${pet.peso}">
-                                ${pet.tipo === 'gato' ? '🐱' : '🐶'} ${pet.nombre}
-                            </button>
-                        `).join('');
-
-                        document.querySelectorAll('.calc-pet-chip').forEach(chip => {
-                            chip.addEventListener('click', function() {
-                                window.vibrate(20);
-                                const cn = document.getElementById('calc-nombre');
-                                if(cn) cn.value = this.getAttribute('data-nombre');
-                                
-                                const pi = document.getElementById('pesoInput');
-                                if(pi) pi.value = this.getAttribute('data-peso');
-                                
-                                window.state.nombreMascota = this.getAttribute('data-nombre');
-                                
-                                document.querySelectorAll('.calc-pet-chip').forEach(c => {
-                                    c.classList.remove('bg-purple', 'text-white', 'border-purple');
-                                    c.classList.add('bg-white', 'dark:bg-darkcard', 'text-purple', 'dark:text-white');
-                                });
-                                this.classList.add('bg-purple', 'text-white', 'border-purple');
-                                this.classList.remove('bg-white', 'dark:bg-darkcard', 'text-purple', 'dark:text-white');
-                                
-                                const tRes = document.getElementById('tu-resultado');
-                                if(tRes) tRes.classList.remove('visible', 'show');
-                            });
-                        });
-                    }
-                } else {
-                    if(calcPetWrapper) calcPetWrapper.classList.add('hidden');
                 }
 
                 const banner = document.getElementById('descuento-banner');
@@ -1555,9 +1586,6 @@
 
                 const btnAddPetView = document.getElementById('btn-add-pet-view');
                 if(btnAddPetView) btnAddPetView.classList.add('hidden');
-                
-                const calcPetWrapper = document.getElementById('calc-pet-selector-wrapper');
-                if(calcPetWrapper) calcPetWrapper.classList.add('hidden');
 
                 const banner = document.getElementById('descuento-banner');
                 if(banner) banner.classList.remove('hidden');
@@ -1596,7 +1624,7 @@
             }
         };
 
-        // REGISTRO UNIFICADO - TODO EN UNO
+        // NUEVO REGISTRO UNIFICADO
         window.registrarYGuardarMascota = async function() {
             window.vibrate(20);
             if(!auth || !db) { window.showToast("Base de datos no configurada."); return; }
@@ -1608,6 +1636,7 @@
             const edadEl = document.getElementById('reg-pet-edad');
             const pesoEl = document.getElementById('reg-pet-peso');
             const razaEl = document.getElementById('reg-pet-raza');
+            const cumpleEl = document.getElementById('reg-pet-cumple');
             const err = document.getElementById('auth-error');
 
             const email = emailEl ? emailEl.value.trim() : '';
@@ -1617,10 +1646,11 @@
             const edad = edadEl ? edadEl.value.trim() : '';
             const peso = pesoEl ? pesoEl.value.trim() : '';
             const raza = razaEl ? razaEl.value.trim() : '';
+            const cumple = cumpleEl ? cumpleEl.value : '';
 
             if(!email || pass.length < 6 || !nombre || !edad || !peso) {
                 if (err) {
-                    err.textContent = "Completa los datos de la mascota y tu correo (contraseña mín. 6 caracteres).";
+                    err.textContent = "Completa los datos requeridos de tu mascota y cuenta (contraseña mín. 6).";
                     err.classList.remove('hidden');
                 }
                 return;
@@ -1641,12 +1671,14 @@
                     nombre: nombre, 
                     edad: edad, 
                     peso: peso, 
-                    raza: raza || 'Mestizo' 
+                    raza: raza || 'Mestizo',
+                    cumple: cumple
                 };
                 
                 await setDoc(window.getUserPath(cred.user.uid), {
                     mascotas: [nuevaMascota],
                     puntos: 0,
+                    puntos_historicos: 0,
                     descuento_usado: false,
                     email: cred.user.email || '',
                     fecha_actualizacion: serverTimestamp()
@@ -1661,17 +1693,18 @@
                 if (edadEl) edadEl.value = '';
                 if (pesoEl) pesoEl.value = '';
                 if (razaEl) razaEl.value = '';
+                if (cumpleEl) cumpleEl.value = '';
 
                 window.showToast("¡Cuenta y mascota creadas exitosamente!", 'success');
                 window.cerrarModalAuth();
-                if (btn) { btn.textContent = "Crear Cuenta y Guardar"; btn.disabled = false; }
+                if (btn) { btn.textContent = "Crear Cuenta y Entrar"; btn.disabled = false; }
             } catch(error) {
                 if (err) {
                     err.textContent = window.traductorErrores(error.code);
                     err.classList.remove('hidden');
                 }
                 const btn = document.getElementById('btn-reg-email');
-                if (btn) { btn.textContent = "Crear Cuenta y Guardar"; btn.disabled = false; }
+                if (btn) { btn.textContent = "Crear Cuenta y Entrar"; btn.disabled = false; }
             }
         };
 
@@ -1710,7 +1743,7 @@
             }
         };
 
-        // Selectores de tipo de mascota
+        // Selectores de tipo de mascota para el formulario UNIFICADO
         window.selectRegPetType = function(type) {
             const petTipo = document.getElementById('reg-pet-tipo');
             if(petTipo) petTipo.value = type;
@@ -1727,6 +1760,7 @@
             }
         };
 
+        // Selectores para el formulario EXCLUSIVO post-Google Login
         window.selectPetType = function(type) {
             const petTipo = document.getElementById('pet-tipo');
             if(petTipo) petTipo.value = type;
@@ -1768,6 +1802,7 @@
             const edadEl = document.getElementById('pet-edad');
             const pesoEl = document.getElementById('pet-peso');
             const razaEl = document.getElementById('pet-raza');
+            const cumpleEl = document.getElementById('pet-cumple');
             const err = document.getElementById('pet-error');
 
             if(!tipoEl || !nombreEl || !edadEl || !pesoEl || !err) return;
@@ -1777,6 +1812,7 @@
             const edad = edadEl.value.trim();
             const peso = pesoEl.value.trim();
             const raza = razaEl ? razaEl.value.trim() : '';
+            const cumple = cumpleEl ? cumpleEl.value : '';
 
             if(!nombre || !edad || !peso) {
                 err.textContent = "Por favor completa el nombre, edad y peso para finalizar.";
@@ -1795,16 +1831,18 @@
                     nombre: nombre,
                     edad: edad,
                     peso: peso,
-                    raza: raza || 'Mestizo'
+                    raza: raza || 'Mestizo',
+                    cumple: cumple
                 };
                 
-                const data = window.currentUser.data || { puntos: 0, descuento_usado: false };
+                const data = window.currentUser.data || { puntos: 0, puntos_historicos: 0, descuento_usado: false };
                 if (!data.mascotas) data.mascotas = [];
                 data.mascotas.push(nuevaMascota);
                 
                 await setDoc(window.getUserPath(window.currentUser.uid), {
                     mascotas: data.mascotas,
                     puntos: data.puntos || 0,
+                    puntos_historicos: data.puntos_historicos || data.puntos || 0,
                     descuento_usado: data.descuento_usado || false,
                     email: window.currentUser.email || '',
                     fecha_actualizacion: serverTimestamp()
@@ -1818,6 +1856,7 @@
                 if (edadEl) edadEl.value = '';
                 if (pesoEl) pesoEl.value = '';
                 if (razaEl) razaEl.value = '';
+                if (cumpleEl) cumpleEl.value = '';
                 
                 window.showToast("¡Mascota guardada exitosamente!", 'success');
                 window.cerrarModalAuth();
@@ -1863,14 +1902,20 @@
         window.abrirModalDescuento = function() {
             if(window.descuentoAplicado) return;
             
-            if (!window.currentUser || window.currentUser.isAnonymous) {
+            if (!window.currentUser || window.currentUser.isAnonymous || !window.currentUser.email) {
                 window.abrirModalAuth();
+                window.switchAuthTab('register');
                 const err = document.getElementById('auth-error');
                 if(err) {
-                    err.innerHTML = "¡Crea una cuenta o inicia sesión para reclamar tu <b>20% de descuento</b>!";
+                    err.innerHTML = "¡Crea una cuenta para reclamar tu <b>20% de descuento</b> exclusivo!";
                     err.className = "mt-4 text-xs font-bold text-purple-dark bg-green/20 border border-green/30 p-2.5 rounded-lg text-center leading-tight";
                     err.classList.remove('hidden');
                 }
+                return;
+            }
+
+            if(window.currentUser.data && window.currentUser.data.descuento_usado) {
+                window.showToast("Tu cuenta ya ha utilizado el descuento de primera compra.");
                 return;
             }
             
@@ -1999,6 +2044,10 @@
             if(btn) { btn.innerHTML = oldText; btn.disabled = false; }
         };
 
+        // =========================================================================================
+        // LÓGICA EXCLUSIVA DEL ADMINISTRADOR (PEDIDOS, USUARIOS Y CANJES)
+        // =========================================================================================
+        
         window.abrirModalAdmin = function() {
             window.vibrate(30);
             const modal = document.getElementById('modal-admin-login');
@@ -2037,6 +2086,12 @@
             if (u === 'Deliapr' && p === 'Floki0626') {
                 err.classList.add('hidden');
                 window.isAdmin = true;
+                
+                // Activar Interfaz de Administrador Global
+                document.getElementById('main-nav-links').classList.add('hidden');
+                document.getElementById('admin-nav-links').classList.remove('hidden');
+                document.getElementById('top-auth-btn-wrap').style.display = 'none';
+
                 window.cerrarModalAdmin();
                 ui.value = '';
                 pi.value = '';
@@ -2048,24 +2103,40 @@
             }
         };
 
-        // NAVEGACIÓN DENTRO DEL PANEL ADMIN
+        window.salirAdmin = function() {
+            window.isAdmin = false;
+            document.getElementById('admin-nav-links').classList.add('hidden');
+            document.getElementById('main-nav-links').classList.remove('hidden');
+            document.getElementById('top-auth-btn-wrap').style.display = 'block';
+            window.navigateTo('view-home');
+            if(unsubAdmin) { unsubAdmin(); unsubAdmin = null; }
+        };
+
         window.switchAdminTab = function(tab) {
             const btnP = document.getElementById('tab-admin-pedidos');
             const btnU = document.getElementById('tab-admin-usuarios');
+            const btnC = document.getElementById('tab-admin-cumples');
             const contP = document.getElementById('admin-orders-container');
             const contU = document.getElementById('admin-users-container');
+            const contC = document.getElementById('admin-birthdays-container');
+
+            [btnP, btnU, btnC].forEach(b => { if(b) b.className = "text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-purple transition-colors pb-2 whitespace-nowrap"; });
+            if(contP) contP.classList.add('hidden');
+            if(contU) contU.classList.add('hidden');
+            if(contC) contC.classList.add('hidden');
 
             if (tab === 'pedidos') {
-                if (btnP) btnP.className = "text-sm font-black text-purple dark:text-white border-b-2 border-purple transition-colors pb-2";
-                if (btnU) btnU.className = "text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-purple transition-colors pb-2";
-                if (contP) contP.classList.remove('hidden');
-                if (contU) contU.classList.add('hidden');
-            } else {
-                if (btnU) btnU.className = "text-sm font-black text-purple dark:text-white border-b-2 border-purple transition-colors pb-2";
-                if (btnP) btnP.className = "text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-purple transition-colors pb-2";
-                if (contU) contU.classList.remove('hidden');
-                if (contP) contP.classList.add('hidden');
-                window.loadAdminUsers();
+                if(btnP) btnP.className = "text-sm font-black text-purple dark:text-white border-b-2 border-purple transition-colors pb-2 whitespace-nowrap";
+                if(contP) contP.classList.remove('hidden');
+                window.loadAdminOrders();
+            } else if (tab === 'usuarios') {
+                if(btnU) btnU.className = "text-sm font-black text-purple dark:text-white border-b-2 border-purple transition-colors pb-2 whitespace-nowrap";
+                if(contU) contU.classList.remove('hidden');
+                window.loadAdminUsers(); // Cargar manualmente para salvar reads
+            } else if (tab === 'cumples') {
+                if(btnC) btnC.className = "text-sm font-black text-purple dark:text-white border-b-2 border-purple transition-colors pb-2 whitespace-nowrap";
+                if(contC) contC.classList.remove('hidden');
+                window.loadAdminBirthdays();
             }
         };
 
@@ -2083,6 +2154,10 @@
                 window.renderAdminOrders(orders);
             }, (error) => {
                 console.error("Error fetching orders", error);
+                const container = document.getElementById('admin-orders-container');
+                if(container) {
+                    container.innerHTML = `<div class="bg-pink/10 border border-pink/30 p-4 rounded-xl text-center"><p class="text-pink font-bold text-sm">❌ Permisos denegados en Firebase.</p><p class="text-xs text-gray-500 mt-2">Debes actualizar las "Reglas de seguridad" de Firestore en tu consola de Firebase a:<br><code>allow read, write: if true;</code></p></div>`;
+                }
             });
         };
 
@@ -2100,32 +2175,32 @@
                 let actionButton = '';
                 if(o.status === 'pendiente') {
                     if (o.uid !== 'anonimo') {
-                        actionButton = `<button onclick="window.aprobarPedidoAdmin('${o.id}', '${o.uid}', ${pts})" class="bg-green text-purple-dark text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-[#a6b621] transition-all active:scale-95 flex items-center gap-1"><i data-lucide="check-circle" class="w-4 h-4"></i> Otorgar ${pts} pts</button>`;
+                        actionButton = `<button onclick="window.aprobarPedidoAdmin('${o.id}', '${o.uid}', ${pts})" class="bg-green text-purple-dark text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-[#a6b621] transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check-circle" class="w-4 h-4"></i> Verificar Pago y Dar Puntos</button>`;
                     } else {
-                        actionButton = `<button onclick="window.marcarCompletadoAdmin('${o.id}')" class="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-gray-300 transition-all active:scale-95 flex items-center gap-1"><i data-lucide="check" class="w-4 h-4"></i> Marcar Listo (Invitado)</button>`;
+                        actionButton = `<button onclick="window.marcarCompletadoAdmin('${o.id}')" class="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-gray-300 transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check" class="w-4 h-4"></i> Marcar Listo (Invitado)</button>`;
                     }
                 }
 
                 return `
                 <div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left relative overflow-hidden transition-all">
                     ${o.status === 'completado' ? '<div class="absolute top-0 left-0 w-1 h-full bg-green"></div>' : '<div class="absolute top-0 left-0 w-1 h-full bg-pink"></div>'}
-                    <div class="flex justify-between items-start mb-3">
+                    <div class="flex justify-between items-start mb-3 pl-1">
                         <div>
                             <h4 class="font-black text-purple-dark dark:text-white text-sm md:text-base leading-tight">${o.userName}</h4>
                             <p class="text-[10px] text-purple/50 dark:text-gray-500 font-bold">${date}</p>
                         </div>
-                        <span class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${o.status==='completado' ? 'bg-green/20 text-green-dark dark:text-green' : 'bg-pink/10 text-pink'}">
+                        <span class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest shrink-0 ${o.status==='completado' ? 'bg-green/20 text-green-dark dark:text-green' : 'bg-pink/10 text-pink'}">
                             ${o.status}
                         </span>
                     </div>
-                    <div class="bg-purple-light dark:bg-[#0d0718] rounded-xl p-3 mb-4 border border-purple-border/30 dark:border-purple/20">
+                    <div class="bg-purple-light dark:bg-[#0d0718] rounded-xl p-3 mb-4 border border-purple-border/30 dark:border-purple/20 pl-1">
                         <ul class="text-xs text-gray-600 dark:text-gray-400 pl-4 list-disc space-y-1.5 font-medium">
                             ${o.items.map(i => `<li><span class="font-bold text-purple-dark dark:text-gray-300">${i.qty}x</span> ${i.name} (${i.weight}) ${i.forPet ? `<span class="opacity-60 italic">- ${i.forPet}</span>` : ''}</li>`).join('')}
                         </ul>
                     </div>
-                    <div class="flex justify-between items-center">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center pl-1">
                         <div>
-                            <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest block leading-tight">Total</span>
+                            <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest block leading-tight">Total Cobrado</span>
                             <span class="font-black text-purple dark:text-white text-lg">$${o.total.toFixed(2)}</span>
                         </div>
                         ${actionButton}
@@ -2136,12 +2211,18 @@
             if(window.lucide) window.lucide.createIcons({root: container});
         };
 
-        // CARGA COMPLETA DE USUARIOS
         window.loadAdminUsers = async function() {
             if(!window.isAdmin) return;
             const container = document.getElementById('admin-users-container');
             if(!container) return;
-            container.innerHTML = '<p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando usuarios...</p>';
+            container.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <p class="text-xs font-bold text-gray-400">Directorio de Clientes</p>
+                    <button onclick="window.loadAdminUsers()" class="text-purple font-bold text-[10px] bg-purple/10 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-purple/20"><i data-lucide="refresh-cw" class="w-3 h-3"></i> Recargar Datos</button>
+                </div>
+                <p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando base de datos...</p>
+            `;
+            if(window.lucide) window.lucide.createIcons({root: container});
 
             const usersRef = typeof __firebase_config !== 'undefined' 
                 ? collection(db, 'artifacts', appId, 'users')
@@ -2157,29 +2238,48 @@
                     return;
                 }
 
-                container.innerHTML = users.map(u => {
+                // Sort by points descending
+                users.sort((a,b) => (b.puntos_historicos || b.puntos || 0) - (a.puntos_historicos || a.puntos || 0));
+
+                container.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <p class="text-xs font-bold text-gray-400">Total: ${users.length} clientes</p>
+                        <button onclick="window.loadAdminUsers()" class="text-purple font-bold text-[10px] bg-purple/10 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-purple/20 active:scale-95"><i data-lucide="refresh-cw" class="w-3 h-3"></i> Recargar Datos</button>
+                    </div>
+                ` + users.map(u => {
                     const email = u.email || 'Sin correo registrado';
-                    const pts = u.puntos || 0;
+                    const ptsDisp = u.puntos || 0;
+                    const ptsHist = u.puntos_historicos || ptsDisp;
+                    const levelObj = window.getLevelInfo(ptsHist);
+                    
                     const desc = u.descuento_usado 
-                        ? '<span class="text-pink text-[10px] font-black uppercase tracking-widest bg-pink/10 px-2 py-1.5 rounded-lg border border-pink/20">Descuento Usado</span>' 
-                        : '<span class="text-green-dark text-[10px] font-black uppercase tracking-widest bg-green/20 px-2 py-1.5 rounded-lg border border-green/30">Descuento Disponible</span>';
+                        ? '<span class="text-pink text-[9px] font-black uppercase tracking-widest bg-pink/10 px-2 py-1 rounded-md border border-pink/20">Desc. Usado</span>' 
+                        : '<span class="text-green-dark text-[9px] font-black uppercase tracking-widest bg-green/20 px-2 py-1 rounded-md border border-green/30">Desc. Disponible</span>';
                     
                     const mascotas = (u.mascotas || []).map(m => `
                         <div class="bg-purple/5 dark:bg-purple/10 p-3 rounded-xl mt-2 border border-purple/10">
                             <p class="font-black text-purple-dark dark:text-white text-xs">${m.tipo === 'gato' ? '🐱' : '🐶'} ${m.nombre}</p>
-                            <p class="text-[10px] text-gray-500 font-bold mt-1">${m.peso}kg · ${m.edad} · ${m.raza}</p>
+                            <p class="text-[10px] text-gray-500 font-bold mt-1">${m.peso}kg · ${m.edad} ${m.cumple ? `· Nac: ${m.cumple}` : ''}</p>
                         </div>
                     `).join('');
 
                     return `
                     <div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left relative">
-                        <div class="flex justify-between items-start mb-3">
-                            <div class="pr-2">
-                                <p class="font-black text-purple-dark dark:text-white text-sm break-all leading-tight">${email}</p>
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="pr-2 min-w-0">
+                                <p class="font-black text-purple-dark dark:text-white text-sm truncate leading-tight">${email}</p>
+                                <p class="text-[10px] font-bold text-gray-500 mt-1">${levelObj.nombre} (Histórico: ${ptsHist} pts)</p>
                             </div>
-                            <span class="text-xs font-black text-purple dark:text-white bg-purple-light dark:bg-purple/20 px-3 py-1.5 rounded-xl border border-purple/20 shrink-0 shadow-sm">${pts} pts</span>
+                            <div class="flex flex-col items-end shrink-0 gap-2">
+                                <span class="text-xs font-black text-purple dark:text-white bg-purple-light dark:bg-purple/20 px-3 py-1.5 rounded-xl border border-purple/20 shadow-sm">${ptsDisp} pts</span>
+                            </div>
                         </div>
-                        <div class="mb-4">${desc}</div>
+                        <div class="flex items-center justify-between mb-4 mt-3">
+                            ${desc}
+                            <button onclick="window.abrirModalCanje('${u.id}', '${email}', ${ptsDisp})" class="text-[10px] bg-green hover:bg-[#a6b621] text-purple-dark px-3 py-1.5 rounded-lg font-black uppercase tracking-widest shadow-md transition-all active:scale-95 flex items-center gap-1">
+                                <i data-lucide="gift" class="w-3.5 h-3.5"></i> Canjear
+                            </button>
+                        </div>
                         <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest border-t border-purple/10 pt-3">Mascotas (${(u.mascotas || []).length}):</p>
                         ${mascotas || '<p class="text-xs text-gray-400 italic mt-2 font-medium">Sin mascotas registradas</p>'}
                     </div>`;
@@ -2187,20 +2287,181 @@
 
             } catch(e) {
                 console.error(e);
-                container.innerHTML = '<p class="text-center text-pink font-bold py-10 text-sm bg-pink/10 rounded-3xl border border-pink/20">Error al cargar la información de los usuarios.</p>';
+                const container = document.getElementById('admin-users-container');
+                if (container) {
+                    container.innerHTML = `<div class="bg-pink/10 border border-pink/30 p-4 rounded-xl text-center mt-6"><p class="text-pink font-bold text-sm">❌ Permisos denegados en Firebase.</p><p class="text-xs text-gray-500 mt-2">Debes actualizar las Reglas de Firestore a:<br><code>allow read, write: if true;</code></p></div>`;
+                }
             }
         };
 
         window.aprobarPedidoAdmin = async function(orderId, uid, pts) {
+            if(!container) return;
+            container.innerHTML = '<p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Analizando fechas...</p>';
+
+            const usersRef = typeof __firebase_config !== 'undefined' 
+                ? collection(db, 'artifacts', appId, 'users')
+                : collection(db, 'usuarios');
+
+            try {
+                const snapshot = await getDocs(usersRef);
+                let petBirthdays = [];
+                
+                snapshot.forEach(doc => {
+                    const u = doc.data();
+                    if(u.mascotas && u.mascotas.length > 0) {
+                        u.mascotas.forEach(m => {
+                            if(m.cumple && m.cumple.trim() !== '') {
+                                const today = new Date();
+                                const todayNoTime = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                                
+                                const [y, mo, d] = m.cumple.split('-');
+                                let nextBday = new Date(today.getFullYear(), parseInt(mo)-1, parseInt(d));
+                                
+                                if (nextBday < todayNoTime) {
+                                    nextBday.setFullYear(today.getFullYear() + 1);
+                                }
+                                
+                                const diffTime = Math.abs(nextBday - todayNoTime);
+                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                                
+                                petBirthdays.push({
+                                    ownerEmail: u.email || 'Sin correo',
+                                    petName: m.nombre,
+                                    petType: m.tipo,
+                                    bdayString: m.cumple,
+                                    daysLeft: diffDays
+                                });
+                            }
+                        });
+                    }
+                });
+
+                petBirthdays.sort((a,b) => a.daysLeft - b.daysLeft);
+
+                if(petBirthdays.length === 0) {
+                    container.innerHTML = '<p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Ninguna mascota tiene fecha de cumpleaños registrada.</p>';
+                    return;
+                }
+
+                container.innerHTML = petBirthdays.map(p => {
+                    const isNear = p.daysLeft <= 30;
+                    return `
+                    <div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border ${isNear ? 'border-pink/50 dark:border-pink/30 shadow-lg shadow-pink/10' : 'border-purple-border/50 dark:border-purple/20'} text-left relative overflow-hidden transition-all">
+                        ${isNear ? '<div class="absolute top-0 left-0 w-1 h-full bg-pink"></div>' : ''}
+                        <div class="flex justify-between items-start mb-2 pl-1">
+                            <div>
+                                <h4 class="font-black ${isNear ? 'text-pink' : 'text-purple-dark dark:text-white'} text-base flex items-center gap-2">
+                                    ${p.petType==='gato'?'🐱':'🐶'} ${p.petName}
+                                    ${isNear ? '<i data-lucide="cake" class="w-4 h-4"></i>' : ''}
+                                </h4>
+                                <p class="text-[10px] text-gray-500 font-bold mt-0.5">Nacimiento: ${p.bdayString}</p>
+                            </div>
+                            <span class="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${isNear ? 'bg-pink text-white' : 'bg-purple/5 text-purple'}">
+                                ${p.daysLeft === 0 ? '¡Hoy!' : (p.daysLeft === 1 ? 'Mañana' : `En ${p.daysLeft} días`)}
+                            </span>
+                        </div>
+                        <div class="bg-purple-light dark:bg-[#0d0718] p-3 rounded-xl border border-purple/10 mt-3 ml-1">
+                            <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Contacto / Dueño:</p>
+                            <p class="text-xs font-black text-purple-dark dark:text-white truncate">${p.ownerEmail}</p>
+                        </div>
+                    </div>`;
+                }).join('');
+                if(window.lucide) window.lucide.createIcons({root: container});
+            } catch(e) {
+                console.error(e);
+                container.innerHTML = '<p class="text-center text-pink font-bold py-10 text-sm bg-pink/10 rounded-3xl border border-pink/20">Error al cargar cumpleaños.</p>';
+            }
+        };
+
+        window.abrirModalCanje = function(uid, email, pts) {
+            document.getElementById('canje-uid').value = uid;
+            document.getElementById('canje-user-name').textContent = email;
+            document.getElementById('canje-user-pts').textContent = pts;
+            document.getElementById('canje-item').value = "";
+            document.getElementById('canje-costo').value = "";
+            
+            const modal = document.getElementById('modal-admin-canje');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                document.getElementById('modal-admin-canje-box').classList.remove('scale-95');
+            }, 10);
+        };
+
+        window.cerrarModalCanje = function() {
+            const modal = document.getElementById('modal-admin-canje');
+            modal.classList.add('opacity-0');
+            document.getElementById('modal-admin-canje-box').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        };
+
+        window.procesarCanje = async function() {
+            const uid = document.getElementById('canje-uid').value;
+            const ptsCostText = document.getElementById('canje-costo').value;
+            const ptsDispText = document.getElementById('canje-user-pts').textContent;
+            
+            const cost = parseInt(ptsCostText);
+            const currentPts = parseInt(ptsDispText);
+
+            if(!uid || isNaN(cost) || cost <= 0) {
+                window.showToast("Ingresa una cantidad de puntos válida.");
+                return;
+            }
+
+            if(cost > currentPts) {
+                window.showToast("El usuario no tiene suficientes puntos.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-ejecutar-canje');
+            btn.textContent = "Procesando..."; btn.disabled = true;
+
+            try {
+                const userRef = window.getUserPath(uid);
+                await setDoc(userRef, { puntos: currentPts - cost }, { merge: true });
+                
+                window.showToast(`¡Éxito! Se descontaron ${cost} pts.`, 'success');
+                window.cerrarModalCanje();
+                window.loadAdminUsers(); // Refrescar vista
+            } catch(e) {
+                window.showToast("Error al descontar puntos.");
+                console.error(e);
+            } finally {
+                btn.textContent = "Confirmar y Descontar"; btn.disabled = false;
+            }
+        };
+
+        window.aprobarPedidoAdmin = async function(orderId, uid, basePts) {
             window.vibrate(20);
             if(!window.isAdmin) return;
             try {
                 const userRef = window.getUserPath(uid);
                 const docSnap = await getDoc(userRef);
+                
+                let pointsToGive = basePts;
+                let isVIP = false;
+
                 if(docSnap.exists()) {
                     const data = docSnap.data();
-                    const newPts = (data.puntos || 0) + pts;
-                    await setDoc(userRef, { puntos: newPts }, { merge: true });
+                    const ptsHistBefore = data.puntos_historicos || data.puntos || 0;
+                    
+                    // Lógica VIP 1.5x
+                    if (ptsHistBefore >= 501) {
+                        pointsToGive = Math.floor(basePts * 1.5);
+                        isVIP = true;
+                    }
+                    
+                    const newPtsDisp = (data.puntos || 0) + pointsToGive;
+                    const newPtsHist = ptsHistBefore + pointsToGive;
+                    
+                    await setDoc(userRef, { 
+                        puntos: newPtsDisp,
+                        puntos_historicos: newPtsHist
+                    }, { merge: true });
                 }
                 
                 const orderRef = typeof __firebase_config !== 'undefined' 
@@ -2208,7 +2469,7 @@
                     : doc(db, 'pedidos', orderId);
                 await setDoc(orderRef, { status: 'completado' }, { merge: true });
                 
-                window.showToast(`¡Excelente! Se otorgaron ${pts} puntos a este cliente.`, 'success');
+                window.showToast(`¡Aprobado! +${pointsToGive} pts ${isVIP ? '(VIP 1.5x)' : ''}`, 'success');
             } catch(e) {
                 window.showToast("Error al otorgar puntos.");
                 console.error(e);
@@ -2223,7 +2484,7 @@
                     ? doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', orderId)
                     : doc(db, 'pedidos', orderId);
                 await setDoc(orderRef, { status: 'completado' }, { merge: true });
-                window.showToast(`Pedido marcado como completado.`, 'success');
+                window.showToast(`Pedido de invitado marcado como completado.`, 'success');
             } catch(e) {
                 window.showToast("Error al actualizar pedido.");
                 console.error(e);
@@ -2619,7 +2880,7 @@
             const tot = window.cart.reduce((s,i) => s + (i.price*i.qty), 0);
             const finalTot = window.descuentoAplicado ? tot * 0.8 : tot;
 
-            if (window.descuentoAplicado && window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email)) {
+            if (window.descuentoAplicado && window.currentUser && !window.currentUser.isAnonymous && window.currentUser.email) {
                 try {
                     if (db) {
                         await setDoc(window.getUserPath(window.currentUser.uid), { descuento_usado: true }, { merge: true });
