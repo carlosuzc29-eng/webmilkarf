@@ -257,11 +257,13 @@
         <!-- MENÚ ADMIN (EXCLUSIVO) -->
         <ul id="admin-nav-links" class="nav-links space-y-6 text-center hidden">
             <li class="mb-4"><div class="inline-block bg-pink/20 text-pink px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border border-pink/30">Modo Administrador</div></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-home'); window.forceCloseMenu();">Inicio</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-calc'); window.forceCloseMenu();">Calculadora Nutricional</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('pedidos'); window.forceCloseMenu();">📊 Control de Pedidos</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('usuarios'); window.forceCloseMenu();">👥 Directorio & Canjes</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('cumples'); window.forceCloseMenu();">🎂 Radar de Cumpleaños</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-calc'); window.forceCloseMenu();">🧮 Calculadora Nutricional</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300 mt-8 pt-8 border-t border-white/10"><a href="#" class="text-xl font-extrabold text-gray-400 hover:text-white tracking-wider uppercase block" onclick="event.preventDefault(); window.salirAdmin();"><i data-lucide="log-out" class="w-5 h-5 inline-block mr-2"></i> Cerrar Sesión Admin</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300 mt-8 pt-8 border-t border-white/10"><a href="#" class="text-xl font-extrabold text-gray-400 hover:text-white tracking-wider uppercase block" onclick="event.preventDefault(); window.salirAdmin();"><i data-lucide="arrow-left" class="w-5 h-5 inline-block mr-2"></i> Volver a la web</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="text-lg font-extrabold text-pink hover:text-white tracking-wider uppercase block" onclick="event.preventDefault(); window.cerrarSesionAdmin();"><i data-lucide="log-out" class="w-5 h-5 inline-block mr-2"></i> Cerrar sesión admin</a></li>
         </ul>
     </nav>
 
@@ -651,10 +653,9 @@
                                 <div class="flex items-start gap-3">
                                     <div class="w-10 h-10 rounded-full bg-pink/10 text-pink flex items-center justify-center shrink-0"><i data-lucide="bookmark-plus" class="w-5 h-5"></i></div>
                                     <div class="flex-1">
-                                        <h4 class="text-sm font-black text-purple-dark dark:text-white mb-1">Guarda esta referencia</h4>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mb-3">Guarda esta referencia para consultar la ración después. Si tienes cuenta, quedará asociada a tu perfil.</p>
-                                        <button id="btn-guardar-calc" type="button" onclick="window.guardarDatosCalculadora()" class="px-4 py-2 bg-pink hover:bg-pink-dark text-white text-xs font-extrabold rounded-xl transition-all">Guardar datos de mascota</button>
-                                        <p id="calc-save-status" class="hidden mt-2 text-[10px] font-black text-green-dark dark:text-green bg-green/10 border border-green/20 rounded-lg p-2">Guardado con éxito.</p>
+                                        <h4 id="calc-save-title" class="text-sm font-black text-purple-dark dark:text-white mb-1">Guarda esta referencia</h4>
+                                        <p id="calc-save-text" class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mb-3">Guarda la ración de tu mascota en tu perfil para consultarla luego.</p>
+                                        <button id="btn-save-calc-pet" type="button" onclick="window.guardarMascotaDesdeCalculadora()" class="px-4 py-2 bg-pink hover:bg-pink-dark text-white text-xs font-extrabold rounded-xl transition-all">Guardar datos</button>
                                     </div>
                                 </div>
                             </div>
@@ -735,7 +736,7 @@
                                         </div>
                                         <div class="flex items-center gap-2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/30 rounded-2xl p-1">
                                             <button onclick="window.changeQty('pollo', -1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">−</button>
-                                            <input id="qty-pollo" type="number" min="1" max="999" value="1" inputmode="numeric" onchange="window.setQty('pollo', this.value)" oninput="window.setQty('pollo', this.value, false)" class="w-12 text-center font-black text-purple dark:text-white text-sm bg-transparent outline-none" aria-label="Cantidad de pollo">
+                                            <input id="qty-pollo" type="number" min="1" value="1" inputmode="numeric" oninput="window.setQty('pollo', this.value)" class="w-12 h-8 text-center font-black text-purple dark:text-white text-sm bg-transparent outline-none" aria-label="Cantidad de pollo">
                                             <button onclick="window.changeQty('pollo', 1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">+</button>
                                         </div>
                                     </div>
@@ -795,7 +796,7 @@
                                         </div>
                                         <div class="flex items-center gap-2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/30 rounded-2xl p-1">
                                             <button onclick="window.changeQty('res', -1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">−</button>
-                                            <input id="qty-res" type="number" min="1" max="999" value="1" inputmode="numeric" onchange="window.setQty('res', this.value)" oninput="window.setQty('res', this.value, false)" class="w-12 text-center font-black text-purple dark:text-white text-sm bg-transparent outline-none" aria-label="Cantidad de res">
+                                            <input id="qty-res" type="number" min="1" value="1" inputmode="numeric" oninput="window.setQty('res', this.value)" class="w-12 h-8 text-center font-black text-purple dark:text-white text-sm bg-transparent outline-none" aria-label="Cantidad de res">
                                             <button onclick="window.changeQty('res', 1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">+</button>
                                         </div>
                                     </div>
@@ -932,6 +933,30 @@
                         </button>
                     </div>
 
+                    <!-- Estado de pedidos del usuario -->
+                    <div class="mt-6 border-t border-purple/10 pt-6">
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider flex items-center gap-2">
+                                <i data-lucide="clipboard-list" class="w-5 h-5 text-green"></i> Mis Pedidos
+                            </h4>
+                            <button type="button" onclick="window.startUserOrdersListener(true)" class="text-[10px] font-black text-purple bg-purple/10 hover:bg-purple/20 px-3 py-1.5 rounded-lg transition-all">Actualizar</button>
+                        </div>
+                        <div id="user-orders-list" class="space-y-3">
+                            <p class="text-xs text-gray-500 font-medium">Cuando realices un pedido, podrás ver aquí si está en proceso, confirmado o completado.</p>
+                        </div>
+                    </div>
+
+                    <!-- Canje de puntos del usuario -->
+                    <div class="mt-6 border-t border-purple/10 pt-6">
+                        <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
+                            <i data-lucide="gift" class="w-5 h-5 text-pink"></i> Canje de Puntos
+                        </h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mb-4">Usa tus puntos disponibles para solicitar productos y beneficios. El canje se envía por WhatsApp y queda registrado en tu perfil.</p>
+                        <div id="redeem-items-list" class="grid grid-cols-1 gap-3">
+                            <p class="text-xs text-gray-500 font-medium">Inicia sesión para ver beneficios disponibles.</p>
+                        </div>
+                    </div>
+
                     <!-- Lista de Niveles ACTUALIZADA CON REGLAS -->
                     <div class="space-y-4 mt-8 pt-6 border-t border-purple/10">
                         <div class="flex items-start gap-3">
@@ -985,17 +1010,6 @@
                             <li><strong>Referido con aval de su veterinario:</strong> Bonus de puntos (activa el canal clínico).</li>
                             <li><strong>Testimonio con foto antes/después:</strong> Bonus de puntos por ayudarnos a crecer.</li>
                         </ul>
-
-                        <div id="cliente-canjes-section" class="mt-7 bg-white dark:bg-[#0d0718] p-4 rounded-2xl border border-green/30 dark:border-green/20 shadow-sm">
-                            <div class="flex items-start gap-3 mb-4">
-                                <div class="w-10 h-10 rounded-2xl bg-green/20 text-green-dark dark:text-green flex items-center justify-center shrink-0"><i data-lucide="gift" class="w-5 h-5"></i></div>
-                                <div>
-                                    <h4 class="text-sm font-black text-purple-dark dark:text-white uppercase tracking-wider">Canje de puntos</h4>
-                                    <p class="text-[11px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-1">Elige un beneficio, confirma el canje y envíanos el mensaje por WhatsApp. Los valores de puntos son editables.</p>
-                                </div>
-                            </div>
-                            <div id="cliente-canjes-list" class="space-y-3"></div>
-                        </div>
                     </div>
                 </div>
                 <!-- ESPACIADOR INFERIOR -->
@@ -1170,20 +1184,13 @@
                         Pedir por WhatsApp
                     </button>
 
+                    <button id="btn-ver-mis-pedidos" onclick="window.navigateTo('view-dashboard'); window.startUserOrdersListener(true);" class="hidden w-full flex items-center justify-center gap-2 bg-white dark:bg-darkcard border border-green/30 text-green-dark dark:text-green font-extrabold text-sm py-3.5 rounded-xl shadow-sm hover:bg-green/10 transition-all active:scale-95">
+                        <i data-lucide="clipboard-check" class="w-4 h-4"></i> Ver estado de mi pedido
+                    </button>
+
                     <button id="btn-clear-cart" onclick="window.clearCart()" class="w-full text-center text-xs font-bold text-purple/40 dark:text-gray-500 hover:text-pink transition-colors py-2">
                         Vaciar carrito
                     </button>
-
-                    <div id="order-status-panel" class="hidden bg-white dark:bg-darkcard border border-green/30 dark:border-green/20 rounded-2xl p-5 space-y-3 shadow-sm">
-                        <div class="flex items-start gap-3">
-                            <div class="w-10 h-10 rounded-full bg-green/20 text-green-dark dark:text-green flex items-center justify-center shrink-0"><i data-lucide="clipboard-check" class="w-5 h-5"></i></div>
-                            <div class="flex-1">
-                                <h4 class="text-sm font-black text-purple-dark dark:text-white uppercase tracking-wider">Seguimiento del pedido</h4>
-                                <p id="order-status-text" class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-1">Tu pedido está en proceso.</p>
-                            </div>
-                        </div>
-                        <button type="button" onclick="window.consultarUltimoPedido()" class="w-full bg-purple hover:bg-pink text-white text-xs font-extrabold py-3 rounded-xl transition-all">Ver estado del pedido</button>
-                    </div>
                 </div>
                 <!-- ESPACIADOR INFERIOR -->
                 <div class="h-24 w-full shrink-0 pointer-events-none"></div>
@@ -1194,14 +1201,9 @@
         <section id="view-admin" class="view next">
             <div class="view-wrapper">
                 <div class="max-w-3xl w-full mb-6 text-center md:text-left">
-                    <div class="flex flex-wrap gap-3 justify-center md:justify-start">
-                        <button class="nav-btn flex items-center gap-2 font-bold px-5 py-3 rounded-full border border-purple text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300" data-target="view-calc">
-                            <i data-lucide="scale" class="w-4 h-4"></i> Abrir Calculadora
-                        </button>
-                        <button class="flex items-center gap-2 font-bold px-5 py-3 rounded-full border border-pink text-pink dark:text-white dark:border-pink/30 hover:bg-pink hover:text-white transition-all duration-300" onclick="window.salirAdmin()">
-                            <i data-lucide="log-out" class="w-4 h-4"></i> Cerrar Sesión Admin
-                        </button>
-                    </div>
+                    <button class="nav-btn flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-pink text-pink dark:text-white dark:border-pink/30 hover:bg-pink hover:text-white transition-all duration-300 mx-auto md:mx-0" onclick="window.salirAdmin()">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver a la web
+                    </button>
                     <h2 class="text-3xl md:text-4xl font-black text-purple-dark dark:text-white mt-6 flex items-center justify-center md:justify-start gap-3">
                         <i data-lucide="shield-check" class="w-8 h-8 text-pink"></i> Panel Admin
                     </h2>
@@ -1471,15 +1473,14 @@
             const app = initializeApp(configToUse);
             db = getFirestore(app);
             auth = getAuth(app);
-            setPersistence(auth, browserLocalPersistence).catch(error => {
+            setPersistence(auth, browserLocalPersistence).catch((error) => {
                 console.warn('No se pudo fijar persistencia local de sesión:', error);
             });
 
             const initEnvAuth = async () => {
                 try {
-                    await setPersistence(auth, browserLocalPersistence);
                     await signInAnonymously(auth);
-                } catch(e) { console.warn("Init auth anon error", e); }
+                } catch(e) { console.warn("Init auth anon error"); }
             };
             
             // OPTIMIZACIÓN: 1 sola lectura por sesión (no consume extra en free tier)
@@ -1563,6 +1564,30 @@
                 : doc(db, 'usuarios', uid);
         };
 
+        window.getUsersCollectionRef = function() {
+            return typeof __firebase_config !== 'undefined'
+                ? collection(db, 'artifacts', appId, 'users')
+                : collection(db, 'usuarios');
+        };
+
+        window.getOrdersCollectionRef = function() {
+            return typeof __firebase_config !== 'undefined'
+                ? collection(db, 'artifacts', appId, 'public', 'data', 'pedidos')
+                : collection(db, 'pedidos');
+        };
+
+        window.getOrderDocRef = function(orderId) {
+            return typeof __firebase_config !== 'undefined'
+                ? doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', orderId)
+                : doc(db, 'pedidos', orderId);
+        };
+
+        window.getRedeemsCollectionRef = function() {
+            return typeof __firebase_config !== 'undefined'
+                ? collection(db, 'artifacts', appId, 'public', 'data', 'canjes')
+                : collection(db, 'canjes');
+        };
+
         // =========================================================================================
         // LÓGICA DE INTERFAZ Y NAVEGACIÓN
         // =========================================================================================
@@ -1578,21 +1603,21 @@
         window.userLocation = null;
         window.cart = [];
         window.qtys = { pollo: 1, res: 1 };
-        window.lastCalcResult = null;
-        window.lastOrderId = null;
-        window.unsubUserOrder = null;
-        window.REDEMPTION_ITEMS = [
-            { id: 'snack-higado', title: 'Snack natural', desc: 'Producto o beneficio editable para canje.', points: 100 },
-            { id: 'guia-transicion', title: 'Guía + asesoría de transición', desc: 'Acompañamiento inicial para organizar la transición.', points: 150 },
-            { id: 'bolsa-250', title: 'Bolsa 250g', desc: 'Beneficio editable según disponibilidad.', points: 300 },
-            { id: 'delivery-beneficio', title: 'Beneficio de delivery', desc: 'Aplicable según zona y condiciones de la marca.', points: 500 }
-        ];
         window.isRegisteringPet = false;
         window.isAdmin = window.isAdmin || false;
         window.authReady = window.authReady || false;
         window.entryReady = window.entryReady || false;
         window.welcomeModalScheduled = window.welcomeModalScheduled || false;
+        window.lastOrderId = null;
+        window.lastCalcResult = null;
+        window.REDEEM_ITEMS = [
+            { id: 'snack-natural', name: 'Snack natural Milkarf', benefit: 'Producto de cortesía sujeto a disponibilidad', points: 100 },
+            { id: 'bolsa-250-pollo', name: 'Bolsa 250g Pollo con Zanahoria', benefit: 'Producto Milkarf para canje', points: 300 },
+            { id: 'bolsa-250-res', name: 'Bolsa 250g Res con Calabacín', benefit: 'Producto Milkarf para canje', points: 350 },
+            { id: 'delivery-urbano', name: 'Delivery gratis urbano', benefit: 'Aplica en zonas urbanas y pedidos elegibles', points: 200 }
+        ];
         let unsubAdmin = null;
+        let unsubUserOrders = null;
 
         window.vibrate = function(ms = 50) { if(navigator.vibrate) navigator.vibrate(ms); };
 
@@ -1613,78 +1638,6 @@
             }, 3500);
         };
 
-
-        window.resetEntrada = function({ clearAuth = false } = {}) {
-            window.state = { nombreMascota: '', etapa: null, cachorroEdad: null, actividad: null };
-            window.cart = [];
-            window.qtys = { pollo: 1, res: 1 };
-            window.descuentoAplicado = false;
-            window.userLocation = null;
-            window.lastCalcResult = null;
-            window.currentWeightPollo = '250gr';
-            window.currentWeightRes = '250gr';
-
-            ['calc-nombre', 'pesoInput', 'location-status', 'calc-save-status'].forEach(id => {
-                const el = document.getElementById(id);
-                if(!el) return;
-                if('value' in el) el.value = '';
-                el.classList.add('hidden');
-                if(id === 'location-status') el.textContent = '';
-            });
-
-            ['auth-email-login','auth-pass-login','auth-email-reg','auth-pass-reg','reg-pet-nombre','reg-pet-edad','reg-pet-peso','reg-pet-raza','reg-pet-cumple','pet-nombre','pet-edad','pet-peso','pet-raza','pet-cumple','desc-mascota','desc-code'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el && 'value' in el) el.value = '';
-            });
-
-            document.querySelectorAll('.calc-etapa-btn, .calc-sub-btn').forEach(btn => {
-                btn.classList.remove('active');
-                btn.classList.add('opacity-60');
-            });
-            const subC = document.getElementById('sub-cachorro');
-            const subA = document.getElementById('sub-actividad');
-            if(subC) subC.classList.add('hidden');
-            if(subA) subA.classList.add('hidden');
-            const res = document.getElementById('tu-resultado');
-            if(res) res.classList.remove('show', 'visible');
-            const err = document.getElementById('errorMsg');
-            if(err) { err.classList.remove('visible'); err.textContent = ''; }
-
-            const qp = document.getElementById('qty-pollo');
-            const qr = document.getElementById('qty-res');
-            if(qp) qp.value = '1';
-            if(qr) qr.value = '1';
-            window.applyWeightButtonStyle?.('weight-group-pollo', document.querySelector('#weight-group-pollo button'), '250gr');
-            window.applyWeightButtonStyle?.('weight-group-res', document.querySelector('#weight-group-res button'), '250gr');
-            document.getElementById('price-pollo') && (document.getElementById('price-pollo').textContent = window.PRICES_POLLO['250gr']);
-            document.getElementById('price-res') && (document.getElementById('price-res').textContent = window.PRICES_RES['250gr']);
-
-            const locBtn = document.getElementById('location-btn');
-            const locTxt = document.getElementById('location-btn-text');
-            if(locBtn) {
-                locBtn.disabled = false;
-                locBtn.className = 'w-full flex items-center justify-center gap-2 border-2 border-dashed border-purple/30 dark:border-purple/40 hover:border-purple text-purple dark:text-white font-extrabold text-sm py-3.5 rounded-xl transition-all hover:bg-purple-light dark:hover:bg-purple/10 active:scale-[0.98]';
-            }
-            if(locTxt) locTxt.textContent = 'Marcar mi ubicación en el mapa';
-            if(clearAuth) {
-                window.currentUser = null;
-                window.isAdmin = false;
-            }
-            window.updateCartUI?.();
-            window.renderCanjesCliente?.();
-        };
-
-        window.guardarLocal = function(key, value) {
-            try { localStorage.setItem(key, JSON.stringify(value)); } catch(e) {}
-        };
-
-        window.leerLocal = function(key, fallback = null) {
-            try {
-                const raw = localStorage.getItem(key);
-                return raw ? JSON.parse(raw) : fallback;
-            } catch(e) { return fallback; }
-        };
-
         window.refreshIcons = function(root = document) {
             try {
                 const iconLib = window.lucide || globalThis.lucide;
@@ -1698,6 +1651,64 @@
 
         window.hasRealUserSession = function() {
             return !!(window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email));
+        };
+
+        window.escapeHTML = function(value = '') {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        };
+
+        window.getClientToken = function() {
+            try {
+                let token = localStorage.getItem('milkarf_client_token');
+                if(!token) {
+                    token = 'client_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+                    localStorage.setItem('milkarf_client_token', token);
+                }
+                return token;
+            } catch(e) {
+                if(!window.__fallbackClientToken) window.__fallbackClientToken = 'client_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+                return window.__fallbackClientToken;
+            }
+        };
+
+        window.resetAppStateForLogout = function() {
+            window.currentUser = null;
+            window.isAdmin = false;
+            window.isRegisteringPet = false;
+            window.descuentoAplicado = false;
+            window.userLocation = null;
+            window.lastOrderId = null;
+            window.state = { nombreMascota: '', etapa: null, cachorroEdad: null, actividad: null };
+            window.cart = [];
+            window.qtys = { pollo: 1, res: 1 };
+            window.currentWeightPollo = '250gr';
+            window.currentWeightRes = '250gr';
+            if(unsubUserOrders) { unsubUserOrders(); unsubUserOrders = null; }
+            ['calc-nombre','pesoInput','auth-email-login','auth-pass-login','auth-email-reg','auth-pass-reg','auth-name-reg','reg-pet-nombre','reg-pet-edad','reg-pet-peso','reg-pet-raza','reg-pet-cumple','pet-nombre','pet-edad','pet-peso','pet-raza','pet-cumple','desc-nombre','desc-telefono','desc-mascota'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.value = '';
+            });
+            ['errorMsg','auth-error','pet-error','desc-error','admin-error'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) { el.textContent = ''; el.classList.add('hidden'); el.classList.remove('visible'); }
+            });
+            const result = document.getElementById('tu-resultado');
+            if(result) result.classList.remove('show','visible');
+            const locationStatus = document.getElementById('location-status');
+            if(locationStatus) { locationStatus.classList.add('hidden'); locationStatus.innerHTML = ''; }
+            const locationText = document.getElementById('location-btn-text');
+            if(locationText) locationText.textContent = 'Marcar mi ubicación en el mapa';
+            const orderList = document.getElementById('user-orders-list');
+            if(orderList) orderList.innerHTML = '<p class="text-xs text-gray-500 font-medium">Cuando realices un pedido, podrás ver aquí si está en proceso, confirmado o completado.</p>';
+            const redeemList = document.getElementById('redeem-items-list');
+            if(redeemList) redeemList.innerHTML = '<p class="text-xs text-gray-500 font-medium">Inicia sesión para ver beneficios disponibles.</p>';
+            window.updateCartUI?.();
+            window.updateCalcSaveCTA?.();
         };
 
         window.shouldShowWelcomeModal = function() {
@@ -2015,72 +2026,6 @@
             }
         };
 
-
-        window.renderCanjesCliente = function() {
-            const list = document.getElementById('cliente-canjes-list');
-            if(!list) return;
-            const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email) && !window.isAdmin;
-            const pts = isLogged ? (Number(window.currentUser.data?.puntos) || 0) : 0;
-            if(!isLogged) {
-                list.innerHTML = `
-                    <div class="bg-purple-light dark:bg-purple/10 rounded-xl p-4 border border-purple-border/40 dark:border-purple/20 text-center">
-                        <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mb-3">Inicia sesión para ver tus puntos y canjear beneficios.</p>
-                        <button type="button" onclick="window.abrirModalAuth(); window.switchAuthTab('login')" class="px-4 py-2 bg-purple hover:bg-pink text-white text-xs font-extrabold rounded-xl transition-all">Ingresar</button>
-                    </div>`;
-                return;
-            }
-            list.innerHTML = window.REDEMPTION_ITEMS.map(item => {
-                const available = pts >= item.points;
-                return `
-                <div class="rounded-xl p-4 border ${available ? 'border-green/30 bg-green/5' : 'border-purple-border/40 bg-purple-light/70 dark:bg-purple/10'} flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
-                    <div class="min-w-0">
-                        <h5 class="text-sm font-black text-purple-dark dark:text-white">${item.title}</h5>
-                        <p class="text-[11px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-1">${item.desc}</p>
-                        <p class="text-[10px] font-black text-pink uppercase tracking-widest mt-2">${item.points} pts</p>
-                    </div>
-                    <button type="button" onclick="window.canjearBeneficioCliente('${item.id}')" class="shrink-0 px-4 py-2 rounded-xl text-xs font-black transition-all ${available ? 'bg-green hover:bg-[#a6b621] text-purple-dark' : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'}" ${available ? '' : 'disabled'}>Canjear</button>
-                </div>`;
-            }).join('');
-        };
-
-        window.canjearBeneficioCliente = async function(itemId) {
-            window.vibrate(20);
-            const item = window.REDEMPTION_ITEMS.find(i => i.id === itemId);
-            const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email) && !window.isAdmin;
-            if(!item) return;
-            if(!isLogged) { window.abrirModalAuth(); window.switchAuthTab('login'); return; }
-            const currentPts = Number(window.currentUser.data?.puntos) || 0;
-            if(currentPts < item.points) { window.showToast('No tienes puntos suficientes para este canje.'); return; }
-            const ok = confirm(`¿Confirmas el canje de ${item.title} por ${item.points} puntos?`);
-            if(!ok) return;
-            try {
-                const nextPts = currentPts - item.points;
-                if(db) {
-                    await setDoc(window.getUserPath(window.currentUser.uid), { puntos: nextPts, fecha_actualizacion: serverTimestamp() }, { merge: true });
-                    const canjesRef = typeof __firebase_config !== 'undefined'
-                        ? collection(db, 'artifacts', appId, 'public', 'data', 'canjes')
-                        : collection(db, 'canjes');
-                    await addDoc(canjesRef, {
-                        uid: window.currentUser.uid,
-                        email: window.currentUser.email || '',
-                        itemId: item.id,
-                        itemTitle: item.title,
-                        points: item.points,
-                        status: 'solicitado',
-                        createdAt: new Date().toISOString()
-                    });
-                }
-                window.currentUser.data = { ...(window.currentUser.data || {}), puntos: nextPts };
-                window.actualizarUIAuth?.();
-                const msg = `*Hola Milkarf* 🐾\nQuiero canjear mis puntos por:\n\n*${item.title}*\nCosto: ${item.points} pts\nUsuario: ${window.currentUser.email || 'Cliente'}\n\nMis puntos ya fueron descontados desde la web. Por favor confirmen disponibilidad.`;
-                window.open('https://wa.me/' + window.WA_NUMBER + '?text=' + encodeURIComponent(msg), '_blank');
-                window.showToast('Canje solicitado. Tus puntos fueron descontados.', 'success');
-            } catch(error) {
-                console.error('Error procesando canje de cliente:', error);
-                window.showToast('No se pudo procesar el canje. Inténtalo nuevamente.');
-            }
-        };
-
         window.actualizarUIAuth = function() {
             if (window.isRegisteringPet) return;
 
@@ -2216,7 +2161,11 @@
                 const banner = document.getElementById('descuento-banner');
                 if(banner) banner.classList.remove('hidden');
             }
-            window.renderCanjesCliente?.();
+            window.renderRedeemItems?.();
+            window.updateCalcSaveCTA?.();
+            if(window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email)) {
+                window.startUserOrdersListener?.();
+            }
             if (typeof window.refreshIcons === 'function') window.refreshIcons();
             window.updateCartUI();
         };
@@ -2276,7 +2225,6 @@
                 const btn = document.getElementById('btn-login-email');
                 if(btn){ btn.textContent = "Verificando..."; btn.disabled = true; }
                 
-                await setPersistence(auth, browserLocalPersistence);
                 await signInWithEmailAndPassword(auth, email, pass);
                 
                 if(btn){ btn.textContent = "Iniciar Sesión"; btn.disabled = false; }
@@ -2337,7 +2285,6 @@
                 if (btn) { btn.textContent = "Registrando..."; btn.disabled = true; }
 
                 // 1. Crear cuenta
-                await setPersistence(auth, browserLocalPersistence);
                 const cred = await createUserWithEmailAndPassword(auth, email, pass);
                 
                 // 2. Guardar mascota y datos
@@ -2389,7 +2336,6 @@
             if(!auth || !db) { window.showToast("Firebase no está configurado."); return; }
             const provider = new GoogleAuthProvider();
             try {
-                await setPersistence(auth, browserLocalPersistence);
                 const cred = await signInWithPopup(auth, provider);
                 const userRef = window.getUserPath(cred.user.uid);
                 const docSnap = await getDoc(userRef);
@@ -2410,24 +2356,26 @@
 
         window.cerrarSesion = async function() {
             window.vibrate(20);
-            try {
-                if(window.unsubUserOrder) { try { window.unsubUserOrder(); } catch(e) {} window.unsubUserOrder = null; }
-                if(auth) await signOut(auth);
-            } catch(error) {
-                console.warn('Error cerrando sesión:', error);
-            }
-            window.resetEntrada({ clearAuth: true });
             const authMenu = document.getElementById('auth-dropdown-menu');
             if (authMenu) {
                 authMenu.classList.remove('opacity-100', 'scale-100');
                 authMenu.classList.add('opacity-0', 'scale-95');
                 setTimeout(() => authMenu.classList.add('hidden'), 200);
             }
-            window.navigateTo?.('view-home');
-            window.actualizarUIAuth?.();
-            window.showToast('Sesión cerrada. La página volvió a modo de entrada.', 'success');
+            try {
+                if(auth) await signOut(auth);
+            } catch(error) {
+                console.warn('Error cerrando sesión:', error);
+            } finally {
+                window.resetAppStateForLogout?.();
+                window.actualizarUIAuth?.();
+                window.navigateTo?.('view-home');
+                window.showToast('Sesión cerrada. La página volvió a su estado inicial.', 'success');
+                if(auth) {
+                    try { await signInAnonymously(auth); } catch(e) { console.warn('No se pudo restaurar sesión invitada:', e); }
+                }
+            }
         };
-
 
         // Selectores de tipo de mascota para el formulario UNIFICADO
         window.selectRegPetType = function(type) {
@@ -2561,6 +2509,108 @@
                 const btn = document.getElementById('btn-guardar-perfil');
                 if (btn) { btn.textContent = "Guardar y Finalizar"; btn.disabled = false; }
                 console.error(error);
+            }
+        };
+
+        window.updateCalcSaveCTA = function() {
+            const title = document.getElementById('calc-save-title');
+            const text = document.getElementById('calc-save-text');
+            const btn = document.getElementById('btn-save-calc-pet');
+            if(!title || !text || !btn) return;
+            const hasResult = !!window.lastCalcResult;
+            if(!hasResult) {
+                title.textContent = 'Guarda esta referencia';
+                text.textContent = 'Calcula la ración para poder guardarla en tu perfil.';
+                btn.textContent = 'Guardar datos';
+                btn.disabled = true;
+                btn.classList.add('opacity-60','cursor-not-allowed');
+                return;
+            }
+            btn.disabled = false;
+            btn.classList.remove('opacity-60','cursor-not-allowed');
+            if(window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email) && !window.isAdmin) {
+                title.textContent = 'Guardar en mi perfil';
+                text.textContent = `Guarda los datos de ${window.lastCalcResult.nombre} y consulta su ración recomendada cuando lo necesites.`;
+                btn.textContent = 'Guardar datos';
+            } else if(window.isAdmin) {
+                title.textContent = 'Resultado listo';
+                text.textContent = 'El administrador puede usar la calculadora como referencia sin guardar datos en un perfil.';
+                btn.textContent = 'Uso interno';
+                btn.disabled = true;
+                btn.classList.add('opacity-60','cursor-not-allowed');
+            } else {
+                title.textContent = 'Crea tu cuenta y guarda esta ración';
+                text.textContent = `Guarda los datos de ${window.lastCalcResult.nombre}, acumula puntos y reclama tu 20% de bienvenida.`;
+                btn.textContent = 'Crear cuenta';
+            }
+        };
+
+        window.prefillRegisterFromCalc = function() {
+            if(!window.lastCalcResult) return;
+            const r = window.lastCalcResult;
+            const regName = document.getElementById('reg-pet-nombre');
+            const regWeight = document.getElementById('reg-pet-peso');
+            const regEdad = document.getElementById('reg-pet-edad');
+            if(regName) regName.value = r.nombre || '';
+            if(regWeight) regWeight.value = r.peso || '';
+            if(regEdad && r.etapa) regEdad.value = r.etapa === 'cachorro' ? (r.cachorroEdad + ' meses') : r.etapa;
+            window.selectRegPetType?.('perro');
+        };
+
+        window.guardarMascotaDesdeCalculadora = async function() {
+            window.vibrate(20);
+            if(!window.lastCalcResult) {
+                window.showToast('Primero calcula la ración de tu mascota.');
+                return;
+            }
+            if(window.isAdmin) {
+                window.showToast('Resultado calculado para uso interno del administrador.', 'success');
+                return;
+            }
+            const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
+            if(!isLogged) {
+                window.abrirModalAuth();
+                window.switchAuthTab('register');
+                window.prefillRegisterFromCalc();
+                window.showAuthInfo('Crea tu cuenta para guardar la ración de tu mascota y reclamar tu <b>20% de bienvenida</b>.');
+                return;
+            }
+            if(!db) {
+                window.showToast('No se pudo guardar porque Firebase no está disponible.');
+                return;
+            }
+            const r = window.lastCalcResult;
+            const data = window.currentUser.data || { puntos: 0, puntos_historicos: 0, mascotas: [] };
+            const mascotas = Array.isArray(data.mascotas) ? [...data.mascotas] : [];
+            const petPayload = {
+                id: 'calc_' + Date.now(),
+                tipo: 'perro',
+                nombre: r.nombre,
+                edad: r.etapa === 'cachorro' ? (r.cachorroEdad + ' meses') : r.etapa,
+                peso: r.peso,
+                raza: '',
+                cumple: '',
+                racion: {
+                    gramos: r.gramos,
+                    comidas: r.comidas,
+                    porComida: r.porComida,
+                    etapa: r.etapa,
+                    actividad: r.actividad || r.cachorroEdad || '',
+                    calculatedAt: r.calculatedAt
+                }
+            };
+            const existingIndex = mascotas.findIndex(m => String(m.nombre || '').toLowerCase() === String(r.nombre || '').toLowerCase());
+            if(existingIndex >= 0) mascotas[existingIndex] = { ...mascotas[existingIndex], ...petPayload, id: mascotas[existingIndex].id || petPayload.id };
+            else mascotas.push(petPayload);
+            try {
+                await setDoc(window.getUserPath(window.currentUser.uid), { mascotas }, { merge: true });
+                window.currentUser.data = { ...data, mascotas };
+                window.state.nombreMascota = r.nombre;
+                window.showToast('Datos guardados con éxito.', 'success');
+                window.actualizarUIAuth();
+            } catch(error) {
+                console.error(error);
+                window.showToast('No se pudieron guardar los datos. Intenta nuevamente.');
             }
         };
 
@@ -2840,7 +2890,6 @@
                 err.classList.add('hidden');
                 if(btn) { btn.textContent = "Verificando..."; btn.disabled = true; }
                 
-                await setPersistence(auth, browserLocalPersistence);
                 const cred = await signInWithEmailAndPassword(auth, u, p);
                 const email = cred.user.email?.toLowerCase?.() || '';
                 
@@ -2866,30 +2915,49 @@
         window.salirAdmin = async function() {
             window.vibrate(20);
             try {
-                window.isAdmin = false;
+                window.isAdmin = true; // Mantiene la sesión admin activa en este dispositivo.
                 window.isRegisteringPet = false;
-                if(unsubAdmin) { unsubAdmin(); unsubAdmin = null; }
-
                 window.cerrarModalCanje?.();
                 window.cerrarModalAdmin?.();
                 window.forceCloseMenu?.();
-
-                const adminNav = document.getElementById('admin-nav-links');
-                const mainNav = document.getElementById('main-nav-links');
-                const topAuth = document.getElementById('top-auth-btn-wrap');
-                if(adminNav) adminNav.classList.add('hidden');
-                if(mainNav) mainNav.classList.remove('hidden');
-                if(topAuth) topAuth.style.display = 'block';
-
                 window.navigateTo('view-home');
-
-                if(auth) await signOut(auth);
-                window.resetEntrada({ clearAuth: true });
-                window.currentUser = null;
-                window.actualizarUIAuth?.();
-                window.showToast('Sesión de administrador cerrada.', 'success');
+                const mainNav = document.getElementById('main-nav-links');
+                const adminNav = document.getElementById('admin-nav-links');
+                const topAuth = document.getElementById('top-auth-btn-wrap');
+                if(mainNav) mainNav.classList.add('hidden');
+                if(adminNav) adminNav.classList.remove('hidden');
+                if(topAuth) topAuth.style.display = 'none';
+                window.showToast('Panel cerrado. La sesión admin sigue activa en este dispositivo.', 'success');
             } catch(error) {
-                console.error('Error al cerrar sesión admin:', error);
+                console.error(error);
+                window.showToast('No se pudo volver a la web. Inténtalo de nuevo.');
+            }
+        };
+
+        window.cerrarSesionAdmin = async function() {
+            window.vibrate(20);
+            try {
+                if(unsubAdmin) { unsubAdmin(); unsubAdmin = null; }
+                window.isAdmin = false;
+                window.cerrarModalCanje?.();
+                window.cerrarModalAdmin?.();
+                window.forceCloseMenu?.();
+                if(auth) await signOut(auth);
+                window.resetAppStateForLogout?.();
+                const mainNav = document.getElementById('main-nav-links');
+                const adminNav = document.getElementById('admin-nav-links');
+                const topAuth = document.getElementById('top-auth-btn-wrap');
+                if(mainNav) mainNav.classList.remove('hidden');
+                if(adminNav) adminNav.classList.add('hidden');
+                if(topAuth) topAuth.style.display = 'block';
+                window.actualizarUIAuth?.();
+                window.navigateTo('view-home');
+                window.showToast('Sesión de administrador cerrada.', 'success');
+                if(auth) {
+                    try { await signInAnonymously(auth); } catch(e) { console.warn('No se pudo restaurar sesión invitada:', e); }
+                }
+            } catch(error) {
+                console.error(error);
                 window.showToast('No se pudo cerrar la sesión admin. Inténtalo de nuevo.');
             }
         };
@@ -2941,6 +3009,81 @@
         };
 
 
+        window.getOrderStatusInfo = function(status) {
+            const normalized = String(status || 'en_proceso').toLowerCase();
+            const map = {
+                pendiente: { label: 'En proceso', classes: 'bg-pink/10 text-pink border-pink/20', bar: 'bg-pink' },
+                en_proceso: { label: 'En proceso', classes: 'bg-pink/10 text-pink border-pink/20', bar: 'bg-pink' },
+                confirmado: { label: 'Confirmado', classes: 'bg-green/20 text-green-dark dark:text-green border-green/30', bar: 'bg-green' },
+                verificado: { label: 'Confirmado', classes: 'bg-green/20 text-green-dark dark:text-green border-green/30', bar: 'bg-green' },
+                completado: { label: 'Completado', classes: 'bg-purple/10 text-purple dark:text-purple-light border-purple/20', bar: 'bg-purple' },
+                cancelado: { label: 'Cancelado', classes: 'bg-gray-200 text-gray-500 border-gray-300', bar: 'bg-gray-400' }
+            };
+            return map[normalized] || map.en_proceso;
+        };
+
+        window.startUserOrdersListener = function(forceNavigate = false) {
+            const container = document.getElementById('user-orders-list');
+            if(!container) return;
+            if(!db) {
+                container.innerHTML = '<p class="text-xs text-pink font-bold bg-pink/10 border border-pink/20 rounded-xl p-3">Firebase no está disponible para consultar pedidos.</p>';
+                return;
+            }
+            const token = window.getClientToken();
+            const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
+            const uid = isLogged ? window.currentUser.uid : null;
+            if(!isLogged && !token) {
+                container.innerHTML = '<p class="text-xs text-gray-500 font-medium">Inicia sesión o realiza un pedido para ver su estado.</p>';
+                return;
+            }
+            if(unsubUserOrders) { unsubUserOrders(); unsubUserOrders = null; }
+            const ordersRef = window.getOrdersCollectionRef();
+            container.innerHTML = '<p class="text-xs text-gray-500 font-semibold bg-white dark:bg-darkcard rounded-xl p-3 border border-purple-border/30">Consultando tus pedidos...</p>';
+            unsubUserOrders = onSnapshot(ordersRef, (snapshot) => {
+                const orders = [];
+                snapshot.forEach(d => {
+                    const o = { id: d.id, ...d.data() };
+                    if((uid && o.uid === uid) || (o.clientToken && o.clientToken === token) || (window.lastOrderId && o.id === window.lastOrderId)) {
+                        orders.push(o);
+                    }
+                });
+                orders.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+                window.renderUserOrders(orders);
+            }, (error) => {
+                console.error('Error consultando pedidos del usuario:', error);
+                container.innerHTML = '<p class="text-xs text-pink font-bold bg-pink/10 border border-pink/20 rounded-xl p-3">No se pudieron cargar tus pedidos. Intenta actualizar.</p>';
+            });
+            if(forceNavigate) window.navigateTo?.('view-dashboard');
+        };
+
+        window.renderUserOrders = function(orders = []) {
+            const container = document.getElementById('user-orders-list');
+            if(!container) return;
+            if(!orders.length) {
+                container.innerHTML = '<p class="text-xs text-gray-500 font-medium">Cuando realices un pedido, podrás ver aquí si está en proceso, confirmado o completado.</p>';
+                return;
+            }
+            container.innerHTML = orders.slice(0, 6).map(o => {
+                const info = window.getOrderStatusInfo(o.status);
+                const date = o.createdAt ? new Date(o.createdAt).toLocaleString('es-VE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : 'Pedido reciente';
+                const items = Array.isArray(o.items) ? o.items.map(i => `${i.qty}x ${i.name} ${i.weight ? '(' + i.weight + ')' : ''}`).join(' · ') : 'Pedido Milkarf';
+                const total = typeof o.total === 'number' ? '$' + o.total.toFixed(2) : '';
+                return `
+                    <div class="relative bg-white dark:bg-darkcard rounded-2xl border border-purple-border/30 dark:border-purple/20 p-4 text-left overflow-hidden shadow-sm">
+                        <div class="absolute top-0 left-0 w-1 h-full ${info.bar}"></div>
+                        <div class="flex justify-between items-start gap-3 pl-1">
+                            <div class="min-w-0">
+                                <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">${date}</p>
+                                <h5 class="text-sm font-black text-purple-dark dark:text-white mt-1 truncate">${items}</h5>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 font-bold mt-1">${total}</p>
+                            </div>
+                            <span class="shrink-0 px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${info.classes}">${info.label}</span>
+                        </div>
+                    </div>`;
+            }).join('');
+            window.refreshIcons?.(container);
+        };
+
         window.loadAdminOrders = function() {
             const container = document.getElementById('admin-orders-container');
             if(!window.isAdmin) {
@@ -2957,9 +3100,7 @@
                 return;
             }
 
-            const ordersRef = typeof __firebase_config !== 'undefined' 
-                ? collection(db, 'artifacts', appId, 'public', 'data', 'pedidos')
-                : collection(db, 'pedidos');
+            const ordersRef = window.getOrdersCollectionRef();
             
             if(unsubAdmin) { unsubAdmin(); unsubAdmin = null; }
             unsubAdmin = onSnapshot(ordersRef, (snapshot) => {
@@ -2981,39 +3122,44 @@
                 return;
             }
             container.innerHTML = orders.map(o => {
-                const date = new Date(o.createdAt).toLocaleString('es-VE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
-                const pts = Math.floor(o.total);
-                
+                const date = o.createdAt ? new Date(o.createdAt).toLocaleString('es-VE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : 'Sin fecha';
+                const pts = Math.floor(Number(o.total || 0));
+                const statusInfo = window.getOrderStatusInfo(o.status);
+                const status = String(o.status || 'en_proceso').toLowerCase();
                 let actionButton = '';
-                if(o.status === 'pendiente') {
-                    if (o.uid !== 'anonimo') {
-                        actionButton = `<button onclick="window.aprobarPedidoAdmin('${o.id}', '${o.uid}', ${pts})" class="bg-green text-purple-dark text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-[#a6b621] transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check-circle" class="w-4 h-4"></i> Verificar Pago y Dar Puntos</button>`;
+                if(status === 'pendiente' || status === 'en_proceso') {
+                    if (o.uid && o.uid !== 'anonimo') {
+                        actionButton = `<button onclick="window.aprobarPedidoAdmin('${o.id}', '${o.uid}', ${pts})" class="bg-green text-purple-dark text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-[#a6b621] transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check-circle" class="w-4 h-4"></i> Confirmar pedido y dar puntos</button>`;
                     } else {
-                        actionButton = `<button onclick="window.marcarCompletadoAdmin('${o.id}')" class="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-gray-300 transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check" class="w-4 h-4"></i> Marcar Listo (Invitado)</button>`;
+                        actionButton = `<button onclick="window.confirmarPedidoInvitadoAdmin('${o.id}')" class="bg-green text-purple-dark text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-[#a6b621] transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check-circle" class="w-4 h-4"></i> Confirmar pedido</button>`;
                     }
+                } else if(status === 'confirmado' || status === 'verificado') {
+                    actionButton = `<button onclick="window.marcarCompletadoAdmin('${o.id}')" class="bg-purple text-white text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-pink transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check" class="w-4 h-4"></i> Marcar completado</button>`;
                 }
-
+                const safeUser = window.escapeHTML(o.userName || 'Usuario');
+                const safeItems = Array.isArray(o.items) ? o.items.map(i => `<li><span class="font-bold text-purple-dark dark:text-gray-300">${Number(i.qty || 0)}x</span> ${window.escapeHTML(i.name || 'Producto')} (${window.escapeHTML(i.weight || '')}) ${i.forPet ? `<span class="opacity-60 italic">- ${window.escapeHTML(i.forPet)}</span>` : ''}</li>`).join('') : '<li>Pedido sin detalle</li>';
+                const totalNumber = Number(o.total || 0);
                 return `
                 <div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left relative overflow-hidden transition-all">
-                    ${o.status === 'completado' ? '<div class="absolute top-0 left-0 w-1 h-full bg-green"></div>' : '<div class="absolute top-0 left-0 w-1 h-full bg-pink"></div>'}
+                    <div class="absolute top-0 left-0 w-1 h-full ${statusInfo.bar}"></div>
                     <div class="flex justify-between items-start mb-3 pl-1">
                         <div>
-                            <h4 class="font-black text-purple-dark dark:text-white text-sm md:text-base leading-tight">${o.userName}</h4>
+                            <h4 class="font-black text-purple-dark dark:text-white text-sm md:text-base leading-tight">${safeUser}</h4>
                             <p class="text-[10px] text-purple/50 dark:text-gray-500 font-bold">${date}</p>
                         </div>
-                        <span class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest shrink-0 ${o.status==='completado' ? 'bg-green/20 text-green-dark dark:text-green' : 'bg-pink/10 text-pink'}">
-                            ${o.status}
+                        <span class="px-2.5 py-1 rounded-md border text-[9px] font-black uppercase tracking-widest shrink-0 ${statusInfo.classes}">
+                            ${statusInfo.label}
                         </span>
                     </div>
                     <div class="bg-purple-light dark:bg-[#0d0718] rounded-xl p-3 mb-4 border border-purple-border/30 dark:border-purple/20 pl-1">
                         <ul class="text-xs text-gray-600 dark:text-gray-400 pl-4 list-disc space-y-1.5 font-medium">
-                            ${o.items.map(i => `<li><span class="font-bold text-purple-dark dark:text-gray-300">${i.qty}x</span> ${i.name} (${i.weight}) ${i.forPet ? `<span class="opacity-60 italic">- ${i.forPet}</span>` : ''}</li>`).join('')}
+                            ${safeItems}
                         </ul>
                     </div>
-                    <div class="flex flex-col sm:flex-row justify-between sm:items-center pl-1">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center pl-1 gap-3">
                         <div>
                             <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest block leading-tight">Total Cobrado</span>
-                            <span class="font-black text-purple dark:text-white text-lg">$${o.total.toFixed(2)}</span>
+                            <span class="font-black text-purple dark:text-white text-lg">$${totalNumber.toFixed(2)}</span>
                         </div>
                         ${actionButton}
                     </div>
@@ -3038,15 +3184,13 @@
             container.innerHTML = `
                 <div class="flex justify-between items-center mb-4">
                     <p class="text-xs font-bold text-gray-400">Directorio de Clientes</p>
-                    <div class="flex gap-2"><button onclick="window.loadAdminUsers()" class="text-purple font-bold text-[10px] bg-purple/10 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-purple/20"><i data-lucide="refresh-cw" class="w-3 h-3"></i> Recargar Datos</button><button onclick="window.limpiarBaseAdmin()" class="text-pink font-bold text-[10px] bg-pink/10 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-pink/20"><i data-lucide="trash-2" class="w-3 h-3"></i> Vaciar Base</button></div>
+                    <button onclick="window.loadAdminUsers()" class="text-purple font-bold text-[10px] bg-purple/10 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-purple/20"><i data-lucide="refresh-cw" class="w-3 h-3"></i> Recargar Datos</button>
                 </div>
                 <p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando base de datos...</p>
             `;
             if(window.lucide) window.lucide.createIcons({root: container});
 
-            const usersRef = typeof __firebase_config !== 'undefined' 
-                ? collection(db, 'artifacts', appId, 'users')
-                : collection(db, 'usuarios');
+            const usersRef = window.getUsersCollectionRef();
 
             try {
                 const snapshot = await getDocs(usersRef);
@@ -3063,7 +3207,7 @@
                 container.innerHTML = `
                     <div class="flex justify-between items-center mb-4">
                         <p class="text-xs font-bold text-gray-400">Total: ${users.length} clientes</p>
-                        <div class="flex gap-2 flex-wrap justify-end"><button onclick="window.loadAdminUsers()" class="text-purple font-bold text-[10px] bg-purple/10 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-purple/20 active:scale-95"><i data-lucide="refresh-cw" class="w-3 h-3"></i> Recargar Datos</button><button onclick="window.limpiarBaseAdmin()" class="text-pink font-bold text-[10px] bg-pink/10 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-pink/20 active:scale-95"><i data-lucide="trash-2" class="w-3 h-3"></i> Vaciar Base</button></div>
+                        <button onclick="window.loadAdminUsers()" class="text-purple font-bold text-[10px] bg-purple/10 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-purple/20 active:scale-95"><i data-lucide="refresh-cw" class="w-3 h-3"></i> Recargar Datos</button>
                     </div>
                 ` + users.map(u => {
                     const email = u.email || 'Sin correo registrado';
@@ -3095,11 +3239,11 @@
                         </div>
                         <div class="flex items-center justify-between mb-4 mt-3">
                             ${desc}
-                            <div class="flex flex-wrap gap-2 justify-end">
+                            <div class="flex items-center gap-2">
                                 <button onclick="window.abrirModalCanje('${u.id}', '${email}', ${ptsDisp})" class="text-[10px] bg-green hover:bg-[#a6b621] text-purple-dark px-3 py-1.5 rounded-lg font-black uppercase tracking-widest shadow-md transition-all active:scale-95 flex items-center gap-1">
                                     <i data-lucide="gift" class="w-3.5 h-3.5"></i> Canjear
                                 </button>
-                                <button onclick="window.eliminarUsuarioAdmin('${u.id}', '${email}')" class="text-[10px] bg-pink/10 hover:bg-pink/20 text-pink px-3 py-1.5 rounded-lg font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-1">
+                                <button onclick="window.eliminarUsuarioAdmin('${u.id}', '${email}')" class="text-[10px] bg-pink/10 hover:bg-pink text-pink hover:text-white px-3 py-1.5 rounded-lg font-black uppercase tracking-widest shadow-md transition-all active:scale-95 flex items-center gap-1 border border-pink/20">
                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Eliminar
                                 </button>
                             </div>
@@ -3118,56 +3262,40 @@
             }
         };
 
-        window.limpiarBaseAdmin = async function() {
+        window.eliminarUsuarioAdmin = async function(uid, email = '') {
             window.vibrate(20);
             if(!window.isAdmin) { window.showToast('Debes iniciar sesión como administrador.'); return; }
             if(!db) { window.showToast('Firebase no está disponible.'); return; }
-            const ok1 = confirm('¿Seguro que quieres vaciar la base de datos de lanzamiento? Esto eliminará usuarios, pedidos y canjes guardados en Firestore.');
-            if(!ok1) return;
-            const ok2 = prompt('Para confirmar, escribe BORRAR');
-            if(ok2 !== 'BORRAR') { window.showToast('Acción cancelada.'); return; }
-            try {
-                const usersRef = typeof __firebase_config !== 'undefined' ? collection(db, 'artifacts', appId, 'users') : collection(db, 'usuarios');
-                const ordersRef = window.getOrdersCollection();
-                const canjesRef = typeof __firebase_config !== 'undefined' ? collection(db, 'artifacts', appId, 'public', 'data', 'canjes') : collection(db, 'canjes');
-                const tasks = [];
-                const usersSnap = await getDocs(usersRef);
-                usersSnap.forEach(d => tasks.push(deleteDoc(doc(usersRef, d.id))));
-                if(ordersRef) { const ordersSnap = await getDocs(ordersRef); ordersSnap.forEach(d => tasks.push(deleteDoc(window.getOrderDoc(d.id)))); }
-                try { const canjesSnap = await getDocs(canjesRef); canjesSnap.forEach(d => tasks.push(deleteDoc(doc(canjesRef, d.id)))); } catch(e) { console.warn('No se pudieron listar canjes:', e); }
-                await Promise.allSettled(tasks);
-                window.showToast('Base de datos de Firestore vaciada.', 'success');
-                window.loadAdminUsers();
-                if(typeof window.loadAdminOrders === 'function') window.loadAdminOrders();
-            } catch(error) {
-                console.error('Error vaciando base:', error);
-                window.showToast('No se pudo vaciar la base. Revisa permisos de Firestore.');
-            }
-        };
+            const safeEmail = email || 'este usuario';
+            const ok = confirm(`¿Seguro que deseas eliminar de la base de datos a ${safeEmail}?
 
-        window.eliminarUsuarioAdmin = async function(uid, email) {
-            window.vibrate(20);
-            if(!window.isAdmin) { window.showToast('Debes iniciar sesión como administrador.'); return; }
-            if(!db || !uid) { window.showToast('Firebase no está disponible.'); return; }
-            const ok = confirm(`¿Seguro que deseas eliminar el registro de ${email || uid}?\n\nEsto borrará su documento de usuario y sus pedidos guardados en Firestore. No elimina la cuenta de Firebase Authentication; para eliminar el acceso de correo/Google necesitas hacerlo desde Firebase Console o con una Cloud Function.`);
+Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociados. Esta acción no se puede deshacer.`);
             if(!ok) return;
             try {
                 await deleteDoc(window.getUserPath(uid));
-                const ordersRef = window.getOrdersCollection();
-                if(ordersRef) {
-                    const snap = await getDocs(ordersRef);
-                    const deletes = [];
-                    snap.forEach(d => {
+                const ordersSnap = await getDocs(window.getOrdersCollectionRef());
+                const orderDeletes = [];
+                ordersSnap.forEach(d => {
+                    const data = d.data();
+                    if(data.uid === uid) orderDeletes.push(deleteDoc(d.ref));
+                });
+                await Promise.all(orderDeletes);
+                try {
+                    const redeemsSnap = await getDocs(window.getRedeemsCollectionRef());
+                    const redeemDeletes = [];
+                    redeemsSnap.forEach(d => {
                         const data = d.data();
-                        if(data.uid === uid) deletes.push(deleteDoc(window.getOrderDoc(d.id)));
+                        if(data.uid === uid) redeemDeletes.push(deleteDoc(d.ref));
                     });
-                    await Promise.allSettled(deletes);
+                    await Promise.all(redeemDeletes);
+                } catch(e) {
+                    console.warn('No se pudieron limpiar algunos canjes asociados:', e);
                 }
-                window.showToast('Registro eliminado de la base de datos.', 'success');
+                window.showToast('Usuario eliminado de la base de datos.', 'success');
                 window.loadAdminUsers();
             } catch(error) {
-                console.error('Error eliminando usuario:', error);
-                window.showToast('No se pudo eliminar el registro. Revisa permisos de Firestore.');
+                console.error(error);
+                window.showToast('No se pudo eliminar el usuario. Revisa permisos de Firestore.');
             }
         };
 
@@ -3185,9 +3313,7 @@
             if(!container) { console.warn('admin-birthdays-container no encontrado.'); return; }
             container.innerHTML = '<p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Analizando fechas...</p>';
 
-            const usersRef = typeof __firebase_config !== 'undefined' 
-                ? collection(db, 'artifacts', appId, 'users')
-                : collection(db, 'usuarios');
+            const usersRef = window.getUsersCollectionRef();
 
             try {
                 const snapshot = await getDocs(usersRef);
@@ -3362,6 +3488,84 @@
             }
         };
 
+        window.renderRedeemItems = function() {
+            const container = document.getElementById('redeem-items-list');
+            if(!container) return;
+            const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email) && !window.isAdmin;
+            if(!isLogged) {
+                container.innerHTML = '<p class="text-xs text-gray-500 font-medium bg-white dark:bg-darkcard rounded-xl p-3 border border-purple-border/30">Inicia sesión para ver beneficios disponibles y canjear tus puntos.</p>';
+                return;
+            }
+            const pts = Number(window.currentUser.data?.puntos || 0);
+            container.innerHTML = window.REDEEM_ITEMS.map(item => {
+                const canUse = pts >= item.points;
+                return `
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/30 dark:border-purple/20 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="text-left min-w-0">
+                            <h5 class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(item.name)}</h5>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-1">${window.escapeHTML(item.benefit)}</p>
+                            <p class="text-[10px] font-black text-pink uppercase tracking-widest mt-2">${item.points} pts</p>
+                        </div>
+                        <button type="button" onclick="window.canjearPuntosUsuario('${item.id}')" class="shrink-0 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 ${canUse ? 'bg-green text-purple-dark hover:bg-[#a6b621]' : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'}" ${canUse ? '' : 'disabled'}>
+                            Canjear
+                        </button>
+                    </div>`;
+            }).join('');
+            window.refreshIcons?.(container);
+        };
+
+        window.canjearPuntosUsuario = async function(itemId) {
+            window.vibrate(20);
+            const item = window.REDEEM_ITEMS.find(i => i.id === itemId);
+            if(!item) { window.showToast('Beneficio no encontrado.'); return; }
+            const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email) && !window.isAdmin;
+            if(!isLogged) {
+                window.abrirModalAuth();
+                window.switchAuthTab('login');
+                window.showAuthInfo('Inicia sesión para canjear tus puntos Milkarf.');
+                return;
+            }
+            if(!db) { window.showToast('Firebase no está disponible.'); return; }
+            const currentPts = Number(window.currentUser.data?.puntos || 0);
+            if(currentPts < item.points) {
+                window.showToast('No tienes puntos suficientes para este canje.');
+                return;
+            }
+            const ok = confirm(`¿Deseas canjear ${item.points} puntos por ${item.name}?`);
+            if(!ok) return;
+            try {
+                const newPts = currentPts - item.points;
+                await setDoc(window.getUserPath(window.currentUser.uid), { puntos: newPts }, { merge: true });
+                await addDoc(window.getRedeemsCollectionRef(), {
+                    uid: window.currentUser.uid,
+                    userName: window.currentUser.displayName || window.currentUser.email || 'Usuario Milkarf',
+                    email: window.currentUser.email || '',
+                    itemId: item.id,
+                    itemName: item.name,
+                    benefit: item.benefit,
+                    points: item.points,
+                    status: 'solicitado',
+                    createdAt: new Date().toISOString()
+                });
+                window.currentUser.data = { ...(window.currentUser.data || {}), puntos: newPts };
+                window.actualizarUIAuth();
+                window.showToast('Canje registrado. Te llevaremos a WhatsApp.', 'success');
+                let msg = `*¡Hola Milkarf!* 🐾
+Quiero canjear mis puntos.
+
+*Canje:* ${item.name}
+*Beneficio:* ${item.benefit}
+*Puntos a descontar:* ${item.points} pts
+*Usuario:* ${window.currentUser.displayName || window.currentUser.email || 'Cliente Milkarf'}
+
+Por favor confírmenme la disponibilidad.`;
+                setTimeout(() => window.open('https://wa.me/' + window.WA_NUMBER + '?text=' + encodeURIComponent(msg), '_blank'), 250);
+            } catch(error) {
+                console.error(error);
+                window.showToast('No se pudo procesar el canje. Intenta nuevamente.');
+            }
+        };
+
         window.aprobarPedidoAdmin = async function(orderId, uid, basePts) {
             window.vibrate(20);
             if(!window.isAdmin) { window.showToast('Debes iniciar sesión como administrador.'); return; }
@@ -3391,15 +3595,27 @@
                     }, { merge: true });
                 }
                 
-                const orderRef = typeof __firebase_config !== 'undefined' 
-                    ? doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', orderId)
-                    : doc(db, 'pedidos', orderId);
-                await setDoc(orderRef, { status: 'completado' }, { merge: true });
+                const orderRef = window.getOrderDocRef(orderId);
+                await setDoc(orderRef, { status: 'confirmado', confirmedAt: new Date().toISOString(), pointsGranted: pointsToGive }, { merge: true });
                 
-                window.showToast(`¡Aprobado! +${pointsToGive} pts ${isVIP ? '(VIP 1.5x)' : ''}`, 'success');
+                window.showToast(`¡Pedido confirmado! +${pointsToGive} pts ${isVIP ? '(VIP 1.5x)' : ''}`, 'success');
             } catch(e) {
                 window.showToast("Error al otorgar puntos.");
                 console.error(e);
+            }
+        };
+
+        window.confirmarPedidoInvitadoAdmin = async function(orderId) {
+            window.vibrate(20);
+            if(!window.isAdmin) { window.showToast('Debes iniciar sesión como administrador.'); return; }
+            if(!db) { window.showToast('Firebase no está disponible.'); return; }
+            try {
+                const orderRef = window.getOrderDocRef(orderId);
+                await setDoc(orderRef, { status: 'confirmado', confirmedAt: new Date().toISOString() }, { merge: true });
+                window.showToast('Pedido confirmado.', 'success');
+            } catch(error) {
+                console.error(error);
+                window.showToast('Error al confirmar pedido.');
             }
         };
 
@@ -3408,11 +3624,9 @@
             if(!window.isAdmin) { window.showToast('Debes iniciar sesión como administrador.'); return; }
             if(!db) { window.showToast('Firebase no está disponible.'); return; }
             try {
-                const orderRef = typeof __firebase_config !== 'undefined' 
-                    ? doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', orderId)
-                    : doc(db, 'pedidos', orderId);
-                await setDoc(orderRef, { status: 'completado' }, { merge: true });
-                window.showToast(`Pedido de invitado marcado como completado.`, 'success');
+                const orderRef = window.getOrderDocRef(orderId);
+                await setDoc(orderRef, { status: 'completado', completedAt: new Date().toISOString() }, { merge: true });
+                window.showToast(`Pedido marcado como completado.`, 'success');
             } catch(e) {
                 window.showToast("Error al actualizar pedido.");
                 console.error(e);
@@ -3575,26 +3789,18 @@
             
             window.lastCalcResult = {
                 nombre: window.state.nombreMascota,
+                tipo: 'perro',
                 etapa: window.state.etapa,
                 cachorroEdad: window.state.cachorroEdad,
                 actividad: window.state.actividad,
-                actividadLabel: actLabel,
-                peso: peso,
-                gramos: gramos,
-                kcal: Math.round(70*Math.pow(peso,0.75)*factor),
-                comidas: comidas,
+                peso,
+                gramos,
+                comidas,
                 porComida: Math.round(gramos/comidas),
-                kilosMes: Number((totalGMes / 1000).toFixed(1)),
-                bolsasMes: {
-                    b250: Math.ceil(totalGMes / 250),
-                    b550: Math.ceil(totalGMes / 550),
-                    b850: Math.ceil(totalGMes / 850)
-                },
-                fecha: new Date().toISOString()
+                actLabel,
+                calculatedAt: new Date().toISOString()
             };
-
-            const saveStatus = document.getElementById('calc-save-status');
-            if(saveStatus) saveStatus.classList.add('hidden');
+            window.updateCalcSaveCTA?.();
 
             const tuRes = document.getElementById('tu-resultado');
             if(tuRes) {
@@ -3617,86 +3823,20 @@
             }
         };
 
-
-        window.guardarDatosCalculadora = async function() {
-            window.vibrate(20);
-            const status = document.getElementById('calc-save-status');
-            const btn = document.getElementById('btn-guardar-calc');
-            if(!window.lastCalcResult) {
-                window.showToast('Primero calcula la ración de tu mascota.');
-                return;
-            }
-            if(btn) { btn.textContent = 'Guardando...'; btn.disabled = true; }
-            try {
-                const payload = { ...window.lastCalcResult, fecha_guardado: new Date().toISOString() };
-                const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email) && !window.isAdmin;
-                if(isLogged && db) {
-                    const data = window.currentUser.data || {};
-                    const mascotas = Array.isArray(data.mascotas) ? [...data.mascotas] : [];
-                    const idx = mascotas.findIndex(m => String(m.nombre || '').toLowerCase() === String(payload.nombre || '').toLowerCase());
-                    if(idx >= 0) {
-                        mascotas[idx] = { ...mascotas[idx], peso: payload.peso, racion: payload };
-                    } else {
-                        mascotas.push({ id: Date.now().toString(), tipo: 'perro', nombre: payload.nombre, peso: payload.peso, edad: '', raza: 'Sin especificar', cumple: '', racion: payload });
-                    }
-                    await setDoc(window.getUserPath(window.currentUser.uid), { mascotas, ultima_racion: payload, fecha_actualizacion: serverTimestamp() }, { merge: true });
-                    window.currentUser.data = { ...data, mascotas, ultima_racion: payload };
-                    window.actualizarUIAuth?.();
-                } else {
-                    window.guardarLocal('milkarf_ultima_racion', payload);
-                }
-                if(status) {
-                    status.textContent = 'Guardado con éxito.';
-                    status.classList.remove('hidden');
-                }
-                window.showToast('Guardado con éxito.', 'success');
-            } catch(error) {
-                console.error('Error guardando datos de calculadora:', error);
-                window.showToast('No se pudo guardar. Intenta nuevamente.');
-            } finally {
-                if(btn) { btn.textContent = 'Guardar datos de mascota'; btn.disabled = false; }
-            }
-        };
-
-        window.setQty = function(prod, value, normalize = true) {
-            const num = parseInt(value, 10);
-            let qty = Number.isFinite(num) && num > 0 ? num : 1;
-            qty = Math.min(qty, 999);
-            window.qtys[prod] = qty;
-            const input = document.getElementById(`qty-${prod}`);
-            if(input && normalize) input.value = String(qty);
-            return qty;
-        };
-
-        window.updateCartItemQty = function(key, forPet, delta) {
-            window.vibrate(20);
-            const idx = window.cart.findIndex(i => i.key === key && (i.forPet || '') === (forPet || ''));
-            if(idx === -1) return;
-            const next = (window.cart[idx].qty || 1) + delta;
-            if(next <= 0) window.cart.splice(idx, 1);
-            else window.cart[idx].qty = Math.min(next, 999);
-            window.updateCartUI();
-        };
-
-        window.setCartItemQty = function(key, forPet, value) {
-            const idx = window.cart.findIndex(i => i.key === key && (i.forPet || '') === (forPet || ''));
-            if(idx === -1) return;
-            const qty = Math.max(1, Math.min(999, parseInt(value, 10) || 1));
-            window.cart[idx].qty = qty;
-            window.updateCartUI();
+        window.setQty = function(prod, value) {
+            const parsed = parseInt(value, 10);
+            window.qtys[prod] = Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+            const qtyProd = document.getElementById(`qty-${prod}`);
+            if (qtyProd) qtyProd.value = window.qtys[prod];
         };
 
         window.changeQty = function(prod, delta) {
             window.vibrate(20);
-            window.qtys[prod] = Math.max(1, Math.min(999, (window.qtys[prod] || 1) + delta));
+            window.qtys[prod] = Math.max(1, (window.qtys[prod] || 1) + delta);
             const qtyProd = document.getElementById(`qty-${prod}`);
-            if (qtyProd) {
-                if('value' in qtyProd) qtyProd.value = window.qtys[prod];
-                else qtyProd.textContent = window.qtys[prod];
-            }
+            if (qtyProd) qtyProd.value = window.qtys[prod];
         };
         
-
         window.applyWeightButtonStyle = function(groupId, selectedButton, weight) {
             const group = document.getElementById(groupId);
             if(!group) return;
@@ -3776,91 +3916,116 @@
             
             window.qtys[prod] = 1; 
             const qtyProd = document.getElementById(`qty-${prod}`);
-            if(qtyProd) {
-                if('value' in qtyProd) qtyProd.value = 1;
-                else qtyProd.textContent = 1;
-            }
+            if(qtyProd) qtyProd.value = 1;
         };
 
         window.updateCartUI = function() {
+            window.cart.forEach(i => { i.qty = Math.max(1, parseInt(i.qty, 10) || 1); });
             const tItems = window.cart.reduce((s,i) => s + i.qty, 0);
             const tPrice = window.cart.reduce((s,i) => s + (i.price * i.qty), 0);
+            
             const fab = document.getElementById('cart-fab');
             const cartBadge = document.getElementById('cart-badge');
-            if (cartBadge) cartBadge.textContent = tItems;
             if (tItems > 0) {
                 if(fab) {
                     fab.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
                     fab.classList.remove('pop'); void fab.offsetWidth; fab.classList.add('pop');
                 }
+                if (cartBadge) cartBadge.textContent = tItems;
             } else {
                 if(fab) fab.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+                if (cartBadge) cartBadge.textContent = '0';
             }
 
             const empty = document.getElementById('cart-empty');
             const cont = document.getElementById('cart-items-container');
             const sum = document.getElementById('cart-summary');
+            
             if (window.cart.length === 0) {
-                if(empty) empty.classList.remove('hidden');
-                if(cont) cont.classList.add('hidden');
+                if(empty) empty.classList.remove('hidden'); 
+                if(cont) cont.classList.add('hidden'); 
                 if(sum) sum.classList.add('hidden');
-                const cTotal = document.getElementById('cart-total');
-                if (cTotal) cTotal.textContent = '$0.00';
                 return;
             }
-            if(empty) empty.classList.add('hidden');
-            if(cont) cont.classList.remove('hidden');
+            
+            if(empty) empty.classList.add('hidden'); 
+            if(cont) cont.classList.remove('hidden'); 
             if(sum) sum.classList.remove('hidden');
-
+            
             if(cont) {
-                cont.innerHTML = window.cart.map(i => {
-                    const petSafe = String(i.forPet || '').replace(/'/g, "\\'");
-                    return `
+                cont.innerHTML = window.cart.map((i, idx) => `
                     <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/30 dark:border-purple/20 p-4 shadow-sm">
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex-1 min-w-0">
-                                <div class="font-extrabold text-sm text-purple-dark dark:text-white">${i.name}</div>
-                                <div class="text-[10px] text-purple/50 dark:text-gray-400 font-bold uppercase mt-1">${i.weight}</div>
-                                ${i.forPet ? `<span class="bg-pink/10 text-pink text-[9px] font-bold px-2 py-0.5 rounded uppercase mt-1.5 inline-block">Para ${i.forPet}</span>` : ''}
+                                <div class="font-extrabold text-sm text-purple-dark dark:text-white truncate">${window.escapeHTML(i.name)}</div>
+                                <div class="text-[10px] text-purple/50 dark:text-gray-400 font-bold uppercase mt-1">${window.escapeHTML(i.weight)}</div>
+                                ${i.forPet ? `<span class="bg-pink/10 text-pink text-[9px] font-bold px-2 py-0.5 rounded uppercase mt-1.5 inline-block">Para ${window.escapeHTML(i.forPet)}</span>` : ''}
                             </div>
-                            <button onclick="window.removeFromCart('${i.key}', '${petSafe}')" class="w-8 h-8 bg-pink/10 hover:bg-pink/20 text-pink rounded-full flex items-center justify-center transition-colors active:scale-90 shrink-0" aria-label="Eliminar producto">
+                            <button onclick="window.removeFromCartAt(${idx})" class="w-8 h-8 bg-pink/10 hover:bg-pink/20 text-pink rounded-full flex items-center justify-center transition-colors active:scale-90 shrink-0">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>
-                        <div class="flex items-center justify-between mt-4 gap-3">
+                        <div class="flex items-center justify-between gap-3 mt-4 pt-4 border-t border-purple-border/20 dark:border-purple/20">
                             <div class="flex items-center gap-2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/30 rounded-2xl p-1">
-                                <button type="button" onclick="window.updateCartItemQty('${i.key}', '${petSafe}', -1)" class="w-8 h-8 rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black shadow-sm">−</button>
-                                <input type="number" min="1" max="999" value="${i.qty}" inputmode="numeric" onchange="window.setCartItemQty('${i.key}', '${petSafe}', this.value)" class="w-12 text-center bg-transparent text-purple dark:text-white font-black outline-none text-sm" aria-label="Cantidad en carrito">
-                                <button type="button" onclick="window.updateCartItemQty('${i.key}', '${petSafe}', 1)" class="w-8 h-8 rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black shadow-sm">+</button>
+                                <button type="button" onclick="window.changeCartQty(${idx}, -1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">−</button>
+                                <input type="number" min="1" value="${i.qty}" oninput="window.setCartQty(${idx}, this.value)" class="w-14 h-8 text-center font-black text-purple dark:text-white text-sm bg-transparent outline-none" aria-label="Cantidad en carrito">
+                                <button type="button" onclick="window.changeCartQty(${idx}, 1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">+</button>
                             </div>
-                            <div class="flex flex-col items-end">
+                            <div class="text-right">
                                 <div class="font-black text-pink text-base">$${(i.price * i.qty).toFixed(2)}</div>
-                                <div class="text-[10px] text-gray-400 font-semibold">${i.qty} x $${i.price.toFixed(2)}</div>
+                                <div class="text-[10px] text-gray-400 font-semibold">$${i.price.toFixed(2)} c/u</div>
                             </div>
                         </div>
-                    </div>`;
-                }).join('');
-                window.refreshIcons?.(cont);
+                    </div>
+                `).join('');
+                if(window.lucide) window.lucide.createIcons({root: cont});
             }
 
             const cLines = document.getElementById('cart-summary-lines');
             if (cLines) {
                 cLines.innerHTML = window.cart.map(i => `
-                    <div class="flex justify-between font-medium gap-3">
-                        <span class="text-purple/70 dark:text-gray-300">${i.qty}x ${i.name} (${i.weight}) ${i.forPet ? `<span class="opacity-60 text-xs">· ${i.forPet}</span>` : ''}</span>
+                    <div class="flex justify-between gap-3 font-medium">
+                        <span class="text-purple/70 dark:text-gray-300">${i.qty}x ${window.escapeHTML(i.name)} (${window.escapeHTML(i.weight)}) ${i.forPet ? `<span class="opacity-60 text-xs">· ${window.escapeHTML(i.forPet)}</span>` : ''}</span>
                         <span class="text-purple-dark dark:text-white font-bold shrink-0">$${(i.price * i.qty).toFixed(2)}</span>
                     </div>
                 `).join('');
             }
+            
             const finalPrice = window.descuentoAplicado ? tPrice * 0.8 : tPrice;
             const cOriginal = document.getElementById('cart-total-original');
+            
             if(window.descuentoAplicado) {
-                if (cOriginal) { cOriginal.textContent = `$${tPrice.toFixed(2)}`; cOriginal.classList.remove('hidden'); }
-            } else if (cOriginal) cOriginal.classList.add('hidden');
+                if (cOriginal) {
+                    cOriginal.textContent = `$${tPrice.toFixed(2)}`;
+                    cOriginal.classList.remove('hidden');
+                }
+            } else {
+                if (cOriginal) cOriginal.classList.add('hidden');
+            }
+            
             const cTotal = document.getElementById('cart-total');
             if (cTotal) cTotal.textContent = `$${finalPrice.toFixed(2)}`;
         };
 
+        window.changeCartQty = function(index, delta) {
+            window.vibrate(15);
+            if(!window.cart[index]) return;
+            window.cart[index].qty = Math.max(1, (parseInt(window.cart[index].qty, 10) || 1) + delta);
+            window.updateCartUI();
+        };
+
+        window.setCartQty = function(index, value) {
+            if(!window.cart[index]) return;
+            const parsed = parseInt(value, 10);
+            window.cart[index].qty = Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+            window.updateCartUI();
+        };
+
+        window.removeFromCartAt = function(index) {
+            window.vibrate(20);
+            if(window.cart[index]) window.cart.splice(index, 1);
+            window.updateCartUI();
+        };
 
         window.removeFromCart = function(k, p) { 
             window.vibrate(20); 
@@ -3921,80 +4086,13 @@
             );
         };
 
-        window.getOrdersCollection = function() {
-            if(!db) return null;
-            return typeof __firebase_config !== 'undefined'
-                ? collection(db, 'artifacts', appId, 'public', 'data', 'pedidos')
-                : collection(db, 'pedidos');
-        };
-
-        window.getOrderDoc = function(orderId) {
-            if(!db || !orderId) return null;
-            return typeof __firebase_config !== 'undefined'
-                ? doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', orderId)
-                : doc(db, 'pedidos', orderId);
-        };
-
-        window.mostrarEstadoPedido = function(order) {
-            const panel = document.getElementById('order-status-panel');
-            const text = document.getElementById('order-status-text');
-            if(!panel || !text || !order) return;
-            panel.classList.remove('hidden');
-            const status = String(order.status || 'pendiente').toLowerCase();
-            const isDone = ['completado','confirmado','aprobado'].includes(status);
-            text.innerHTML = isDone
-                ? `<span class="font-black text-green-dark dark:text-green">Pedido confirmado.</span> Ya fue verificado por Milkarf. Código: <strong>${order.id || window.lastOrderId || ''}</strong>`
-                : `<span class="font-black text-pink">Pedido en proceso.</span> Milkarf debe confirmarlo desde el panel administrador. Código: <strong>${order.id || window.lastOrderId || ''}</strong>`;
-            window.refreshIcons?.(panel);
-        };
-
-        window.guardarUltimoPedido = function(orderId, orderData) {
-            window.lastOrderId = orderId;
-            const record = { id: orderId, ...orderData, savedAt: new Date().toISOString() };
-            window.guardarLocal('milkarf_ultimo_pedido', record);
-            window.mostrarEstadoPedido(record);
-            window.watchOrderStatus(orderId);
-        };
-
-        window.watchOrderStatus = function(orderId) {
-            if(window.unsubUserOrder) { try { window.unsubUserOrder(); } catch(e) {} window.unsubUserOrder = null; }
-            const orderRef = window.getOrderDoc(orderId);
-            if(!orderRef) return;
-            window.unsubUserOrder = onSnapshot(orderRef, snap => {
-                if(snap.exists()) {
-                    const data = { id: snap.id, ...snap.data() };
-                    window.guardarLocal('milkarf_ultimo_pedido', data);
-                    window.mostrarEstadoPedido(data);
-                }
-            }, error => console.warn('No se pudo seguir el pedido:', error));
-        };
-
-        window.consultarUltimoPedido = async function() {
-            const localOrder = window.leerLocal('milkarf_ultimo_pedido', null);
-            if(!localOrder?.id) {
-                window.showToast('Aún no tienes un pedido reciente para consultar.');
-                return;
-            }
-            const orderRef = window.getOrderDoc(localOrder.id);
-            if(orderRef) {
-                try {
-                    const snap = await getDoc(orderRef);
-                    if(snap.exists()) {
-                        window.mostrarEstadoPedido({ id: snap.id, ...snap.data() });
-                        window.watchOrderStatus(snap.id);
-                        return;
-                    }
-                } catch(error) { console.warn(error); }
-            }
-            window.mostrarEstadoPedido(localOrder);
-        };
-
-
         window.finalizarPedido = async function() {
             if (!window.cart.length) return;
 
             const tot = window.cart.reduce((s,i) => s + (i.price*i.qty), 0);
             const finalTot = window.descuentoAplicado ? tot * 0.8 : tot;
+            const clientToken = window.getClientToken();
+            let createdOrderId = null;
 
             if (window.descuentoAplicado && window.currentUser && !window.currentUser.isAnonymous && window.currentUser.email) {
                 try {
@@ -4002,14 +4100,10 @@
                         await setDoc(window.getUserPath(window.currentUser.uid), { descuento_usado: true }, { merge: true });
                     } else {
                         let reclamados = [];
-                        try {
-                            reclamados = JSON.parse(localStorage.getItem('milkarf_descuentos_uids') || '[]');
-                        } catch(e){}
+                        try { reclamados = JSON.parse(localStorage.getItem('milkarf_descuentos_uids') || '[]'); } catch(e){}
                         if (!reclamados.includes(window.currentUser.uid)) {
                             reclamados.push(window.currentUser.uid);
-                            try {
-                                localStorage.setItem('milkarf_descuentos_uids', JSON.stringify(reclamados));
-                            } catch(e){}
+                            try { localStorage.setItem('milkarf_descuentos_uids', JSON.stringify(reclamados)); } catch(e){}
                         }
                     }
                     if(window.currentUser.data) window.currentUser.data.descuento_usado = true;
@@ -4021,24 +4115,28 @@
                     const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
                     const orderData = {
                         uid: isLogged ? window.currentUser.uid : 'anonimo',
+                        clientToken,
                         userName: isLogged ? (window.currentUser.displayName || window.currentUser.email) : 'Usuario Invitado',
+                        email: isLogged ? (window.currentUser.email || '') : '',
                         items: window.cart.map(i => ({name: i.name, weight: i.weight, qty: i.qty, price: i.price, forPet: i.forPet||''})),
                         total: finalTot,
                         descuentoAplicado: window.descuentoAplicado,
-                        status: 'pendiente',
+                        status: 'en_proceso',
                         createdAt: new Date().toISOString()
                     };
-                    
-                    const collectionPath = window.getOrdersCollection();
-                    const orderRef = await addDoc(collectionPath, orderData);
-                    window.guardarUltimoPedido(orderRef.id, { id: orderRef.id, ...orderData });
+                    const orderDoc = await addDoc(window.getOrdersCollectionRef(), orderData);
+                    createdOrderId = orderDoc.id;
+                    window.lastOrderId = createdOrderId;
+                    try { localStorage.setItem('milkarf_last_order_id', createdOrderId); } catch(e){}
                 } catch (error) {
                     console.error("No se pudo guardar el pedido en el registro: ", error);
+                    window.showToast('No se pudo registrar el pedido para seguimiento, pero puedes enviarlo por WhatsApp.');
                 }
             }
 
             const items = window.cart.map(i => `- ${i.qty}x ${i.name} (${i.weight}) ${i.forPet ? `_para ${i.forPet}_` : ''}`).join('\n');
             let msg = `*¡Hola Milkarf!* 🐾\nQuiero hacer este pedido:\n\n${items}\n\n`;
+            if(createdOrderId) msg += `*Código de seguimiento:* ${createdOrderId}\n\n`;
             
             if (window.descuentoAplicado) {
                 msg += `*Subtotal:* $${tot.toFixed(2)}\n*Descuento (20%):* -$${(tot * 0.2).toFixed(2)}\n*Total a pagar: $${finalTot.toFixed(2)}*\n\n_(Descuento de primera compra aplicado)_`;
@@ -4053,8 +4151,11 @@
             msg += `\n\nPor favor confírmame el total con envío. ¡Gracias!`;
             
             window.descuentoAplicado = false;
-            window.actualizarUIAuth(); 
-            
+            window.actualizarUIAuth();
+            window.startUserOrdersListener?.();
+            const btnVerPedidos = document.getElementById('btn-ver-mis-pedidos');
+            if(btnVerPedidos) btnVerPedidos.classList.remove('hidden');
+            window.showToast('Pedido registrado. Puedes ver su estado en “Mis Pedidos”.', 'success');
             window.open('https://wa.me/' + window.WA_NUMBER + '?text=' + encodeURIComponent(msg), '_blank');
         };
 
@@ -4245,14 +4346,6 @@
                     }
                 });
             });
-
-            window.updateCartUI?.();
-            window.renderCanjesCliente?.();
-            const savedOrder = window.leerLocal?.('milkarf_ultimo_pedido', null);
-            if(savedOrder?.id) {
-                window.mostrarEstadoPedido?.(savedOrder);
-                setTimeout(() => window.watchOrderStatus?.(savedOrder.id), 600);
-            }
         }
 
         // LÓGICA DEL PRELOADER DINÁMICO OPTIMIZADO Y RESISTENTE A FALLAS DE ENTRADA
