@@ -44,9 +44,17 @@
         body { position: relative; background-color: #f5f0e8; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         @media (prefers-color-scheme: dark) { body { background-color: #0d0718; } }
 
-        /* FIX: Compatibilidad appearance para que VS Code no marque advertencia */
-        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; margin: 0; }
-        input[type=number], input[type=text], input[type=tel], input[type=email], input[type=password], input[type=date] { -moz-appearance: textfield; appearance: textfield; }
+        /* FIX DE COMPATIBILIDAD DE CSS */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            appearance: none; 
+            margin: 0; 
+        }
+        input[type=number], input[type=text], input[type=tel], input[type=email], input[type=password], input[type=date] { 
+            -moz-appearance: textfield; 
+            appearance: textfield; 
+        }
 
         #prezi-canvas { position: absolute; inset: 0; perspective: 1500px; z-index: 2; }
         
@@ -80,6 +88,44 @@
         .btn-opt.active { background-color: #421d8e !important; border-color: #421d8e !important; color: #ffffff !important; opacity: 1 !important; box-shadow: 0 4px 12px rgba(66,29,142,0.3) !important; }
         @media (prefers-color-scheme: dark) {
             .btn-opt.active { background-color: #b9cb25 !important; border-color: #b9cb25 !important; color: #2e1060 !important; box-shadow: 0 4px 12px rgba(185,203,37,0.2) !important; }
+        }
+
+
+        .weight-size-btn {
+            transition: all 0.2s ease;
+            box-shadow: none;
+        }
+        .weight-size-btn.weight-active {
+            opacity: 1 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(66, 29, 142, 0.18);
+        }
+        .nutrition-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            overflow: hidden;
+            border-radius: 16px;
+        }
+        .nutrition-table th,
+        .nutrition-table td {
+            padding: 10px 12px;
+            vertical-align: top;
+        }
+        .nutrition-table th {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+        .nutrition-table td {
+            font-size: 10px;
+            line-height: 1.45;
+            font-weight: 600;
+        }
+        @media (max-width: 480px) {
+            .nutrition-table th,
+            .nutrition-table td { padding: 8px 9px; }
+            .nutrition-table td { font-size: 9px; }
         }
 
         .result {
@@ -363,7 +409,7 @@
                             <div class="text-[10px] font-bold text-purple/50 dark:text-gray-400 tracking-wider uppercase mb-3 flex items-center gap-2 text-left">
                                 <span class="w-5 h-5 bg-purple dark:bg-green dark:text-darkbg text-white text-[10px] font-black rounded-full flex items-center justify-center">1</span> Nombre de tu mascota
                             </div>
-                            <input type="text" id="calc-nombre" placeholder="Ej. Firulais" class="w-full bg-purple-light dark:bg-[#0d0718] border-2 border-purple-border/50 dark:border-purple/30 rounded-2xl p-4 text-lg font-black text-purple dark:text-white outline-none focus:border-purple transition-all text-center">
+                            <input type="text" id="calc-nombre" name="calc_pet_name" autocomplete="off" autocapitalize="words" placeholder="Ej. Firulais" class="w-full bg-purple-light dark:bg-[#0d0718] border-2 border-purple-border/50 dark:border-purple/30 rounded-2xl p-4 text-lg font-black text-purple dark:text-white outline-none focus:border-purple transition-all text-center">
                         </div>
 
                         <!-- PASO 2: ETAPA -->
@@ -408,7 +454,7 @@
                                 <span class="w-5 h-5 bg-purple dark:bg-green dark:text-darkbg text-white text-[10px] font-black rounded-full flex items-center justify-center">3</span> Peso actual
                             </div>
                             <div class="flex items-center gap-3">
-                                <input type="text" inputmode="decimal" id="pesoInput" class="flex-1 w-full min-w-0 p-4 rounded-2xl bg-purple-light dark:bg-[#0d0718] border-2 border-purple-border/50 dark:border-purple/30 text-2xl font-black text-purple dark:text-white outline-none focus:border-purple transition-all text-center" placeholder="0">
+                                <input type="text" inputmode="decimal" id="pesoInput" name="calc_pet_weight_kg" autocomplete="off" autocorrect="off" spellcheck="false" pattern="[0-9]+([\.,][0-9]+)?" class="flex-1 w-full min-w-0 p-4 rounded-2xl bg-purple-light dark:bg-[#0d0718] border-2 border-purple-border/50 dark:border-purple/30 text-2xl font-black text-purple dark:text-white outline-none focus:border-purple transition-all text-center" placeholder="0">
                                 <span class="text-lg font-black text-purple/40 dark:text-gray-500 uppercase shrink-0">kg</span>
                             </div>
                             <div class="flex gap-2 mt-3">
@@ -510,8 +556,7 @@
                         </div>
                     </div>
                 </div>
-                
-                <!-- ESPACIADOR INFERIOR PARA EVITAR CORTE DE CALCULADORA EN MOVILES -->
+                <!-- ESPACIADOR INFERIOR -->
                 <div class="h-32 md:h-48 w-full shrink-0 pointer-events-none"></div>
             </div>
         </section>
@@ -538,16 +583,34 @@
                             <div class="text-left space-y-2">
                                 <h3 class="text-2xl font-black text-purple-dark dark:text-white">Pollo con Zanahoria</h3>
                                 <p class="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
-                                    <strong>Ingredientes:</strong> Muslos de pollo, patas de pollo (calcio natural), mollejas de pollo, vísceras selectas, zanahoria fresca, semillas de chía, omega 3, vitamina E, kelp y aceite de oliva.
+                                    <strong>Ingredientes:</strong> Muslos con piel, patas, mollejas y vísceras selectas de pollo, zanahorias frescas, semillas de chía, vitaminas y minerales.
                                 </p>
+                                <div class="mt-4 bg-purple-light/70 dark:bg-[#0d0718] rounded-2xl border border-purple-border/40 dark:border-purple/20 overflow-hidden">
+                                    <div class="px-4 py-3 border-b border-purple-border/40 dark:border-purple/20 flex items-center gap-2">
+                                        <i data-lucide="clipboard-list" class="w-4 h-4 text-pink shrink-0"></i>
+                                        <span class="text-[10px] font-black tracking-widest text-purple-dark dark:text-white uppercase">Aportes principales</span>
+                                    </div>
+                                    <table class="nutrition-table">
+                                        <thead class="bg-white/70 dark:bg-darkcard/60 text-purple/60 dark:text-gray-400">
+                                            <tr><th class="text-left">Aporte</th><th class="text-left">Fuente</th><th class="text-left">Función</th></tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-purple-border/30 dark:divide-purple/10 text-gray-600 dark:text-gray-300">
+                                            <tr><td>Proteína animal</td><td>Muslos, mollejas y vísceras selectas</td><td>Apoya el mantenimiento muscular.</td></tr>
+                                            <tr><td>Calcio natural</td><td>Patas de pollo</td><td>Apoya huesos y dientes.</td></tr>
+                                            <tr><td>Fibra y micronutrientes</td><td>Zanahoria fresca</td><td>Acompaña la digestión y aporta variedad vegetal.</td></tr>
+                                            <tr><td>Ácidos grasos y fibra funcional</td><td>Semillas de chía</td><td>Complemento natural dentro de la receta.</td></tr>
+                                            <tr><td>Balance nutricional</td><td>Vitaminas y minerales</td><td>Ayuda a completar la fórmula.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                             <div class="space-y-4">
                                 <div class="text-left">
                                     <span class="text-[10px] font-black tracking-widest text-purple/50 dark:text-gray-500 uppercase block mb-2">Presentación:</span>
                                     <div class="grid grid-cols-3 gap-2" id="weight-group-pollo">
-                                        <button class="weight-btn-pollo p-3 text-xs font-extrabold text-purple-dark border-2 border-green rounded-xl bg-green opacity-100" onclick="window.selectWeightPollo('250gr', this)">250g</button>
-                                        <button class="weight-btn-pollo p-3 text-xs font-extrabold text-purple dark:text-white border-2 border-purple-border/50 dark:border-purple/30 rounded-xl bg-white dark:bg-darkbg opacity-60" onclick="window.selectWeightPollo('550gr', this)">550g</button>
-                                        <button class="weight-btn-pollo p-3 text-xs font-extrabold text-purple dark:text-white border-2 border-purple-border/50 dark:border-purple/30 rounded-xl bg-white dark:bg-darkbg opacity-60" onclick="window.selectWeightPollo('850gr', this)">850g</button>
+                                        <button class="weight-btn-pollo weight-size-btn p-3 text-xs font-extrabold text-white border-2 border-purple rounded-xl bg-purple opacity-100 weight-active" onclick="window.selectWeightPollo('250gr', this)">250g</button>
+                                        <button class="weight-btn-pollo weight-size-btn p-3 text-xs font-extrabold text-purple dark:text-white border-2 border-purple-border/50 dark:border-purple/30 rounded-xl bg-white dark:bg-darkbg opacity-60" onclick="window.selectWeightPollo('550gr', this)">550g</button>
+                                        <button class="weight-btn-pollo weight-size-btn p-3 text-xs font-extrabold text-purple dark:text-white border-2 border-purple-border/50 dark:border-purple/30 rounded-xl bg-white dark:bg-darkbg opacity-60" onclick="window.selectWeightPollo('850gr', this)">850g</button>
                                     </div>
                                 </div>
                                 <div class="border-t border-purple-border/20 dark:border-purple/20 pt-5 space-y-4">
@@ -580,16 +643,34 @@
                             <div class="text-left space-y-2">
                                 <h3 class="text-2xl font-black text-purple-dark dark:text-white">Carne de Res con Calabacín</h3>
                                 <p class="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
-                                    <strong>Ingredientes:</strong> Carne de res magra cruda, corazón, vísceras selectas, patas de pollo (calcio natural), calabacín fresco, semillas de chía, omega 3, vitamina E, kelp y aceite de oliva.
+                                    <strong>Ingredientes:</strong> Carne magra de res, corazón, lengua y vísceras selectas de res, calabacín fresco, semillas de chía, vitaminas y minerales. <strong>Contiene patas de pollo.</strong>
                                 </p>
+                                <div class="mt-4 bg-purple-light/70 dark:bg-[#0d0718] rounded-2xl border border-purple-border/40 dark:border-purple/20 overflow-hidden">
+                                    <div class="px-4 py-3 border-b border-purple-border/40 dark:border-purple/20 flex items-center gap-2">
+                                        <i data-lucide="clipboard-list" class="w-4 h-4 text-green-dark dark:text-green shrink-0"></i>
+                                        <span class="text-[10px] font-black tracking-widest text-purple-dark dark:text-white uppercase">Aportes principales</span>
+                                    </div>
+                                    <table class="nutrition-table">
+                                        <thead class="bg-white/70 dark:bg-darkcard/60 text-purple/60 dark:text-gray-400">
+                                            <tr><th class="text-left">Aporte</th><th class="text-left">Fuente</th><th class="text-left">Función</th></tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-purple-border/30 dark:divide-purple/10 text-gray-600 dark:text-gray-300">
+                                            <tr><td>Proteína animal</td><td>Carne magra, corazón y lengua</td><td>Apoya el mantenimiento muscular.</td></tr>
+                                            <tr><td>Nutrientes de vísceras</td><td>Vísceras selectas de res</td><td>Aporta variedad de micronutrientes.</td></tr>
+                                            <tr><td>Calcio natural</td><td>Patas de pollo</td><td>Apoya huesos y dientes.</td></tr>
+                                            <tr><td>Fibra y micronutrientes</td><td>Calabacín fresco</td><td>Acompaña la digestión y aporta variedad vegetal.</td></tr>
+                                            <tr><td>Balance nutricional</td><td>Vitaminas y minerales</td><td>Ayuda a completar la fórmula.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                             <div class="space-y-4">
                                 <div class="text-left">
                                     <span class="text-[10px] font-black tracking-widest text-purple/50 dark:text-gray-500 uppercase block mb-2">Presentación:</span>
                                     <div class="grid grid-cols-3 gap-2" id="weight-group-res">
-                                        <button class="weight-btn-res p-3 text-xs font-extrabold text-purple-dark border-2 border-green rounded-xl bg-green opacity-100" onclick="window.selectWeightRes('250gr', this)">250g</button>
-                                        <button class="weight-btn-res p-3 text-xs font-extrabold text-purple dark:text-white border-2 border-purple-border/50 dark:border-purple/30 rounded-xl bg-white dark:bg-darkbg opacity-60" onclick="window.selectWeightRes('550gr', this)">550g</button>
-                                        <button class="weight-btn-res p-3 text-xs font-extrabold text-purple dark:text-white border-2 border-purple-border/50 dark:border-purple/30 rounded-xl bg-white dark:bg-darkbg opacity-60" onclick="window.selectWeightRes('850gr', this)">850g</button>
+                                        <button class="weight-btn-res weight-size-btn p-3 text-xs font-extrabold text-white border-2 border-purple rounded-xl bg-purple opacity-100 weight-active" onclick="window.selectWeightRes('250gr', this)">250g</button>
+                                        <button class="weight-btn-res weight-size-btn p-3 text-xs font-extrabold text-purple dark:text-white border-2 border-purple-border/50 dark:border-purple/30 rounded-xl bg-white dark:bg-darkbg opacity-60" onclick="window.selectWeightRes('550gr', this)">550g</button>
+                                        <button class="weight-btn-res weight-size-btn p-3 text-xs font-extrabold text-purple dark:text-white border-2 border-purple-border/50 dark:border-purple/30 rounded-xl bg-white dark:bg-darkbg opacity-60" onclick="window.selectWeightRes('850gr', this)">850g</button>
                                     </div>
                                 </div>
                                 <div class="border-t border-purple-border/20 dark:border-purple/20 pt-5 space-y-4">
@@ -730,7 +811,6 @@
                             <i data-lucide="users" class="w-5 h-5 text-pink"></i> Mi Núcleo Multiespecies
                         </h4>
                         <div id="dashboard-pets-list" class="space-y-3">
-                            <!-- Aquí se inyectan las mascotas -->
                             <p class="text-xs text-gray-500 font-medium">Inicia sesión para ver y registrar a tus mascotas.</p>
                         </div>
                         <button id="btn-add-pet-view" onclick="window.abrirModalAgregarMascota()" class="hidden w-full mt-4 py-3 border-2 border-dashed border-purple/30 text-purple dark:text-purple-light font-bold rounded-xl hover:bg-purple/5 transition-all text-xs">
@@ -740,23 +820,40 @@
 
                     <!-- Lista de Niveles ACTUALIZADA CON REGLAS -->
                     <div class="space-y-4 mt-8 pt-6 border-t border-purple/10">
-                        <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider">Milkarf Points & Niveles</h4>
-                        <p class="text-xs text-gray-500 font-medium">Gana 1 punto base por cada $1 de compra. Los puntos se canjean por regalos (snacks, bolsas extra), nunca por descuento en factura. Tu nivel es un logro de por vida y NO baja al canjear puntos.</p>
+                        <div class="flex items-start gap-3">
+                            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple to-pink text-white flex items-center justify-center shadow-lg shrink-0">
+                                <i data-lucide="sparkles" class="w-5 h-5 text-green"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-black text-purple-dark dark:text-white tracking-tight">Milkarf Points & Niveles</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-1">Acumula 1 punto por cada $1 que gastas. Mientras más consientes a tu peludo, más ganas — y tu nivel nunca baja!</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-[#0d0718] p-4 rounded-2xl border border-purple-border/50 dark:border-purple/20 shadow-sm">
+                            <h5 class="text-[10px] font-black uppercase tracking-widest text-pink mb-3">Niveles</h5>
+                            <div class="space-y-2 text-xs font-bold text-purple-dark dark:text-gray-200">
+                                <p>🐶 Cachorro (0–100 pts): <span class="text-gray-500 dark:text-gray-400 font-semibold">ganas 1 pt por $1</span></p>
+                                <p>💛 Consentido (101–499 pts): <span class="text-gray-500 dark:text-gray-400 font-semibold">ganas 1.25 pt por $1</span></p>
+                                <p>👑 Milkarf VIP (500+ pts): <span class="text-gray-500 dark:text-gray-400 font-semibold">ganas 1.5 pt por $1</span></p>
+                            </div>
+                            <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium leading-relaxed mt-4 bg-purple-light/70 dark:bg-purple/10 p-3 rounded-xl border border-purple-border/40 dark:border-purple/20">Subes de nivel solo con tus compras, y al llegar te quedas ahí para siempre. Luego podrás canjear tus puntos por diferentes productos y sorpresas. Tu nivel se mantiene!</p>
+                        </div>
                         
                         <div class="bg-purple-light dark:bg-[#0d0718] p-4 rounded-xl border border-purple-border/50 dark:border-purple/20 space-y-3">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-green/20 flex items-center justify-center text-green-dark font-black text-xl shrink-0">🐾</div>
+                                <div class="w-10 h-10 rounded-full bg-green/20 flex items-center justify-center text-green-dark font-black text-xl shrink-0">🐶</div>
                                 <div>
                                     <h5 class="font-black text-purple-dark dark:text-white text-sm">Cachorro (Nivel 1)</h5>
-                                    <p class="text-[11px] text-gray-500 font-medium leading-tight mt-1">Bienvenida 20% (1° compra), Guía de transición, Puntos 1x.</p>
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium leading-tight mt-1">20% de descuento en la primera compra, guía de transición e información de Milkarf. Puntos 1x.</p>
                                 </div>
                             </div>
                             <hr class="border-purple-border/30 dark:border-purple/10">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-pink/10 flex items-center justify-center text-pink font-black text-xl shrink-0">🐕</div>
+                                <div class="w-10 h-10 rounded-full bg-pink/10 flex items-center justify-center text-pink font-black text-xl shrink-0">💛</div>
                                 <div>
                                     <h5 class="font-black text-pink-dark dark:text-pink text-sm">Consentido (Nivel 2)</h5>
-                                    <p class="text-[11px] text-gray-500 font-medium leading-tight mt-1">Puntos 1x, Regalos en el mes de cumpleaños de tu mascota, Acceso anticipado.</p>
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium leading-tight mt-1">Regalo en el día de cumpleaños de tu mascota, recordatorio de recompra por WhatsApp. Puntos 1.25x.</p>
                                 </div>
                             </div>
                             <hr class="border-purple-border/30 dark:border-purple/10">
@@ -764,7 +861,7 @@
                                 <div class="w-10 h-10 rounded-full bg-purple/10 flex items-center justify-center text-purple font-black text-xl shrink-0">👑</div>
                                 <div>
                                     <h5 class="font-black text-purple-dark dark:text-white text-sm">Milkarf VIP (Nivel 3)</h5>
-                                    <p class="text-[11px] text-gray-500 font-medium leading-tight mt-1">Puntos 1.5x, Envío gratis (pedidos ≥$20 zona urbana), Treat de regalo cada N pedidos, Prioridad.</p>
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium leading-tight mt-1">Delivery gratis en zonas urbanas en pedidos mayores a $40, acceso anticipado a productos nuevos. Puntos 1.5x.</p>
                                 </div>
                             </div>
                         </div>
@@ -926,7 +1023,7 @@
             </div>
         </section>
 
-        <!-- PANEL DE ADMINISTRACIÓN (NUEVO DISEÑO CON CANJES Y CUMPLEAÑOS) -->
+        <!-- PANEL DE ADMINISTRACIÓN -->
         <section id="view-admin" class="view next">
             <div class="view-wrapper">
                 <div class="max-w-3xl w-full mb-6 text-center md:text-left">
@@ -971,7 +1068,8 @@
 
     </div>
 
-    <!-- MODALES EXTRAS (ADMIN) -->
+    <!-- MODALES -->
+    
     <!-- LOGIN ADMIN -->
     <div id="modal-admin-login" class="fixed inset-0 z-[1002] bg-black/80 backdrop-blur-md hidden items-center justify-center opacity-0 transition-opacity duration-300 p-4">
         <div id="modal-admin-box" class="bg-white dark:bg-darkcard w-full max-w-sm rounded-[2rem] shadow-2xl p-8 transform scale-95 transition-transform duration-300 text-center border border-pink/50 relative pointer-events-auto flex flex-col">
@@ -979,7 +1077,7 @@
             <div class="w-16 h-16 bg-pink/10 rounded-full flex items-center justify-center text-pink mx-auto mb-4"><i data-lucide="lock" class="w-8 h-8"></i></div>
             <h3 class="text-2xl font-black text-purple-dark dark:text-white mb-2">Acceso Restringido</h3>
             <p class="text-xs text-gray-500 mb-5">Área exclusiva de administración.</p>
-            <input type="email" id="admin-user-input" placeholder="Correo Admin" class="w-full bg-purple-light dark:bg-[#0d0718] border border-pink/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-pink text-center mb-3">
+            <input type="text" id="admin-user-input" placeholder="Correo Admin" class="w-full bg-purple-light dark:bg-[#0d0718] border border-pink/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-pink text-center mb-3">
             <input type="password" id="admin-pass-input" placeholder="Contraseña" class="w-full bg-purple-light dark:bg-[#0d0718] border border-pink/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-pink text-center mb-3">
             <button id="btn-login-admin" onclick="window.verificarLoginAdmin()" class="w-full bg-pink hover:bg-pink-dark text-white font-extrabold text-sm py-3.5 rounded-xl transition-all shadow-md">Verificar Identidad</button>
             <div id="admin-error" class="hidden mt-3 text-xs font-bold text-pink bg-pink/10 p-2 rounded-lg text-center leading-tight"></div>
@@ -999,8 +1097,8 @@
                 </div>
             </div>
             
-            <div class="bg-purple/5 p-4 rounded-xl border border-purple/10 mb-4 flex justify-between items-center">
-                <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Puntos Disponibles</span>
+            <div class="bg-purple/5 dark:bg-purple/10 p-4 rounded-xl border border-purple/10 mb-4 flex justify-between items-center">
+                <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Disponibles</span>
                 <span id="canje-user-pts" class="text-xl font-black text-purple dark:text-white">0</span>
             </div>
 
@@ -1069,7 +1167,8 @@
                             
                             <div class="flex gap-2">
                                 <input type="text" id="reg-pet-raza" placeholder="Raza (Opcional)" class="w-1/2 bg-white dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple">
-                                <input type="date" id="reg-pet-cumple" title="Fecha de Nacimiento" class="w-1/2 bg-white dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold text-gray-500 outline-none focus:border-purple">
+                                <!-- TRUCO VISUAL: Input de cumple convertido a calendario dinámico -->
+                                <input placeholder="Cumpleaños" type="text" onfocus="window.prepareBirthdayInput(this)" onblur="this.type=this.value?'date':'text'" id="reg-pet-cumple" autocomplete="off" class="w-1/2 bg-white dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold text-gray-500 outline-none focus:border-purple">
                             </div>
                         </div>
 
@@ -1095,7 +1194,7 @@
                     <div id="auth-error" class="hidden mt-3 text-xs font-bold text-pink bg-pink/10 border border-pink/20 p-2.5 rounded-lg text-center leading-tight"></div>
                 </div>
 
-                <!-- PASO 2: PERFIL DE MASCOTA (Solo para los que entran con Google y no tienen mascota registrada) -->
+                <!-- PASO 2: PERFIL DE MASCOTA -->
                 <div id="form-pet-profile" class="space-y-3 hidden text-left w-full mt-2 pb-2">
                     <h4 class="text-sm font-black text-purple-dark dark:text-white text-center mb-2">¡Último paso!</h4>
                     <p class="text-[10px] text-gray-500 text-center mb-4 font-medium leading-relaxed">Completa los datos de tu peludo para brindarle atención personalizada y finalizar tu registro.</p>
@@ -1115,7 +1214,7 @@
                     
                     <div class="flex gap-2">
                         <input type="text" id="pet-raza" placeholder="Raza (Opcional)" class="w-1/2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple">
-                        <input type="date" id="pet-cumple" title="Fecha de Nacimiento" class="w-1/2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold text-gray-500 outline-none focus:border-purple">
+                        <input placeholder="Cumpleaños" type="text" onfocus="window.prepareBirthdayInput(this)" onblur="this.type=this.value?'date':'text'" id="pet-cumple" autocomplete="off" class="w-1/2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold text-gray-500 outline-none focus:border-purple">
                     </div>
                     
                     <div id="pet-error" class="hidden mt-2 text-xs font-bold text-pink bg-pink/10 border border-pink/20 p-3 rounded-lg text-center leading-tight"></div>
@@ -1140,7 +1239,7 @@
                     <strong class="font-black text-pink text-lg tracking-wide uppercase bg-pink/10 px-2 py-1 rounded-lg mt-1 inline-block">20% de Descuento</strong><br>
                     en tu primera compra.
                 </p>
-                <button id="btn-cerrar-bienvenida" onclick="window.cerrarModalBienvenida()" class="w-full bg-gradient-to-r from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#421d8e] hover:from-purple hover:to-pink text-white font-black uppercase tracking-widest text-sm py-4 rounded-xl transition-all shadow-lg active:scale-95 group">
+                <button id="btn-cerrar-bienvenida" onclick="window.entendidoBienvenida()" class="w-full bg-gradient-to-r from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#421d8e] hover:from-purple hover:to-pink text-white font-black uppercase tracking-widest text-sm py-4 rounded-xl transition-all shadow-lg active:scale-95 group">
                     ¡Entendido! <i data-lucide="arrow-right" class="w-4 h-4 inline-block ml-1 group-hover:translate-x-1 transition-transform"></i>
                 </button>
             </div>
@@ -1174,8 +1273,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signOut, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, addDoc, query, where, getDocs, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, addDoc, getDocs, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // =========================================================================================
         // CONFIGURACIÓN FIREBASE
@@ -1200,20 +1299,18 @@
             auth = getAuth(app);
 
             const initEnvAuth = async () => {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
+                try {
                     await signInAnonymously(auth);
-                }
+                } catch(e) { console.warn("Init auth anon error"); }
             };
-            initEnvAuth();
-
+            
             // OPTIMIZACIÓN: 1 sola lectura por sesión (no consume extra en free tier)
             onAuthStateChanged(auth, async user => {
                 window.currentUser = user;
                 if(user && db && (!user.isAnonymous || user.email)) {
                     // Si el usuario es el ADMIN (deliapr o carlosuzc), no inicializamos la data de usuario normal
                     const adminEmails = ['deliapr@milkarf.com', 'carlosuzc@milkarf.com'];
+                    
                     if (adminEmails.includes(user.email?.toLowerCase())) {
                         window.isAdmin = true;
                     } else {
@@ -1222,6 +1319,7 @@
                             const userRef = typeof __firebase_config !== 'undefined' 
                                 ? doc(db, 'artifacts', appId, 'users', user.uid)
                                 : doc(db, 'usuarios', user.uid);
+                                
                             const docSnap = await getDoc(userRef);
                             if(docSnap.exists()) {
                                 let data = docSnap.data();
@@ -1246,6 +1344,8 @@
                             }
                         } catch(e) { console.warn(e); }
                     }
+                } else if (!user) {
+                    initEnvAuth();
                 }
                 window.actualizarUIAuth();
             });
@@ -1285,9 +1385,80 @@
             t.innerHTML = isError ? msg : `<i data-lucide="check-circle" class="w-4 h-4"></i> ${msg}`;
             document.body.appendChild(t);
             if(window.lucide) window.lucide.createIcons({root: t});
-            requestAnimationFrame(() => { t.classList.remove('translate-y-[-20px]', 'opacity-0'); t.classList.add('translate-y-0', 'opacity-100'); });
-            setTimeout(() => { t.classList.add('translate-y-[-20px]', 'opacity-0'); setTimeout(() => t.remove(), 300); }, 3500);
+            requestAnimationFrame(() => { 
+                t.classList.remove('translate-y-[-20px]', 'opacity-0'); 
+                t.classList.add('translate-y-0', 'opacity-100'); 
+            });
+            setTimeout(() => { 
+                t.classList.add('translate-y-[-20px]', 'opacity-0'); 
+                setTimeout(() => t.remove(), 300); 
+            }, 3500);
         };
+        window.getTodayISO = function() {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        };
+
+        window.prepareBirthdayInput = function(input) {
+            if(!input) return;
+            input.type = 'date';
+            input.max = window.getTodayISO();
+        };
+
+        window.setMaxBirthdayDates = function() {
+            ['reg-pet-cumple', 'pet-cumple'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.max = window.getTodayISO();
+            });
+        };
+
+        window.isFutureBirthday = function(dateStr) {
+            if(!dateStr) return false;
+            return dateStr > window.getTodayISO();
+        };
+
+        window.showAuthInfo = function(message) {
+            const err = document.getElementById('auth-error');
+            if(err) {
+                err.innerHTML = message;
+                err.className = "mt-3 text-xs font-bold text-purple-dark bg-green/20 border border-green/30 p-2.5 rounded-lg text-center leading-tight";
+                err.classList.remove('hidden');
+            }
+        };
+
+        window.prepareCalculatorInputs = function(clearWeight = false) {
+            const nameInput = document.getElementById('calc-nombre');
+            const pesoInput = document.getElementById('pesoInput');
+            const err = document.getElementById('errorMsg');
+            const result = document.getElementById('tu-resultado');
+
+            if(nameInput) {
+                nameInput.setAttribute('autocomplete', 'off');
+                nameInput.setAttribute('name', 'calc_pet_name');
+            }
+
+            if(pesoInput) {
+                pesoInput.setAttribute('autocomplete', 'off');
+                pesoInput.setAttribute('name', 'calc_pet_weight_kg');
+                pesoInput.setAttribute('inputmode', 'decimal');
+                pesoInput.setAttribute('autocorrect', 'off');
+                pesoInput.setAttribute('spellcheck', 'false');
+
+                const currentValue = String(pesoInput.value || '');
+                if(clearWeight || /[a-zA-Z@]/.test(currentValue)) {
+                    pesoInput.value = '';
+                    if(result) result.classList.remove('visible', 'show');
+                    if(/[a-zA-Z@]/.test(currentValue) && err) {
+                        err.textContent = 'Ingresa el peso en kg, solo números.';
+                        err.classList.add('visible');
+                    }
+                }
+            }
+        };
+
 
         window.navigateTo = function(targetId) {
             vibrate(30);
@@ -1311,6 +1482,10 @@
                 }
             });
             window.lastScrollY = 0;
+            if (targetId === 'view-calc') {
+                window.prepareCalculatorInputs(true);
+            }
+            window.setMaxBirthdayDates();
             if (window.menuOpen) window.toggleMenu();
             
             const authMenu = document.getElementById('auth-dropdown-menu');
@@ -1371,18 +1546,21 @@
         // LÓGICA DE AUTENTICACIÓN Y NIVELES (HISTÓRICOS)
         // =========================================================================================
         window.getLevelInfo = function(ptsHist) {
-            if(ptsHist < 101) return { nombre: "Cachorro 🐾", color: "text-green", bg: "bg-green" };
-            if(ptsHist < 501) return { nombre: "Consentido 🐕", color: "text-pink", bg: "bg-pink" };
+            ptsHist = Number(ptsHist) || 0;
+            if(ptsHist <= 100) return { nombre: "Cachorro 🐶", color: "text-green", bg: "bg-green" };
+            if(ptsHist < 500) return { nombre: "Consentido 💛", color: "text-pink", bg: "bg-pink" };
             return { nombre: "Milkarf VIP 👑", color: "text-purple", bg: "bg-purple" };
         };
 
         window.abrirModalAgregarMascota = function() {
+            window.setMaxBirthdayDates();
             window.abrirModalAuth();
             window.mostrarFormularioMascota();
         };
 
         window.abrirModalAuth = function() {
             vibrate(20);
+            window.setMaxBirthdayDates();
             const modal = document.getElementById('modal-auth');
             if(!modal) return;
             modal.classList.remove('hidden');
@@ -1539,7 +1717,7 @@
                 const benUserPts = document.getElementById('ben-user-pts');
                 if(benUserPts) benUserPts.textContent = puntosDisp;
                 
-                let nextMilestone = puntosHist > 100 ? (puntosHist > 500 ? "Max" : 501) : 101;
+                let nextMilestone = puntosHist >= 500 ? "Max" : (puntosHist > 100 ? 500 : 101);
                 const benProgress = document.getElementById('ben-progress');
                 const benPtsNext = document.getElementById('ben-pts-next');
 
@@ -1557,15 +1735,18 @@
 
                 if (mascotas.length > 0) {
                     if(dashboardPetsList) {
-                        dashboardPetsList.innerHTML = mascotas.map(p => `
-                            <div class="bg-purple/5 dark:bg-purple/10 p-4 rounded-xl border border-purple/10 flex items-center gap-4">
+                        dashboardPetsList.innerHTML = mascotas.map((p, idx) => `
+                            <div class="bg-purple/5 dark:bg-purple/10 p-4 rounded-xl border border-purple/10 flex items-center gap-4 relative group">
                                 <div class="w-12 h-12 rounded-full bg-white dark:bg-darkcard flex items-center justify-center text-2xl shadow-sm border border-purple/5 shrink-0">
                                     ${p.tipo === 'gato' ? '🐱' : '🐶'}
                                 </div>
-                                <div class="min-w-0">
+                                <div class="min-w-0 flex-1 pr-8">
                                     <h5 class="font-black text-purple-dark dark:text-white text-base truncate">${p.nombre}</h5>
                                     <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-0.5 truncate">${p.peso}kg · ${p.edad} ${p.cumple ? `· Nac: ${p.cumple}` : ''}</p>
                                 </div>
+                                <button type="button" onclick="window.eliminarMascota(${idx})" aria-label="Eliminar mascota" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white dark:bg-darkcard border border-pink/20 text-pink hover:bg-pink hover:text-white flex items-center justify-center transition-all shadow-sm active:scale-95">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
                             </div>
                         `).join('');
                     }
@@ -1611,12 +1792,49 @@
             window.updateCartUI();
         };
 
+        window.eliminarMascota = async function(index) {
+            window.vibrate(20);
+            if(!window.currentUser || !window.currentUser.data || !db) {
+                window.showToast('Inicia sesión para editar tus mascotas.');
+                return;
+            }
+
+            const mascotas = Array.isArray(window.currentUser.data.mascotas) ? [...window.currentUser.data.mascotas] : [];
+            const pet = mascotas[index];
+            if(!pet) return;
+
+            const ok = confirm(`¿Seguro que deseas eliminar a ${pet.nombre || 'esta mascota'} de tu núcleo?`);
+            if(!ok) return;
+
+            try {
+                const updatedMascotas = mascotas.filter((_, i) => i !== index);
+                await setDoc(window.getUserPath(window.currentUser.uid), {
+                    mascotas: updatedMascotas,
+                    fecha_actualizacion: serverTimestamp()
+                }, { merge: true });
+
+                window.currentUser.data.mascotas = updatedMascotas;
+                if(window.state.nombreMascota && pet.nombre && window.state.nombreMascota.toLowerCase() === pet.nombre.toLowerCase()) {
+                    window.state.nombreMascota = '';
+                    const calcNombre = document.getElementById('calc-nombre');
+                    if(calcNombre) calcNombre.value = '';
+                }
+
+                window.showToast('Mascota eliminada correctamente.', 'success');
+                window.actualizarUIAuth();
+            } catch(error) {
+                console.error('Error eliminando mascota:', error);
+                window.showToast('No se pudo eliminar la mascota. Intenta nuevamente.');
+            }
+        };
+
         window.loginConEmail = async function() {
             window.vibrate(20);
             if(!auth) { window.showToast("Base de datos no configurada."); return; }
             const email = document.getElementById('auth-email-login').value.trim();
             const pass = document.getElementById('auth-pass-login').value;
             const err = document.getElementById('auth-error');
+            
             if(!email || !pass) {
                 if (err) {
                     err.textContent = "Ingresa tu correo y contraseña.";
@@ -1628,7 +1846,9 @@
                 if (err) err.classList.add('hidden');
                 const btn = document.getElementById('btn-login-email');
                 if(btn){ btn.textContent = "Verificando..."; btn.disabled = true; }
+                
                 await signInWithEmailAndPassword(auth, email, pass);
+                
                 if(btn){ btn.textContent = "Iniciar Sesión"; btn.disabled = false; }
                 window.cerrarModalAuth();
             } catch(error) {
@@ -1668,6 +1888,14 @@
             if(!email || pass.length < 6 || !nombre || !edad || !peso) {
                 if (err) {
                     err.textContent = "Completa los datos requeridos de tu mascota y cuenta (contraseña mín. 6).";
+                    err.classList.remove('hidden');
+                }
+                return;
+            }
+
+            if(cumple && window.isFutureBirthday(cumple)) {
+                if (err) {
+                    err.textContent = "La fecha de nacimiento no puede ser futura.";
                     err.classList.remove('hidden');
                 }
                 return;
@@ -1733,7 +1961,7 @@
                 const cred = await signInWithPopup(auth, provider);
                 const userRef = window.getUserPath(cred.user.uid);
                 const docSnap = await getDoc(userRef);
-                // Si es un usuario nuevo de Google sin mascotas, pedimos la mascota
+                
                 if(!docSnap.exists() || !docSnap.data().mascotas || docSnap.data().mascotas.length === 0) {
                     window.mostrarFormularioMascota();
                 } else {
@@ -1837,6 +2065,12 @@
                 return;
             }
 
+            if(cumple && window.isFutureBirthday(cumple)) {
+                err.textContent = "La fecha de nacimiento no puede ser futura.";
+                err.classList.remove('hidden');
+                return;
+            }
+
             try {
                 err.classList.add('hidden');
                 const btn = document.getElementById('btn-guardar-perfil');
@@ -1914,6 +2148,22 @@
                     modal.classList.remove('flex');
                 }, 500);
             }
+        };
+
+        window.entendidoBienvenida = function() {
+            window.vibrate(20);
+            const isLoggedIn = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
+            window.cerrarModalBienvenida();
+
+            setTimeout(() => {
+                if(isLoggedIn) {
+                    window.navigateTo('view-dashboard');
+                    return;
+                }
+                window.abrirModalAuth();
+                window.switchAuthTab('register');
+                window.showAuthInfo('Crea tu cuenta para reclamar tu <b>20% de descuento</b> en tu primera compra.');
+            }, 520);
         };
 
         window.abrirModalDescuento = function() {
@@ -2037,18 +2287,6 @@
                         return;
                     }
                 } catch(e) { console.warn("Aviso de red", e); }
-            } else {
-                let reclamados = [];
-                try {
-                    reclamados = JSON.parse(localStorage.getItem('milkarf_descuentos_uids') || '[]');
-                } catch(e){}
-                
-                if(reclamados.includes(uid)) {
-                    err.textContent = "Tu cuenta ya ha utilizado el descuento de primera compra.";
-                    err.classList.remove('hidden');
-                    if(btn) { btn.innerHTML = oldText; btn.disabled = false; }
-                    return;
-                }
             }
 
             window.descuentoAplicado = true;
@@ -2161,7 +2399,9 @@
             const contU = document.getElementById('admin-users-container');
             const contC = document.getElementById('admin-birthdays-container');
 
-            [btnP, btnU, btnC].forEach(b => { if(b) b.className = "text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-purple transition-colors pb-2 whitespace-nowrap"; });
+            [btnP, btnU, btnC].forEach(b => { 
+                if(b) b.className = "text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-purple transition-colors pb-2 whitespace-nowrap"; 
+            });
             if(contP) contP.classList.add('hidden');
             if(contU) contU.classList.add('hidden');
             if(contC) contC.classList.add('hidden');
@@ -2279,7 +2519,6 @@
                     return;
                 }
 
-                // Sort by points descending
                 users.sort((a,b) => (b.puntos_historicos || b.puntos || 0) - (a.puntos_historicos || a.puntos || 0));
 
                 container.innerHTML = `
@@ -2351,29 +2590,36 @@
                 
                 snapshot.forEach(doc => {
                     const u = doc.data();
-                    if(u.mascotas && u.mascotas.length > 0) {
+                    if(u.mascotas && Array.isArray(u.mascotas)) {
                         u.mascotas.forEach(m => {
-                            if(m.cumple && m.cumple.trim() !== '') {
+                            // VERIFICACIÓN SEGURA DE FECHA PARA EVITAR FALLOS
+                            if(m.cumple && typeof m.cumple === 'string' && m.cumple.includes('-')) {
                                 const today = new Date();
                                 const todayNoTime = new Date(today.getFullYear(), today.getMonth(), today.getDate());
                                 
-                                const [y, mo, d] = m.cumple.split('-');
-                                let nextBday = new Date(today.getFullYear(), parseInt(mo)-1, parseInt(d));
-                                
-                                if (nextBday < todayNoTime) {
-                                    nextBday.setFullYear(today.getFullYear() + 1);
+                                const parts = m.cumple.split('-');
+                                if(parts.length === 3) {
+                                    const y = parseInt(parts[0]);
+                                    const mo = parseInt(parts[1]);
+                                    const d = parseInt(parts[2]);
+                                    
+                                    let nextBday = new Date(today.getFullYear(), mo-1, d);
+                                    
+                                    if (nextBday < todayNoTime) {
+                                        nextBday.setFullYear(today.getFullYear() + 1);
+                                    }
+                                    
+                                    const diffTime = Math.abs(nextBday - todayNoTime);
+                                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                                    
+                                    petBirthdays.push({
+                                        ownerEmail: u.email || 'Sin correo',
+                                        petName: m.nombre,
+                                        petType: m.tipo,
+                                        bdayString: m.cumple,
+                                        daysLeft: diffDays
+                                    });
                                 }
-                                
-                                const diffTime = Math.abs(nextBday - todayNoTime);
-                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                                
-                                petBirthdays.push({
-                                    ownerEmail: u.email || 'Sin correo',
-                                    petName: m.nombre,
-                                    petType: m.tipo,
-                                    bdayString: m.cumple,
-                                    daysLeft: diffDays
-                                });
                             }
                         });
                     }
@@ -2469,7 +2715,7 @@
                 
                 window.showToast(`¡Éxito! Se descontaron ${cost} pts.`, 'success');
                 window.cerrarModalCanje();
-                window.loadAdminUsers(); // Refrescar vista
+                window.loadAdminUsers(); 
             } catch(e) {
                 window.showToast("Error al descontar puntos.");
                 console.error(e);
@@ -2492,7 +2738,6 @@
                     const data = docSnap.data();
                     const ptsHistBefore = data.puntos_historicos || data.puntos || 0;
                     
-                    // Lógica VIP 1.5x
                     if (ptsHistBefore >= 501) {
                         pointsToGive = Math.floor(basePts * 1.5);
                         isVIP = true;
@@ -2581,7 +2826,17 @@
             if(!calcNombreInput || !pesoInputEl || !err) return;
 
             window.state.nombreMascota = calcNombreInput.value.trim(); 
-            const pesoText = pesoInputEl.value.replace(',', '.');
+            const rawPesoText = String(pesoInputEl.value || '').trim();
+            if(/[a-zA-Z@]/.test(rawPesoText)) {
+                pesoInputEl.value = '';
+                err.textContent = "Ingresa el peso en kg, solo números.";
+                err.classList.add('visible');
+                const tRes = document.getElementById('tu-resultado');
+                if (tRes) tRes.classList.remove('visible', 'show');
+                pesoInputEl.focus();
+                return;
+            }
+            const pesoText = rawPesoText.replace(',', '.');
             const peso = parseFloat(pesoText);
 
             if(!window.state.nombreMascota) {
@@ -2684,7 +2939,6 @@
                 setTimeout(() => {
                     tuRes.classList.add('visible');
                     
-                    // CÁLCULO SEGURO PARA EL SCROLL (NO CORTARÁ LA VENTANA)
                     setTimeout(() => {
                         const scrollContainer = document.getElementById('view-calc');
                         if (scrollContainer) {
@@ -2707,38 +2961,48 @@
             if (qtyProd) qtyProd.textContent = window.qtys[prod];
         };
         
+        window.applyWeightButtonStyle = function(groupId, selectedButton, weight) {
+            const group = document.getElementById(groupId);
+            if(!group) return;
+
+            group.querySelectorAll('button').forEach(b => {
+                b.classList.remove('bg-purple', 'bg-pink', 'bg-green', 'text-white', 'text-purple-dark', 'border-purple', 'border-pink', 'border-green', 'opacity-100', 'weight-active');
+                b.classList.add('bg-white', 'dark:bg-darkbg', 'text-purple', 'dark:text-white', 'border-purple-border/50', 'dark:border-purple/30', 'opacity-60');
+                b.style.backgroundColor = '';
+                b.style.borderColor = '';
+                b.style.color = '';
+                b.style.boxShadow = '';
+            });
+
+            if(!selectedButton) return;
+
+            selectedButton.classList.remove('bg-white', 'dark:bg-darkbg', 'text-purple', 'dark:text-white', 'border-purple-border/50', 'dark:border-purple/30', 'opacity-60');
+            selectedButton.classList.add('opacity-100', 'weight-active');
+
+            const styles = {
+                '250gr': { bg: '#421d8e', border: '#421d8e', color: '#ffffff', shadow: '0 8px 18px rgba(66,29,142,0.25)' },
+                '550gr': { bg: '#d72b8f', border: '#d72b8f', color: '#ffffff', shadow: '0 8px 18px rgba(215,43,143,0.25)' },
+                '850gr': { bg: '#b9cb25', border: '#b9cb25', color: '#2e1060', shadow: '0 8px 18px rgba(185,203,37,0.25)' }
+            };
+            const s = styles[weight] || styles['250gr'];
+            selectedButton.style.backgroundColor = s.bg;
+            selectedButton.style.borderColor = s.border;
+            selectedButton.style.color = s.color;
+            selectedButton.style.boxShadow = s.shadow;
+        };
+
         window.selectWeightPollo = function(w, btn) {
             window.vibrate(20);
-            window.currentWeightPollo = w; 
-            const group = document.getElementById('weight-group-pollo');
-            if (group) {
-                group.querySelectorAll('button').forEach(b => {
-                    b.classList.remove('bg-green', 'text-purple-dark', 'border-green', 'opacity-100');
-                    b.classList.add('bg-white', 'dark:bg-[#0a0512]', 'text-purple', 'dark:text-white', 'border-purple-border/50', 'dark:border-purple/30', 'opacity-60');
-                });
-            }
-            if (btn) {
-                btn.classList.add('bg-green', 'text-purple-dark', 'border-green', 'opacity-100');
-                btn.classList.remove('bg-white', 'dark:bg-[#0a0512]', 'text-purple', 'dark:text-white', 'border-purple-border/50', 'dark:border-purple/30', 'opacity-60');
-            }
+            window.currentWeightPollo = w;
+            window.applyWeightButtonStyle('weight-group-pollo', btn, w);
             const pricePollo = document.getElementById('price-pollo');
             if (pricePollo) pricePollo.textContent = window.PRICES_POLLO[w];
         };
         
         window.selectWeightRes = function(w, btn) {
             window.vibrate(20);
-            window.currentWeightRes = w; 
-            const group = document.getElementById('weight-group-res');
-            if (group) {
-                group.querySelectorAll('button').forEach(b => {
-                    b.classList.remove('bg-green', 'text-purple-dark', 'border-green', 'opacity-100');
-                    b.classList.add('bg-white', 'dark:bg-[#0a0512]', 'text-purple', 'dark:text-white', 'border-purple-border/50', 'dark:border-purple/30', 'opacity-60');
-                });
-            }
-            if (btn) {
-                btn.classList.add('bg-green', 'text-purple-dark', 'border-green', 'opacity-100');
-                btn.classList.remove('bg-white', 'dark:bg-[#0a0512]', 'text-purple', 'dark:text-white', 'border-purple-border/50', 'dark:border-purple/30', 'opacity-60');
-            }
+            window.currentWeightRes = w;
+            window.applyWeightButtonStyle('weight-group-res', btn, w);
             const priceRes = document.getElementById('price-res');
             if (priceRes) priceRes.textContent = window.PRICES_RES[w];
         };
@@ -2987,11 +3251,13 @@
             window.open('https://wa.me/' + window.WA_NUMBER + '?text=' + encodeURIComponent(msg), '_blank');
         };
 
-        // INICIALIZACIÓN
         function initApp() {
             const iMenos = document.getElementById('btn-menos');
             const iMas = document.getElementById('btn-mas');
             const pInput = document.getElementById('pesoInput');
+
+            window.setMaxBirthdayDates();
+            window.prepareCalculatorInputs(false);
 
             if(iMenos) iMenos.onclick = () => { 
                 window.vibrate(20);
@@ -3008,6 +3274,15 @@
                 if(tRes) tRes.classList.remove('visible', 'show'); 
             };
             if(pInput) pInput.oninput = () => {
+                const raw = String(pInput.value || '');
+                const err = document.getElementById('errorMsg');
+                if(/[a-zA-Z@]/.test(raw)) {
+                    pInput.value = '';
+                    if(err) {
+                        err.textContent = 'Ingresa el peso en kg, solo números.';
+                        err.classList.add('visible');
+                    }
+                }
                 const tRes = document.getElementById('tu-resultado');
                 if(tRes) tRes.classList.remove('visible', 'show');
             };
@@ -3017,6 +3292,8 @@
             
             const priceRes = document.getElementById('price-res');
             if(priceRes) priceRes.textContent = window.PRICES_RES[window.currentWeightRes];
+            window.applyWeightButtonStyle('weight-group-pollo', document.querySelector('#weight-group-pollo button'), window.currentWeightPollo);
+            window.applyWeightButtonStyle('weight-group-res', document.querySelector('#weight-group-res button'), window.currentWeightRes);
             
             // Iniciar Paws
             const frag = document.createDocumentFragment();
@@ -3069,7 +3346,6 @@
                     if(!v.classList.contains('active')) return;
                     const st = v.scrollTop;
                     if(authBtnWrap) {
-                        // Aparece solo en el top (<= 20px). Al bajar se oculta por completo
                         if(st > 20) {
                             authBtnWrap.classList.add('-translate-y-24', 'opacity-0', 'pointer-events-none');
                             
@@ -3111,7 +3387,7 @@
                             authMenu.classList.add('opacity-0', 'scale-95');
                             setTimeout(() => authMenu.classList.add('hidden'), 200);
                         }
-                        return; // Evitar que siga abriendo el dropdown si se activo admin
+                        return;
                     }
                     // ----------------------------------------
 
@@ -3177,22 +3453,17 @@
             }
 
             let progress = 0;
-            // Configurado para durar exactamente 4 segundos (4000ms)
-            // Actualizamos la barra cada 40ms: 100 pasos * 40ms = 4000ms
             const interval = setInterval(() => {
                 progress += 1; 
                 if (progress >= 100) progress = 100;
                 preloaderBar.style.width = progress + '%';
                 
-                // Cuando termina la barra
                 if (progress === 100) {
                     clearInterval(interval);
                     
-                    // Esperar un instante para que el usuario vea la barra llena
                     setTimeout(() => {
                         preloader.classList.add('opacity-0', 'pointer-events-none');
                         
-                        // Una vez desvanecido (700ms), lo ocultamos por completo y lanzamos el modal de bienvenida
                         setTimeout(() => {
                             preloader.classList.add('hidden');
                             window.abrirModalBienvenida();
@@ -3200,11 +3471,12 @@
                         }, 700);
                     }, 400);
                 }
-            }, 40); // 40 milisegundos por iteración
+            }, 40);
         };
 
         window.addEventListener('DOMContentLoaded', () => {
             if(window.lucide) window.lucide.createIcons();
+            window.setMaxBirthdayDates();
             initApp();
             window.initPreloader();
         });
