@@ -238,10 +238,10 @@
         <!-- MENÚ ADMIN (EXCLUSIVO) -->
         <ul id="admin-nav-links" class="nav-links space-y-6 text-center hidden">
             <li class="mb-4"><div class="inline-block bg-pink/20 text-pink px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border border-pink/30">Modo Administrador</div></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="window.switchAdminTab('pedidos'); window.toggleMenu();">📊 Control de Pedidos</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="window.switchAdminTab('usuarios'); window.toggleMenu();">👥 Directorio & Canjes</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="window.switchAdminTab('cumples'); window.toggleMenu();">🎂 Radar de Cumpleaños</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300 mt-8 pt-8 border-t border-white/10"><a href="#" class="text-xl font-extrabold text-gray-400 hover:text-white tracking-wider uppercase block" onclick="window.salirAdmin(); window.toggleMenu();"><i data-lucide="log-out" class="w-5 h-5 inline-block mr-2"></i> Cerrar Panel</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('pedidos'); window.forceCloseMenu();">📊 Control de Pedidos</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('usuarios'); window.forceCloseMenu();">👥 Directorio & Canjes</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('cumples'); window.forceCloseMenu();">🎂 Radar de Cumpleaños</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300 mt-8 pt-8 border-t border-white/10"><a href="#" class="text-xl font-extrabold text-gray-400 hover:text-white tracking-wider uppercase block" onclick="event.preventDefault(); window.salirAdmin();"><i data-lucide="log-out" class="w-5 h-5 inline-block mr-2"></i> Cerrar Panel</a></li>
         </ul>
     </nav>
 
@@ -1292,6 +1292,8 @@
         let db = null;
         let auth = null;
         let appId = typeof __app_id !== 'undefined' ? __app_id : 'milkarf-app';
+        const ADMIN_EMAILS = ['deliapr@milkarf.com', 'carlosuzc@milkarf.com'];
+        window.ADMIN_EMAILS = ADMIN_EMAILS;
 
         if (configToUse.apiKey) {
             const app = initializeApp(configToUse);
@@ -1307,44 +1309,71 @@
             // OPTIMIZACIÓN: 1 sola lectura por sesión (no consume extra en free tier)
             onAuthStateChanged(auth, async user => {
                 window.currentUser = user;
+                const userEmail = user?.email?.toLowerCase?.() || '';
+
                 if(user && db && (!user.isAnonymous || user.email)) {
-                    // Si el usuario es el ADMIN (deliapr o carlosuzc), no inicializamos la data de usuario normal
-                    const adminEmails = ['deliapr@milkarf.com', 'carlosuzc@milkarf.com'];
-                    
-                    if (adminEmails.includes(user.email?.toLowerCase())) {
+                    // Si el usuario es ADMIN, no inicializamos data de usuario normal.
+                    if (ADMIN_EMAILS.includes(userEmail)) {
                         window.isAdmin = true;
-                    } else {
-                        window.isAdmin = false;
-                        try {
-                            const userRef = typeof __firebase_config !== 'undefined' 
-                                ? doc(db, 'artifacts', appId, 'users', user.uid)
-                                : doc(db, 'usuarios', user.uid);
-                                
-                            const docSnap = await getDoc(userRef);
-                            if(docSnap.exists()) {
-                                let data = docSnap.data();
-                                // Fix legacy data sin arrays
-                                if (data.mascota_nombre && !data.mascotas) {
-                                    data.mascotas = [{
-                                        id: Date.now().toString(),
-                                        tipo: data.mascota_tipo || 'perro',
-                                        nombre: data.mascota_nombre,
-                                        edad: data.mascota_edad || '',
-                                        peso: data.mascota_peso || '',
-                                        raza: data.mascota_raza || 'Mestizo',
-                                        cumple: ''
-                                    }];
-                                    setDoc(userRef, { mascotas: data.mascotas }, { merge: true });
-                                }
-                                // Init hist points if missing
-                                data.puntos_historicos = data.puntos_historicos || data.puntos || 0;
-                                window.currentUser.data = data;
+                        setTimeout(() => {
+                            if (typeof window.enterAdminMode === 'function') {
+                                window.enterAdminMode({ navigate: true, load: true });
                             } else {
-                                window.currentUser.data = { puntos: 0, puntos_historicos: 0, mascotas: [] };
+                                console.warn('enterAdminMode aún no está disponible. Reintentando...');
+                                setTimeout(() => window.enterAdminMode?.({ navigate: true, load: true }), 150);
                             }
-                        } catch(e) { console.warn(e); }
+                        }, 0);
+                        return;
                     }
-                } else if (!user) {
+
+                    window.isAdmin = false;
+                    try {
+                        const userRef = typeof __firebase_config !== 'undefined' 
+                            ? doc(db, 'artifacts', appId, 'users', user.uid)
+                            : doc(db, 'usuarios', user.uid);
+                            
+                        const docSnap = await getDoc(userRef);
+                        if(docSnap.exists()) {
+                            let data = docSnap.data();
+                            // Fix legacy data sin arrays
+                            if (data.mascota_nombre && !data.mascotas) {
+                                data.mascotas = [{
+                                    id: Date.now().toString(),
+                                    tipo: data.mascota_tipo || 'perro',
+                                    nombre: data.mascota_nombre,
+                                    edad: data.mascota_edad || '',
+                                    peso: data.mascota_peso || '',
+                                    raza: data.mascota_raza || 'Mestizo',
+                                    cumple: ''
+                                }];
+                                setDoc(userRef, { mascotas: data.mascotas }, { merge: true });
+                            }
+                            // Init hist points if missing
+                            data.puntos_historicos = data.puntos_historicos || data.puntos || 0;
+                            window.currentUser.data = data;
+                        } else {
+                            window.currentUser.data = { puntos: 0, puntos_historicos: 0, mascotas: [] };
+                        }
+                    } catch(e) { console.warn(e); }
+
+                    const mainNav = document.getElementById('main-nav-links');
+                    const adminNav = document.getElementById('admin-nav-links');
+                    const topAuth = document.getElementById('top-auth-btn-wrap');
+                    if(mainNav) mainNav.classList.remove('hidden');
+                    if(adminNav) adminNav.classList.add('hidden');
+                    if(topAuth) topAuth.style.display = 'block';
+                    window.actualizarUIAuth();
+                    return;
+                }
+
+                if (!user) {
+                    window.isAdmin = false;
+                    const mainNav = document.getElementById('main-nav-links');
+                    const adminNav = document.getElementById('admin-nav-links');
+                    const topAuth = document.getElementById('top-auth-btn-wrap');
+                    if(mainNav) mainNav.classList.remove('hidden');
+                    if(adminNav) adminNav.classList.add('hidden');
+                    if(topAuth) topAuth.style.display = 'block';
                     initEnvAuth();
                 }
                 window.actualizarUIAuth();
@@ -1373,7 +1402,7 @@
         window.cart = [];
         window.qtys = { pollo: 1, res: 1 };
         window.isRegisteringPet = false;
-        window.isAdmin = false;
+        window.isAdmin = window.isAdmin || false;
         let unsubAdmin = null;
 
         window.vibrate = function(ms = 50) { if(navigator.vibrate) navigator.vibrate(ms); };
@@ -1486,7 +1515,10 @@
                 window.prepareCalculatorInputs(true);
             }
             window.setMaxBirthdayDates();
-            if (window.menuOpen) window.toggleMenu();
+            if (window.menuOpen) {
+                if (typeof window.forceCloseMenu === 'function') window.forceCloseMenu();
+                else window.toggleMenu();
+            }
             
             const authMenu = document.getElementById('auth-dropdown-menu');
             if (authMenu && !authMenu.classList.contains('hidden')) {
@@ -1494,6 +1526,33 @@
                 authMenu.classList.add('opacity-0', 'scale-95');
                 setTimeout(() => authMenu.classList.add('hidden'), 200);
             }
+        };
+
+        window.forceCloseMenu = function() {
+            window.menuOpen = false;
+            const btn = document.getElementById('menu-toggle-btn');
+            const overlay = document.getElementById('nav-overlay');
+
+            if(btn) {
+                btn.setAttribute('aria-expanded', 'false');
+                const bars = btn.querySelectorAll('.bar');
+                if(bars.length >= 3) {
+                    bars[0].classList.remove('rotate-45', 'translate-y-2');
+                    bars[1].classList.remove('opacity-0');
+                    bars[2].classList.remove('-rotate-45', '-translate-y-2.5');
+                }
+            }
+
+            if(overlay) {
+                overlay.setAttribute('aria-hidden', 'true');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                overlay.classList.remove('opacity-100', 'pointer-events-auto');
+            }
+
+            document.querySelectorAll('#main-nav-links li, #admin-nav-links li').forEach(li => {
+                li.classList.add('opacity-0', '-translate-y-4');
+                li.classList.remove('opacity-100', 'translate-y-0');
+            });
         };
 
         window.toggleMenu = function() {
@@ -2124,6 +2183,8 @@
         };
 
         window.abrirModalBienvenida = function() {
+            const activeView = document.querySelector('.view.active');
+            if (window.isAdmin === true || activeView?.id === 'view-admin') return;
             const modal = document.getElementById('modal-bienvenida');
             if (modal) {
                 modal.classList.remove('hidden');
@@ -2328,6 +2389,53 @@
             }, 300);
         };
 
+        window.enterAdminMode = function({ navigate = true, load = true } = {}) {
+            window.isAdmin = true;
+            window.isRegisteringPet = false;
+
+            const mainNav = document.getElementById('main-nav-links');
+            const adminNav = document.getElementById('admin-nav-links');
+            const topAuth = document.getElementById('top-auth-btn-wrap');
+            const authMenu = document.getElementById('auth-dropdown-menu');
+            const bienvenida = document.getElementById('modal-bienvenida');
+            const descuento = document.getElementById('modal-descuento');
+
+            if(mainNav) mainNav.classList.add('hidden');
+            if(adminNav) adminNav.classList.remove('hidden');
+            if(topAuth) topAuth.style.display = 'none';
+
+            if(authMenu) {
+                authMenu.classList.add('hidden', 'opacity-0', 'scale-95');
+                authMenu.classList.remove('opacity-100', 'scale-100');
+            }
+
+            if(bienvenida) {
+                bienvenida.classList.add('hidden', 'opacity-0');
+                bienvenida.classList.remove('flex');
+                document.getElementById('modal-bienvenida-box')?.classList.add('scale-95');
+            }
+
+            if(descuento) {
+                descuento.classList.add('hidden', 'opacity-0');
+                descuento.classList.remove('flex');
+                document.getElementById('modal-descuento-box')?.classList.add('scale-95');
+            }
+
+            window.cerrarModalAdmin?.();
+            window.cerrarModalCanje?.();
+            window.forceCloseMenu?.();
+
+            if(navigate) window.navigateTo('view-admin');
+            if(load) {
+                setTimeout(() => {
+                    if(typeof window.switchAdminTab === 'function') window.switchAdminTab('pedidos');
+                    else if(typeof window.loadAdminOrders === 'function') window.loadAdminOrders();
+                }, 50);
+            }
+
+            if(window.lucide) window.lucide.createIcons();
+        };
+
         window.verificarLoginAdmin = async function() {
             window.vibrate(20);
             const ui = document.getElementById('admin-user-input');
@@ -2348,50 +2456,70 @@
 
             try {
                 err.classList.add('hidden');
-                btn.textContent = "Verificando..."; 
-                btn.disabled = true;
+                if(btn) { btn.textContent = "Verificando..."; btn.disabled = true; }
                 
                 const cred = await signInWithEmailAndPassword(auth, u, p);
-                const adminEmails = ['deliapr@milkarf.com', 'carlosuzc@milkarf.com'];
+                const email = cred.user.email?.toLowerCase?.() || '';
                 
-                if (adminEmails.includes(cred.user.email.toLowerCase())) {
-                    window.isAdmin = true; 
-                    window.cerrarModalAdmin();
+                if (ADMIN_EMAILS.includes(email)) {
                     ui.value = ''; 
                     pi.value = '';
-                    
-                    document.getElementById('main-nav-links').classList.add('hidden'); 
-                    document.getElementById('admin-nav-links').classList.remove('hidden');
-                    document.getElementById('top-auth-btn-wrap').style.display = 'none';
-                    
-                    window.navigateTo('view-admin'); 
-                    window.loadAdminOrders();
+                    window.enterAdminMode({ navigate: true, load: true });
                 } else {
+                    window.isAdmin = false;
                     err.textContent = "No tienes privilegios de administrador.";
                     err.classList.remove('hidden');
-                    signOut(auth);
+                    await signOut(auth);
                 }
-                btn.textContent = "Ingresar a Firebase"; 
-                btn.disabled = false;
             } catch (error) {
+                console.error('Login admin error:', error);
                 err.textContent = "Credenciales incorrectas."; 
                 err.classList.remove('hidden');
-                btn.textContent = "Ingresar a Firebase"; 
-                btn.disabled = false;
+            } finally {
+                if(btn) { btn.textContent = "Verificar Identidad"; btn.disabled = false; }
             }
         };
 
-        window.salirAdmin = function() {
-            window.isAdmin = false;
-            document.getElementById('admin-nav-links').classList.add('hidden');
-            document.getElementById('main-nav-links').classList.remove('hidden');
-            document.getElementById('top-auth-btn-wrap').style.display = 'block';
-            window.navigateTo('view-home');
-            if(unsubAdmin) { unsubAdmin(); unsubAdmin = null; }
-            signOut(auth); // Cerramos sesión de admin
+        window.salirAdmin = async function() {
+            window.vibrate(20);
+            try {
+                window.isAdmin = false;
+                window.isRegisteringPet = false;
+                if(unsubAdmin) { unsubAdmin(); unsubAdmin = null; }
+
+                window.cerrarModalCanje?.();
+                window.cerrarModalAdmin?.();
+                window.forceCloseMenu?.();
+
+                const adminNav = document.getElementById('admin-nav-links');
+                const mainNav = document.getElementById('main-nav-links');
+                const topAuth = document.getElementById('top-auth-btn-wrap');
+                if(adminNav) adminNav.classList.add('hidden');
+                if(mainNav) mainNav.classList.remove('hidden');
+                if(topAuth) topAuth.style.display = 'block';
+
+                window.navigateTo('view-home');
+
+                if(auth) await signOut(auth);
+                window.currentUser = null;
+                window.actualizarUIAuth?.();
+                window.showToast('Sesión de administrador cerrada.', 'success');
+            } catch(error) {
+                console.error('Error al cerrar sesión admin:', error);
+                window.showToast('No se pudo cerrar la sesión admin. Inténtalo de nuevo.');
+            }
         };
 
         window.switchAdminTab = function(tab) {
+            if(!window.isAdmin) {
+                window.showToast('Debes iniciar sesión como administrador.');
+                return;
+            }
+            if(!db) {
+                window.showToast('Firebase no está disponible.');
+                return;
+            }
+
             const btnP = document.getElementById('tab-admin-pedidos');
             const btnU = document.getElementById('tab-admin-usuarios');
             const btnC = document.getElementById('tab-admin-cumples');
@@ -2399,35 +2527,57 @@
             const contU = document.getElementById('admin-users-container');
             const contC = document.getElementById('admin-birthdays-container');
 
+            if(!contP || !contU || !contC) {
+                console.warn('Contenedores admin no encontrados.');
+                return;
+            }
+
             [btnP, btnU, btnC].forEach(b => { 
                 if(b) b.className = "text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-purple transition-colors pb-2 whitespace-nowrap"; 
             });
-            if(contP) contP.classList.add('hidden');
-            if(contU) contU.classList.add('hidden');
-            if(contC) contC.classList.add('hidden');
+            contP.classList.add('hidden');
+            contU.classList.add('hidden');
+            contC.classList.add('hidden');
 
             if (tab === 'pedidos') {
                 if(btnP) btnP.className = "text-sm font-black text-purple dark:text-white border-b-2 border-purple transition-colors pb-2 whitespace-nowrap";
-                if(contP) contP.classList.remove('hidden');
+                contP.classList.remove('hidden');
                 window.loadAdminOrders();
             } else if (tab === 'usuarios') {
                 if(btnU) btnU.className = "text-sm font-black text-purple dark:text-white border-b-2 border-purple transition-colors pb-2 whitespace-nowrap";
-                if(contU) contU.classList.remove('hidden');
+                contU.classList.remove('hidden');
                 window.loadAdminUsers();
             } else if (tab === 'cumples') {
                 if(btnC) btnC.className = "text-sm font-black text-purple dark:text-white border-b-2 border-purple transition-colors pb-2 whitespace-nowrap";
-                if(contC) contC.classList.remove('hidden');
+                contC.classList.remove('hidden');
                 window.loadAdminBirthdays();
+            } else {
+                console.warn('Tab admin desconocido:', tab);
             }
         };
 
+
         window.loadAdminOrders = function() {
-            if(!window.isAdmin) return;
+            const container = document.getElementById('admin-orders-container');
+            if(!window.isAdmin) {
+                window.showToast('Debes iniciar sesión como administrador.');
+                if(container) container.innerHTML = '<p class="text-center text-pink font-bold py-10 text-sm bg-pink/10 rounded-3xl border border-pink/20">Debes iniciar sesión como administrador.</p>';
+                return;
+            }
+            if(!db) {
+                if(container) container.innerHTML = '<p class="text-center text-pink font-bold py-10 text-sm bg-pink/10 rounded-3xl border border-pink/20">Firebase no está disponible.</p>';
+                return;
+            }
+            if(!container) {
+                console.warn('admin-orders-container no encontrado.');
+                return;
+            }
+
             const ordersRef = typeof __firebase_config !== 'undefined' 
                 ? collection(db, 'artifacts', appId, 'public', 'data', 'pedidos')
                 : collection(db, 'pedidos');
             
-            if(unsubAdmin) unsubAdmin();
+            if(unsubAdmin) { unsubAdmin(); unsubAdmin = null; }
             unsubAdmin = onSnapshot(ordersRef, (snapshot) => {
                 let orders = [];
                 snapshot.forEach(doc => orders.push({id: doc.id, ...doc.data()}));
@@ -2435,10 +2585,7 @@
                 window.renderAdminOrders(orders);
             }, (error) => {
                 console.error("Error fetching orders", error);
-                const container = document.getElementById('admin-orders-container');
-                if(container) {
-                    container.innerHTML = `<div class="bg-pink/10 border border-pink/30 p-4 rounded-xl text-center"><p class="text-pink font-bold text-sm">❌ Permisos denegados en Firebase.</p><p class="text-xs text-gray-500 mt-2">Debes actualizar las "Reglas de seguridad" de Firestore.</p></div>`;
-                }
+                container.innerHTML = `<div class="bg-pink/10 border border-pink/30 p-4 rounded-xl text-center"><p class="text-pink font-bold text-sm">❌ Error al cargar pedidos.</p><p class="text-xs text-gray-500 mt-2">Verifica permisos de Firebase/Firestore.</p></div>`;
             });
         };
 
@@ -2493,9 +2640,17 @@
         };
 
         window.loadAdminUsers = async function() {
-            if(!window.isAdmin) return;
             const container = document.getElementById('admin-users-container');
-            if(!container) return;
+            if(!window.isAdmin) {
+                window.showToast('Debes iniciar sesión como administrador.');
+                if(container) container.innerHTML = '<p class="text-center text-pink font-bold py-10 text-sm bg-pink/10 rounded-3xl border border-pink/20">Debes iniciar sesión como administrador.</p>';
+                return;
+            }
+            if(!db) {
+                if(container) container.innerHTML = '<p class="text-center text-pink font-bold py-10 text-sm bg-pink/10 rounded-3xl border border-pink/20">Firebase no está disponible.</p>';
+                return;
+            }
+            if(!container) { console.warn('admin-users-container no encontrado.'); return; }
             container.innerHTML = `
                 <div class="flex justify-between items-center mb-4">
                     <p class="text-xs font-bold text-gray-400">Directorio de Clientes</p>
@@ -2569,15 +2724,23 @@
                 console.error(e);
                 const container = document.getElementById('admin-users-container');
                 if (container) {
-                    container.innerHTML = `<div class="bg-pink/10 border border-pink/30 p-4 rounded-xl text-center mt-6"><p class="text-pink font-bold text-sm">❌ Permisos denegados.</p></div>`;
+                    container.innerHTML = `<div class="bg-pink/10 border border-pink/30 p-4 rounded-xl text-center mt-6"><p class="text-pink font-bold text-sm">❌ Error al cargar usuarios.</p><p class="text-xs text-gray-500 mt-2">Verifica permisos de Firebase/Firestore.</p></div>`;
                 }
             }
         };
 
         window.loadAdminBirthdays = async function() {
-            if(!window.isAdmin) return;
             const container = document.getElementById('admin-birthdays-container');
-            if(!container) return;
+            if(!window.isAdmin) {
+                window.showToast('Debes iniciar sesión como administrador.');
+                if(container) container.innerHTML = '<p class="text-center text-pink font-bold py-10 text-sm bg-pink/10 rounded-3xl border border-pink/20">Debes iniciar sesión como administrador.</p>';
+                return;
+            }
+            if(!db) {
+                if(container) container.innerHTML = '<p class="text-center text-pink font-bold py-10 text-sm bg-pink/10 rounded-3xl border border-pink/20">Firebase no está disponible.</p>';
+                return;
+            }
+            if(!container) { console.warn('admin-birthdays-container no encontrado.'); return; }
             container.innerHTML = '<p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Analizando fechas...</p>';
 
             const usersRef = typeof __firebase_config !== 'undefined' 
@@ -2663,25 +2826,41 @@
         };
 
         window.abrirModalCanje = function(uid, email, pts) {
-            document.getElementById('canje-uid').value = uid;
-            document.getElementById('canje-user-name').textContent = email;
-            document.getElementById('canje-user-pts').textContent = pts;
-            document.getElementById('canje-item').value = "";
-            document.getElementById('canje-costo').value = "";
-            
+            if(!window.isAdmin) {
+                window.showToast('Debes iniciar sesión como administrador.');
+                return;
+            }
+            const uidInput = document.getElementById('canje-uid');
+            const userName = document.getElementById('canje-user-name');
+            const userPts = document.getElementById('canje-user-pts');
+            const item = document.getElementById('canje-item');
+            const costo = document.getElementById('canje-costo');
             const modal = document.getElementById('modal-admin-canje');
+            const box = document.getElementById('modal-admin-canje-box');
+            if(!uidInput || !userName || !userPts || !item || !costo || !modal) {
+                console.warn('Elementos de modal canje no encontrados.');
+                return;
+            }
+
+            uidInput.value = uid;
+            userName.textContent = email;
+            userPts.textContent = pts;
+            item.value = "";
+            costo.value = "";
+            
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
-                document.getElementById('modal-admin-canje-box').classList.remove('scale-95');
+                if(box) box.classList.remove('scale-95');
             }, 10);
         };
 
         window.cerrarModalCanje = function() {
             const modal = document.getElementById('modal-admin-canje');
+            if(!modal) return;
             modal.classList.add('opacity-0');
-            document.getElementById('modal-admin-canje-box').classList.add('scale-95');
+            document.getElementById('modal-admin-canje-box')?.classList.add('scale-95');
             setTimeout(() => {
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
@@ -2689,9 +2868,26 @@
         };
 
         window.procesarCanje = async function() {
-            const uid = document.getElementById('canje-uid').value;
-            const ptsCostText = document.getElementById('canje-costo').value;
-            const ptsDispText = document.getElementById('canje-user-pts').textContent;
+            if(!window.isAdmin) {
+                window.showToast('Debes iniciar sesión como administrador.');
+                return;
+            }
+            if(!db) {
+                window.showToast('Firebase no está disponible.');
+                return;
+            }
+
+            const uidEl = document.getElementById('canje-uid');
+            const costoEl = document.getElementById('canje-costo');
+            const ptsEl = document.getElementById('canje-user-pts');
+            if(!uidEl || !costoEl || !ptsEl) {
+                console.warn('Elementos de canje no encontrados.');
+                return;
+            }
+
+            const uid = uidEl.value;
+            const ptsCostText = costoEl.value;
+            const ptsDispText = ptsEl.textContent;
             
             const cost = parseInt(ptsCostText);
             const currentPts = parseInt(ptsDispText);
@@ -2707,7 +2903,7 @@
             }
 
             const btn = document.getElementById('btn-ejecutar-canje');
-            btn.textContent = "Procesando..."; btn.disabled = true;
+            if(btn) { btn.textContent = "Procesando..."; btn.disabled = true; }
 
             try {
                 const userRef = window.getUserPath(uid);
@@ -2720,13 +2916,14 @@
                 window.showToast("Error al descontar puntos.");
                 console.error(e);
             } finally {
-                btn.textContent = "Confirmar y Descontar"; btn.disabled = false;
+                if(btn) { btn.textContent = "Confirmar y Descontar"; btn.disabled = false; }
             }
         };
 
         window.aprobarPedidoAdmin = async function(orderId, uid, basePts) {
             window.vibrate(20);
-            if(!window.isAdmin) return;
+            if(!window.isAdmin) { window.showToast('Debes iniciar sesión como administrador.'); return; }
+            if(!db) { window.showToast('Firebase no está disponible.'); return; }
             try {
                 const userRef = window.getUserPath(uid);
                 const docSnap = await getDoc(userRef);
@@ -2738,7 +2935,7 @@
                     const data = docSnap.data();
                     const ptsHistBefore = data.puntos_historicos || data.puntos || 0;
                     
-                    if (ptsHistBefore >= 501) {
+                    if (ptsHistBefore >= 500) {
                         pointsToGive = Math.floor(basePts * 1.5);
                         isVIP = true;
                     }
@@ -2766,7 +2963,8 @@
 
         window.marcarCompletadoAdmin = async function(orderId) {
             window.vibrate(20);
-            if(!window.isAdmin) return;
+            if(!window.isAdmin) { window.showToast('Debes iniciar sesión como administrador.'); return; }
+            if(!db) { window.showToast('Firebase no está disponible.'); return; }
             try {
                 const orderRef = typeof __firebase_config !== 'undefined' 
                     ? doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', orderId)
@@ -3448,7 +3646,7 @@
             const preloaderBar = document.getElementById('preloader-bar');
             
             if (!preloader || !preloaderBar) {
-                window.abrirModalBienvenida();
+                if (window.isAdmin !== true && document.querySelector('.view.active')?.id !== 'view-admin') window.abrirModalBienvenida();
                 return;
             }
 
@@ -3466,7 +3664,7 @@
                         
                         setTimeout(() => {
                             preloader.classList.add('hidden');
-                            window.abrirModalBienvenida();
+                            if (window.isAdmin !== true && document.querySelector('.view.active')?.id !== 'view-admin') window.abrirModalBienvenida();
                             if(window.lucide) window.lucide.createIcons();
                         }, 700);
                     }, 400);
