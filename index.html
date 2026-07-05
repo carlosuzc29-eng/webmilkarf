@@ -63,15 +63,15 @@
             position: absolute; inset: 0; display: block;
             overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; 
             will-change: transform, opacity;
-            transition: transform 1.1s cubic-bezier(0.25, 1, 0.3, 1), opacity 0.7s ease; opacity: 0; pointer-events: none;
+            transition: transform 0.55s cubic-bezier(0.25, 1, 0.3, 1), opacity 0.38s ease; opacity: 0; pointer-events: none;
             backface-visibility: hidden; transform: translateZ(0);
         }
         .view-wrapper {
             width: 100%; min-height: 100%; display: flex; flex-direction: column; align-items: center; padding: 80px 24px 160px;
         }
         .view.active { opacity: 1; transform: translate3d(0, 0, 0) scale(1); pointer-events: auto; z-index: 10; }
-        .view.next { opacity: 0; transform: translate3d(100%, 0, -400px) rotateY(-20deg) scale(0.8); z-index: 5; }
-        .view.prev { opacity: 0; transform: translate3d(-100%, 0, 400px) rotateY(20deg) scale(1.2); z-index: 15; }
+        .view.next { opacity: 0; transform: translate3d(36%, 0, -120px) rotateY(-7deg) scale(0.96); z-index: 5; }
+        .view.prev { opacity: 0; transform: translate3d(-28%, 0, 120px) rotateY(7deg) scale(1.04); z-index: 15; }
         .view::-webkit-scrollbar { width: 4px; }
         .view::-webkit-scrollbar-track { background: transparent; }
         .view::-webkit-scrollbar-thumb { background: rgba(185, 203, 37, 0.5); border-radius: 99px; }
@@ -147,14 +147,33 @@
         #cart-fab.pop { animation: fabPop 0.45s cubic-bezier(0.34,1.56,0.64,1); }
         #cart-badge { transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); }
         #cart-fab.pop #cart-badge { transform: scale(1.3) translateZ(0); }
+
+        /* OPTIMIZACIÓN UX / PERFORMANCE */
+        .edu-card { transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; }
+        .edu-card:hover { transform: translateY(-2px); }
+        .edu-table { width: 100%; border-collapse: separate; border-spacing: 0; overflow: hidden; }
+        .edu-table th, .edu-table td { vertical-align: top; }
+        .edu-mini-badge { display: inline-flex; align-items: center; gap: 6px; }
+        @media (max-width: 768px) {
+            .view { transition: transform 0.38s cubic-bezier(0.25, 1, 0.3, 1), opacity 0.25s ease; }
+            .view.next { transform: translate3d(18%, 0, -40px) scale(0.98); }
+            .view.prev { transform: translate3d(-14%, 0, 40px) scale(1.01); }
+            .edu-card:hover { transform: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+            .view { transition: opacity 0.01ms linear !important; transform: none !important; }
+            .view.next, .view.prev, .view.active { transform: none !important; }
+        }
+
     </style>
 </head>
 <body class="text-gray-800 dark:text-gray-200 antialiased font-sans transition-colors duration-500">
 
     <!-- PANTALLA DE CARGA (PRELOADER) -->
-    <div id="preloader" class="fixed inset-0 z-[99999] bg-[#f5f0e8] dark:bg-darkbg flex flex-col items-center justify-center transition-opacity duration-700">
+    <div id="preloader" class="fixed inset-0 z-[99999] bg-[#f5f0e8] dark:bg-darkbg flex flex-col items-center justify-center transition-opacity duration-300">
         <div class="mb-4">
-            <img src="logo.png" alt="Milkarf Logo" class="w-24 h-24 object-contain animate-bounce" onerror="this.outerHTML='<div class=\'w-16 h-16 bg-purple dark:bg-darkcard rounded-3xl flex items-center justify-center shadow-lg text-white dark:border dark:border-purple/30 animate-bounce\'><i data-lucide=\'paw-print\' class=\'w-9 h-9 text-green\'></i></div>'">
+            <img decoding="async" src="logo.png" fetchpriority="high" alt="Milkarf Logo" class="w-24 h-24 object-contain animate-bounce" onerror="this.outerHTML='<div class=\'w-16 h-16 bg-purple dark:bg-darkcard rounded-3xl flex items-center justify-center shadow-lg text-white dark:border dark:border-purple/30 animate-bounce\'><i data-lucide=\'paw-print\' class=\'w-9 h-9 text-green\'></i></div>'">
         </div>
         <h1 class="text-4xl md:text-5xl font-black tracking-tight text-purple-dark dark:text-white mb-6">Milkarf</h1>
         <div class="w-48 md:w-64 h-2 bg-purple-border/50 dark:bg-purple/30 rounded-full overflow-hidden shadow-inner">
@@ -254,7 +273,7 @@
                     <div class="flex flex-col items-center justify-center text-center w-full mb-8 mt-6">
                         <div class="mb-4">
                             <!-- LOGO INTEGRADO -->
-                            <img src="logo.png" alt="Milkarf Logo" class="w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-xl" onerror="this.outerHTML='<div class=\'w-16 h-16 bg-purple dark:bg-darkcard rounded-3xl flex items-center justify-center shadow-lg text-white dark:border dark:border-purple/30\'><i data-lucide=\'paw-print\' class=\'w-9 h-9 text-green\'></i></div>'">
+                            <img decoding="async" src="logo.png" fetchpriority="high" alt="Milkarf Logo" class="w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-xl" onerror="this.outerHTML='<div class=\'w-16 h-16 bg-purple dark:bg-darkcard rounded-3xl flex items-center justify-center shadow-lg text-white dark:border dark:border-purple/30\'><i data-lucide=\'paw-print\' class=\'w-9 h-9 text-green\'></i></div>'">
                         </div>
                         <h1 class="text-6xl md:text-8xl font-black tracking-tight text-purple-dark dark:text-white select-none">Milkarf</h1>
                         <p class="text-[11px] md:text-sm font-extrabold text-pink uppercase tracking-[0.25em] mt-3 select-none max-w-[280px] sm:max-w-full leading-tight">Alimentación <span class="text-green">NATURAL</span> para mascotas</p>
@@ -299,7 +318,7 @@
                         </div>
 
                         <div class="nav-card relative w-[230px] h-[280px] rounded-3xl overflow-hidden shadow-xl dark:shadow-purple/10 hover:shadow-2xl transition-all duration-300 group cursor-pointer" data-target="view-faq">
-                            <img src="https://images.unsplash.com/photo-1601758125946-6ec2ef64daf8?q=80&w=600&auto=format&fit=crop" alt="Perro comiendo" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                            <img decoding="async" src="https://images.unsplash.com/photo-1601758125946-6ec2ef64daf8?q=80&w=600&auto=format&fit=crop" alt="Perro comiendo" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
                             <div class="absolute inset-0 bg-gradient-to-t from-pink-dark/95 via-pink/50 dark:from-[#180e29]/95 dark:via-[#180e29]/50 to-transparent z-10"></div>
                             <div class="absolute bottom-6 left-6 z-20 text-left">
                                 <span class="text-[10px] font-black text-green tracking-wider uppercase block mb-1">Filosofía</span>
@@ -308,7 +327,7 @@
                         </div>
 
                         <div class="nav-card relative w-[230px] h-[280px] rounded-3xl overflow-hidden shadow-xl dark:shadow-purple/10 hover:shadow-2xl transition-all duration-300 group cursor-pointer" data-target="view-snacks">
-                            <img src="https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?q=80&w=600&auto=format&fit=crop" alt="Perrito recibiendo un snack" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80">
+                            <img decoding="async" src="https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?q=80&w=600&auto=format&fit=crop" alt="Perrito recibiendo un snack" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80" loading="lazy">
                             <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/95 via-purple-dark/50 dark:from-[#0d0718]/95 dark:via-[#0d0718]/60 to-transparent z-10"></div>
                             <div class="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none">
                                 <div class="bg-pink text-white text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest shadow-lg flex items-center gap-2 transform -translate-y-4">
@@ -375,6 +394,76 @@
                             <p class="text-xs text-gray-500 dark:text-gray-400">Utilizamos únicamente carne de res premium, pollo de granja, vegetales frescos y aceites de primera prensa en frío.</p>
                         </div>
                     </div>
+
+                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 md:p-8 shadow-xl text-left edu-card">
+                        <div class="flex items-start gap-4 mb-5">
+                            <div class="w-12 h-12 rounded-2xl bg-green/15 flex items-center justify-center text-green-dark dark:text-green shrink-0"><i data-lucide="sprout" class="w-6 h-6"></i></div>
+                            <div>
+                                <p class="text-[10px] font-black text-pink uppercase tracking-widest mb-1">Educación nutricional</p>
+                                <h3 class="text-2xl font-black text-purple-dark dark:text-white">¿Por qué elegir nutrición natural?</h3>
+                            </div>
+                        </div>
+                        <p class="text-sm md:text-base leading-relaxed text-gray-600 dark:text-gray-300 font-medium mb-6">
+                            Cada mascota tiene necesidades diferentes. Su edad, peso, nivel de actividad y condición corporal influyen en la cantidad y calidad de nutrientes que necesita. En Milkarf trabajamos con ingredientes reales y fórmulas pensadas para acompañar su bienestar desde una alimentación más consciente, completa y adaptada a su naturaleza.
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="rounded-2xl bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Ingredientes reales</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Carnes, vísceras, vegetales, semillas, vitaminas y minerales.</p></div>
+                            <div class="rounded-2xl bg-green-light dark:bg-green/10 border border-green/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Porciones personalizadas</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Según peso, etapa y nivel de actividad.</p></div>
+                            <div class="rounded-2xl bg-pink-light dark:bg-pink/10 border border-pink/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Balance nutricional</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">No es solo mezclar alimentos: es formular con propósito.</p></div>
+                            <div class="rounded-2xl bg-white dark:bg-darkbg border border-purple-border/40 dark:border-purple/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Transición acompañada</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">El cambio debe hacerse de forma progresiva y responsable.</p></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#1a0836] rounded-3xl p-6 md:p-8 text-white shadow-xl text-left relative overflow-hidden">
+                        <div class="absolute -right-10 -top-10 text-white/5"><i data-lucide="clipboard-check" class="w-40 h-40"></i></div>
+                        <h3 class="text-green text-2xl font-black mb-3 relative z-10">Natural no significa improvisado</h3>
+                        <p class="text-sm md:text-base leading-relaxed text-purple-light/90 dark:text-gray-300 font-medium mb-6 relative z-10">
+                            Una alimentación natural responsable no se basa en sobras, premios o mezclas al azar. Para que realmente aporte bienestar, debe estar formulada con ingredientes adecuados, proporciones correctas y micronutrientes que ayuden a completar la dieta.
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
+                            <div class="rounded-2xl bg-white/10 border border-white/10 p-5">
+                                <h4 class="font-black text-pink-light mb-3 text-sm uppercase tracking-wider">Comida casera sin fórmula</h4>
+                                <ul class="space-y-2 text-xs text-white/80 font-semibold"><li>• Puede ser incompleta.</li><li>• No siempre respeta proporciones.</li><li>• Puede exceder o faltar nutrientes.</li><li>• Depende de intuición.</li></ul>
+                            </div>
+                            <div class="rounded-2xl bg-green/15 border border-green/30 p-5">
+                                <h4 class="font-black text-green mb-3 text-sm uppercase tracking-wider">Nutrición natural formulada</h4>
+                                <ul class="space-y-2 text-xs text-white/85 font-semibold"><li>• Busca cubrir necesidades nutricionales.</li><li>• Considera peso, edad y etapa.</li><li>• Incluye vitaminas y minerales.</li><li>• Se apoya en criterios nutricionales.</li></ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 md:p-8 shadow-xl text-left edu-card">
+                        <div class="flex items-start gap-4 mb-5">
+                            <div class="w-12 h-12 rounded-2xl bg-pink/10 flex items-center justify-center text-pink shrink-0"><i data-lucide="list-checks" class="w-6 h-6"></i></div>
+                            <div>
+                                <p class="text-[10px] font-black text-green-dark dark:text-green uppercase tracking-widest mb-1">Fórmula con intención</p>
+                                <h3 class="text-2xl font-black text-purple-dark dark:text-white">Cada ingrediente tiene una función</h3>
+                            </div>
+                        </div>
+                        <p class="text-sm leading-relaxed text-gray-600 dark:text-gray-300 font-medium mb-5">
+                            En Milkarf cada ingrediente cumple un papel dentro de la fórmula. Combinamos fuentes animales, vegetales y micronutrientes para crear una alimentación más completa y consciente.
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Proteína animal:</strong> <span class="text-gray-600 dark:text-gray-400">ayuda al mantenimiento muscular.</span></div>
+                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Vísceras selectas:</strong> <span class="text-gray-600 dark:text-gray-400">aportan variedad nutricional.</span></div>
+                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Vegetales frescos:</strong> <span class="text-gray-600 dark:text-gray-400">aportan fibra y micronutrientes.</span></div>
+                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Vitaminas y minerales:</strong> <span class="text-gray-600 dark:text-gray-400">ayudan a completar la fórmula.</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-green-light dark:bg-green/10 border border-green/20 rounded-3xl p-6 md:p-8 text-left">
+                        <h3 class="text-2xl font-black text-purple-dark dark:text-white mb-3">Nuestro enfoque nutricional</h3>
+                        <p class="text-sm leading-relaxed text-gray-600 dark:text-gray-300 font-medium mb-4">
+                            En Milkarf no creemos en alimentar por moda. Creemos en alimentar con intención: ingredientes reales, raciones calculadas, transición responsable y fórmulas que respetan las necesidades de cada mascota.
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Criterios nutricionales</span>
+                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Ingredientes seleccionados</span>
+                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Porciones adaptadas</span>
+                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Educación para tutores</span>
+                        </div>
+                    </div>
+
                 </div>
                 <!-- ESPACIADOR INFERIOR -->
                 <div class="h-24 w-full shrink-0 pointer-events-none"></div>
@@ -404,6 +493,17 @@
                     </div>
 
                     <div class="p-6 space-y-6">
+
+                        <div class="bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 rounded-2xl p-5 text-left">
+                            <div class="flex items-start gap-3">
+                                <div class="w-9 h-9 rounded-full bg-green/20 text-green-dark dark:text-green flex items-center justify-center shrink-0"><i data-lucide="info" class="w-4 h-4"></i></div>
+                                <div>
+                                    <h3 class="text-sm font-black text-purple-dark dark:text-white mb-1">No todas las mascotas comen lo mismo</h3>
+                                    <p class="text-xs leading-relaxed text-gray-600 dark:text-gray-400 font-medium">La ración diaria no debería calcularse al ojo: el peso, la edad, la actividad y la etapa de vida influyen en la cantidad que necesita tu mascota. Esta calculadora funciona como una guía inicial para estimar su porción diaria.</p>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- PASO 1: NOMBRE -->
                         <div>
                             <div class="text-[10px] font-bold text-purple/50 dark:text-gray-400 tracking-wider uppercase mb-3 flex items-center gap-2 text-left">
@@ -545,6 +645,18 @@
                                 </div>
                             </div>
                             
+
+                            <div id="calc-save-cta" class="mt-4 bg-white dark:bg-darkcard border border-pink/20 rounded-2xl p-5 text-left shadow-sm">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-pink/10 text-pink flex items-center justify-center shrink-0"><i data-lucide="bookmark-plus" class="w-5 h-5"></i></div>
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-black text-purple-dark dark:text-white mb-1">Guarda esta referencia</h4>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mb-3">Guarda la ración de tu mascota y reclama tu 20% de bienvenida creando tu perfil.</p>
+                                        <button type="button" onclick="window.abrirModalAuth(); window.switchAuthTab('register');" class="px-4 py-2 bg-pink hover:bg-pink-dark text-white text-xs font-extrabold rounded-xl transition-all">Crear cuenta</button>
+                                    </div>
+                                </div>
+                            </div>
+
                             <button class="nav-btn mt-4 w-full flex items-center justify-center gap-3 bg-gradient-to-r from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#421d8e] hover:from-purple hover:to-pink text-white rounded-2xl p-5 shadow-lg shadow-purple/30 transition-all duration-300" data-target="view-perros">
                                 <i data-lucide="beef" class="w-6 h-6 shrink-0 text-green"></i>
                                 <div class="text-left">
@@ -576,7 +688,7 @@
                     <!-- Producto 1: Pollo -->
                     <div class="bg-white dark:bg-darkcard rounded-3xl overflow-hidden shadow-2xl dark:shadow-purple/10 border border-purple-border/20 dark:border-purple/20 flex flex-col h-full">
                         <div class="h-[240px] relative bg-purple/10 dark:bg-purple/20 overflow-hidden select-none">
-                            <img src="https://i.ibb.co/hJP9yxd7/Gemini-Generated-Image-p554u5p554u5p554.jpg" onerror="this.src='https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=600&auto=format&fit=crop'" alt="Menú de Pollo con Zanahoria" class="w-full h-full object-cover" loading="lazy">
+                            <img decoding="async" src="https://i.ibb.co/hJP9yxd7/Gemini-Generated-Image-p554u5p554u5p554.jpg" onerror="this.src='https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=600&auto=format&fit=crop'" alt="Menú de Pollo con Zanahoria" class="w-full h-full object-cover" loading="lazy">
                             <span class="absolute top-5 right-5 bg-pink text-white text-xs font-black tracking-widest px-4 py-2 rounded-full uppercase shadow-md z-20">Pollo</span>
                         </div>
                         <div class="p-6 space-y-6 flex-grow flex flex-col justify-between">
@@ -626,7 +738,7 @@
                                         </div>
                                     </div>
                                     <button onclick="window.addToCart('pollo')" class="w-full flex items-center justify-center gap-2 bg-purple hover:bg-pink text-white font-extrabold text-sm tracking-wide py-4 rounded-2xl shadow-lg transition-all transform active:scale-[0.98]">
-                                        <i data-lucide="shopping-cart" class="w-4 h-4"></i> Agregar al carrito
+                                        <i data-lucide="shopping-cart" class="w-4 h-4"></i> Agregar para mi mascota
                                     </button>
                                 </div>
                             </div>
@@ -636,7 +748,7 @@
                     <!-- Producto 2: Res -->
                     <div class="bg-white dark:bg-darkcard rounded-3xl overflow-hidden shadow-2xl dark:shadow-purple/10 border border-purple-border/20 dark:border-purple/20 flex flex-col h-full">
                         <div class="h-[240px] relative bg-purple/10 dark:bg-purple/20 overflow-hidden select-none">
-                            <img src="https://i.ibb.co/JFjvhsXw/Gemini-Generated-Image-5fkask5fkask5fka.jpg" onerror="this.src='https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=600&auto=format&fit=crop'" alt="Menú de Carne de Res con Calabacín" class="w-full h-full object-cover" loading="lazy">
+                            <img decoding="async" src="https://i.ibb.co/JFjvhsXw/Gemini-Generated-Image-5fkask5fkask5fka.jpg" onerror="this.src='https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=600&auto=format&fit=crop'" alt="Menú de Carne de Res con Calabacín" class="w-full h-full object-cover" loading="lazy">
                             <span class="absolute top-5 right-5 bg-green text-purple-dark text-xs font-black tracking-widest px-4 py-2 rounded-full uppercase shadow-md z-20">Res</span>
                         </div>
                         <div class="p-6 space-y-6 flex-grow flex flex-col justify-between">
@@ -686,7 +798,7 @@
                                         </div>
                                     </div>
                                     <button onclick="window.addToCart('res')" class="w-full flex items-center justify-center gap-2 bg-purple hover:bg-pink text-white font-extrabold text-sm tracking-wide py-4 rounded-2xl shadow-lg transition-all transform active:scale-[0.98]">
-                                        <i data-lucide="shopping-cart" class="w-4 h-4"></i> Agregar al carrito
+                                        <i data-lucide="shopping-cart" class="w-4 h-4"></i> Agregar para mi mascota
                                     </button>
                                 </div>
                             </div>
@@ -889,6 +1001,24 @@
                 </div>
 
                 <div class="max-w-2xl w-full space-y-3 pb-8">
+
+                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 shadow-xl text-left mb-6">
+                        <div class="flex items-start gap-4 mb-5">
+                            <div class="w-12 h-12 rounded-2xl bg-green/15 text-green-dark dark:text-green flex items-center justify-center shrink-0"><i data-lucide="calendar-days" class="w-6 h-6"></i></div>
+                            <div>
+                                <p class="text-[10px] font-black text-pink uppercase tracking-widest mb-1">Cambio progresivo</p>
+                                <h3 class="text-2xl font-black text-purple-dark dark:text-white">Transición recomendada</h3>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="rounded-2xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><p class="text-[10px] font-black text-purple/50 uppercase tracking-wider">Día 1–2</p><p class="text-sm font-black text-purple-dark dark:text-white">25% Milkarf / 75% alimento anterior</p></div>
+                            <div class="rounded-2xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><p class="text-[10px] font-black text-purple/50 uppercase tracking-wider">Día 3–4</p><p class="text-sm font-black text-purple-dark dark:text-white">50% Milkarf / 50% alimento anterior</p></div>
+                            <div class="rounded-2xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><p class="text-[10px] font-black text-purple/50 uppercase tracking-wider">Día 5–6</p><p class="text-sm font-black text-purple-dark dark:text-white">75% Milkarf / 25% alimento anterior</p></div>
+                            <div class="rounded-2xl bg-green-light dark:bg-green/10 p-4 border border-green/20"><p class="text-[10px] font-black text-green-dark dark:text-green uppercase tracking-wider">Día 7+</p><p class="text-sm font-black text-purple-dark dark:text-white">100% Milkarf, si hay buena tolerancia</p></div>
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-4">Cada mascota es diferente. Si notas sensibilidad digestiva, avanza más lento y consulta con tu veterinario si hay síntomas persistentes.</p>
+                    </div>
+
                     <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-2xl shadow-sm overflow-hidden border-l-4 border-purple">
                         <button class="accordion-header w-full flex justify-between items-center p-5 font-black text-purple-dark dark:text-white text-left text-sm md:text-base outline-none">
                             🐾 Si viene de comer perrarina
@@ -934,6 +1064,19 @@
                             </div>
                         </div>
                     </div>
+                
+
+                    <div class="bg-purple-light/70 dark:bg-purple/10 border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 shadow-md text-left mt-6">
+                        <h3 class="text-2xl font-black text-purple-dark dark:text-white mb-4">Dudas rápidas antes de comenzar</h3>
+                        <div class="grid grid-cols-1 gap-3">
+                            <div class="bg-white dark:bg-darkcard rounded-2xl p-4 border border-purple-border/30"><h4 class="text-sm font-black text-purple-dark dark:text-white mb-1">¿Milkarf reemplaza la perrarina?</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">Está pensada como una alternativa de alimentación natural completa dentro de una transición adecuada.</p></div>
+                            <div class="bg-white dark:bg-darkcard rounded-2xl p-4 border border-purple-border/30"><h4 class="text-sm font-black text-purple-dark dark:text-white mb-1">¿Puedo cambiar de golpe?</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">Lo ideal es hacer una transición progresiva para que su sistema digestivo se adapte mejor.</p></div>
+                            <div class="bg-white dark:bg-darkcard rounded-2xl p-4 border border-purple-border/30"><h4 class="text-sm font-black text-purple-dark dark:text-white mb-1">¿Necesito registrarme para usar la calculadora?</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">No. Puedes calcular libremente. El registro sirve para guardar la información de tu mascota, acumular puntos y reclamar beneficios.</p></div>
+                            <div class="bg-white dark:bg-darkcard rounded-2xl p-4 border border-purple-border/30"><h4 class="text-sm font-black text-purple-dark dark:text-white mb-1">¿Sirve para cachorros?</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">Sí, pero la cantidad depende de su etapa de crecimiento. Por eso la calculadora diferencia cachorro, adulto y senior.</p></div>
+                            <div class="bg-white dark:bg-darkcard rounded-2xl p-4 border border-purple-border/30"><h4 class="text-sm font-black text-purple-dark dark:text-white mb-1">¿Qué pasa si mi mascota tiene una condición médica?</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">En casos de enfermedades, alergias diagnosticadas, tratamientos o condiciones especiales, lo responsable es consultar con su médico veterinario antes de cambiar la alimentación.</p></div>
+                        </div>
+                    </div>
+
                 </div>
                 <!-- ESPACIADOR INFERIOR -->
                 <div class="h-24 w-full shrink-0 pointer-events-none"></div>
@@ -1308,6 +1451,7 @@
             
             // OPTIMIZACIÓN: 1 sola lectura por sesión (no consume extra en free tier)
             onAuthStateChanged(auth, async user => {
+                window.authReady = true;
                 window.currentUser = user;
                 const userEmail = user?.email?.toLowerCase?.() || '';
 
@@ -1403,6 +1547,9 @@
         window.qtys = { pollo: 1, res: 1 };
         window.isRegisteringPet = false;
         window.isAdmin = window.isAdmin || false;
+        window.authReady = window.authReady || false;
+        window.entryReady = window.entryReady || false;
+        window.welcomeModalScheduled = window.welcomeModalScheduled || false;
         let unsubAdmin = null;
 
         window.vibrate = function(ms = 50) { if(navigator.vibrate) navigator.vibrate(ms); };
@@ -1422,6 +1569,31 @@
                 t.classList.add('translate-y-[-20px]', 'opacity-0'); 
                 setTimeout(() => t.remove(), 300); 
             }, 3500);
+        };
+
+        window.refreshIcons = function(root = document) {
+            try {
+                const iconLib = window.lucide || globalThis.lucide;
+                if(iconLib && typeof iconLib.createIcons === 'function') {
+                    iconLib.createIcons(root === document ? undefined : { root });
+                }
+            } catch(error) {
+                console.warn('No se pudieron refrescar los íconos Lucide:', error);
+            }
+        };
+
+        window.hasRealUserSession = function() {
+            return !!(window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email));
+        };
+
+        window.shouldShowWelcomeModal = function() {
+            const activeView = document.querySelector('.view.active');
+            if(window.isAdmin === true || activeView?.id === 'view-admin') return false;
+            if(window.hasRealUserSession && window.hasRealUserSession()) return false;
+            try {
+                if(sessionStorage.getItem('milkarf_welcome_seen') === '1') return false;
+            } catch(e) {}
+            return true;
         };
         window.getTodayISO = function() {
             const today = new Date();
@@ -1490,7 +1662,20 @@
 
 
         window.navigateTo = function(targetId) {
-            vibrate(30);
+            if (!targetId) return;
+            const currentActive = document.querySelector('.view.active');
+            if (window.isNavigating && currentActive?.id !== targetId) return;
+
+            if (currentActive?.id === targetId) {
+                if (window.menuOpen) {
+                    if (typeof window.forceCloseMenu === 'function') window.forceCloseMenu();
+                    else window.toggleMenu();
+                }
+                return;
+            }
+
+            window.isNavigating = true;
+            vibrate(18);
             const authWrap = document.getElementById('top-auth-btn-wrap');
             if(authWrap) {
                 if (targetId === 'view-admin') {
@@ -1524,8 +1709,9 @@
             if (authMenu && !authMenu.classList.contains('hidden')) {
                 authMenu.classList.remove('opacity-100', 'scale-100');
                 authMenu.classList.add('opacity-0', 'scale-95');
-                setTimeout(() => authMenu.classList.add('hidden'), 200);
+                setTimeout(() => authMenu.classList.add('hidden'), 160);
             }
+            setTimeout(() => { window.isNavigating = false; }, 560);
         };
 
         window.forceCloseMenu = function() {
@@ -1629,7 +1815,10 @@
                 const box = document.getElementById('modal-auth-box');
                 if (box) box.classList.remove('scale-95');
             }, 10);
-            if (window.menuOpen) window.toggleMenu();
+            if (window.menuOpen) {
+                if (typeof window.forceCloseMenu === 'function') window.forceCloseMenu();
+                else window.toggleMenu();
+            }
         };
 
         window.cerrarModalAuth = function() {
@@ -1847,7 +2036,7 @@
                 const banner = document.getElementById('descuento-banner');
                 if(banner) banner.classList.remove('hidden');
             }
-            if(window.lucide) window.lucide.createIcons();
+            if (typeof window.refreshIcons === 'function') window.refreshIcons();
             window.updateCartUI();
         };
 
@@ -2183,10 +2372,10 @@
         };
 
         window.abrirModalBienvenida = function() {
-            const activeView = document.querySelector('.view.active');
-            if (window.isAdmin === true || activeView?.id === 'view-admin') return;
+            if (typeof window.shouldShowWelcomeModal === 'function' && !window.shouldShowWelcomeModal()) return;
             const modal = document.getElementById('modal-bienvenida');
             if (modal) {
+                try { sessionStorage.setItem('milkarf_welcome_seen', '1'); } catch(e) {}
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
                 setTimeout(() => {
@@ -2354,7 +2543,7 @@
             window.cerrarModalDescuento();
             const banner = document.getElementById('descuento-banner');
             if(banner) banner.innerHTML = `<div class="bg-green/20 text-green-dark p-3 rounded-lg text-center text-xs font-black flex items-center justify-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> ¡Descuento aplicado con éxito!</div>`;
-            if(window.lucide) window.lucide.createIcons();
+            if (typeof window.refreshIcons === 'function') window.refreshIcons();
             window.updateCartUI();
 
             if(btn) { btn.innerHTML = oldText; btn.disabled = false; }
@@ -2433,7 +2622,7 @@
                 }, 50);
             }
 
-            if(window.lucide) window.lucide.createIcons();
+            if (typeof window.refreshIcons === 'function') window.refreshIcons();
         };
 
         window.verificarLoginAdmin = async function() {
@@ -3496,12 +3685,12 @@
             // Iniciar Paws
             const frag = document.createDocumentFragment();
             const colors = ['#421d8e', '#b9cb25', '#d72b8f', '#2e1060'];
-            const count = window.innerWidth < 768 ? 8 : 15;
+            const count = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : (window.innerWidth < 768 ? 4 : 9);
             
             for(let i=0; i<count; i++) {
                 const size = 30 + Math.random()*20;
                 const delay = Math.random()*5;
-                const dur = 10 + Math.random()*10;
+                const dur = 14 + Math.random()*12;
                 const el = document.createElement('div');
                 
                 el.innerHTML = `<svg viewBox="0 0 100 100" fill="${colors[i%colors.length]}" class="w-full h-full opacity-10"><path d="M50 88 C33 88 18 76 18 62 C18 50 32 42 50 42 C68 42 82 50 82 62 C82 76 67 88 50 88Z"/><ellipse cx="23" cy="35" rx="10.5" ry="13.5" transform="rotate(-28,23,35)"/><ellipse cx="38" cy="24" rx="10.5" ry="13.5" transform="rotate(-10,38,24)"/><ellipse cx="58" cy="24" rx="10.5" ry="13.5" transform="rotate(10,58,24)"/><ellipse cx="75" cy="35" rx="10.5" ry="13.5" transform="rotate(28,75,35)"/></svg>`;
@@ -3570,39 +3759,37 @@
             if(authBtn) {
                 authBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    
-                    // --- ADMIN SECRET TRIGGER (5 clicks) ---
-                    secretClicks++;
                     window.vibrate(10);
+
+                    // --- ADMIN SECRET TRIGGER (5 clicks rápidos), sin bloquear el uso normal de “Entrar” ---
+                    secretClicks++;
                     clearTimeout(secretTimeout);
-                    secretTimeout = setTimeout(() => secretClicks = 0, 2500);
-                    
+                    secretTimeout = setTimeout(() => secretClicks = 0, 1800);
+
                     if(secretClicks >= 5) {
-                        window.abrirModalAdmin();
                         secretClicks = 0;
                         if(authMenu && !authMenu.classList.contains('hidden')) {
                             authMenu.classList.remove('opacity-100', 'scale-100');
                             authMenu.classList.add('opacity-0', 'scale-95');
-                            setTimeout(() => authMenu.classList.add('hidden'), 200);
+                            setTimeout(() => authMenu.classList.add('hidden'), 180);
                         }
+                        window.abrirModalAdmin();
                         return;
                     }
-                    // ----------------------------------------
+                    // -----------------------------------------------------------------------------
 
-                    if(secretClicks === 1) {
-                        if(!authMenu) return;
-                        const isHidden = authMenu.classList.contains('hidden');
-                        if (isHidden) {
-                            authMenu.classList.remove('hidden');
-                            setTimeout(() => {
-                                authMenu.classList.remove('opacity-0', 'scale-95');
-                                authMenu.classList.add('opacity-100', 'scale-100');
-                            }, 10);
-                        } else {
-                            authMenu.classList.remove('opacity-100', 'scale-100');
-                            authMenu.classList.add('opacity-0', 'scale-95');
-                            setTimeout(() => authMenu.classList.add('hidden'), 200);
-                        }
+                    if(!authMenu) return;
+                    const isHidden = authMenu.classList.contains('hidden');
+                    if (isHidden) {
+                        authMenu.classList.remove('hidden');
+                        setTimeout(() => {
+                            authMenu.classList.remove('opacity-0', 'scale-95');
+                            authMenu.classList.add('opacity-100', 'scale-100');
+                        }, 10);
+                    } else {
+                        authMenu.classList.remove('opacity-100', 'scale-100');
+                        authMenu.classList.add('opacity-0', 'scale-95');
+                        setTimeout(() => authMenu.classList.add('hidden'), 180);
                     }
                 });
             }
@@ -3640,44 +3827,81 @@
             });
         }
 
-        // LÓGICA DEL PRELOADER DINÁMICO
+        // LÓGICA DEL PRELOADER DINÁMICO OPTIMIZADO Y RESISTENTE A FALLAS DE ENTRADA
         window.initPreloader = function() {
             const preloader = document.getElementById('preloader');
             const preloaderBar = document.getElementById('preloader-bar');
-            
+
+            const showWelcomeSafely = () => {
+                if(window.welcomeModalScheduled) return;
+                window.welcomeModalScheduled = true;
+
+                const startedAt = Date.now();
+                const waitForAuth = () => {
+                    const waited = Date.now() - startedAt;
+                    const authResolved = window.authReady === true || waited >= 900;
+                    if(!authResolved) {
+                        setTimeout(waitForAuth, 60);
+                        return;
+                    }
+                    if (typeof window.abrirModalBienvenida === 'function' && (!window.shouldShowWelcomeModal || window.shouldShowWelcomeModal())) {
+                        setTimeout(() => {
+                            if(!window.shouldShowWelcomeModal || window.shouldShowWelcomeModal()) window.abrirModalBienvenida();
+                        }, 160);
+                    }
+                };
+                waitForAuth();
+            };
+
             if (!preloader || !preloaderBar) {
-                if (window.isAdmin !== true && document.querySelector('.view.active')?.id !== 'view-admin') window.abrirModalBienvenida();
+                showWelcomeSafely();
                 return;
             }
 
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 1; 
-                if (progress >= 100) progress = 100;
-                preloaderBar.style.width = progress + '%';
-                
-                if (progress === 100) {
-                    clearInterval(interval);
-                    
+            let done = false;
+            const finish = () => {
+                if (done) return;
+                done = true;
+                window.entryReady = true;
+                if(window.__milkarf_entry_watchdog) clearTimeout(window.__milkarf_entry_watchdog);
+                preloaderBar.style.width = '100%';
+                requestAnimationFrame(() => {
+                    preloader.classList.add('opacity-0', 'pointer-events-none');
                     setTimeout(() => {
-                        preloader.classList.add('opacity-0', 'pointer-events-none');
-                        
-                        setTimeout(() => {
-                            preloader.classList.add('hidden');
-                            if (window.isAdmin !== true && document.querySelector('.view.active')?.id !== 'view-admin') window.abrirModalBienvenida();
-                            if(window.lucide) window.lucide.createIcons();
-                        }, 700);
-                    }, 400);
-                }
-            }, 40);
+                        preloader.classList.add('hidden');
+                        window.refreshIcons?.();
+                        showWelcomeSafely();
+                    }, 260);
+                });
+            };
+
+            preloaderBar.style.width = '35%';
+            requestAnimationFrame(() => { preloaderBar.style.width = '88%'; });
+            const maxWait = window.matchMedia('(max-width: 768px)').matches ? 560 : 720;
+            setTimeout(finish, maxWait);
         };
 
         window.addEventListener('DOMContentLoaded', () => {
-            if(window.lucide) window.lucide.createIcons();
+            if (typeof window.refreshIcons === 'function') window.refreshIcons();
             window.setMaxBirthdayDates();
             initApp();
             window.initPreloader();
         });
     </script>
+
+    <script>
+        // Watchdog de entrada: si por red/CDN el módulo tarda o falla, la página no queda atrapada en el preloader.
+        window.__milkarf_entry_watchdog = setTimeout(function() {
+            var preloader = document.getElementById('preloader');
+            var bar = document.getElementById('preloader-bar');
+            if(preloader && !preloader.classList.contains('hidden')) {
+                if(bar) bar.style.width = '100%';
+                preloader.classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(function(){ preloader.classList.add('hidden'); }, 280);
+                console.warn('Milkarf: preloader cerrado por watchdog de seguridad. Revisa conexión a CDN/Firebase si la app no inicializa.');
+            }
+        }, 1800);
+    </script>
+
 </body>
 </html>
