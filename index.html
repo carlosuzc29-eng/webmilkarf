@@ -689,6 +689,34 @@
                     <p class="text-sm font-bold text-pink uppercase tracking-widest mt-1">Nutrición Evolutiva Adaptada</p>
                 </div>
 
+                <div id="menu-pet-selector-wrap" class="hidden w-full max-w-4xl mb-5 bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/20 rounded-3xl p-5 shadow-sm">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="text-left">
+                            <p class="text-[10px] font-black uppercase tracking-widest text-pink mb-1">Personaliza tu pedido</p>
+                            <h3 class="text-lg font-black text-purple-dark dark:text-white">¿Para quién estás armando este carrito?</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Selecciona una mascota para que cada producto quede asociado a su nombre en el pedido y en WhatsApp.</p>
+                        </div>
+                        <div class="w-full md:w-72">
+                            <select id="menu-active-pet-select" onchange="window.selectPetForPurchase(this.value)" class="w-full bg-purple-light dark:bg-[#0d0718] border-2 border-purple-border/50 dark:border-purple/30 rounded-2xl p-3 text-sm font-black text-purple-dark dark:text-white outline-none focus:border-purple"></select>
+                        </div>
+                    </div>
+                    <div id="menu-active-pet-hint" class="mt-4 text-[11px] font-semibold text-gray-500 dark:text-gray-400 bg-purple-light/70 dark:bg-purple/10 rounded-2xl p-3 border border-purple-border/30 dark:border-purple/20"></div>
+                </div>
+
+                <div class="w-full max-w-4xl mb-6 bg-purple-light/70 dark:bg-purple/10 border border-purple-border/40 dark:border-purple/20 rounded-3xl p-5 shadow-sm">
+                    <h3 class="text-base font-black text-purple-dark dark:text-white mb-3 flex items-center gap-2"><i data-lucide="help-circle" class="w-5 h-5 text-green"></i> ¿Cuál menú elegir?</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
+                        <div class="bg-white dark:bg-darkcard rounded-2xl p-4 border border-purple-border/30 dark:border-purple/20">
+                            <p class="text-sm font-black text-purple-dark dark:text-white">Pollo con Zanahoria</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Buena opción para iniciar transición y para tutores que buscan una proteína familiar dentro de una fórmula balanceada.</p>
+                        </div>
+                        <div class="bg-white dark:bg-darkcard rounded-2xl p-4 border border-purple-border/30 dark:border-purple/20">
+                            <p class="text-sm font-black text-purple-dark dark:text-white">Res con Calabacín</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Ideal para rotar variedad proteica y acompañar perros activos, siempre considerando su ración recomendada.</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 justify-center mt-4 pb-8">
                     <!-- Producto 1: Pollo -->
                     <div class="bg-white dark:bg-darkcard rounded-3xl overflow-hidden shadow-2xl dark:shadow-purple/10 border border-purple-border/20 dark:border-purple/20 flex flex-col h-full">
@@ -919,6 +947,21 @@
                                 <div class="bg-green h-2 rounded-full transition-all duration-1000" id="ben-progress" style="width: 0%"></div>
                             </div>
                             <p class="text-[9px] text-right mt-1 font-bold opacity-80" id="ben-pts-next">Inicia sesión para ganar puntos</p>
+                            <div id="points-progress-detail" class="mt-4 grid grid-cols-3 gap-2 text-center"></div>
+                        </div>
+                    </div>
+
+                    <div id="user-onboarding-card" class="hidden mt-5 bg-green/10 dark:bg-green/5 border border-green/25 rounded-3xl p-4 text-left">
+                        <div class="flex gap-3 items-start">
+                            <div class="w-10 h-10 rounded-2xl bg-green/20 text-green-dark dark:text-green flex items-center justify-center shrink-0"><i data-lucide="map" class="w-5 h-5"></i></div>
+                            <div>
+                                <h4 class="text-sm font-black text-purple-dark dark:text-white">Tu cuenta Milkarf está lista</h4>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-1">Ahora puedes registrar mascotas, calcular su ración, guardar datos, seguir pedidos y canjear puntos.</p>
+                                <div class="flex flex-wrap gap-2 mt-3">
+                                    <button onclick="window.navigateTo('view-calc')" class="bg-purple text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-xl">Calcular ración</button>
+                                    <button onclick="window.navigateTo('view-perros')" class="bg-white dark:bg-darkcard text-purple dark:text-white border border-purple/20 text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-xl">Ver menú</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -956,6 +999,13 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mb-4">Usa tus puntos disponibles para solicitar productos y beneficios. El canje se envía por WhatsApp y queda registrado en tu perfil.</p>
                         <div id="redeem-items-list" class="grid grid-cols-1 gap-3">
                             <p class="text-xs text-gray-500 font-medium">Inicia sesión para ver beneficios disponibles.</p>
+                        </div>
+                        <div class="mt-5 bg-purple-light/70 dark:bg-purple/10 rounded-2xl border border-purple-border/40 dark:border-purple/20 p-4">
+                            <div class="flex items-center justify-between gap-3 mb-3">
+                                <h5 class="text-[10px] font-black uppercase tracking-widest text-purple-dark dark:text-white flex items-center gap-2"><i data-lucide="history" class="w-4 h-4 text-green"></i> Mis canjes recientes</h5>
+                                <button type="button" onclick="window.startUserRedeemsListener(true)" class="text-[9px] font-black text-purple bg-white dark:bg-darkcard border border-purple/20 px-2.5 py-1.5 rounded-lg uppercase tracking-widest">Actualizar</button>
+                            </div>
+                            <div id="user-redeems-history" class="space-y-2"><p class="text-xs text-gray-500 font-medium">Tus solicitudes de canje aparecerán aquí.</p></div>
                         </div>
                     </div>
 
@@ -1181,6 +1231,16 @@
                         <div id="location-status" class="hidden text-xs font-semibold text-purple/60 dark:text-gray-400 leading-relaxed"></div>
                     </div>
 
+                    <div class="bg-purple-light/80 dark:bg-purple/10 border border-purple-border/40 dark:border-purple/20 rounded-2xl p-4 text-left space-y-2">
+                        <h4 class="text-xs font-black text-purple-dark dark:text-white uppercase tracking-widest flex items-center gap-2"><i data-lucide="info" class="w-4 h-4 text-pink"></i> Antes de enviar</h4>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">Tu pedido se envía por WhatsApp y quedará como <b>En proceso</b> hasta que el equipo Milkarf lo confirme. Los puntos se suman cuando el administrador marca el pedido como completado.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                            <button onclick="window.navigateTo('view-calc')" class="bg-white dark:bg-darkcard border border-purple/20 text-purple dark:text-white text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl">Calcular ración</button>
+                            <button onclick="window.navigateTo('view-faq')" class="bg-white dark:bg-darkcard border border-purple/20 text-purple dark:text-white text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl">Guía transición</button>
+                            <a href="https://wa.link/pwe23z" target="_blank" class="bg-white dark:bg-darkcard border border-green/30 text-green-dark dark:text-green text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl text-center">Ayuda rápida</a>
+                        </div>
+                    </div>
+
                     <button id="btn-finalizar-pedido" onclick="window.finalizarPedido()" class="w-full flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20ba59] text-white font-extrabold text-lg py-5 rounded-[1.25rem] shadow-xl shadow-green/20 hover:shadow-glow-green transition-all active:scale-95 group">
                         <i data-lucide="send" class="w-6 h-6 shrink-0 group-hover:translate-x-1 transition-transform"></i>
                         Pedir por WhatsApp
@@ -1277,10 +1337,18 @@
         </section>
 
         <!-- FAB CART -->
-        <button id="cart-fab" class="nav-btn fixed bottom-6 right-6 z-[999] w-16 h-16 bg-purple hover:bg-pink text-white rounded-full shadow-2xl shadow-purple/40 flex items-center justify-center transition-all duration-300 transform translate-y-24 opacity-0 pointer-events-none active:scale-95" aria-label="Ver carrito" data-target="view-cart">
+        <button id="cart-fab" class="nav-btn fixed bottom-24 md:bottom-6 right-6 z-[999] w-16 h-16 bg-purple hover:bg-pink text-white rounded-full shadow-2xl shadow-purple/40 flex items-center justify-center transition-all duration-300 transform translate-y-24 opacity-0 pointer-events-none active:scale-95" aria-label="Ver carrito" data-target="view-cart">
             <i data-lucide="shopping-cart" class="w-7 h-7"></i>
             <span id="cart-badge" class="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] bg-pink text-white text-[11px] font-black rounded-full flex items-center justify-center shadow-md px-1">0</span>
         </button>
+
+        <nav id="mobile-bottom-nav" class="md:hidden fixed bottom-3 left-3 right-3 z-[998] bg-white/95 dark:bg-darkcard/95 backdrop-blur-xl border border-purple-border/40 dark:border-purple/20 rounded-[1.5rem] shadow-2xl p-2 grid grid-cols-5 gap-1">
+            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-2xl text-purple dark:text-white font-black text-[9px] uppercase tracking-tight active:scale-95" data-target="view-home"><i data-lucide="home" class="w-5 h-5"></i>Inicio</button>
+            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-2xl text-purple dark:text-white font-black text-[9px] uppercase tracking-tight active:scale-95" data-target="view-calc"><i data-lucide="scale" class="w-5 h-5"></i>Calcular</button>
+            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-2xl text-purple dark:text-white font-black text-[9px] uppercase tracking-tight active:scale-95" data-target="view-perros"><i data-lucide="beef" class="w-5 h-5"></i>Menú</button>
+            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-2xl text-purple dark:text-white font-black text-[9px] uppercase tracking-tight active:scale-95" data-target="view-cart"><i data-lucide="shopping-cart" class="w-5 h-5"></i>Carrito</button>
+            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-2xl text-purple dark:text-white font-black text-[9px] uppercase tracking-tight active:scale-95" data-target="view-dashboard"><i data-lucide="user" class="w-5 h-5"></i>Perfil</button>
+        </nav>
 
     </div>
 
@@ -1660,6 +1728,7 @@
         ];
         let unsubAdmin = null;
         let unsubUserOrders = null;
+        let unsubUserRedeems = null;
 
         window.vibrate = function(ms = 50) { if(navigator.vibrate) navigator.vibrate(ms); };
 
@@ -1731,6 +1800,7 @@
             window.currentWeightPollo = '250gr';
             window.currentWeightRes = '250gr';
             if(unsubUserOrders) { unsubUserOrders(); unsubUserOrders = null; }
+            if(typeof unsubUserRedeems !== 'undefined' && unsubUserRedeems) { unsubUserRedeems(); unsubUserRedeems = null; }
             ['calc-nombre','pesoInput','auth-email-login','auth-pass-login','auth-email-reg','auth-pass-reg','auth-name-reg','reg-pet-nombre','reg-pet-edad','reg-pet-peso','reg-pet-raza','reg-pet-cumple','pet-nombre','pet-edad','pet-peso','pet-raza','pet-cumple','desc-nombre','desc-telefono','desc-mascota'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el) el.value = '';
@@ -5078,6 +5148,319 @@ Por favor confírmenme la disponibilidad.`;
             requestAnimationFrame(() => { preloaderBar.style.width = '88%'; });
             const maxWait = window.matchMedia('(max-width: 768px)').matches ? 560 : 720;
             setTimeout(finish, maxWait);
+        };
+
+
+
+        // =========================================================================================
+        // MEJORAS UX 4-13: selector de mascota, tracking visual, puntos, canjes, móvil y admin
+        // =========================================================================================
+        window.getUserPets = function() {
+            return Array.isArray(window.currentUser?.data?.mascotas) ? window.currentUser.data.mascotas : [];
+        };
+
+        window.getActivePet = function() {
+            const pets = window.getUserPets();
+            if(!pets.length) return null;
+            if(!Number.isInteger(window.selectedDashboardPetIndex) || !pets[window.selectedDashboardPetIndex]) window.selectedDashboardPetIndex = 0;
+            return pets[window.selectedDashboardPetIndex] || null;
+        };
+
+        window.getActivePetName = function() {
+            const active = window.getActivePet();
+            return (window.state?.nombreMascota || active?.nombre || '').trim();
+        };
+
+        window.renderMenuPetSelector = function() {
+            const wrap = document.getElementById('menu-pet-selector-wrap');
+            const select = document.getElementById('menu-active-pet-select');
+            const hint = document.getElementById('menu-active-pet-hint');
+            if(!wrap || !select) return;
+            const pets = window.getUserPets();
+            if(!window.currentUser || !window.currentUser.email || window.isAdmin) {
+                wrap.classList.add('hidden');
+                return;
+            }
+            if(!pets.length) {
+                wrap.classList.remove('hidden');
+                select.innerHTML = '<option value="">Sin mascotas registradas</option>';
+                if(hint) hint.innerHTML = 'Registra una mascota desde tu perfil para asociar productos y raciones a su nombre.';
+                return;
+            }
+            if(!Number.isInteger(window.selectedDashboardPetIndex) || !pets[window.selectedDashboardPetIndex]) window.selectedDashboardPetIndex = 0;
+            wrap.classList.remove('hidden');
+            select.innerHTML = pets.map((p, idx) => `<option value="${idx}" ${idx === window.selectedDashboardPetIndex ? 'selected' : ''}>${p.tipo === 'gato' ? '🐱' : '🐶'} ${window.escapeHTML(p.nombre || 'Mascota')} ${p.peso ? '· ' + window.escapeHTML(p.peso) + 'kg' : ''}</option>`).join('');
+            const active = pets[window.selectedDashboardPetIndex];
+            const calc = window.getPetCalcData ? window.getPetCalcData(active) : null;
+            if(hint) hint.innerHTML = calc
+                ? `<b>${window.escapeHTML(active.nombre || 'Mascota')}</b> tiene ración guardada: <b>${Number(calc.gramos || 0)}g/día</b>. El carrito quedará personalizado para esta mascota.`
+                : `<b>${window.escapeHTML(active.nombre || 'Mascota')}</b> será la mascota asociada al pedido. Puedes calcular su ración desde el perfil o la calculadora.`;
+            window.refreshIcons?.(wrap);
+        };
+
+        window.selectPetForPurchase = function(value) {
+            const idx = parseInt(value, 10);
+            const pets = window.getUserPets();
+            if(Number.isFinite(idx) && pets[idx]) {
+                window.selectedDashboardPetIndex = idx;
+                window.state.nombreMascota = pets[idx].nombre || '';
+                window.renderMenuPetSelector();
+                window.updateCartUI?.();
+                window.showToast(`${pets[idx].nombre || 'Mascota'} seleccionado/a para este pedido.`, 'success');
+            }
+        };
+
+        const __originalSelectDashboardPetUX = window.selectDashboardPet;
+        window.selectDashboardPet = function(index) {
+            if(typeof __originalSelectDashboardPetUX === 'function') __originalSelectDashboardPetUX(index);
+            window.renderMenuPetSelector?.();
+        };
+
+        const __originalActualizarUIAuthUX = window.actualizarUIAuth;
+        window.actualizarUIAuth = function() {
+            if(typeof __originalActualizarUIAuthUX === 'function') __originalActualizarUIAuthUX();
+            window.renderMenuPetSelector?.();
+            window.renderPointsMilestones?.();
+            window.renderUserOnboarding?.();
+            window.startUserRedeemsListener?.(false);
+        };
+
+        window.renderPointsMilestones = function() {
+            const box = document.getElementById('points-progress-detail');
+            if(!box) return;
+            const ptsDisp = Number(window.currentUser?.data?.puntos || 0);
+            const ptsHist = Number(window.currentUser?.data?.puntos_historicos || ptsDisp || 0);
+            const stages = [
+                { label: 'Cachorro', min: 0, icon: '🐶' },
+                { label: 'Consentido', min: 101, icon: '💛' },
+                { label: 'VIP', min: 500, icon: '👑' }
+            ];
+            box.innerHTML = stages.map(st => `<div class="rounded-2xl px-2 py-3 border ${ptsHist >= st.min ? 'bg-white/20 border-white/30 text-white' : 'bg-white/10 border-white/10 text-white/60'}">
+                <div class="text-base leading-none">${st.icon}</div>
+                <p class="text-[8px] font-black uppercase tracking-widest mt-1">${st.label}</p>
+                <p class="text-[8px] font-bold opacity-80">${st.min}+ pts</p>
+            </div>`).join('');
+        };
+
+        window.renderUserOnboarding = function() {
+            const card = document.getElementById('user-onboarding-card');
+            if(!card) return;
+            const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email) && !window.isAdmin;
+            if(!isLogged) { card.classList.add('hidden'); return; }
+            let show = false;
+            try { show = localStorage.getItem('milkarf_show_onboarding') === '1'; } catch(e) {}
+            if(show) {
+                card.classList.remove('hidden');
+                try { localStorage.removeItem('milkarf_show_onboarding'); } catch(e) {}
+                setTimeout(() => card.classList.add('hidden'), 18000);
+            }
+        };
+
+        const __originalRegistrarUX = window.registrarYGuardarMascota;
+        window.registrarYGuardarMascota = async function() {
+            const beforeUser = auth?.currentUser?.uid || null;
+            const result = await __originalRegistrarUX?.();
+            try { localStorage.setItem('milkarf_show_onboarding', '1'); } catch(e) {}
+            setTimeout(() => {
+                if(auth?.currentUser?.uid && auth.currentUser.uid !== beforeUser) {
+                    window.navigateTo?.('view-dashboard');
+                    window.actualizarUIAuth?.();
+                }
+            }, 900);
+            return result;
+        };
+
+        const __originalAddToCartUX = window.addToCart;
+        window.addToCart = function(prod) {
+            const activeName = window.getActivePetName();
+            if(activeName) window.state.nombreMascota = activeName;
+            else if(window.currentUser && window.currentUser.email && !window.isAdmin && window.getUserPets().length > 1) {
+                window.showToast('Selecciona primero para cuál mascota es este producto.');
+                window.renderMenuPetSelector?.();
+                return;
+            }
+            return __originalAddToCartUX?.(prod);
+        };
+
+        window.renderUserOrderSteps = function(status, points = 0) {
+            const normalized = String(status || 'en_proceso').toLowerCase();
+            const stepIndex = normalized === 'cancelado' ? -1 : (normalized === 'completado' ? 3 : (['confirmado','verificado'].includes(normalized) ? 2 : 1));
+            const steps = [
+                {label:'Recibido', desc:'Solicitud enviada'},
+                {label:'Confirmación', desc:'Revisión admin'},
+                {label:'Completado', desc: points > 0 ? `+${points} pts` : 'Pedido cerrado'}
+            ];
+            if(stepIndex === -1) return `<div class="mt-3 rounded-2xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3 text-[10px] font-bold text-gray-500">Pedido cancelado. Escríbenos si necesitas revisarlo.</div>`;
+            return `<div class="mt-4 grid grid-cols-3 gap-2">${steps.map((s, idx) => {
+                const active = idx < stepIndex;
+                const current = idx === stepIndex - 1;
+                return `<div class="rounded-2xl border p-3 text-center ${active ? 'bg-green/10 border-green/25 text-green-dark dark:text-green' : 'bg-purple-light dark:bg-[#0d0718] border-purple-border/30 dark:border-purple/20 text-gray-400'}">
+                    <div class="w-6 h-6 rounded-full mx-auto mb-1 flex items-center justify-center text-[10px] font-black ${active ? 'bg-green text-purple-dark' : 'bg-white dark:bg-darkcard'}">${active ? '✓' : idx + 1}</div>
+                    <p class="text-[8px] font-black uppercase tracking-widest ${current ? 'text-pink' : ''}">${s.label}</p>
+                    <p class="text-[8px] font-semibold mt-0.5 leading-tight">${s.desc}</p>
+                </div>`;
+            }).join('')}</div>`;
+        };
+
+        window.renderUserOrders = function(orders = []) {
+            const container = document.getElementById('user-orders-list');
+            if(!container) return;
+            if(!orders.length) {
+                container.innerHTML = '<p class="text-xs text-gray-500 font-medium bg-white dark:bg-darkcard border border-purple-border/30 rounded-2xl p-4">Cuando realices un pedido, aparecerá aquí como <b>En proceso</b>. El equipo Milkarf lo confirma desde administración y tus puntos se suman al completarlo.</p>';
+                return;
+            }
+            container.innerHTML = orders.slice(0, 10).map(o => {
+                const status = String(o.status || 'en_proceso').toLowerCase();
+                const info = window.getOrderStatusInfo(status);
+                const date = o.createdAt ? new Date(o.createdAt).toLocaleString('es-VE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : 'Pedido reciente';
+                const items = Array.isArray(o.items) ? o.items.map(i => `${Number(i.qty || 0)}x ${i.name || 'Producto'} ${i.weight ? '(' + i.weight + ')' : ''}${i.forPet ? ' · ' + i.forPet : ''}`).join(' · ') : 'Pedido Milkarf';
+                const total = typeof o.total === 'number' ? '$' + o.total.toFixed(2) : '';
+                const orderCode = o.id ? `#${String(o.id).slice(0, 8).toUpperCase()}` : '';
+                const points = Number(o.pointsAwarded || o.pointsGranted || 0);
+                let helper = 'Tu pedido fue recibido por WhatsApp y está pendiente de confirmación por el equipo Milkarf.';
+                if(['confirmado','verificado'].includes(status)) helper = 'El equipo Milkarf ya revisó tu pedido. Está en camino a completarse.';
+                if(status === 'completado') helper = points > 0 ? `Pedido completado. Este pedido sumó ${points} puntos a tu cuenta.` : 'Pedido completado por administración.';
+                if(status === 'cancelado') helper = 'Pedido cancelado. Escríbenos si necesitas revisar este pedido.';
+                return `<div class="relative bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-5 text-left overflow-hidden shadow-sm">
+                    <div class="absolute top-0 left-0 w-1 h-full ${info.bar}"></div>
+                    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pl-1">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap"><p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">${date}</p><span class="text-[9px] text-purple/50 dark:text-gray-500 font-black uppercase tracking-widest">${window.escapeHTML(orderCode)}</span></div>
+                            <h5 class="text-sm font-black text-purple-dark dark:text-white mt-1 leading-snug">${window.escapeHTML(items)}</h5>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 font-bold mt-1">${total}</p>
+                        </div>
+                        <span class="shrink-0 px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${info.classes}">${info.label}</span>
+                    </div>
+                    ${window.renderUserOrderSteps(status, points)}
+                    <div class="mt-3 ml-1 bg-purple-light/70 dark:bg-[#0d0718] border border-purple-border/30 dark:border-purple/20 rounded-xl p-3">
+                        <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">${window.escapeHTML(helper)}</p>
+                        ${points > 0 ? `<div class="mt-2 inline-flex items-center gap-1 bg-green/15 text-green-dark dark:text-green border border-green/20 rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest"><i data-lucide="sparkles" class="w-3 h-3"></i> +${points} pts ganados</div>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+            window.refreshIcons?.(container);
+        };
+
+        window.startUserRedeemsListener = function(force = false) {
+            const container = document.getElementById('user-redeems-history');
+            if(!container) return;
+            const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email) && !window.isAdmin;
+            if(!isLogged) {
+                container.innerHTML = '<p class="text-xs text-gray-500 font-medium">Inicia sesión para ver tu historial de canjes.</p>';
+                return;
+            }
+            if(!db) {
+                container.innerHTML = '<p class="text-xs text-pink font-bold">Firebase no está disponible para consultar canjes.</p>';
+                return;
+            }
+            if(unsubUserRedeems && !force) return;
+            if(unsubUserRedeems) { unsubUserRedeems(); unsubUserRedeems = null; }
+            try {
+                const qRef = query(window.getRedeemsCollectionRef(), where('uid', '==', window.currentUser.uid));
+                unsubUserRedeems = onSnapshot(qRef, (snap) => {
+                    const redeems = []; snap.forEach(d => redeems.push({id:d.id, ...d.data()}));
+                    redeems.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+                    window.renderUserRedeemHistory(redeems);
+                }, (error) => {
+                    console.warn('No se pudo leer historial de canjes:', error);
+                    container.innerHTML = '<p class="text-xs text-pink font-bold bg-pink/10 border border-pink/20 rounded-xl p-3">No se pudieron cargar tus canjes. Revisa permisos de Firestore para canjes.</p>';
+                });
+            } catch(e) { console.error(e); }
+        };
+
+        window.renderUserRedeemHistory = function(redeems = []) {
+            const container = document.getElementById('user-redeems-history');
+            if(!container) return;
+            if(!redeems.length) { container.innerHTML = '<p class="text-xs text-gray-500 font-medium">Aún no has solicitado canjes.</p>'; return; }
+            container.innerHTML = redeems.slice(0, 5).map(r => {
+                const status = String(r.status || 'solicitado').toLowerCase();
+                const cls = status === 'entregado' ? 'bg-purple/10 text-purple border-purple/20' : status === 'aprobado' ? 'bg-green/15 text-green-dark dark:text-green border-green/20' : 'bg-pink/10 text-pink border-pink/20';
+                return `<div class="bg-white dark:bg-darkcard rounded-xl border border-purple-border/30 dark:border-purple/20 p-3 flex items-start justify-between gap-3">
+                    <div><p class="text-xs font-black text-purple-dark dark:text-white">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</p><p class="text-[10px] text-gray-500 font-semibold mt-1">${Number(r.points || 0)} pts · ${r.createdAt ? new Date(r.createdAt).toLocaleDateString('es-VE') : 'reciente'}</p></div>
+                    <span class="text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border ${cls}">${window.escapeHTML(status)}</span>
+                </div>`;
+            }).join('');
+        };
+
+        window.renderRedeemItems = function() {
+            const container = document.getElementById('redeem-items-list');
+            if(!container) return;
+            const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email) && !window.isAdmin;
+            if(!isLogged) {
+                container.innerHTML = '<p class="text-xs text-gray-500 font-medium bg-white dark:bg-darkcard rounded-xl p-3 border border-purple-border/30">Inicia sesión para ver beneficios disponibles y canjear tus puntos.</p>';
+                return;
+            }
+            const pts = Number(window.currentUser.data?.puntos || 0);
+            container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">${window.REDEEM_ITEMS.map(item => {
+                const canUse = pts >= item.points;
+                const missing = Math.max(0, item.points - pts);
+                return `<div class="bg-white dark:bg-darkcard rounded-3xl border ${canUse ? 'border-green/30' : 'border-purple-border/30 dark:border-purple/20'} p-4 shadow-sm text-left flex flex-col justify-between gap-4">
+                    <div><div class="flex items-start justify-between gap-3"><div><h5 class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(item.name)}</h5><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-1">${window.escapeHTML(item.benefit)}</p></div><div class="shrink-0 bg-pink/10 text-pink border border-pink/20 px-3 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest">${item.points} pts</div></div>
+                    <div class="mt-3 w-full bg-purple-light dark:bg-[#0d0718] rounded-full h-2 overflow-hidden"><div class="bg-green h-2 rounded-full" style="width:${Math.min(100, (pts / item.points) * 100)}%"></div></div>
+                    <p class="text-[10px] font-bold ${canUse ? 'text-green-dark dark:text-green' : 'text-gray-400'} mt-2">${canUse ? 'Disponible para canjear' : `Te faltan ${missing} pts`}</p></div>
+                    <button type="button" onclick="window.canjearPuntosUsuario('${item.id}')" class="w-full px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 ${canUse ? 'bg-green text-purple-dark hover:bg-[#a6b621]' : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'}" ${canUse ? '' : 'disabled'}>Canjear beneficio</button>
+                </div>`;
+            }).join('')}</div>`;
+            window.refreshIcons?.(container);
+        };
+
+        const __originalCanjearUX = window.canjearPuntosUsuario;
+        window.canjearPuntosUsuario = async function(itemId) {
+            const result = await __originalCanjearUX?.(itemId);
+            setTimeout(() => window.startUserRedeemsListener?.(true), 600);
+            return result;
+        };
+
+        const __originalClearCartUX = window.clearCart;
+        window.clearCart = function() {
+            const r = __originalClearCartUX?.();
+            window.renderMenuPetSelector?.();
+            return r;
+        };
+
+        window.loadAdminSummary = async function() {
+            const container = document.getElementById('admin-summary-container');
+            if(!container) return;
+            if(!window.isAdmin) { container.innerHTML = window.adminEmptyState('Acceso restringido', 'Debes iniciar sesión como administrador para ver el resumen.', 'lock'); return; }
+            if(!db) { container.innerHTML = window.adminEmptyState('Firebase no disponible', 'No se pudo conectar con la base de datos.', 'wifi-off'); return; }
+            container.innerHTML = window.adminLoadingState('Construyendo resumen operativo...');
+            try {
+                const [ordersSnap, usersSnap, redeemsSnap] = await Promise.all([getDocs(window.getOrdersCollectionRef()), getDocs(window.getUsersCollectionRef()), getDocs(window.getRedeemsCollectionRef())]);
+                const orders = []; ordersSnap.forEach(d => orders.push({id: d.id, ...d.data()}));
+                const users = []; usersSnap.forEach(d => users.push({id: d.id, ...d.data()}));
+                const redeems = []; redeemsSnap.forEach(d => redeems.push({id: d.id, ...d.data()}));
+                window.adminCache = { orders, users, redeems };
+                const inProcess = orders.filter(o => ['pendiente','en_proceso','solicitado'].includes(String(o.status || 'en_proceso').toLowerCase())).length;
+                const completed = orders.filter(o => String(o.status || '').toLowerCase() === 'completado').length;
+                const pendingRedeems = redeems.filter(r => ['solicitado','pendiente'].includes(String(r.status || 'solicitado').toLowerCase())).length;
+                const upcoming = window.computeAdminBirthdays(users).filter(p => p.daysLeft <= 30).length;
+                const salesTotal = orders.filter(o => String(o.status || '').toLowerCase() === 'completado').reduce((s,o)=>s+Number(o.total||0),0);
+                const productCount = {};
+                orders.forEach(o => (Array.isArray(o.items)?o.items:[]).forEach(i => { const name = i.name || 'Producto'; productCount[name] = (productCount[name] || 0) + Number(i.qty || 0); }));
+                const topProduct = Object.entries(productCount).sort((a,b)=>b[1]-a[1])[0];
+                const topUser = users.map(u => ({email:u.email || u.id, pts:Number(u.puntos_historicos || u.puntos || 0)})).sort((a,b)=>b.pts-a.pts)[0];
+                const kpi = [
+                    {label:'Pedidos en proceso', value: inProcess, icon:'clock-3', color:'text-pink', bg:'bg-pink/10', tab:'pedidos'},
+                    {label:'Completados', value: completed, icon:'badge-check', color:'text-purple', bg:'bg-purple/10', tab:'pedidos'},
+                    {label:'Ventas completadas', value:'$'+salesTotal.toFixed(2), icon:'wallet', color:'text-green-dark dark:text-green', bg:'bg-green/15', tab:'pedidos'},
+                    {label:'Clientes', value: users.length, icon:'users', color:'text-purple', bg:'bg-purple/10', tab:'usuarios'},
+                    {label:'Canjes pendientes', value: pendingRedeems, icon:'gift', color:'text-pink', bg:'bg-pink/10', tab:'canjes'},
+                    {label:'Cumples 30 días', value: upcoming, icon:'cake', color:'text-green-dark dark:text-green', bg:'bg-green/15', tab:'cumples'}
+                ];
+                const recentOrders = orders.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)).slice(0, 4);
+                const recentRedeems = redeems.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)).slice(0, 3);
+                container.innerHTML = `<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">${kpi.map(i => `<button onclick="window.switchAdminTab('${i.tab}')" class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-4 text-left shadow-sm hover:shadow-md transition-all active:scale-95"><div class="w-10 h-10 rounded-2xl ${i.bg} ${i.color} flex items-center justify-center mb-3"><i data-lucide="${i.icon}" class="w-5 h-5"></i></div><p class="text-xl font-black text-purple-dark dark:text-white leading-none">${i.value}</p><p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-2 leading-tight">${i.label}</p></button>`).join('')}</div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-5 shadow-sm"><h3 class="text-lg font-black text-purple-dark dark:text-white mb-2">Producto más pedido</h3><p class="text-2xl font-black text-pink">${topProduct ? window.escapeHTML(topProduct[0]) : 'Sin datos'}</p><p class="text-xs text-gray-500 font-bold mt-1">${topProduct ? `${topProduct[1]} unidades registradas` : 'Aparecerá cuando existan pedidos.'}</p></div>
+                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-5 shadow-sm"><h3 class="text-lg font-black text-purple-dark dark:text-white mb-2">Cliente con más puntos</h3><p class="text-base font-black text-purple-dark dark:text-white truncate">${topUser ? window.escapeHTML(topUser.email) : 'Sin datos'}</p><p class="text-xs text-gray-500 font-bold mt-1">${topUser ? `${topUser.pts} puntos históricos` : 'Aparecerá al confirmar compras.'}</p></div>
+                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-5 shadow-sm"><h3 class="text-lg font-black text-purple-dark dark:text-white mb-2">Acciones sugeridas</h3><div class="space-y-2"><button onclick="window.switchAdminTab('pedidos')" class="w-full bg-purple-light dark:bg-purple/20 text-purple dark:text-white font-black text-[10px] uppercase tracking-widest py-3 rounded-xl">Revisar pedidos</button><button onclick="window.switchAdminTab('canjes')" class="w-full bg-pink/10 text-pink font-black text-[10px] uppercase tracking-widest py-3 rounded-xl">Gestionar canjes</button></div></div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5"><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-5 shadow-sm"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-black text-purple-dark dark:text-white">Pedidos recientes</h3><button onclick="window.switchAdminTab('pedidos')" class="text-[10px] font-black text-purple uppercase tracking-widest">Ver todos</button></div><div class="space-y-3">${recentOrders.length ? recentOrders.map(o => window.buildAdminMiniOrder(o)).join('') : window.adminEmptyState('Sin pedidos todavía', 'Cuando entren pedidos, aparecerán aquí.', 'clipboard-list')}</div></div><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-5 shadow-sm"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-black text-purple-dark dark:text-white">Canjes recientes</h3><button onclick="window.switchAdminTab('canjes')" class="text-[10px] font-black text-purple uppercase tracking-widest">Gestionar</button></div><div class="space-y-3">${recentRedeems.length ? recentRedeems.map(r => window.buildAdminRedeemMini(r)).join('') : window.adminEmptyState('Sin canjes pendientes', 'Las solicitudes de puntos aparecerán aquí.', 'gift')}</div></div></div>`;
+                window.refreshIcons?.(container);
+            } catch(e) {
+                console.error(e);
+                container.innerHTML = window.adminEmptyState('No se pudo cargar el resumen', 'Revisa la conexión o los permisos de Firestore.', 'alert-triangle');
+            }
         };
 
         window.addEventListener('DOMContentLoaded', () => {
