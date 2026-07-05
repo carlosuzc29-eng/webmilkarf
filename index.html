@@ -1166,10 +1166,10 @@
         <section id="view-cart" class="view next">
             <div class="view-wrapper">
                 <div class="max-w-2xl w-full mb-8">
-                    <button class="nav-btn flex items-center gap-2 font-bold px-5 py-2.5 rounded-full border border-purple-border/80 text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300 active:scale-95" data-target="view-perros">
+                    <button id="cart-back-shop-btn" class="nav-btn flex items-center gap-2 font-bold px-5 py-2.5 rounded-full border border-purple-border/80 text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300 active:scale-95" data-target="view-perros">
                         <i data-lucide="arrow-left" class="w-4 h-4"></i> Seguir comprando
                     </button>
-                    <h2 class="text-4xl font-black text-purple-dark dark:text-white mt-6 tracking-tight">Tu Carrito</h2>
+                    <h2 id="cart-title" class="text-4xl font-black text-purple-dark dark:text-white mt-6 tracking-tight">Tu Carrito</h2>
                 </div>
 
                 <div id="cart-empty" class="flex flex-col items-center justify-center py-20 select-none max-w-sm w-full">
@@ -1253,6 +1253,35 @@
                     <button id="btn-clear-cart" onclick="window.clearCart()" class="w-full text-center text-xs font-bold text-purple/40 dark:text-gray-500 hover:text-pink transition-colors py-2">
                         Vaciar carrito
                     </button>
+                </div>
+
+                <div id="cart-post-order" class="hidden w-full max-w-lg pb-20">
+                    <div class="bg-white dark:bg-darkcard rounded-[1.75rem] border border-green/30 dark:border-green/20 shadow-xl p-7 md:p-8 text-center space-y-5">
+                        <div class="w-20 h-20 rounded-full bg-green/15 border border-green/30 flex items-center justify-center mx-auto text-green-dark dark:text-green">
+                            <i data-lucide="clipboard-check" class="w-10 h-10"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-green-dark dark:text-green mb-2">Pedido montado</p>
+                            <h3 class="text-2xl md:text-3xl font-black text-purple-dark dark:text-white leading-tight">Tu solicitud fue enviada por WhatsApp</h3>
+                            <p id="post-order-code" class="text-[10px] font-black text-purple/50 dark:text-gray-500 uppercase tracking-widest mt-3 hidden"></p>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">
+                            Limpiamos el carrito para evitar duplicar el pedido. Ahora puedes revisar su estado o volver al menú para armar otro pedido.
+                        </p>
+                        <div class="bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 rounded-2xl p-4 text-left">
+                            <p class="text-[11px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">
+                                Tu pedido queda como <b class="text-pink">En proceso</b> hasta que el equipo Milkarf lo confirme desde administración. Los puntos se suman cuando el pedido sea completado.
+                            </p>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                            <button onclick="window.navigateTo('view-dashboard'); window.startUserOrdersListener(true);" class="w-full flex items-center justify-center gap-2 bg-green hover:bg-[#a6b621] text-purple-dark font-extrabold text-sm py-4 rounded-2xl shadow-md transition-all active:scale-95">
+                                <i data-lucide="clipboard-list" class="w-4 h-4"></i> Ver estado del pedido
+                            </button>
+                            <button onclick="window.hideCartPostOrderState(); window.navigateTo('view-perros');" class="w-full flex items-center justify-center gap-2 bg-white dark:bg-[#0d0718] border border-purple-border/60 dark:border-purple/30 text-purple dark:text-white font-extrabold text-sm py-4 rounded-2xl shadow-sm transition-all active:scale-95">
+                                <i data-lucide="utensils" class="w-4 h-4"></i> Ver menú
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <!-- ESPACIADOR INFERIOR -->
                 <div class="h-24 w-full shrink-0 pointer-events-none"></div>
@@ -4628,6 +4657,9 @@ Por favor confírmenme la disponibilidad.`;
 
         window.addToCart = function(prod) {
             window.vibrate([40, 60]);
+            window.cartPostOrderActive = false;
+            const post = document.getElementById('cart-post-order');
+            if(post) post.classList.add('hidden');
             const isPollo = prod === 'pollo';
             const weight = isPollo ? window.currentWeightPollo : window.currentWeightRes;
             const prices = isPollo ? window.PRICES_POLLO : window.PRICES_RES;
@@ -4683,6 +4715,26 @@ Por favor confírmenme la disponibilidad.`;
             const empty = document.getElementById('cart-empty');
             const cont = document.getElementById('cart-items-container');
             const sum = document.getElementById('cart-summary');
+            const post = document.getElementById('cart-post-order');
+
+            if (window.cartPostOrderActive) {
+                if(empty) empty.classList.add('hidden');
+                if(cont) { cont.classList.add('hidden'); cont.innerHTML = ''; }
+                if(sum) sum.classList.add('hidden');
+                if(post) post.classList.remove('hidden');
+                const cartTitle = document.getElementById('cart-title');
+                const cartBackBtn = document.getElementById('cart-back-shop-btn');
+                if(cartTitle) cartTitle.textContent = 'Pedido enviado';
+                if(cartBackBtn) cartBackBtn.classList.add('hidden');
+                if(fab) fab.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+                if(cartBadge) cartBadge.textContent = '0';
+                return;
+            }
+            if(post) post.classList.add('hidden');
+            const cartTitle = document.getElementById('cart-title');
+            const cartBackBtn = document.getElementById('cart-back-shop-btn');
+            if(cartTitle) cartTitle.textContent = 'Tu Carrito';
+            if(cartBackBtn) cartBackBtn.classList.remove('hidden');
             
             if (window.cart.length === 0) {
                 if(empty) empty.classList.remove('hidden'); 
@@ -4776,8 +4828,78 @@ Por favor confírmenme la disponibilidad.`;
             if (idx !== -1) window.cart.splice(idx, 1); 
             window.updateCartUI(); 
         };
+
+        window.resetCartDeliveryUI = function() {
+            window.userLocation = null;
+            const btn = document.getElementById('location-btn');
+            const btnText = document.getElementById('location-btn-text');
+            const status = document.getElementById('location-status');
+            if(btn) {
+                btn.disabled = false;
+                btn.classList.remove('border-solid', 'border-green', 'text-green-dark', 'bg-green/5', 'opacity-60');
+                btn.classList.add('border-dashed', 'border-purple/30', 'text-purple');
+            }
+            if(btnText) btnText.textContent = 'Marcar mi ubicación en el mapa';
+            if(status) { status.classList.add('hidden'); status.innerHTML = ''; status.textContent = ''; }
+        };
+
+        window.hideCartPostOrderState = function() {
+            window.cartPostOrderActive = false;
+            const post = document.getElementById('cart-post-order');
+            const title = document.getElementById('cart-title');
+            const backBtn = document.getElementById('cart-back-shop-btn');
+            if(post) post.classList.add('hidden');
+            if(title) title.textContent = 'Tu Carrito';
+            if(backBtn) backBtn.classList.remove('hidden');
+            window.updateCartUI?.();
+        };
+
+        window.showCartPostOrderState = function(orderId = null) {
+            window.cartPostOrderActive = true;
+            if(orderId) window.lastOrderId = orderId;
+            window.cart.length = 0;
+            window.descuentoAplicado = false;
+            window.resetCartDeliveryUI?.();
+
+            const empty = document.getElementById('cart-empty');
+            const cont = document.getElementById('cart-items-container');
+            const sum = document.getElementById('cart-summary');
+            const post = document.getElementById('cart-post-order');
+            const code = document.getElementById('post-order-code');
+            const fab = document.getElementById('cart-fab');
+            const badge = document.getElementById('cart-badge');
+            const title = document.getElementById('cart-title');
+            const backBtn = document.getElementById('cart-back-shop-btn');
+
+            if(empty) empty.classList.add('hidden');
+            if(cont) { cont.classList.add('hidden'); cont.innerHTML = ''; }
+            if(sum) sum.classList.add('hidden');
+            if(post) post.classList.remove('hidden');
+            if(title) title.textContent = 'Pedido enviado';
+            if(backBtn) backBtn.classList.add('hidden');
+            if(fab) fab.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+            if(badge) badge.textContent = '0';
+
+            const id = orderId || window.lastOrderId || '';
+            if(code) {
+                if(id) {
+                    code.textContent = `Código de seguimiento: ${String(id).slice(0, 8).toUpperCase()}`;
+                    code.classList.remove('hidden');
+                } else {
+                    code.classList.add('hidden');
+                }
+            }
+            window.refreshIcons?.();
+        };
         
-        window.clearCart = function() { window.vibrate(20); window.cart.length = 0; window.updateCartUI(); };
+        window.clearCart = function() {
+            window.vibrate(20);
+            window.cartPostOrderActive = false;
+            window.cart.length = 0;
+            window.descuentoAplicado = false;
+            window.resetCartDeliveryUI?.();
+            window.updateCartUI();
+        };
 
         window.captureLocation = function() {
             var btn     = document.getElementById('location-btn');
@@ -4898,13 +5020,13 @@ Por favor confírmenme la disponibilidad.`;
             
             msg += `\n\nPor favor confírmame el total con envío. ¡Gracias!`;
             
-            window.descuentoAplicado = false;
+            const whatsappUrl = 'https://wa.me/' + window.WA_NUMBER + '?text=' + encodeURIComponent(msg);
+            window.open(whatsappUrl, '_blank');
+
             window.actualizarUIAuth();
             window.startUserOrdersListener?.();
-            const btnVerPedidos = document.getElementById('btn-ver-mis-pedidos');
-            if(btnVerPedidos) btnVerPedidos.classList.remove('hidden');
-            window.showToast('Pedido registrado. Puedes ver su estado en “Mis Pedidos”.', 'success');
-            window.open('https://wa.me/' + window.WA_NUMBER + '?text=' + encodeURIComponent(msg), '_blank');
+            window.showCartPostOrderState?.(createdOrderId);
+            window.showToast('Pedido registrado. Ahora puedes ver su estado o volver al menú.', 'success');
         };
 
         function initApp() {
