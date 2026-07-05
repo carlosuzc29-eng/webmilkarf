@@ -148,6 +148,13 @@
         #cart-badge { transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); }
         #cart-fab.pop #cart-badge { transform: scale(1.3) translateZ(0); }
 
+        /* UX refinada: navegación móvil más inmediata */
+        #mobile-bottom-nav button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: transform 0.08s ease, background-color 0.12s ease; }
+        #mobile-bottom-nav button:active { transform: scale(0.94); }
+        #mobile-bottom-nav button.active-mobile-nav { background: rgba(66, 29, 142, 0.10); color: #421d8e; }
+        @media (prefers-color-scheme: dark) { #mobile-bottom-nav button.active-mobile-nav { background: rgba(185, 203, 37, 0.12); color: #b9cb25; } }
+        @media (max-width: 768px) { .view { transition: transform 0.28s cubic-bezier(0.25, 1, 0.3, 1), opacity 0.18s ease; } }
+
         /* OPTIMIZACIÓN UX / PERFORMANCE */
         .edu-card { transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; }
         .edu-card:hover { transform: translateY(-2px); }
@@ -349,7 +356,7 @@
                     <footer class="w-full max-w-4xl mx-auto mt-16 pt-8 border-t border-purple-border/50 dark:border-purple/20 text-center flex flex-col items-center gap-5">
                         <div class="bg-purple/10 dark:bg-purple/5 text-purple-dark dark:text-purple-light px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase border border-purple/20">Nutrición Científica & Evolutiva</div>
                         <div class="flex gap-4">
-                            <a href="https://wa.link/pwe23z" target="_blank" class="w-10 h-10 rounded-full bg-white dark:bg-darkcard shadow-md flex items-center justify-center text-[#25D366] hover:scale-110 transition-transform dark:border dark:border-purple/30">
+                            <a href="#" onclick="event.preventDefault(); window.openWhatsApp('general');" class="w-10 h-10 rounded-full bg-white dark:bg-darkcard shadow-md flex items-center justify-center text-[#25D366] hover:scale-110 transition-transform dark:border dark:border-purple/30">
                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                             </a>
                             <a href="https://www.instagram.com/milkarfood" target="_blank" class="w-10 h-10 rounded-full bg-white dark:bg-darkcard shadow-md flex items-center justify-center text-[#d72b8f] hover:scale-110 transition-transform dark:border dark:border-purple/30">
@@ -981,14 +988,28 @@
                     <!-- Estado de pedidos del usuario -->
                     <div class="mt-6 border-t border-purple/10 pt-6">
                         <div class="flex items-center justify-between gap-3 mb-4">
-                            <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider flex items-center gap-2">
-                                <i data-lucide="clipboard-list" class="w-5 h-5 text-green"></i> Mis Pedidos
-                            </h4>
-                            <button type="button" onclick="window.startUserOrdersListener(true)" class="text-[10px] font-black text-purple bg-purple/10 hover:bg-purple/20 px-3 py-1.5 rounded-lg transition-all">Actualizar</button>
+                            <div>
+                                <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider flex items-center gap-2">
+                                    <i data-lucide="clipboard-list" class="w-5 h-5 text-green"></i> Mis Pedidos
+                                </h4>
+                                <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold mt-1">Aquí verás el pedido pendiente por confirmar. El historial queda guardado aparte para que tu perfil no se haga extenso.</p>
+                            </div>
+                            <button type="button" onclick="window.startUserOrdersListener(true)" class="text-[10px] font-black text-purple bg-purple/10 hover:bg-purple/20 px-3 py-1.5 rounded-lg transition-all shrink-0">Actualizar</button>
                         </div>
-                        <div id="user-orders-list" class="space-y-3">
-                            <p class="text-xs text-gray-500 font-medium">Cuando realices un pedido, podrás ver aquí si está en proceso, confirmado o completado.</p>
+                        <div id="user-active-order" class="space-y-3">
+                            <p class="text-xs text-gray-500 font-medium bg-white dark:bg-darkcard border border-purple-border/30 rounded-2xl p-4">Cuando realices un pedido, aparecerá aquí como en proceso hasta que el equipo Milkarf lo confirme.</p>
                         </div>
+                        <div class="mt-4">
+                            <button id="btn-toggle-orders-history" type="button" onclick="window.toggleUserOrdersHistory()" class="w-full flex items-center justify-center gap-2 bg-purple-light dark:bg-purple/10 border border-purple-border/40 dark:border-purple/20 text-purple dark:text-white font-black text-[10px] uppercase tracking-widest py-3 rounded-2xl transition-all active:scale-95">
+                                <i data-lucide="history" class="w-4 h-4"></i> Ver historial de pedidos
+                            </button>
+                            <div id="user-orders-history-wrap" class="hidden mt-3">
+                                <div id="user-orders-history" class="space-y-3">
+                                    <p class="text-xs text-gray-500 font-medium bg-white dark:bg-darkcard border border-purple-border/30 rounded-2xl p-4">Aún no tienes pedidos en el historial.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="user-orders-list" class="hidden"></div>
                     </div>
 
                     <!-- Canje de puntos del usuario -->
@@ -1237,7 +1258,7 @@
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
                             <button onclick="window.navigateTo('view-calc')" class="bg-white dark:bg-darkcard border border-purple/20 text-purple dark:text-white text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl">Calcular ración</button>
                             <button onclick="window.navigateTo('view-faq')" class="bg-white dark:bg-darkcard border border-purple/20 text-purple dark:text-white text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl">Guía transición</button>
-                            <a href="https://wa.link/pwe23z" target="_blank" class="bg-white dark:bg-darkcard border border-green/30 text-green-dark dark:text-green text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl text-center">Ayuda rápida</a>
+                            <a href="#" onclick="event.preventDefault(); window.openWhatsApp('quickHelp');" class="bg-white dark:bg-darkcard border border-green/30 text-green-dark dark:text-green text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl text-center">Ayuda rápida</a>
                         </div>
                     </div>
 
@@ -1261,16 +1282,15 @@
                             <i data-lucide="clipboard-check" class="w-10 h-10"></i>
                         </div>
                         <div>
-                            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-green-dark dark:text-green mb-2">Pedido montado</p>
-                            <h3 class="text-2xl md:text-3xl font-black text-purple-dark dark:text-white leading-tight">Tu solicitud fue enviada por WhatsApp</h3>
-                            <p id="post-order-code" class="text-[10px] font-black text-purple/50 dark:text-gray-500 uppercase tracking-widest mt-3 hidden"></p>
+                            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-green-dark dark:text-green mb-2">Pedido recibido</p>
+                            <h3 class="text-2xl md:text-3xl font-black text-purple-dark dark:text-white leading-tight">Tu pedido quedó en proceso</h3>
                         </div>
                         <p class="text-sm text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">
-                            Limpiamos el carrito para evitar duplicar el pedido. Ahora puedes revisar su estado o volver al menú para armar otro pedido.
+                            Gracias por elegir Milkarf. El equipo revisará tu solicitud, confirmará disponibilidad y continuará la atención por WhatsApp.
                         </p>
                         <div class="bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 rounded-2xl p-4 text-left">
                             <p class="text-[11px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">
-                                Tu pedido queda como <b class="text-pink">En proceso</b> hasta que el equipo Milkarf lo confirme desde administración. Los puntos se suman cuando el pedido sea completado.
+                                Podrás ver este pedido como <b class="text-pink">En proceso</b> en tu perfil hasta que sea confirmado desde administración.
                             </p>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
@@ -1800,6 +1820,122 @@
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
+        };
+
+
+        window.sanitizeWhatsAppMessage = function(text = '') {
+            return String(text)
+                .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '')
+                .replace(/[ \t]+\n/g, '\n')
+                .replace(/\n{3,}/g, '\n\n')
+                .trim();
+        };
+
+        window.buildWhatsAppUrl = function(message, phone = window.WA_NUMBER) {
+            const cleanPhone = String(phone || window.WA_NUMBER || '').replace(/\D/g, '');
+            return 'https://wa.me/' + cleanPhone + '?text=' + encodeURIComponent(window.sanitizeWhatsAppMessage(message));
+        };
+
+        window.openWhatsAppMessage = function(message, phone = window.WA_NUMBER) {
+            window.open(window.buildWhatsAppUrl(message, phone), '_blank', 'noopener,noreferrer');
+        };
+
+        window.getWhatsAppTemplate = function(type = 'general', data = {}) {
+            const currency = (value) => '$' + Number(value || 0).toFixed(2);
+            const userName = data.userName || data.email || 'Cliente Milkarf';
+
+            switch(type) {
+                case 'general':
+                    return `Hola, equipo Milkarf.
+
+Me gustaría recibir información sobre la alimentación natural para mi mascota.
+
+Quisiera conocer las opciones disponibles, presentaciones, disponibilidad y la forma recomendada para iniciar una transición adecuada.`;
+
+                case 'quickHelp':
+                    return `Hola, equipo Milkarf.
+
+Estoy revisando la web y necesito ayuda antes de completar mi pedido.
+
+Quisiera confirmar recomendaciones, disponibilidad, costo de delivery y próximos pasos.`;
+
+                case 'newOrder': {
+                    const items = Array.isArray(data.items) ? data.items.map((i, index) => {
+                        const pet = i.forPet ? ` - Para ${i.forPet}` : '';
+                        return `${index + 1}. ${Number(i.qty || 0)} x ${i.name || 'Producto'} (${i.weight || 'presentación'})${pet}`;
+                    }).join('\n') : 'Pedido Milkarf';
+                    let msg = `Hola, equipo Milkarf.
+
+Quiero realizar el siguiente pedido:
+
+Productos:
+${items}
+
+Resumen del pedido:
+Subtotal: ${currency(data.subtotal)}`;
+                    if(data.discountApplied) {
+                        msg += `\nDescuento de bienvenida: -${currency(data.discountAmount)}\nTotal de productos: ${currency(data.finalTotal)}\n\nEl descuento de primera compra fue aplicado desde la web.`;
+                    } else {
+                        msg += `\nTotal de productos: ${currency(data.finalTotal)}`;
+                    }
+                    if(data.location) {
+                        msg += `\n\nUbicación para delivery:\n${data.location}`;
+                    }
+                    msg += `\n\nPor favor, confirmen disponibilidad, costo de delivery y forma de pago para completar el pedido.`;
+                    return msg;
+                }
+
+                case 'userRedeem':
+                    return `Hola, equipo Milkarf.
+
+Quiero solicitar el canje de mis puntos.
+
+Beneficio: ${data.itemName || 'Beneficio Milkarf'}
+Detalle: ${data.benefit || 'Beneficio disponible'}
+Puntos descontados: ${Number(data.points || 0)} pts
+Usuario: ${userName}
+
+Por favor, confirmen disponibilidad y próximos pasos para coordinar la entrega.`;
+
+                case 'adminOrderContact':
+                    return `Hola, te escribimos de Milkarf para confirmar tu pedido.
+
+Ya recibimos tu solicitud y estamos revisando disponibilidad, total final con delivery y forma de pago.
+
+Por favor, indícanos si deseas continuar con la confirmación del pedido.`;
+
+                case 'adminOrderContactFallback':
+                    return `Hola, equipo Milkarf.
+
+Este pedido no tiene un número de WhatsApp válido registrado para contactar directamente al cliente.
+
+Cliente: ${data.userName || data.email || 'Usuario'}
+Pedido: ${data.orderId || 'sin referencia visible'}
+
+Revisar el pedido desde el panel administrador para continuar la atención.`;
+
+                case 'birthday':
+                    return `Hola, te escribimos de Milkarf.
+
+Vimos que se acerca el cumpleaños de ${data.petName || 'tu mascota'} y queremos ayudarte a consentirlo con una opción especial de nuestra alimentación natural.
+
+Si deseas, podemos orientarte con recomendaciones según su perfil.`;
+
+                case 'adminRedeemContact':
+                    return `Hola, te escribimos de Milkarf sobre tu solicitud de canje.
+
+Beneficio solicitado: ${data.itemName || data.benefit || 'Beneficio Milkarf'}
+Puntos utilizados: ${Number(data.points || 0)} pts
+
+Queremos confirmar disponibilidad y coordinar la entrega.`;
+
+                default:
+                    return window.getWhatsAppTemplate('general', data);
+            }
+        };
+
+        window.openWhatsApp = function(type = 'general', data = {}) {
+            window.openWhatsAppMessage(window.getWhatsAppTemplate(type, data), data.phone || window.WA_NUMBER);
         };
 
         window.getClientToken = function() {
@@ -3348,7 +3484,7 @@
                 });
             } catch(error) {
                 console.error('Error iniciando listener de pedidos:', error);
-                container.innerHTML = '<p class="text-xs text-pink font-bold bg-pink/10 border border-pink/20 rounded-xl p-3">No se pudo iniciar el seguimiento de pedidos.</p>';
+                container.innerHTML = '<p class="text-xs text-pink font-bold bg-pink/10 border border-pink/20 rounded-xl p-3">No se pudo cargar el estado de tus pedidos.</p>';
             }
             if(forceNavigate) window.navigateTo?.('view-dashboard');
         };
@@ -3366,7 +3502,6 @@
                 const date = o.createdAt ? new Date(o.createdAt).toLocaleString('es-VE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : 'Pedido reciente';
                 const items = Array.isArray(o.items) ? o.items.map(i => `${Number(i.qty || 0)}x ${i.name || 'Producto'} ${i.weight ? '(' + i.weight + ')' : ''}${i.forPet ? ' · ' + i.forPet : ''}`).join(' · ') : 'Pedido Milkarf';
                 const total = typeof o.total === 'number' ? '$' + o.total.toFixed(2) : '';
-                const orderCode = o.id ? `#${String(o.id).slice(0, 8).toUpperCase()}` : '';
                 const points = Number(o.pointsAwarded || o.pointsGranted || 0);
                 let helper = 'Pedido recibido. Está pendiente por confirmación del administrador.';
                 if(['confirmado','verificado'].includes(status)) helper = points > 0 ? `Pedido confirmado. Puntos estimados: +${points} pts.` : 'Pedido confirmado por administración.';
@@ -3379,7 +3514,6 @@
                             <div class="min-w-0">
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">${date}</p>
-                                    <span class="text-[9px] text-purple/50 dark:text-gray-500 font-black uppercase tracking-widest">${window.escapeHTML(orderCode)}</span>
                                 </div>
                                 <h5 class="text-sm font-black text-purple-dark dark:text-white mt-1 leading-snug">${window.escapeHTML(items)}</h5>
                                 <p class="text-xs text-gray-500 dark:text-gray-400 font-bold mt-1">${total}</p>
@@ -3861,16 +3995,13 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 window.currentUser.data = { ...(window.currentUser.data || {}), puntos: newPts };
                 window.actualizarUIAuth();
                 window.showToast('Canje registrado. Te llevaremos a WhatsApp.', 'success');
-                let msg = `*¡Hola Milkarf!* 🐾
-Quiero canjear mis puntos.
-
-*Canje:* ${item.name}
-*Beneficio:* ${item.benefit}
-*Puntos a descontar:* ${item.points} pts
-*Usuario:* ${window.currentUser.displayName || window.currentUser.email || 'Cliente Milkarf'}
-
-Por favor confírmenme la disponibilidad.`;
-                setTimeout(() => window.open('https://wa.me/' + window.WA_NUMBER + '?text=' + encodeURIComponent(msg), '_blank'), 250);
+                const msg = window.getWhatsAppTemplate('userRedeem', {
+                    itemName: item.name,
+                    benefit: item.benefit,
+                    points: item.points,
+                    userName: window.currentUser.displayName || window.currentUser.email || 'Cliente Milkarf'
+                });
+                setTimeout(() => window.openWhatsAppMessage(msg), 250);
             } catch(error) {
                 console.error(error);
                 window.showToast('No se pudo procesar el canje. Intenta nuevamente.');
@@ -3988,9 +4119,14 @@ Por favor confírmenme la disponibilidad.`;
 
         window.getAdminContactLink = function(order) {
             const phone = String(order?.phone || order?.telefono || order?.whatsapp || '').replace(/\D/g, '');
-            const baseMsg = `Hola, te escribimos de Milkarf para confirmar tu pedido${order?.id ? ' #' + order.id.slice(0,8) : ''}.`;
-            if(phone.length >= 8) return `https://wa.me/${phone}?text=${encodeURIComponent(baseMsg)}`;
-            return `https://wa.me/${window.WA_NUMBER}?text=${encodeURIComponent(baseMsg + ' Cliente: ' + (order?.userName || order?.email || 'Usuario'))}`;
+            if(phone.length >= 8) {
+                return window.buildWhatsAppUrl(window.getWhatsAppTemplate('adminOrderContact', { order }), phone);
+            }
+            return window.buildWhatsAppUrl(window.getWhatsAppTemplate('adminOrderContactFallback', {
+                userName: order?.userName || '',
+                email: order?.email || '',
+                orderId: order?.id || ''
+            }), window.WA_NUMBER);
         };
 
         window.renderStatusBadge = function(status) {
@@ -4329,8 +4465,8 @@ Por favor confírmenme la disponibilidad.`;
         };
 
         window.buildAdminBirthdayCard = function(p) {
-            const msg = `Hola, te escribimos de Milkarf para celebrar a ${p.petName}. Queremos recordarte que tenemos beneficios y opciones especiales para consentirlo en su día.`;
-            const link = `https://wa.me/${window.WA_NUMBER}?text=${encodeURIComponent(msg)}`;
+            const msg = window.getWhatsAppTemplate('birthday', { petName: p.petName });
+            const link = window.buildWhatsAppUrl(msg);
             const isNear = p.daysLeft <= 7;
             return `<div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border ${isNear ? 'border-pink/40' : 'border-purple-border/40 dark:border-purple/20'} text-left">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3"><div><h4 class="font-black ${isNear ? 'text-pink' : 'text-purple-dark dark:text-white'} text-base">${p.petType === 'gato' ? '🐱' : '🐶'} ${window.escapeHTML(p.petName)}</h4><p class="text-[10px] text-gray-500 font-bold mt-1">Tutor: ${window.escapeHTML(p.ownerEmail)} · ${window.escapeHTML(p.level || '')}</p><p class="text-[10px] text-gray-400 font-bold mt-1">Nacimiento: ${window.escapeHTML(p.bdayString)}</p></div><div class="flex gap-2"><span class="px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${isNear ? 'bg-pink text-white' : 'bg-purple/5 text-purple'}">${p.daysLeft === 0 ? '¡Hoy!' : (p.daysLeft === 1 ? 'Mañana' : `En ${p.daysLeft} días`)}</span><a href="${link}" target="_blank" class="px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-[#25D366]/15 text-[#168d43] dark:text-green border border-[#25D366]/30">WhatsApp</a></div></div>
@@ -4372,8 +4508,12 @@ Por favor confírmenme la disponibilidad.`;
         window.buildAdminRedeemCard = function(r) {
             const status = String(r.status || 'solicitado').toLowerCase();
             const statusClass = status === 'entregado' ? 'bg-purple/10 text-purple border-purple/20' : status === 'aprobado' ? 'bg-green/20 text-green-dark dark:text-green border-green/30' : status === 'rechazado' ? 'bg-gray-200 text-gray-500 border-gray-300' : 'bg-pink/10 text-pink border-pink/20';
-            const msg = `Hola, te escribimos de Milkarf por tu canje: ${r.itemName || r.benefit || 'Beneficio Milkarf'}. Queremos confirmar disponibilidad y coordinar la entrega.`;
-            const w = `https://wa.me/${window.WA_NUMBER}?text=${encodeURIComponent(msg)}`;
+            const msg = window.getWhatsAppTemplate('adminRedeemContact', {
+                itemName: r.itemName || '',
+                benefit: r.benefit || '',
+                points: r.points || 0
+            });
+            const w = window.buildWhatsAppUrl(msg);
             return `<div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left"><div class="flex flex-col md:flex-row md:items-start justify-between gap-4"><div><span class="inline-flex px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${statusClass}">${window.escapeHTML(status)}</span><h4 class="font-black text-purple-dark dark:text-white text-base mt-3">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</h4><p class="text-xs text-gray-500 font-bold mt-1">${window.escapeHTML(r.email || r.userName || 'Cliente')} · ${Number(r.points || 0)} pts</p><p class="text-[10px] text-gray-400 font-bold mt-1">${window.formatAdminDate(r.createdAt)}</p></div><div class="grid grid-cols-1 sm:grid-cols-3 gap-2"><button onclick="window.actualizarCanjeAdmin('${r.id}', 'aprobado')" class="bg-green text-purple-dark text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest">Aprobar</button><button onclick="window.actualizarCanjeAdmin('${r.id}', 'entregado')" class="bg-purple text-white text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest">Entregado</button><a href="${w}" target="_blank" class="bg-[#25D366]/15 text-[#168d43] dark:text-green border border-[#25D366]/30 text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest text-center">WhatsApp</a></div></div></div>`;
         };
 
@@ -4865,7 +5005,6 @@ Por favor confírmenme la disponibilidad.`;
             const cont = document.getElementById('cart-items-container');
             const sum = document.getElementById('cart-summary');
             const post = document.getElementById('cart-post-order');
-            const code = document.getElementById('post-order-code');
             const fab = document.getElementById('cart-fab');
             const badge = document.getElementById('cart-badge');
             const title = document.getElementById('cart-title');
@@ -4880,15 +5019,6 @@ Por favor confírmenme la disponibilidad.`;
             if(fab) fab.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
             if(badge) badge.textContent = '0';
 
-            const id = orderId || window.lastOrderId || '';
-            if(code) {
-                if(id) {
-                    code.textContent = `Código de seguimiento: ${String(id).slice(0, 8).toUpperCase()}`;
-                    code.classList.remove('hidden');
-                } else {
-                    code.classList.add('hidden');
-                }
-            }
             window.refreshIcons?.();
         };
         
@@ -5000,33 +5130,43 @@ Por favor confírmenme la disponibilidad.`;
                     try { localStorage.setItem('milkarf_last_order_id', createdOrderId); } catch(e){}
                 } catch (error) {
                     console.error("No se pudo guardar el pedido en el registro: ", error);
-                    window.showToast('No se pudo registrar el pedido para seguimiento, pero puedes enviarlo por WhatsApp.');
+                    window.showToast('No se pudo registrar el pedido, pero puedes enviarlo por WhatsApp.');
                 }
             }
 
-            const items = window.cart.map(i => `- ${i.qty}x ${i.name} (${i.weight}) ${i.forPet ? `_para ${i.forPet}_` : ''}`).join('\n');
-            let msg = `*¡Hola Milkarf!* 🐾\nQuiero hacer este pedido:\n\n${items}\n\n`;
-            if(createdOrderId) msg += `*Código de seguimiento:* ${createdOrderId}\n\n`;
-            
-            if (window.descuentoAplicado) {
-                msg += `*Subtotal:* $${tot.toFixed(2)}\n*Descuento (20%):* -$${(tot * 0.2).toFixed(2)}\n*Total a pagar: $${finalTot.toFixed(2)}*\n\n_(Descuento de primera compra aplicado)_`;
-            } else {
-                msg += `*Total: $${finalTot.toFixed(2)}*`;
-            }
-            
-            if (window.userLocation) {
-                msg += `\n\n*Ubicación para el delivery:*\n${window.userLocation}`;
-            }
-            
-            msg += `\n\nPor favor confírmame el total con envío. ¡Gracias!`;
-            
-            const whatsappUrl = 'https://wa.me/' + window.WA_NUMBER + '?text=' + encodeURIComponent(msg);
-            window.open(whatsappUrl, '_blank');
-
+            const msg = window.getWhatsAppTemplate('newOrder', {
+                items: window.cart.map(i => ({ name: i.name, weight: i.weight, qty: i.qty, forPet: i.forPet || '' })),
+                subtotal: tot,
+                discountApplied: window.descuentoAplicado,
+                discountAmount: window.descuentoAplicado ? (tot * 0.2) : 0,
+                finalTotal: finalTot,
+                location: window.userLocation || ''
+            });
+            const pendingOrderForCache = {
+                id: createdOrderId || ('local_' + Date.now()),
+                uid: (window.currentUser && window.currentUser.uid) ? window.currentUser.uid : '',
+                clientToken,
+                registeredUser: !!(window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email)),
+                userName: window.currentUser?.displayName || window.currentUser?.email || 'Usuario Invitado',
+                email: window.currentUser?.email || '',
+                items: window.cart.map(i => ({name: i.name, weight: i.weight, qty: i.qty, price: i.price, forPet: i.forPet || ''})),
+                total: finalTot,
+                descuentoAplicado: window.descuentoAplicado,
+                status: 'en_proceso',
+                pointsBase: Math.floor(finalTot),
+                pointsAwarded: 0,
+                pointsGranted: 0,
+                selectedPet: window.state.nombreMascota || '',
+                createdAt: new Date().toISOString(),
+                localOnly: !createdOrderId
+            };
+            window.cacheUserOrderLocal?.(pendingOrderForCache);
+            window.renderUserOrders?.(window.getLocalUserOrders?.() || [pendingOrderForCache]);
             window.actualizarUIAuth();
             window.startUserOrdersListener?.();
             window.showCartPostOrderState?.(createdOrderId);
-            window.showToast('Pedido registrado. Ahora puedes ver su estado o volver al menú.', 'success');
+            window.showToast('Pedido en proceso. Puedes revisar su estado desde tu perfil.', 'success');
+            setTimeout(() => window.openWhatsAppMessage(msg), 220);
         };
 
         function initApp() {
@@ -5437,7 +5577,6 @@ Por favor confírmenme la disponibilidad.`;
                 const date = o.createdAt ? new Date(o.createdAt).toLocaleString('es-VE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : 'Pedido reciente';
                 const items = Array.isArray(o.items) ? o.items.map(i => `${Number(i.qty || 0)}x ${i.name || 'Producto'} ${i.weight ? '(' + i.weight + ')' : ''}${i.forPet ? ' · ' + i.forPet : ''}`).join(' · ') : 'Pedido Milkarf';
                 const total = typeof o.total === 'number' ? '$' + o.total.toFixed(2) : '';
-                const orderCode = o.id ? `#${String(o.id).slice(0, 8).toUpperCase()}` : '';
                 const points = Number(o.pointsAwarded || o.pointsGranted || 0);
                 let helper = 'Tu pedido fue recibido por WhatsApp y está pendiente de confirmación por el equipo Milkarf.';
                 if(['confirmado','verificado'].includes(status)) helper = 'El equipo Milkarf ya revisó tu pedido. Está en camino a completarse.';
@@ -5447,7 +5586,7 @@ Por favor confírmenme la disponibilidad.`;
                     <div class="absolute top-0 left-0 w-1 h-full ${info.bar}"></div>
                     <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pl-1">
                         <div class="min-w-0">
-                            <div class="flex items-center gap-2 flex-wrap"><p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">${date}</p><span class="text-[9px] text-purple/50 dark:text-gray-500 font-black uppercase tracking-widest">${window.escapeHTML(orderCode)}</span></div>
+                            <div class="flex items-center gap-2 flex-wrap"><p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">${date}</p></div>
                             <h5 class="text-sm font-black text-purple-dark dark:text-white mt-1 leading-snug">${window.escapeHTML(items)}</h5>
                             <p class="text-xs text-gray-500 dark:text-gray-400 font-bold mt-1">${total}</p>
                         </div>
@@ -5585,10 +5724,214 @@ Por favor confírmenme la disponibilidad.`;
             }
         };
 
+
+        /* =========================
+           UX PEDIDOS / PERFIL / MÓVIL
+           ========================= */
+        window.userOrdersHistoryOpen = false;
+        window.userOrdersCache = [];
+
+        window.getLocalOrdersKey = function() {
+            const uid = auth?.currentUser?.uid || window.currentUser?.uid || 'guest';
+            return 'milkarf_user_orders_cache_' + uid + '_' + window.getClientToken();
+        };
+
+        window.getLocalUserOrders = function() {
+            try {
+                const raw = localStorage.getItem(window.getLocalOrdersKey());
+                const arr = raw ? JSON.parse(raw) : [];
+                return Array.isArray(arr) ? arr : [];
+            } catch(e) { return []; }
+        };
+
+        window.setLocalUserOrders = function(orders = []) {
+            try {
+                const unique = Array.from(new Map((orders || []).filter(Boolean).map(o => [String(o.id || o.localId || Math.random()), o])).values())
+                    .sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+                    .slice(0, 20);
+                localStorage.setItem(window.getLocalOrdersKey(), JSON.stringify(unique));
+            } catch(e) {}
+        };
+
+        window.cacheUserOrderLocal = function(order) {
+            if(!order) return;
+            const current = window.getLocalUserOrders();
+            const id = String(order.id || order.localId || ('local_' + Date.now()));
+            const filtered = current.filter(o => String(o.id || o.localId) !== id);
+            filtered.unshift({ ...order, id });
+            window.setLocalUserOrders(filtered);
+        };
+
+        window.mergeOrdersById = function(...lists) {
+            const map = new Map();
+            lists.flat().filter(Boolean).forEach(o => {
+                const id = String(o.id || o.localId || JSON.stringify(o.items || []) + (o.createdAt || ''));
+                const prev = map.get(id) || {};
+                map.set(id, { ...prev, ...o, id });
+            });
+            return Array.from(map.values()).sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        };
+
+        window.toggleUserOrdersHistory = function(force) {
+            if(typeof force === 'boolean') window.userOrdersHistoryOpen = force;
+            else window.userOrdersHistoryOpen = !window.userOrdersHistoryOpen;
+            const wrap = document.getElementById('user-orders-history-wrap');
+            const btn = document.getElementById('btn-toggle-orders-history');
+            if(wrap) wrap.classList.toggle('hidden', !window.userOrdersHistoryOpen);
+            if(btn) {
+                btn.innerHTML = window.userOrdersHistoryOpen
+                    ? '<i data-lucide="chevron-up" class="w-4 h-4"></i> Ocultar historial de pedidos'
+                    : '<i data-lucide="history" class="w-4 h-4"></i> Ver historial de pedidos';
+            }
+            window.refreshIcons?.();
+        };
+
+        window.buildUserOrderCard = function(o, {compact = false} = {}) {
+            const status = String(o.status || 'en_proceso').toLowerCase();
+            const info = window.getOrderStatusInfo(status);
+            const date = o.createdAt ? new Date(o.createdAt).toLocaleString('es-VE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : 'Pedido reciente';
+            const itemsArr = Array.isArray(o.items) ? o.items : [];
+            const items = itemsArr.length ? itemsArr.map(i => `${Number(i.qty || 0)}x ${i.name || 'Producto'} ${i.weight ? '(' + i.weight + ')' : ''}${i.forPet ? ' · ' + i.forPet : ''}`).join(' · ') : 'Pedido Milkarf';
+            const total = typeof o.total === 'number' ? '$' + o.total.toFixed(2) : '';
+            const points = Number(o.pointsAwarded || o.pointsGranted || 0);
+            let helper = 'Pedido pendiente por confirmar. El equipo Milkarf validará disponibilidad y continuará la atención por WhatsApp.';
+            if(['confirmado','verificado'].includes(status)) helper = 'Pedido revisado por administración. Está en proceso interno de cierre.';
+            if(status === 'completado') helper = points > 0 ? `Pedido completado. Este pedido sumó ${points} puntos a tu cuenta.` : 'Pedido completado por administración.';
+            if(status === 'cancelado') helper = 'Pedido cancelado. Escríbenos si necesitas revisarlo.';
+            return `<div class="relative bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-${compact ? '4' : '5'} text-left overflow-hidden shadow-sm">
+                <div class="absolute top-0 left-0 w-1 h-full ${info.bar}"></div>
+                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pl-1">
+                    <div class="min-w-0">
+                        <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">${date}</p>
+                        <h5 class="text-sm font-black text-purple-dark dark:text-white mt-1 leading-snug">${window.escapeHTML(items)}</h5>
+                        ${total ? `<p class="text-xs text-gray-500 dark:text-gray-400 font-bold mt-1">${total}</p>` : ''}
+                    </div>
+                    <span class="shrink-0 px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${info.classes}">${info.label}</span>
+                </div>
+                ${!compact && typeof window.renderUserOrderSteps === 'function' ? window.renderUserOrderSteps(status, points) : ''}
+                <div class="mt-3 ml-1 bg-purple-light/70 dark:bg-[#0d0718] border border-purple-border/30 dark:border-purple/20 rounded-xl p-3">
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">${window.escapeHTML(helper)}</p>
+                    ${points > 0 ? `<div class="mt-2 inline-flex items-center gap-1 bg-green/15 text-green-dark dark:text-green border border-green/20 rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest"><i data-lucide="sparkles" class="w-3 h-3"></i> +${points} pts ganados</div>` : ''}
+                </div>
+            </div>`;
+        };
+
+        window.renderUserOrders = function(orders = []) {
+            const activeContainer = document.getElementById('user-active-order') || document.getElementById('user-orders-list');
+            const historyContainer = document.getElementById('user-orders-history');
+            if(!activeContainer) return;
+            const merged = window.mergeOrdersById(orders, window.getLocalUserOrders()).sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+            window.userOrdersCache = merged;
+            window.setLocalUserOrders(merged);
+
+            const pendingStatuses = ['pendiente', 'en_proceso', 'solicitado'];
+            const pending = merged.filter(o => pendingStatuses.includes(String(o.status || 'en_proceso').toLowerCase()));
+            const history = merged.filter(o => !pendingStatuses.includes(String(o.status || 'en_proceso').toLowerCase()));
+
+            if(pending.length) {
+                activeContainer.innerHTML = window.buildUserOrderCard(pending[0], {compact:false});
+            } else {
+                activeContainer.innerHTML = '<p class="text-xs text-gray-500 font-medium bg-white dark:bg-darkcard border border-purple-border/30 rounded-2xl p-4">No tienes pedidos pendientes por confirmar. Cuando realices uno nuevo, aparecerá aquí como <b>En proceso</b>.</p>';
+            }
+
+            if(historyContainer) {
+                historyContainer.innerHTML = history.length
+                    ? history.slice(0, 12).map(o => window.buildUserOrderCard(o, {compact:true})).join('')
+                    : '<p class="text-xs text-gray-500 font-medium bg-white dark:bg-darkcard border border-purple-border/30 rounded-2xl p-4">Aún no tienes pedidos completados o cancelados en el historial.</p>';
+            }
+            const hiddenLegacy = document.getElementById('user-orders-list');
+            if(hiddenLegacy && hiddenLegacy !== activeContainer) hiddenLegacy.innerHTML = '';
+            window.refreshIcons?.();
+        };
+
+        window.startUserOrdersListener = function(forceNavigate = false) {
+            const activeContainer = document.getElementById('user-active-order') || document.getElementById('user-orders-list');
+            if(!activeContainer) return;
+            const localOrders = window.getLocalUserOrders();
+            if(localOrders.length) window.renderUserOrders(localOrders);
+            if(!db) {
+                if(!localOrders.length) activeContainer.innerHTML = '<p class="text-xs text-pink font-bold bg-pink/10 border border-pink/20 rounded-xl p-3">Firebase no está disponible para consultar pedidos.</p>';
+                return;
+            }
+            const authUser = auth?.currentUser || null;
+            const uid = (window.currentUser && window.currentUser.uid) || authUser?.uid || null;
+            const hasRealSession = !!(window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email));
+            const token = window.getClientToken();
+            if(!uid && !token) {
+                activeContainer.innerHTML = '<p class="text-xs text-gray-500 font-medium bg-white dark:bg-darkcard border border-purple-border/30 rounded-2xl p-4">Realiza un pedido para ver su estado aquí.</p>';
+                return;
+            }
+            if(unsubUserOrders) { try { unsubUserOrders(); } catch(e) {} unsubUserOrders = null; }
+            if(!localOrders.length) activeContainer.innerHTML = '<p class="text-xs text-gray-500 font-semibold bg-white dark:bg-darkcard rounded-xl p-3 border border-purple-border/30">Consultando tus pedidos...</p>';
+
+            const ordersRef = window.getOrdersCollectionRef();
+            const snapshots = { uid: [], token: [] };
+            const unsubs = [];
+            const renderMerged = () => window.renderUserOrders(window.mergeOrdersById(snapshots.uid, snapshots.token, window.getLocalUserOrders()));
+            const listen = (key, qRef) => {
+                try {
+                    const unsub = onSnapshot(qRef, (snapshot) => {
+                        const arr = [];
+                        snapshot.forEach(d => arr.push({ id: d.id, ...d.data() }));
+                        snapshots[key] = arr;
+                        renderMerged();
+                    }, (error) => {
+                        console.warn('No se pudo escuchar pedidos por ' + key + ':', error);
+                        renderMerged();
+                    });
+                    unsubs.push(unsub);
+                } catch(error) {
+                    console.warn('Error creando listener de pedidos por ' + key + ':', error);
+                }
+            };
+            if(uid) listen('uid', query(ordersRef, where('uid', '==', uid)));
+            if(token) listen('token', query(ordersRef, where('clientToken', '==', token)));
+            unsubUserOrders = () => unsubs.forEach(fn => { try { fn(); } catch(e) {} });
+            if(forceNavigate) window.navigateTo?.('view-dashboard');
+        };
+
+        window.refreshMobileBottomNav = function(targetId) {
+            document.querySelectorAll('#mobile-bottom-nav button').forEach(btn => {
+                btn.classList.toggle('active-mobile-nav', btn.getAttribute('data-target') === targetId);
+            });
+        };
+
+        const __originalNavigateToFastUX = window.navigateTo;
+        window.navigateTo = function(targetId) {
+            const result = __originalNavigateToFastUX?.(targetId);
+            window.refreshMobileBottomNav?.(targetId);
+            return result;
+        };
+
+        window.initFastMobileNav = function() {
+            const nav = document.getElementById('mobile-bottom-nav');
+            if(!nav || nav.dataset.fastReady === '1') return;
+            nav.dataset.fastReady = '1';
+            let lastTarget = '';
+            let lastAt = 0;
+            const go = (event) => {
+                const btn = event.target.closest('button[data-target]');
+                if(!btn) return;
+                const target = btn.getAttribute('data-target');
+                const now = Date.now();
+                if(lastTarget === target && now - lastAt < 250) { event.preventDefault(); return; }
+                lastTarget = target; lastAt = now;
+                event.preventDefault();
+                window.navigateTo(target);
+            };
+            nav.addEventListener('pointerdown', go, { passive:false });
+            nav.addEventListener('click', (event) => {
+                const btn = event.target.closest('button[data-target]');
+                if(!btn) return;
+                if(Date.now() - lastAt < 380) event.preventDefault();
+            }, true);
+        };
+
         window.addEventListener('DOMContentLoaded', () => {
             if (typeof window.refreshIcons === 'function') window.refreshIcons();
             window.setMaxBirthdayDates();
             initApp();
+            window.initFastMobileNav?.();
             window.initPreloader();
         });
     </script>
