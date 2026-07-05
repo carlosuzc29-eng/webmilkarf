@@ -255,14 +255,15 @@
         </ul>
         
         <!-- MENÚ ADMIN (EXCLUSIVO) -->
-        <ul id="admin-nav-links" class="nav-links space-y-6 text-center hidden">
-            <li class="mb-4"><div class="inline-block bg-pink/20 text-pink px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border border-pink/30">Modo Administrador</div></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-home'); window.forceCloseMenu();">Inicio</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-calc'); window.forceCloseMenu();">Calculadora Nutricional</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('pedidos'); window.forceCloseMenu();">📊 Control de Pedidos</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('usuarios'); window.forceCloseMenu();">👥 Directorio & Canjes</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('cumples'); window.forceCloseMenu();">🎂 Radar de Cumpleaños</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300 mt-8 pt-8 border-t border-white/10"><a href="#" class="text-xl font-extrabold text-gray-400 hover:text-white tracking-wider uppercase block" onclick="event.preventDefault(); window.salirAdmin();"><i data-lucide="arrow-left" class="w-5 h-5 inline-block mr-2"></i> Volver a la web</a></li>
+        <ul id="admin-nav-links" class="nav-links space-y-5 text-center hidden">
+            <li class="mb-3"><div class="inline-block bg-pink/20 text-pink px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border border-pink/30">Modo Administrador</div></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('resumen'); window.forceCloseMenu();">📌 Resumen</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('pedidos'); window.forceCloseMenu();">📊 Pedidos</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('usuarios'); window.forceCloseMenu();">👥 Clientes</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('canjes'); window.forceCloseMenu();">🎁 Canjes</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('cumples'); window.forceCloseMenu();">🎂 Cumpleaños</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('herramientas'); window.forceCloseMenu();">🧰 Herramientas</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300 pt-6 mt-6 border-t border-white/10"><a href="#" class="text-xl font-extrabold text-gray-300 hover:text-white tracking-wider uppercase block" onclick="event.preventDefault(); window.salirAdmin();"><i data-lucide="eye" class="w-5 h-5 inline-block mr-2"></i> Ver web</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="text-lg font-extrabold text-pink hover:text-white tracking-wider uppercase block" onclick="event.preventDefault(); window.cerrarSesionAdmin();"><i data-lucide="log-out" class="w-5 h-5 inline-block mr-2"></i> Cerrar sesión admin</a></li>
         </ul>
     </nav>
@@ -1200,36 +1201,74 @@
         <!-- PANEL DE ADMINISTRACIÓN -->
         <section id="view-admin" class="view next">
             <div class="view-wrapper">
-                <div class="max-w-3xl w-full mb-6 text-center md:text-left">
-                    <button class="nav-btn flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-pink text-pink dark:text-white dark:border-pink/30 hover:bg-pink hover:text-white transition-all duration-300 mx-auto md:mx-0" onclick="window.salirAdmin()">
-                        <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver a la web
-                    </button>
-                    <h2 class="text-3xl md:text-4xl font-black text-purple-dark dark:text-white mt-6 flex items-center justify-center md:justify-start gap-3">
-                        <i data-lucide="shield-check" class="w-8 h-8 text-pink"></i> Panel Admin
-                    </h2>
+                <div class="max-w-6xl w-full mb-6">
+                    <div class="bg-gradient-to-br from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#12051f] rounded-[2rem] p-5 md:p-7 shadow-2xl border border-white/10 text-white overflow-hidden relative">
+                        <div class="absolute -right-10 -bottom-10 text-white/5"><i data-lucide="shield-check" class="w-44 h-44"></i></div>
+                        <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+                            <div class="text-left">
+                                <div class="inline-flex items-center gap-2 bg-white/10 border border-white/10 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-green mb-3">
+                                    <span class="w-2 h-2 rounded-full bg-green animate-pulse"></span> Modo administrador activo
+                                </div>
+                                <h2 class="text-3xl md:text-5xl font-black tracking-tight flex items-center gap-3">
+                                    <i data-lucide="layout-dashboard" class="w-8 h-8 text-pink"></i> Panel Milkarf
+                                </h2>
+                                <p class="text-xs md:text-sm text-white/70 font-semibold mt-2 max-w-2xl">Centro de control para pedidos, clientes, canjes, cumpleaños y herramientas de atención.</p>
+                                <p id="admin-session-label" class="text-[10px] font-bold text-white/45 mt-3 uppercase tracking-widest">Sesión protegida</p>
+                            </div>
+                            <div class="grid grid-cols-2 sm:flex gap-3">
+                                <button type="button" onclick="window.salirAdmin()" class="bg-white/10 hover:bg-white/15 border border-white/15 text-white font-black text-xs px-4 py-3 rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2">
+                                    <i data-lucide="eye" class="w-4 h-4 text-green"></i> Ver web
+                                </button>
+                                <button type="button" onclick="window.navigateTo('view-calc')" class="bg-white/10 hover:bg-white/15 border border-white/15 text-white font-black text-xs px-4 py-3 rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2">
+                                    <i data-lucide="scale" class="w-4 h-4 text-green"></i> Calculadora
+                                </button>
+                                <button type="button" onclick="window.switchAdminTab(window.adminActiveTab || 'resumen')" class="bg-green hover:bg-[#a6b621] text-purple-dark font-black text-xs px-4 py-3 rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Actualizar
+                                </button>
+                                <button type="button" onclick="window.cerrarSesionAdmin()" class="bg-pink/15 hover:bg-pink border border-pink/40 text-pink hover:text-white font-black text-xs px-4 py-3 rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2">
+                                    <i data-lucide="log-out" class="w-4 h-4"></i> Cerrar sesión
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="max-w-3xl w-full">
-                    <!-- TABS ADMIN SCROLL -->
-                    <div class="flex gap-4 border-b border-purple-border/50 dark:border-purple/20 mb-6 pb-2 overflow-x-auto custom-scroll">
-                        <button id="tab-admin-pedidos" onclick="window.switchAdminTab('pedidos')" class="text-sm font-black text-purple dark:text-white border-b-2 border-purple transition-colors pb-2 whitespace-nowrap">Pedidos</button>
-                        <button id="tab-admin-usuarios" onclick="window.switchAdminTab('usuarios')" class="text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-purple transition-colors pb-2 whitespace-nowrap">Usuarios Registrados</button>
-                        <button id="tab-admin-cumples" onclick="window.switchAdminTab('cumples')" class="text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-purple transition-colors pb-2 whitespace-nowrap">Cumpleaños 🎂</button>
+                <div class="max-w-6xl w-full">
+                    <div class="sticky top-0 z-20 bg-cream/95 dark:bg-darkbg/95 backdrop-blur-md py-3 -mx-2 px-2 mb-5">
+                        <div class="flex gap-2 overflow-x-auto custom-scroll pb-1">
+                            <button id="tab-admin-resumen" onclick="window.switchAdminTab('resumen')" class="admin-tab-btn px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all">Resumen</button>
+                            <button id="tab-admin-pedidos" onclick="window.switchAdminTab('pedidos')" class="admin-tab-btn px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all">Pedidos</button>
+                            <button id="tab-admin-usuarios" onclick="window.switchAdminTab('usuarios')" class="admin-tab-btn px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all">Clientes</button>
+                            <button id="tab-admin-canjes" onclick="window.switchAdminTab('canjes')" class="admin-tab-btn px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all">Canjes</button>
+                            <button id="tab-admin-cumples" onclick="window.switchAdminTab('cumples')" class="admin-tab-btn px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all">Cumpleaños</button>
+                            <button id="tab-admin-herramientas" onclick="window.switchAdminTab('herramientas')" class="admin-tab-btn px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all">Herramientas</button>
+                        </div>
                     </div>
 
-                    <div id="admin-orders-container" class="space-y-4 pb-20">
+                    <div id="admin-summary-container" class="space-y-5 pb-20">
+                        <p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando resumen administrativo...</p>
+                    </div>
+
+                    <div id="admin-orders-container" class="space-y-5 pb-20 hidden">
                         <p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando pedidos de Firebase...</p>
                     </div>
 
-                    <div id="admin-users-container" class="space-y-4 pb-20 hidden">
-                        <p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando usuarios de Firebase...</p>
+                    <div id="admin-users-container" class="space-y-5 pb-20 hidden">
+                        <p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando clientes de Firebase...</p>
                     </div>
 
-                    <div id="admin-birthdays-container" class="space-y-4 pb-20 hidden">
+                    <div id="admin-redeems-container" class="space-y-5 pb-20 hidden">
+                        <p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando solicitudes de canje...</p>
+                    </div>
+
+                    <div id="admin-birthdays-container" class="space-y-5 pb-20 hidden">
                         <p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando próximos cumpleaños...</p>
                     </div>
+
+                    <div id="admin-tools-container" class="space-y-5 pb-20 hidden">
+                        <p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando herramientas...</p>
+                    </div>
                 </div>
-                <!-- ESPACIADOR INFERIOR -->
                 <div class="h-24 w-full shrink-0 pointer-events-none"></div>
             </div>
         </section>
@@ -2860,8 +2899,8 @@
             if(navigate) window.navigateTo('view-admin');
             if(load) {
                 setTimeout(() => {
-                    if(typeof window.switchAdminTab === 'function') window.switchAdminTab('pedidos');
-                    else if(typeof window.loadAdminOrders === 'function') window.loadAdminOrders();
+                    if(typeof window.switchAdminTab === 'function') window.switchAdminTab('resumen');
+                    else if(typeof window.loadAdminSummary === 'function') window.loadAdminSummary();
                 }, 50);
             }
 
@@ -2962,52 +3001,170 @@
             }
         };
 
+        window.adminActiveTab = window.adminActiveTab || 'resumen';
+        window.adminOrdersCache = window.adminOrdersCache || [];
+        window.adminUsersCache = window.adminUsersCache || [];
+        window.adminRedeemsCache = window.adminRedeemsCache || [];
+        window.adminFilters = window.adminFilters || { ordersSearch: '', ordersStatus: 'todos', ordersDate: 'todos', usersSearch: '', usersLevel: 'todos', redeemsStatus: 'todos' };
+
+        window.adminTabClasses = function(active) {
+            return active
+                ? "admin-tab-btn px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all bg-purple text-white shadow-lg shadow-purple/20"
+                : "admin-tab-btn px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/20 text-purple/55 dark:text-gray-400 hover:text-purple dark:hover:text-white hover:border-purple/40";
+        };
+
+        window.adminEmptyState = function(icon, title, text, action = '') {
+            return `<div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-[2rem] p-8 md:p-10 text-center shadow-sm">
+                <div class="w-16 h-16 mx-auto rounded-3xl bg-purple/5 dark:bg-purple/15 flex items-center justify-center text-purple mb-4"><i data-lucide="${icon}" class="w-8 h-8"></i></div>
+                <h4 class="text-lg font-black text-purple-dark dark:text-white">${title}</h4>
+                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed mt-2 max-w-md mx-auto">${text}</p>
+                ${action}
+            </div>`;
+        };
+
+        window.formatAdminDate = function(value, opts = {}) {
+            if(!value) return 'Sin fecha';
+            const d = new Date(value);
+            if(isNaN(d.getTime())) return 'Sin fecha';
+            return d.toLocaleString('es-VE', { day: '2-digit', month: 'short', year: opts.full ? 'numeric' : undefined, hour: '2-digit', minute: '2-digit' });
+        };
+
         window.switchAdminTab = function(tab) {
             if(!window.isAdmin) {
                 window.showToast('Debes iniciar sesión como administrador.');
                 return;
             }
-            if(!db) {
-                window.showToast('Firebase no está disponible.');
-                return;
-            }
-
-            const btnP = document.getElementById('tab-admin-pedidos');
-            const btnU = document.getElementById('tab-admin-usuarios');
-            const btnC = document.getElementById('tab-admin-cumples');
-            const contP = document.getElementById('admin-orders-container');
-            const contU = document.getElementById('admin-users-container');
-            const contC = document.getElementById('admin-birthdays-container');
-
-            if(!contP || !contU || !contC) {
-                console.warn('Contenedores admin no encontrados.');
-                return;
-            }
-
-            [btnP, btnU, btnC].forEach(b => { 
-                if(b) b.className = "text-sm font-bold text-gray-400 border-b-2 border-transparent hover:text-purple transition-colors pb-2 whitespace-nowrap"; 
+            const normalized = tab === 'clientes' ? 'usuarios' : tab;
+            window.adminActiveTab = normalized;
+            const tabs = ['resumen', 'pedidos', 'usuarios', 'canjes', 'cumples', 'herramientas'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-admin-${t}`);
+                const containerId = t === 'resumen' ? 'admin-summary-container'
+                    : t === 'pedidos' ? 'admin-orders-container'
+                    : t === 'usuarios' ? 'admin-users-container'
+                    : t === 'canjes' ? 'admin-redeems-container'
+                    : t === 'cumples' ? 'admin-birthdays-container'
+                    : 'admin-tools-container';
+                const cont = document.getElementById(containerId);
+                if(btn) btn.className = window.adminTabClasses(t === normalized);
+                if(cont) cont.classList.toggle('hidden', t !== normalized);
             });
-            contP.classList.add('hidden');
-            contU.classList.add('hidden');
-            contC.classList.add('hidden');
 
-            if (tab === 'pedidos') {
-                if(btnP) btnP.className = "text-sm font-black text-purple dark:text-white border-b-2 border-purple transition-colors pb-2 whitespace-nowrap";
-                contP.classList.remove('hidden');
-                window.loadAdminOrders();
-            } else if (tab === 'usuarios') {
-                if(btnU) btnU.className = "text-sm font-black text-purple dark:text-white border-b-2 border-purple transition-colors pb-2 whitespace-nowrap";
-                contU.classList.remove('hidden');
-                window.loadAdminUsers();
-            } else if (tab === 'cumples') {
-                if(btnC) btnC.className = "text-sm font-black text-purple dark:text-white border-b-2 border-purple transition-colors pb-2 whitespace-nowrap";
-                contC.classList.remove('hidden');
-                window.loadAdminBirthdays();
-            } else {
-                console.warn('Tab admin desconocido:', tab);
+            const session = document.getElementById('admin-session-label');
+            if(session) session.textContent = `Sesión: ${window.currentUser?.email || 'administrador'} · ${new Date().toLocaleTimeString('es-VE', {hour:'2-digit', minute:'2-digit'})}`;
+
+            if(normalized === 'resumen') window.loadAdminSummary();
+            else if(normalized === 'pedidos') window.loadAdminOrders();
+            else if(normalized === 'usuarios') window.loadAdminUsers();
+            else if(normalized === 'canjes') window.loadAdminRedeems();
+            else if(normalized === 'cumples') window.loadAdminBirthdays();
+            else if(normalized === 'herramientas') window.renderAdminTools();
+            else console.warn('Tab admin desconocido:', tab);
+            window.refreshIcons?.();
+        };
+
+        window.getAdminDataSnapshot = async function() {
+            if(!db) throw new Error('Firebase no está disponible');
+            const [ordersSnap, usersSnap, redeemsSnap] = await Promise.all([
+                getDocs(window.getOrdersCollectionRef()),
+                getDocs(window.getUsersCollectionRef()),
+                getDocs(window.getRedeemsCollectionRef()).catch(() => ({ forEach: () => {} }))
+            ]);
+            const orders = []; ordersSnap.forEach(d => orders.push({id:d.id, ...d.data()}));
+            const users = []; usersSnap.forEach(d => users.push({id:d.id, ...d.data()}));
+            const redeems = []; redeemsSnap.forEach(d => redeems.push({id:d.id, ...d.data()}));
+            orders.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+            redeems.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+            window.adminOrdersCache = orders;
+            window.adminUsersCache = users;
+            window.adminRedeemsCache = redeems;
+            return { orders, users, redeems };
+        };
+
+        window.loadAdminSummary = async function() {
+            const container = document.getElementById('admin-summary-container');
+            if(!container) return;
+            if(!window.isAdmin) { container.innerHTML = window.adminEmptyState('lock', 'Acceso restringido', 'Inicia sesión como administrador para ver el resumen.'); return; }
+            if(!db) { container.innerHTML = window.adminEmptyState('wifi-off', 'Firebase no disponible', 'No se pudo conectar con la base de datos.'); window.refreshIcons?.(container); return; }
+            container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                ${[1,2,3].map(() => '<div class="bg-white dark:bg-darkcard rounded-[2rem] p-6 border border-purple-border/30 dark:border-purple/20 shadow-sm animate-pulse"><div class="h-4 w-24 bg-purple/10 rounded mb-4"></div><div class="h-8 w-16 bg-purple/10 rounded"></div></div>').join('')}
+            </div>`;
+            try {
+                const { orders, users, redeems } = await window.getAdminDataSnapshot();
+                const today = new Date();
+                const todayStr = today.toISOString().slice(0,10);
+                const inProcess = orders.filter(o => ['pendiente','en_proceso'].includes(String(o.status || 'en_proceso').toLowerCase())).length;
+                const confirmed = orders.filter(o => ['confirmado','verificado'].includes(String(o.status || '').toLowerCase())).length;
+                const completed = orders.filter(o => String(o.status || '').toLowerCase() === 'completado').length;
+                const todayOrders = orders.filter(o => String(o.createdAt || '').slice(0,10) === todayStr).length;
+                const pendingRedeems = redeems.filter(r => String(r.status || 'solicitado').toLowerCase() === 'solicitado').length;
+                let nextBirthdays = 0;
+                users.forEach(u => (u.mascotas || []).forEach(m => {
+                    if(!m.cumple || !String(m.cumple).includes('-')) return;
+                    const parts = String(m.cumple).split('-');
+                    const next = new Date(today.getFullYear(), Number(parts[1])-1, Number(parts[2]));
+                    const todayBase = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                    if(next < todayBase) next.setFullYear(today.getFullYear()+1);
+                    const diff = Math.ceil((next - todayBase)/(1000*60*60*24));
+                    if(diff <= 30) nextBirthdays++;
+                }));
+                const totalRevenue = orders.reduce((s,o) => s + Number(o.total || 0), 0);
+                container.innerHTML = `
+                    <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 md:gap-4">
+                        ${window.renderAdminMetricCard('Pedidos en proceso', inProcess, 'clock', 'text-pink', 'bg-pink/10')}
+                        ${window.renderAdminMetricCard('Confirmados', confirmed, 'check-circle', 'text-green-dark dark:text-green', 'bg-green/15')}
+                        ${window.renderAdminMetricCard('Completados', completed, 'package-check', 'text-purple', 'bg-purple/10')}
+                        ${window.renderAdminMetricCard('Clientes', users.length, 'users', 'text-purple', 'bg-purple/10')}
+                        ${window.renderAdminMetricCard('Canjes pendientes', pendingRedeems, 'gift', 'text-pink', 'bg-pink/10')}
+                        ${window.renderAdminMetricCard('Cumples 30 días', nextBirthdays, 'cake', 'text-green-dark dark:text-green', 'bg-green/15')}
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
+                        <div class="lg:col-span-2 bg-white dark:bg-darkcard rounded-[2rem] p-5 md:p-6 border border-purple-border/30 dark:border-purple/20 shadow-sm text-left">
+                            <div class="flex items-center justify-between gap-3 mb-4">
+                                <div>
+                                    <h3 class="text-lg font-black text-purple-dark dark:text-white">Atención prioritaria</h3>
+                                    <p class="text-xs text-gray-500 font-semibold mt-1">Lo que requiere revisión inmediata.</p>
+                                </div>
+                                <button onclick="window.switchAdminTab('pedidos')" class="text-[10px] font-black uppercase tracking-widest bg-purple/10 text-purple px-3 py-2 rounded-xl hover:bg-purple hover:text-white transition-all">Ver pedidos</button>
+                            </div>
+                            <div class="space-y-3">
+                                ${orders.filter(o => ['pendiente','en_proceso'].includes(String(o.status || 'en_proceso').toLowerCase())).slice(0,4).map(o => window.renderAdminMiniOrder(o)).join('') || '<p class="text-sm text-gray-500 font-semibold bg-purple-light/70 dark:bg-purple/10 p-4 rounded-2xl">No hay pedidos pendientes por confirmar.</p>'}
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-darkcard rounded-[2rem] p-5 md:p-6 border border-purple-border/30 dark:border-purple/20 shadow-sm text-left">
+                            <h3 class="text-lg font-black text-purple-dark dark:text-white mb-3">Accesos rápidos</h3>
+                            <div class="grid grid-cols-1 gap-3">
+                                <button onclick="window.switchAdminTab('pedidos')" class="text-left bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 rounded-2xl p-4 hover:border-purple/50 transition-all"><span class="font-black text-purple-dark dark:text-white text-sm block">Gestionar pedidos</span><span class="text-xs text-gray-500 font-medium">Confirmar, completar o revisar estados.</span></button>
+                                <button onclick="window.switchAdminTab('canjes')" class="text-left bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 rounded-2xl p-4 hover:border-purple/50 transition-all"><span class="font-black text-purple-dark dark:text-white text-sm block">Revisar canjes</span><span class="text-xs text-gray-500 font-medium">Solicitudes de beneficios por puntos.</span></button>
+                                <button onclick="window.navigateTo('view-calc')" class="text-left bg-green/10 border border-green/20 rounded-2xl p-4 hover:border-green/40 transition-all"><span class="font-black text-purple-dark dark:text-white text-sm block">Abrir calculadora</span><span class="text-xs text-gray-500 font-medium">Calcular raciones durante atención al cliente.</span></button>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-purple-border/30 dark:border-purple/20 text-xs text-gray-500 font-semibold">Pedidos hoy: <strong class="text-purple dark:text-white">${todayOrders}</strong><br>Total registrado: <strong class="text-purple dark:text-white">$${totalRevenue.toFixed(2)}</strong></div>
+                        </div>
+                    </div>`;
+                window.refreshIcons?.(container);
+            } catch(error) {
+                console.error(error);
+                container.innerHTML = window.adminEmptyState('alert-triangle', 'No se pudo cargar el resumen', 'Revisa permisos de Firestore o conexión a internet.');
+                window.refreshIcons?.(container);
             }
         };
 
+        window.renderAdminMetricCard = function(label, value, icon, iconClass, bgClass) {
+            return `<div class="bg-white dark:bg-darkcard rounded-[1.5rem] p-4 border border-purple-border/30 dark:border-purple/20 shadow-sm text-left min-w-0">
+                <div class="w-10 h-10 rounded-2xl ${bgClass} ${iconClass} flex items-center justify-center mb-3"><i data-lucide="${icon}" class="w-5 h-5"></i></div>
+                <div class="text-2xl font-black text-purple-dark dark:text-white leading-none">${value}</div>
+                <div class="text-[9px] font-black uppercase tracking-widest text-gray-400 mt-2 leading-tight">${label}</div>
+            </div>`;
+        };
+
+        window.renderAdminMiniOrder = function(o) {
+            const info = window.getOrderStatusInfo(o.status);
+            const items = Array.isArray(o.items) ? o.items.map(i => `${Number(i.qty || 0)}x ${i.name || 'Producto'}`).join(' · ') : 'Pedido Milkarf';
+            return `<div class="rounded-2xl border border-purple-border/30 dark:border-purple/20 bg-purple-light/70 dark:bg-[#0d0718] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="min-w-0"><p class="text-[10px] font-black uppercase tracking-widest text-gray-400">${window.formatAdminDate(o.createdAt)}</p><h4 class="text-sm font-black text-purple-dark dark:text-white truncate">${window.escapeHTML(o.userName || 'Cliente')}</h4><p class="text-xs text-gray-500 font-semibold truncate">${window.escapeHTML(items)}</p></div>
+                <span class="px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${info.classes}">${info.label}</span>
+            </div>`;
+        };
 
         window.getOrderStatusInfo = function(status) {
             const normalized = String(status || 'en_proceso').toLowerCase();
@@ -3088,178 +3245,318 @@
             const container = document.getElementById('admin-orders-container');
             if(!window.isAdmin) {
                 window.showToast('Debes iniciar sesión como administrador.');
-                if(container) container.innerHTML = '<p class="text-center text-pink font-bold py-10 text-sm bg-pink/10 rounded-3xl border border-pink/20">Debes iniciar sesión como administrador.</p>';
+                if(container) container.innerHTML = window.adminEmptyState('lock', 'Acceso restringido', 'Debes iniciar sesión como administrador.');
                 return;
             }
             if(!db) {
-                if(container) container.innerHTML = '<p class="text-center text-pink font-bold py-10 text-sm bg-pink/10 rounded-3xl border border-pink/20">Firebase no está disponible.</p>';
+                if(container) container.innerHTML = window.adminEmptyState('wifi-off', 'Firebase no disponible', 'No se pudo conectar con la base de datos.');
+                window.refreshIcons?.(container);
                 return;
             }
-            if(!container) {
-                console.warn('admin-orders-container no encontrado.');
-                return;
-            }
-
+            if(!container) { console.warn('admin-orders-container no encontrado.'); return; }
             const ordersRef = window.getOrdersCollectionRef();
-            
+            container.innerHTML = `<div class="bg-white dark:bg-darkcard rounded-[2rem] p-6 border border-purple-border/30 dark:border-purple/20 shadow-sm animate-pulse"><div class="h-4 w-32 bg-purple/10 rounded mb-4"></div><div class="h-20 bg-purple/10 rounded-2xl"></div></div>`;
             if(unsubAdmin) { unsubAdmin(); unsubAdmin = null; }
             unsubAdmin = onSnapshot(ordersRef, (snapshot) => {
                 let orders = [];
                 snapshot.forEach(doc => orders.push({id: doc.id, ...doc.data()}));
-                orders.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+                orders.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+                window.adminOrdersCache = orders;
                 window.renderAdminOrders(orders);
             }, (error) => {
                 console.error("Error fetching orders", error);
-                container.innerHTML = `<div class="bg-pink/10 border border-pink/30 p-4 rounded-xl text-center"><p class="text-pink font-bold text-sm">❌ Error al cargar pedidos.</p><p class="text-xs text-gray-500 mt-2">Verifica permisos de Firebase/Firestore.</p></div>`;
+                container.innerHTML = window.adminEmptyState('alert-triangle', 'Error al cargar pedidos', 'Verifica permisos de Firebase/Firestore.');
+                window.refreshIcons?.(container);
+            });
+        };
+
+        window.setAdminOrderFilter = function(key, value) {
+            window.adminFilters = window.adminFilters || {};
+            window.adminFilters[key] = value;
+            window.renderAdminOrders(window.adminOrdersCache || []);
+        };
+
+        window.filterAdminOrders = function(orders = []) {
+            const filters = window.adminFilters || {};
+            const search = String(filters.ordersSearch || '').trim().toLowerCase();
+            const status = filters.ordersStatus || 'todos';
+            const dateFilter = filters.ordersDate || 'todos';
+            const now = new Date();
+            const today = now.toISOString().slice(0,10);
+            const sevenDaysAgo = new Date(now.getTime() - 7*24*60*60*1000);
+            return orders.filter(o => {
+                const st = String(o.status || 'en_proceso').toLowerCase();
+                if(status !== 'todos') {
+                    if(status === 'en_proceso' && !['pendiente','en_proceso'].includes(st)) return false;
+                    if(status !== 'en_proceso' && st !== status && !(status === 'confirmado' && st === 'verificado')) return false;
+                }
+                if(dateFilter === 'hoy' && String(o.createdAt || '').slice(0,10) !== today) return false;
+                if(dateFilter === '7dias' && new Date(o.createdAt || 0) < sevenDaysAgo) return false;
+                if(search) {
+                    const haystack = [o.userName, o.email, o.id, ...(Array.isArray(o.items) ? o.items.flatMap(i => [i.name, i.weight, i.forPet]) : [])].join(' ').toLowerCase();
+                    if(!haystack.includes(search)) return false;
+                }
+                return true;
             });
         };
 
         window.renderAdminOrders = function(orders) {
             const container = document.getElementById('admin-orders-container');
             if(!container) return;
-            if(orders.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">No hay pedidos registrados aún.</p>';
-                return;
+            const filtered = window.filterAdminOrders(orders || []);
+            const filters = window.adminFilters || {};
+            const header = `
+                <div class="bg-white dark:bg-darkcard rounded-[2rem] p-4 md:p-5 border border-purple-border/30 dark:border-purple/20 shadow-sm text-left">
+                    <div class="flex flex-col lg:flex-row lg:items-end gap-3 justify-between">
+                        <div>
+                            <h3 class="text-xl font-black text-purple-dark dark:text-white flex items-center gap-2"><i data-lucide="clipboard-list" class="w-5 h-5 text-pink"></i> Pedidos</h3>
+                            <p class="text-xs text-gray-500 font-semibold mt-1">${filtered.length} de ${(orders || []).length} pedidos visibles.</p>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 w-full lg:w-auto lg:min-w-[660px]">
+                            <input type="search" value="${window.escapeHTML(filters.ordersSearch || '')}" oninput="window.setAdminOrderFilter('ordersSearch', this.value)" placeholder="Buscar cliente, mascota o producto" class="sm:col-span-2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-purple">
+                            <select onchange="window.setAdminOrderFilter('ordersStatus', this.value)" class="bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-purple">
+                                ${['todos','en_proceso','confirmado','completado','cancelado'].map(v => `<option value="${v}" ${String(filters.ordersStatus||'todos')===v?'selected':''}>${v==='todos'?'Todos':v==='en_proceso'?'En proceso':v.charAt(0).toUpperCase()+v.slice(1)}</option>`).join('')}
+                            </select>
+                            <select onchange="window.setAdminOrderFilter('ordersDate', this.value)" class="bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-purple">
+                                ${[['todos','Todas las fechas'],['hoy','Hoy'],['7dias','Últimos 7 días']].map(([v,l]) => `<option value="${v}" ${String(filters.ordersDate||'todos')===v?'selected':''}>${l}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                </div>`;
+            if((orders || []).length === 0) {
+                container.innerHTML = header + window.adminEmptyState('inbox', 'Sin pedidos por ahora', 'Cuando un cliente realice un pedido por WhatsApp, aparecerá aquí para confirmarlo.');
+                window.refreshIcons?.(container); return;
             }
-            container.innerHTML = orders.map(o => {
-                const date = o.createdAt ? new Date(o.createdAt).toLocaleString('es-VE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : 'Sin fecha';
-                const pts = Math.floor(Number(o.total || 0));
-                const statusInfo = window.getOrderStatusInfo(o.status);
-                const status = String(o.status || 'en_proceso').toLowerCase();
-                let actionButton = '';
-                if(status === 'pendiente' || status === 'en_proceso') {
-                    if (o.uid && o.uid !== 'anonimo') {
-                        actionButton = `<button onclick="window.aprobarPedidoAdmin('${o.id}', '${o.uid}', ${pts})" class="bg-green text-purple-dark text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-[#a6b621] transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check-circle" class="w-4 h-4"></i> Confirmar pedido y dar puntos</button>`;
-                    } else {
-                        actionButton = `<button onclick="window.confirmarPedidoInvitadoAdmin('${o.id}')" class="bg-green text-purple-dark text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-[#a6b621] transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check-circle" class="w-4 h-4"></i> Confirmar pedido</button>`;
-                    }
-                } else if(status === 'confirmado' || status === 'verificado') {
-                    actionButton = `<button onclick="window.marcarCompletadoAdmin('${o.id}')" class="bg-purple text-white text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-pink transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check" class="w-4 h-4"></i> Marcar completado</button>`;
-                }
-                const safeUser = window.escapeHTML(o.userName || 'Usuario');
-                const safeItems = Array.isArray(o.items) ? o.items.map(i => `<li><span class="font-bold text-purple-dark dark:text-gray-300">${Number(i.qty || 0)}x</span> ${window.escapeHTML(i.name || 'Producto')} (${window.escapeHTML(i.weight || '')}) ${i.forPet ? `<span class="opacity-60 italic">- ${window.escapeHTML(i.forPet)}</span>` : ''}</li>`).join('') : '<li>Pedido sin detalle</li>';
-                const totalNumber = Number(o.total || 0);
-                return `
-                <div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left relative overflow-hidden transition-all">
-                    <div class="absolute top-0 left-0 w-1 h-full ${statusInfo.bar}"></div>
-                    <div class="flex justify-between items-start mb-3 pl-1">
-                        <div>
-                            <h4 class="font-black text-purple-dark dark:text-white text-sm md:text-base leading-tight">${safeUser}</h4>
-                            <p class="text-[10px] text-purple/50 dark:text-gray-500 font-bold">${date}</p>
-                        </div>
-                        <span class="px-2.5 py-1 rounded-md border text-[9px] font-black uppercase tracking-widest shrink-0 ${statusInfo.classes}">
-                            ${statusInfo.label}
-                        </span>
+            if(filtered.length === 0) {
+                container.innerHTML = header + window.adminEmptyState('search-x', 'Sin resultados', 'Prueba ajustar los filtros o borrar la búsqueda.');
+                window.refreshIcons?.(container); return;
+            }
+            container.innerHTML = header + filtered.map(o => window.renderAdminOrderCard(o)).join('');
+            window.refreshIcons?.(container);
+        };
+
+        window.renderAdminOrderCard = function(o) {
+            const date = window.formatAdminDate(o.createdAt, {full:true});
+            const pts = Math.floor(Number(o.total || 0));
+            const statusInfo = window.getOrderStatusInfo(o.status);
+            const status = String(o.status || 'en_proceso').toLowerCase();
+            let actionButton = '';
+            if(status === 'pendiente' || status === 'en_proceso') {
+                actionButton = (o.uid && o.uid !== 'anonimo')
+                    ? `<button onclick="window.aprobarPedidoAdmin('${o.id}', '${o.uid}', ${pts})" class="bg-green text-purple-dark text-[10px] font-black px-4 py-3 rounded-xl shadow-md hover:bg-[#a6b621] transition-all active:scale-95 flex items-center justify-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4"></i> Confirmar + puntos</button>`
+                    : `<button onclick="window.confirmarPedidoInvitadoAdmin('${o.id}')" class="bg-green text-purple-dark text-[10px] font-black px-4 py-3 rounded-xl shadow-md hover:bg-[#a6b621] transition-all active:scale-95 flex items-center justify-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4"></i> Confirmar</button>`;
+            } else if(status === 'confirmado' || status === 'verificado') {
+                actionButton = `<button onclick="window.marcarCompletadoAdmin('${o.id}')" class="bg-purple text-white text-[10px] font-black px-4 py-3 rounded-xl shadow-md hover:bg-pink transition-all active:scale-95 flex items-center justify-center gap-1.5"><i data-lucide="package-check" class="w-4 h-4"></i> Completar</button>`;
+            }
+            const safeUser = window.escapeHTML(o.userName || 'Usuario');
+            const safeEmail = window.escapeHTML(o.email || 'Sin correo');
+            const safeItems = Array.isArray(o.items) ? o.items.map(i => `<div class="flex items-start justify-between gap-3 py-2 border-b border-purple-border/20 dark:border-purple/10 last:border-0"><div><p class="text-xs font-black text-purple-dark dark:text-white">${Number(i.qty || 0)}x ${window.escapeHTML(i.name || 'Producto')} <span class="text-purple/50 dark:text-gray-500">${window.escapeHTML(i.weight || '')}</span></p>${i.forPet ? `<p class="text-[10px] text-gray-500 font-bold mt-0.5">Para ${window.escapeHTML(i.forPet)}</p>` : ''}</div><span class="text-xs font-black text-purple dark:text-white">$${(Number(i.price || 0) * Number(i.qty || 0)).toFixed(2)}</span></div>`).join('') : '<p class="text-xs text-gray-500">Pedido sin detalle</p>';
+            const totalNumber = Number(o.total || 0);
+            const contactMsg = encodeURIComponent(`Hola, te contactamos de Milkarf por tu pedido ${o.id.slice(0,6)}. Estado actual: ${statusInfo.label}.`);
+            return `<div class="bg-white dark:bg-darkcard rounded-[2rem] p-5 md:p-6 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1.5 h-full ${statusInfo.bar}"></div>
+                <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 pl-2">
+                    <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2 mb-2"><span class="px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest ${statusInfo.classes}">${statusInfo.label}</span><span class="text-[9px] font-black uppercase tracking-widest text-gray-400">#${window.escapeHTML(o.id.slice(0,8))}</span></div>
+                        <h4 class="font-black text-purple-dark dark:text-white text-lg leading-tight">${safeUser}</h4>
+                        <p class="text-[11px] text-gray-500 font-bold mt-1">${safeEmail} · ${date}</p>
                     </div>
-                    <div class="bg-purple-light dark:bg-[#0d0718] rounded-xl p-3 mb-4 border border-purple-border/30 dark:border-purple/20 pl-1">
-                        <ul class="text-xs text-gray-600 dark:text-gray-400 pl-4 list-disc space-y-1.5 font-medium">
-                            ${safeItems}
-                        </ul>
-                    </div>
-                    <div class="flex flex-col sm:flex-row justify-between sm:items-center pl-1 gap-3">
-                        <div>
-                            <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest block leading-tight">Total Cobrado</span>
-                            <span class="font-black text-purple dark:text-white text-lg">$${totalNumber.toFixed(2)}</span>
-                        </div>
-                        ${actionButton}
-                    </div>
+                    <div class="text-left lg:text-right shrink-0"><span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest block">Total</span><span class="font-black text-purple dark:text-white text-2xl">$${totalNumber.toFixed(2)}</span>${o.pointsGranted ? `<p class="text-[10px] text-green-dark dark:text-green font-black mt-1">+${o.pointsGranted} pts otorgados</p>` : ''}</div>
                 </div>
-                `;
-            }).join('');
-            if(window.lucide) window.lucide.createIcons({root: container});
+                <div class="bg-purple-light dark:bg-[#0d0718] rounded-2xl p-4 my-4 border border-purple-border/30 dark:border-purple/20 ml-2">${safeItems}</div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 ml-2">
+                    ${actionButton || '<div class="text-xs font-bold text-gray-400 bg-purple-light/50 dark:bg-purple/10 rounded-xl p-3 text-center">Sin acciones pendientes</div>'}
+                    <button onclick="window.cancelarPedidoAdmin('${o.id}')" class="bg-pink/10 hover:bg-pink text-pink hover:text-white text-[10px] font-black px-4 py-3 rounded-xl border border-pink/20 transition-all active:scale-95 flex items-center justify-center gap-1.5"><i data-lucide="x-circle" class="w-4 h-4"></i> Cancelar</button>
+                    <a href="https://wa.me/${window.WA_NUMBER}?text=${contactMsg}" target="_blank" class="bg-[#25D366]/10 hover:bg-[#25D366] text-[#128C4A] hover:text-white text-[10px] font-black px-4 py-3 rounded-xl border border-[#25D366]/20 transition-all active:scale-95 flex items-center justify-center gap-1.5"><i data-lucide="message-circle" class="w-4 h-4"></i> WhatsApp</a>
+                </div>
+            </div>`;
+        };
+
+        window.cancelarPedidoAdmin = async function(orderId) {
+            window.vibrate(20);
+            if(!window.isAdmin) { window.showToast('Debes iniciar sesión como administrador.'); return; }
+            if(!db) { window.showToast('Firebase no está disponible.'); return; }
+            if(!confirm('¿Seguro que deseas marcar este pedido como cancelado?')) return;
+            try {
+                await setDoc(window.getOrderDocRef(orderId), { status: 'cancelado', cancelledAt: new Date().toISOString() }, { merge: true });
+                window.showToast('Pedido cancelado.', 'success');
+            } catch(error) { console.error(error); window.showToast('No se pudo cancelar el pedido.'); }
         };
 
         window.loadAdminUsers = async function() {
             const container = document.getElementById('admin-users-container');
             if(!window.isAdmin) {
                 window.showToast('Debes iniciar sesión como administrador.');
-                if(container) container.innerHTML = '<p class="text-center text-pink font-bold py-10 text-sm bg-pink/10 rounded-3xl border border-pink/20">Debes iniciar sesión como administrador.</p>';
+                if(container) container.innerHTML = window.adminEmptyState('lock', 'Acceso restringido', 'Debes iniciar sesión como administrador.');
                 return;
             }
             if(!db) {
-                if(container) container.innerHTML = '<p class="text-center text-pink font-bold py-10 text-sm bg-pink/10 rounded-3xl border border-pink/20">Firebase no está disponible.</p>';
-                return;
+                if(container) container.innerHTML = window.adminEmptyState('wifi-off', 'Firebase no disponible', 'No se pudo conectar con la base de datos.');
+                window.refreshIcons?.(container); return;
             }
             if(!container) { console.warn('admin-users-container no encontrado.'); return; }
-            container.innerHTML = `
-                <div class="flex justify-between items-center mb-4">
-                    <p class="text-xs font-bold text-gray-400">Directorio de Clientes</p>
-                    <button onclick="window.loadAdminUsers()" class="text-purple font-bold text-[10px] bg-purple/10 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-purple/20"><i data-lucide="refresh-cw" class="w-3 h-3"></i> Recargar Datos</button>
-                </div>
-                <p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando base de datos...</p>
-            `;
-            if(window.lucide) window.lucide.createIcons({root: container});
-
-            const usersRef = window.getUsersCollectionRef();
-
+            container.innerHTML = `<div class="bg-white dark:bg-darkcard rounded-[2rem] p-6 border border-purple-border/30 dark:border-purple/20 shadow-sm animate-pulse"><div class="h-4 w-32 bg-purple/10 rounded mb-4"></div><div class="h-24 bg-purple/10 rounded-2xl"></div></div>`;
             try {
-                const snapshot = await getDocs(usersRef);
+                const snapshot = await getDocs(window.getUsersCollectionRef());
                 let users = [];
                 snapshot.forEach(doc => users.push({id: doc.id, ...doc.data()}));
-                
-                if (users.length === 0) {
-                    container.innerHTML = '<p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">No hay usuarios registrados.</p>';
-                    return;
-                }
-
                 users.sort((a,b) => (b.puntos_historicos || b.puntos || 0) - (a.puntos_historicos || a.puntos || 0));
-
-                container.innerHTML = `
-                    <div class="flex justify-between items-center mb-4">
-                        <p class="text-xs font-bold text-gray-400">Total: ${users.length} clientes</p>
-                        <button onclick="window.loadAdminUsers()" class="text-purple font-bold text-[10px] bg-purple/10 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-purple/20 active:scale-95"><i data-lucide="refresh-cw" class="w-3 h-3"></i> Recargar Datos</button>
-                    </div>
-                ` + users.map(u => {
-                    const email = u.email || 'Sin correo registrado';
-                    const ptsDisp = u.puntos || 0;
-                    const ptsHist = u.puntos_historicos || ptsDisp;
-                    const levelObj = window.getLevelInfo(ptsHist);
-                    
-                    const desc = u.descuento_usado 
-                        ? '<span class="text-pink text-[9px] font-black uppercase tracking-widest bg-pink/10 px-2 py-1 rounded-md border border-pink/20">Desc. Usado</span>' 
-                        : '<span class="text-green-dark text-[9px] font-black uppercase tracking-widest bg-green/20 px-2 py-1 rounded-md border border-green/30">Desc. Disponible</span>';
-                    
-                    const mascotas = (u.mascotas || []).map(m => `
-                        <div class="bg-purple/5 dark:bg-purple/10 p-3 rounded-xl mt-2 border border-purple/10">
-                            <p class="font-black text-purple-dark dark:text-white text-xs">${m.tipo === 'gato' ? '🐱' : '🐶'} ${m.nombre}</p>
-                            <p class="text-[10px] text-gray-500 font-bold mt-1">${m.peso}kg · ${m.edad} ${m.cumple ? `· Nac: ${m.cumple}` : ''}</p>
-                        </div>
-                    `).join('');
-
-                    return `
-                    <div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left relative">
-                        <div class="flex justify-between items-start mb-2">
-                            <div class="pr-2 min-w-0">
-                                <p class="font-black text-purple-dark dark:text-white text-sm truncate leading-tight">${email}</p>
-                                <p class="text-[10px] font-bold text-gray-500 mt-1">${levelObj.nombre} (Histórico: ${ptsHist} pts)</p>
-                            </div>
-                            <div class="flex flex-col items-end shrink-0 gap-2">
-                                <span class="text-xs font-black text-purple dark:text-white bg-purple-light dark:bg-purple/20 px-3 py-1.5 rounded-xl border border-purple/20 shadow-sm">${ptsDisp} pts</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between mb-4 mt-3">
-                            ${desc}
-                            <div class="flex items-center gap-2">
-                                <button onclick="window.abrirModalCanje('${u.id}', '${email}', ${ptsDisp})" class="text-[10px] bg-green hover:bg-[#a6b621] text-purple-dark px-3 py-1.5 rounded-lg font-black uppercase tracking-widest shadow-md transition-all active:scale-95 flex items-center gap-1">
-                                    <i data-lucide="gift" class="w-3.5 h-3.5"></i> Canjear
-                                </button>
-                                <button onclick="window.eliminarUsuarioAdmin('${u.id}', '${email}')" class="text-[10px] bg-pink/10 hover:bg-pink text-pink hover:text-white px-3 py-1.5 rounded-lg font-black uppercase tracking-widest shadow-md transition-all active:scale-95 flex items-center gap-1 border border-pink/20">
-                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Eliminar
-                                </button>
-                            </div>
-                        </div>
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest border-t border-purple/10 pt-3">Mascotas (${(u.mascotas || []).length}):</p>
-                        ${mascotas || '<p class="text-xs text-gray-400 italic mt-2 font-medium">Sin mascotas registradas</p>'}
-                    </div>`;
-                }).join('');
-
+                window.adminUsersCache = users;
+                window.renderAdminUsers(users);
             } catch(e) {
                 console.error(e);
-                const container = document.getElementById('admin-users-container');
-                if (container) {
-                    container.innerHTML = `<div class="bg-pink/10 border border-pink/30 p-4 rounded-xl text-center mt-6"><p class="text-pink font-bold text-sm">❌ Error al cargar usuarios.</p><p class="text-xs text-gray-500 mt-2">Verifica permisos de Firebase/Firestore.</p></div>`;
-                }
+                container.innerHTML = window.adminEmptyState('alert-triangle', 'Error al cargar clientes', 'Verifica permisos de Firebase/Firestore.');
+                window.refreshIcons?.(container);
             }
+        };
+
+        window.setAdminUserFilter = function(key, value) {
+            window.adminFilters = window.adminFilters || {};
+            window.adminFilters[key] = value;
+            window.renderAdminUsers(window.adminUsersCache || []);
+        };
+
+        window.filterAdminUsers = function(users = []) {
+            const filters = window.adminFilters || {};
+            const search = String(filters.usersSearch || '').trim().toLowerCase();
+            const level = filters.usersLevel || 'todos';
+            return users.filter(u => {
+                const ptsHist = Number(u.puntos_historicos || u.puntos || 0);
+                const lvl = window.getLevelInfo(ptsHist).key || window.getLevelInfo(ptsHist).nombre || '';
+                if(level !== 'todos') {
+                    const lname = String(window.getLevelInfo(ptsHist).nombre || '').toLowerCase();
+                    if(!lname.includes(level)) return false;
+                }
+                if(search) {
+                    const mascotas = (u.mascotas || []).map(m => `${m.nombre || ''} ${m.raza || ''} ${m.tipo || ''}`).join(' ');
+                    const haystack = [u.email, u.nombre, u.displayName, u.phone, mascotas].join(' ').toLowerCase();
+                    if(!haystack.includes(search)) return false;
+                }
+                return true;
+            });
+        };
+
+        window.renderAdminUsers = function(users = []) {
+            const container = document.getElementById('admin-users-container');
+            if(!container) return;
+            const filtered = window.filterAdminUsers(users);
+            const filters = window.adminFilters || {};
+            const header = `<div class="bg-white dark:bg-darkcard rounded-[2rem] p-4 md:p-5 border border-purple-border/30 dark:border-purple/20 shadow-sm text-left">
+                <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-3">
+                    <div><h3 class="text-xl font-black text-purple-dark dark:text-white flex items-center gap-2"><i data-lucide="users" class="w-5 h-5 text-pink"></i> Clientes</h3><p class="text-xs text-gray-500 font-semibold mt-1">${filtered.length} de ${users.length} clientes visibles.</p></div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full lg:w-auto lg:min-w-[560px]">
+                        <input type="search" value="${window.escapeHTML(filters.usersSearch || '')}" oninput="window.setAdminUserFilter('usersSearch', this.value)" placeholder="Buscar cliente, correo o mascota" class="sm:col-span-2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-purple">
+                        <select onchange="window.setAdminUserFilter('usersLevel', this.value)" class="bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-purple">
+                            ${[['todos','Todos los niveles'],['cachorro','Cachorro'],['consentido','Consentido'],['vip','VIP']].map(([v,l]) => `<option value="${v}" ${String(filters.usersLevel||'todos')===v?'selected':''}>${l}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
+            </div>`;
+            if(!users.length) { container.innerHTML = header + window.adminEmptyState('user-plus', 'Sin clientes registrados', 'Cuando los usuarios creen cuenta, aparecerán aquí con sus mascotas, puntos y beneficios.'); window.refreshIcons?.(container); return; }
+            if(!filtered.length) { container.innerHTML = header + window.adminEmptyState('search-x', 'Sin resultados', 'Prueba ajustar los filtros o borrar la búsqueda.'); window.refreshIcons?.(container); return; }
+            container.innerHTML = header + `<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">${filtered.map(u => window.renderAdminUserCard(u)).join('')}</div>`;
+            window.refreshIcons?.(container);
+        };
+
+        window.renderAdminUserCard = function(u) {
+            const email = u.email || 'Sin correo registrado';
+            const ptsDisp = Number(u.puntos || 0);
+            const ptsHist = Number(u.puntos_historicos || ptsDisp);
+            const levelObj = window.getLevelInfo(ptsHist);
+            const mascotas = (u.mascotas || []).map(m => `<div class="bg-purple-light dark:bg-[#0d0718] p-3 rounded-2xl border border-purple-border/30 dark:border-purple/20"><p class="font-black text-purple-dark dark:text-white text-xs">${m.tipo === 'gato' ? '🐱' : '🐶'} ${window.escapeHTML(m.nombre || 'Mascota')}</p><p class="text-[10px] text-gray-500 font-bold mt-1">${window.escapeHTML(String(m.peso || ''))}kg · ${window.escapeHTML(m.edad || 'sin etapa')} ${m.cumple ? `· Nac: ${window.escapeHTML(m.cumple)}` : ''}</p></div>`).join('');
+            const desc = u.descuento_usado ? '<span class="text-pink text-[9px] font-black uppercase tracking-widest bg-pink/10 px-2 py-1 rounded-md border border-pink/20">Desc. usado</span>' : '<span class="text-green-dark text-[9px] font-black uppercase tracking-widest bg-green/20 px-2 py-1 rounded-md border border-green/30">Desc. disponible</span>';
+            return `<div class="bg-white dark:bg-darkcard rounded-[2rem] p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left relative overflow-hidden">
+                <div class="flex items-start justify-between gap-3 mb-4">
+                    <div class="min-w-0"><h4 class="font-black text-purple-dark dark:text-white text-base truncate">${window.escapeHTML(email)}</h4><p class="text-[10px] font-bold text-gray-500 mt-1">${window.escapeHTML(levelObj.nombre || 'Nivel')} · histórico ${ptsHist} pts</p></div>
+                    <span class="shrink-0 text-sm font-black text-purple dark:text-white bg-purple-light dark:bg-purple/20 px-3 py-2 rounded-xl border border-purple/20">${ptsDisp} pts</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mb-4">${desc}<span class="text-[9px] font-black uppercase tracking-widest bg-purple/5 text-purple px-2 py-1 rounded-md border border-purple/10 text-center">${(u.mascotas || []).length} mascotas</span></div>
+                <div class="space-y-2 mb-4">${mascotas || '<p class="text-xs text-gray-400 italic font-medium bg-purple-light dark:bg-[#0d0718] p-3 rounded-xl">Sin mascotas registradas</p>'}</div>
+                <div class="grid grid-cols-2 gap-2 border-t border-purple-border/30 dark:border-purple/20 pt-4">
+                    <button onclick="window.abrirModalCanje('${u.id}', '${window.escapeHTML(email)}', ${ptsDisp})" class="text-[10px] bg-green hover:bg-[#a6b621] text-purple-dark px-3 py-3 rounded-xl font-black uppercase tracking-widest shadow-md transition-all active:scale-95 flex items-center justify-center gap-1"><i data-lucide="gift" class="w-3.5 h-3.5"></i> Canjear</button>
+                    <button onclick="window.eliminarUsuarioAdmin('${u.id}', '${window.escapeHTML(email)}')" class="text-[10px] bg-pink/10 hover:bg-pink text-pink hover:text-white px-3 py-3 rounded-xl font-black uppercase tracking-widest shadow-md transition-all active:scale-95 flex items-center justify-center gap-1 border border-pink/20"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Eliminar</button>
+                </div>
+            </div>`;
+        };
+
+        window.loadAdminRedeems = async function() {
+            const container = document.getElementById('admin-redeems-container');
+            if(!window.isAdmin) { window.showToast('Debes iniciar sesión como administrador.'); if(container) container.innerHTML = window.adminEmptyState('lock', 'Acceso restringido', 'Debes iniciar sesión como administrador.'); return; }
+            if(!db) { if(container) container.innerHTML = window.adminEmptyState('wifi-off', 'Firebase no disponible', 'No se pudo conectar con la base de datos.'); window.refreshIcons?.(container); return; }
+            if(!container) return;
+            container.innerHTML = `<div class="bg-white dark:bg-darkcard rounded-[2rem] p-6 border border-purple-border/30 dark:border-purple/20 shadow-sm animate-pulse"><div class="h-4 w-32 bg-purple/10 rounded mb-4"></div><div class="h-20 bg-purple/10 rounded-2xl"></div></div>`;
+            try {
+                const snap = await getDocs(window.getRedeemsCollectionRef());
+                const redeems = [];
+                snap.forEach(d => redeems.push({id:d.id, ...d.data()}));
+                redeems.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+                window.adminRedeemsCache = redeems;
+                window.renderAdminRedeems(redeems);
+            } catch(e) { console.error(e); container.innerHTML = window.adminEmptyState('alert-triangle', 'Error al cargar canjes', 'Verifica permisos de Firebase/Firestore.'); window.refreshIcons?.(container); }
+        };
+
+        window.setAdminRedeemFilter = function(value) { window.adminFilters.redeemsStatus = value; window.renderAdminRedeems(window.adminRedeemsCache || []); };
+
+        window.renderAdminRedeems = function(redeems = []) {
+            const container = document.getElementById('admin-redeems-container');
+            if(!container) return;
+            const status = window.adminFilters?.redeemsStatus || 'todos';
+            const filtered = redeems.filter(r => status === 'todos' || String(r.status || 'solicitado').toLowerCase() === status);
+            const header = `<div class="bg-white dark:bg-darkcard rounded-[2rem] p-4 md:p-5 border border-purple-border/30 dark:border-purple/20 shadow-sm text-left">
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3"><div><h3 class="text-xl font-black text-purple-dark dark:text-white flex items-center gap-2"><i data-lucide="gift" class="w-5 h-5 text-pink"></i> Canjes</h3><p class="text-xs text-gray-500 font-semibold mt-1">${filtered.length} de ${redeems.length} solicitudes visibles.</p></div>
+                <select onchange="window.setAdminRedeemFilter(this.value)" class="bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl px-4 py-3 text-xs font-bold outline-none focus:border-purple"><option value="todos" ${status==='todos'?'selected':''}>Todos</option><option value="solicitado" ${status==='solicitado'?'selected':''}>Solicitados</option><option value="aprobado" ${status==='aprobado'?'selected':''}>Aprobados</option><option value="entregado" ${status==='entregado'?'selected':''}>Entregados</option><option value="rechazado" ${status==='rechazado'?'selected':''}>Rechazados</option></select></div></div>`;
+            if(!redeems.length) { container.innerHTML = header + window.adminEmptyState('gift', 'Sin canjes pendientes', 'Las solicitudes de beneficios aparecerán aquí cuando un usuario canjee sus puntos.'); window.refreshIcons?.(container); return; }
+            if(!filtered.length) { container.innerHTML = header + window.adminEmptyState('search-x', 'Sin resultados', 'No hay canjes con ese estado.'); window.refreshIcons?.(container); return; }
+            container.innerHTML = header + `<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">${filtered.map(r => window.renderAdminRedeemCard(r)).join('')}</div>`;
+            window.refreshIcons?.(container);
+        };
+
+        window.getRedeemStatusInfo = function(status) {
+            const s = String(status || 'solicitado').toLowerCase();
+            const map = {
+                solicitado: { label:'Solicitado', classes:'bg-pink/10 text-pink border-pink/20' },
+                aprobado: { label:'Aprobado', classes:'bg-green/20 text-green-dark dark:text-green border-green/30' },
+                entregado: { label:'Entregado', classes:'bg-purple/10 text-purple dark:text-purple-light border-purple/20' },
+                rechazado: { label:'Rechazado', classes:'bg-gray-200 text-gray-500 border-gray-300' }
+            };
+            return map[s] || map.solicitado;
+        };
+
+        window.renderAdminRedeemCard = function(r) {
+            const info = window.getRedeemStatusInfo(r.status);
+            const msg = encodeURIComponent(`Hola, te contactamos de Milkarf por tu canje: ${r.itemName || 'beneficio'} (${r.points || 0} pts).`);
+            return `<div class="bg-white dark:bg-darkcard rounded-[2rem] p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left">
+                <div class="flex items-start justify-between gap-3 mb-3"><div class="min-w-0"><h4 class="font-black text-purple-dark dark:text-white text-base truncate">${window.escapeHTML(r.itemName || 'Canje Milkarf')}</h4><p class="text-[11px] text-gray-500 font-bold mt-1 truncate">${window.escapeHTML(r.email || r.userName || 'Usuario')} · ${window.formatAdminDate(r.createdAt)}</p></div><span class="shrink-0 px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${info.classes}">${info.label}</span></div>
+                <p class="text-xs text-gray-600 dark:text-gray-400 font-semibold bg-purple-light dark:bg-[#0d0718] rounded-2xl p-3 border border-purple-border/30 dark:border-purple/20">${window.escapeHTML(r.benefit || 'Beneficio por puntos')}<br><strong class="text-pink">${Number(r.points || 0)} pts</strong></p>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
+                    <button onclick="window.actualizarCanjeAdmin('${r.id}', 'aprobado')" class="text-[10px] bg-green hover:bg-[#a6b621] text-purple-dark px-3 py-2.5 rounded-xl font-black uppercase tracking-widest transition-all">Aprobar</button>
+                    <button onclick="window.actualizarCanjeAdmin('${r.id}', 'entregado')" class="text-[10px] bg-purple hover:bg-pink text-white px-3 py-2.5 rounded-xl font-black uppercase tracking-widest transition-all">Entregado</button>
+                    <button onclick="window.actualizarCanjeAdmin('${r.id}', 'rechazado')" class="text-[10px] bg-gray-100 dark:bg-gray-700 text-gray-500 px-3 py-2.5 rounded-xl font-black uppercase tracking-widest transition-all">Rechazar</button>
+                    <a href="https://wa.me/${window.WA_NUMBER}?text=${msg}" target="_blank" class="text-[10px] bg-[#25D366]/10 hover:bg-[#25D366] text-[#128C4A] hover:text-white px-3 py-2.5 rounded-xl font-black uppercase tracking-widest transition-all text-center">WhatsApp</a>
+                </div>
+            </div>`;
+        };
+
+        window.actualizarCanjeAdmin = async function(redeemId, status) {
+            if(!window.isAdmin) { window.showToast('Debes iniciar sesión como administrador.'); return; }
+            if(!db) { window.showToast('Firebase no está disponible.'); return; }
+            try {
+                const ref = doc(window.getRedeemsCollectionRef(), redeemId);
+                await setDoc(ref, { status, updatedAt: new Date().toISOString() }, { merge: true });
+                window.showToast('Canje actualizado.', 'success');
+                window.loadAdminRedeems();
+            } catch(e) { console.error(e); window.showToast('No se pudo actualizar el canje.'); }
+        };
+
+        window.renderAdminTools = function() {
+            const container = document.getElementById('admin-tools-container');
+            if(!container) return;
+            container.innerHTML = `<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div class="bg-white dark:bg-darkcard rounded-[2rem] p-6 border border-purple-border/30 dark:border-purple/20 shadow-sm text-left"><div class="w-12 h-12 rounded-2xl bg-green/15 text-green-dark dark:text-green flex items-center justify-center mb-4"><i data-lucide="scale" class="w-6 h-6"></i></div><h3 class="text-xl font-black text-purple-dark dark:text-white">Calculadora nutricional</h3><p class="text-sm text-gray-500 font-semibold mt-2">Acceso rápido para atención por WhatsApp o asesoría en tienda.</p><button onclick="window.navigateTo('view-calc')" class="mt-4 bg-purple hover:bg-pink text-white text-xs font-black uppercase tracking-widest px-5 py-3 rounded-2xl transition-all">Abrir calculadora</button></div>
+                <div class="bg-white dark:bg-darkcard rounded-[2rem] p-6 border border-purple-border/30 dark:border-purple/20 shadow-sm text-left"><div class="w-12 h-12 rounded-2xl bg-pink/10 text-pink flex items-center justify-center mb-4"><i data-lucide="message-circle" class="w-6 h-6"></i></div><h3 class="text-xl font-black text-purple-dark dark:text-white">Mensajes rápidos</h3><p class="text-sm text-gray-500 font-semibold mt-2">Usa estos textos como guía para confirmar pedidos y canjes.</p><div class="mt-4 space-y-2"><button onclick="navigator.clipboard?.writeText('Hola, recibimos tu pedido Milkarf. Estamos verificando disponibilidad para confirmarte el total y la entrega.'); window.showToast('Mensaje copiado.', 'success')" class="w-full text-left bg-purple-light dark:bg-[#0d0718] rounded-xl p-3 text-xs font-bold text-purple-dark dark:text-white border border-purple-border/30">Copiar confirmación inicial</button><button onclick="navigator.clipboard?.writeText('Tu pedido Milkarf ya fue confirmado. Te avisaremos apenas esté listo para entrega.'); window.showToast('Mensaje copiado.', 'success')" class="w-full text-left bg-purple-light dark:bg-[#0d0718] rounded-xl p-3 text-xs font-bold text-purple-dark dark:text-white border border-purple-border/30">Copiar pedido confirmado</button></div></div>
+                <div class="lg:col-span-2 bg-pink/5 dark:bg-pink/10 rounded-[2rem] p-6 border border-pink/20 text-left"><h3 class="text-xl font-black text-pink flex items-center gap-2"><i data-lucide="alert-triangle" class="w-5 h-5"></i> Zona delicada</h3><p class="text-sm text-gray-500 dark:text-gray-400 font-semibold mt-2">Para dejar la página en cero, elimina usuarios desde la pestaña Clientes. Por seguridad, las cuentas de Firebase Auth deben borrarse desde Firebase Console o backend admin.</p></div>
+            </div>`;
+            window.refreshIcons?.(container);
         };
 
         window.eliminarUsuarioAdmin = async function(uid, email = '') {
@@ -3301,96 +3598,50 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
 
         window.loadAdminBirthdays = async function() {
             const container = document.getElementById('admin-birthdays-container');
-            if(!window.isAdmin) {
-                window.showToast('Debes iniciar sesión como administrador.');
-                if(container) container.innerHTML = '<p class="text-center text-pink font-bold py-10 text-sm bg-pink/10 rounded-3xl border border-pink/20">Debes iniciar sesión como administrador.</p>';
-                return;
-            }
-            if(!db) {
-                if(container) container.innerHTML = '<p class="text-center text-pink font-bold py-10 text-sm bg-pink/10 rounded-3xl border border-pink/20">Firebase no está disponible.</p>';
-                return;
-            }
+            if(!window.isAdmin) { window.showToast('Debes iniciar sesión como administrador.'); if(container) container.innerHTML = window.adminEmptyState('lock', 'Acceso restringido', 'Debes iniciar sesión como administrador.'); return; }
+            if(!db) { if(container) container.innerHTML = window.adminEmptyState('wifi-off', 'Firebase no disponible', 'No se pudo conectar con la base de datos.'); window.refreshIcons?.(container); return; }
             if(!container) { console.warn('admin-birthdays-container no encontrado.'); return; }
-            container.innerHTML = '<p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Analizando fechas...</p>';
-
-            const usersRef = window.getUsersCollectionRef();
-
+            container.innerHTML = `<div class="bg-white dark:bg-darkcard rounded-[2rem] p-6 border border-purple-border/30 dark:border-purple/20 shadow-sm animate-pulse"><div class="h-4 w-32 bg-purple/10 rounded mb-4"></div><div class="h-20 bg-purple/10 rounded-2xl"></div></div>`;
             try {
-                const snapshot = await getDocs(usersRef);
+                const snapshot = await getDocs(window.getUsersCollectionRef());
                 let petBirthdays = [];
-                
-                snapshot.forEach(doc => {
-                    const u = doc.data();
-                    if(u.mascotas && Array.isArray(u.mascotas)) {
-                        u.mascotas.forEach(m => {
-                            // VERIFICACIÓN SEGURA DE FECHA PARA EVITAR FALLOS
-                            if(m.cumple && typeof m.cumple === 'string' && m.cumple.includes('-')) {
-                                const today = new Date();
-                                const todayNoTime = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                                
-                                const parts = m.cumple.split('-');
-                                if(parts.length === 3) {
-                                    const y = parseInt(parts[0]);
-                                    const mo = parseInt(parts[1]);
-                                    const d = parseInt(parts[2]);
-                                    
-                                    let nextBday = new Date(today.getFullYear(), mo-1, d);
-                                    
-                                    if (nextBday < todayNoTime) {
-                                        nextBday.setFullYear(today.getFullYear() + 1);
-                                    }
-                                    
-                                    const diffTime = Math.abs(nextBday - todayNoTime);
-                                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                                    
-                                    petBirthdays.push({
-                                        ownerEmail: u.email || 'Sin correo',
-                                        petName: m.nombre,
-                                        petType: m.tipo,
-                                        bdayString: m.cumple,
-                                        daysLeft: diffDays
-                                    });
-                                }
+                snapshot.forEach(docSnap => {
+                    const u = {id: docSnap.id, ...docSnap.data()};
+                    (u.mascotas || []).forEach(m => {
+                        if(m.cumple && typeof m.cumple === 'string' && m.cumple.includes('-')) {
+                            const today = new Date();
+                            const todayNoTime = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                            const parts = m.cumple.split('-');
+                            if(parts.length === 3) {
+                                const mo = parseInt(parts[1]); const d = parseInt(parts[2]);
+                                let nextBday = new Date(today.getFullYear(), mo-1, d);
+                                if (nextBday < todayNoTime) nextBday.setFullYear(today.getFullYear() + 1);
+                                const diffDays = Math.ceil((nextBday - todayNoTime) / (1000 * 60 * 60 * 24)); 
+                                petBirthdays.push({ ownerEmail: u.email || 'Sin correo', ownerName: u.nombre || u.displayName || u.email || 'Cliente', uid: u.id, petName: m.nombre, petType: m.tipo, bdayString: m.cumple, daysLeft: diffDays, level: window.getLevelInfo(u.puntos_historicos || u.puntos || 0).nombre });
                             }
-                        });
-                    }
+                        }
+                    });
                 });
-
                 petBirthdays.sort((a,b) => a.daysLeft - b.daysLeft);
-
-                if(petBirthdays.length === 0) {
-                    container.innerHTML = '<p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Ninguna mascota tiene fecha de cumpleaños registrada.</p>';
-                    return;
-                }
-
-                container.innerHTML = petBirthdays.map(p => {
-                    const isNear = p.daysLeft <= 30;
-                    return `
-                    <div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border ${isNear ? 'border-pink/50 dark:border-pink/30 shadow-lg shadow-pink/10' : 'border-purple-border/50 dark:border-purple/20'} text-left relative overflow-hidden transition-all">
-                        ${isNear ? '<div class="absolute top-0 left-0 w-1 h-full bg-pink"></div>' : ''}
-                        <div class="flex justify-between items-start mb-2 pl-1">
-                            <div>
-                                <h4 class="font-black ${isNear ? 'text-pink' : 'text-purple-dark dark:text-white'} text-base flex items-center gap-2">
-                                    ${p.petType==='gato'?'🐱':'🐶'} ${p.petName}
-                                    ${isNear ? '<i data-lucide="cake" class="w-4 h-4"></i>' : ''}
-                                </h4>
-                                <p class="text-[10px] text-gray-500 font-bold mt-0.5">Nacimiento: ${p.bdayString}</p>
-                            </div>
-                            <span class="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${isNear ? 'bg-pink text-white' : 'bg-purple/5 text-purple'}">
-                                ${p.daysLeft === 0 ? '¡Hoy!' : (p.daysLeft === 1 ? 'Mañana' : `En ${p.daysLeft} días`)}
-                            </span>
-                        </div>
-                        <div class="bg-purple-light dark:bg-[#0d0718] p-3 rounded-xl border border-purple/10 mt-3 ml-1">
-                            <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Contacto / Dueño:</p>
-                            <p class="text-xs font-black text-purple-dark dark:text-white truncate">${p.ownerEmail}</p>
-                        </div>
-                    </div>`;
-                }).join('');
-                if(window.lucide) window.lucide.createIcons({root: container});
+                const todayItems = petBirthdays.filter(p => p.daysLeft === 0);
+                const sevenItems = petBirthdays.filter(p => p.daysLeft > 0 && p.daysLeft <= 7);
+                const thirtyItems = petBirthdays.filter(p => p.daysLeft > 7 && p.daysLeft <= 30);
+                const laterItems = petBirthdays.filter(p => p.daysLeft > 30).slice(0,12);
+                const renderGroup = (title, items, color='purple') => `<div class="bg-white dark:bg-darkcard rounded-[2rem] p-5 border border-purple-border/30 dark:border-purple/20 shadow-sm text-left"><h3 class="text-lg font-black text-purple-dark dark:text-white mb-4">${title} <span class="text-xs text-gray-400">(${items.length})</span></h3><div class="space-y-3">${items.map(p => window.renderAdminBirthdayCard(p)).join('') || '<p class="text-sm text-gray-500 font-semibold bg-purple-light dark:bg-[#0d0718] rounded-2xl p-4">Sin cumpleaños en este grupo.</p>'}</div></div>`;
+                if(!petBirthdays.length) { container.innerHTML = window.adminEmptyState('cake', 'Sin cumpleaños registrados', 'Ninguna mascota tiene fecha de nacimiento cargada todavía.'); window.refreshIcons?.(container); return; }
+                container.innerHTML = `<div class="grid grid-cols-1 xl:grid-cols-2 gap-5">${renderGroup('Hoy cumplen', todayItems)}${renderGroup('Próximos 7 días', sevenItems)}${renderGroup('Próximos 30 días', thirtyItems)}${renderGroup('Más adelante', laterItems)}</div>`;
+                window.refreshIcons?.(container);
             } catch(e) {
                 console.error(e);
-                container.innerHTML = '<p class="text-center text-pink font-bold py-10 text-sm bg-pink/10 rounded-3xl border border-pink/20">Error al cargar cumpleaños.</p>';
+                container.innerHTML = window.adminEmptyState('alert-triangle', 'Error al cargar cumpleaños', 'Verifica permisos de Firebase/Firestore.');
+                window.refreshIcons?.(container);
             }
+        };
+
+        window.renderAdminBirthdayCard = function(p) {
+            const label = p.daysLeft === 0 ? 'Hoy' : (p.daysLeft === 1 ? 'Mañana' : `En ${p.daysLeft} días`);
+            const msg = encodeURIComponent(`Hola, ${p.ownerName}. Desde Milkarf queremos celebrar a ${p.petName}. ¿Nos confirmas si desean activar su beneficio de cumpleaños?`);
+            return `<div class="rounded-2xl border ${p.daysLeft <= 7 ? 'border-pink/40 bg-pink/5' : 'border-purple-border/30 dark:border-purple/20 bg-purple-light/70 dark:bg-[#0d0718]'} p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"><div><h4 class="font-black ${p.daysLeft <= 7 ? 'text-pink' : 'text-purple-dark dark:text-white'} text-sm">${p.petType==='gato'?'🐱':'🐶'} ${window.escapeHTML(p.petName || 'Mascota')}</h4><p class="text-[10px] text-gray-500 font-bold mt-1">${window.escapeHTML(p.ownerEmail)} · ${window.escapeHTML(p.level || 'Nivel')}</p><p class="text-[10px] text-gray-400 font-bold mt-0.5">Nacimiento: ${window.escapeHTML(p.bdayString || '')}</p></div><div class="flex items-center gap-2"><span class="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${p.daysLeft <= 7 ? 'bg-pink text-white' : 'bg-purple/10 text-purple'}">${label}</span><a href="https://wa.me/${window.WA_NUMBER}?text=${msg}" target="_blank" class="px-3 py-2 rounded-xl bg-[#25D366]/10 text-[#128C4A] hover:bg-[#25D366] hover:text-white text-[10px] font-black uppercase tracking-widest transition-all">WhatsApp</a></div></div>`;
         };
 
         window.abrirModalCanje = function(uid, email, pts) {
