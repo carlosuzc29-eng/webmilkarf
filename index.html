@@ -1864,7 +1864,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithCustomToken, signInAnonymously, setPersistence, browserLocalPersistence, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, addDoc, getDocs, serverTimestamp, onSnapshot, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, addDoc, getDocs, serverTimestamp, onSnapshot, deleteDoc, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // =========================================================================================
         // CONFIGURACIÓN FIREBASE
@@ -2002,6 +2002,60 @@
             return typeof __firebase_config !== 'undefined'
                 ? collection(db, 'artifacts', appId, 'public', 'data', 'canjes')
                 : collection(db, 'canjes');
+        };
+
+        // =========================================================================================
+        // CONSULTAS FIRESTORE SEGURAS (compatibles con reglas cerradas)
+        // =========================================================================================
+        window.ADMIN_QUERY_LIMIT = 50;
+        window.USER_QUERY_LIMIT = 20;
+
+        window.secureAdminQuery = function(ref, max = window.ADMIN_QUERY_LIMIT) {
+            return query(ref, limit(Math.min(Number(max) || window.ADMIN_QUERY_LIMIT, window.ADMIN_QUERY_LIMIT)));
+        };
+
+        window.secureUserQuery = function(ref, uid, max = window.USER_QUERY_LIMIT) {
+            return query(ref, where('uid', '==', uid), limit(Math.min(Number(max) || window.USER_QUERY_LIMIT, window.USER_QUERY_LIMIT)));
+        };
+
+        window.getSafeAuthUid = function() {
+            return auth?.currentUser?.uid || window.currentUser?.uid || null;
+        };
+
+        window.sanitizeClientOrderForWrite = function(order = {}) {
+            const clean = { ...order };
+            // Estos campos solo deben crearlos/modificarlos administradores.
+            delete clean.pointsAwarded;
+            delete clean.pointsGranted;
+            delete clean.pointsMultiplier;
+            delete clean.confirmedAt;
+            delete clean.completedAt;
+            delete clean.cancelledAt;
+            delete clean.deliveryCost;
+            delete clean.totalWithDelivery;
+            delete clean.deliveryDate;
+            delete clean.deliveryNoteMessage;
+            delete clean.deliveryNoteSentAt;
+            return clean;
+        };
+
+        window.normalizeUserProfileForWrite = function(data = {}) {
+            const clean = { ...data };
+            // Campos que el cliente no debe escribir con reglas seguras.
+            delete clean.descuento_usado;
+            delete clean.puntos;
+            delete clean.points;
+            delete clean.pointsAvailable;
+            delete clean.puntosDisponibles;
+            delete clean.pointsHistorical;
+            delete clean.puntosHistoricos;
+            delete clean.puntos_historicos;
+            delete clean.level;
+            delete clean.nivel;
+            delete clean.pointsMultiplier;
+            delete clean.fecha_actualizacion;
+            clean.updatedAt = clean.updatedAt || serverTimestamp();
+            return clean;
         };
 
         // =========================================================================================
@@ -2795,8 +2849,9 @@ Deja el campo vacío para quitar la foto.`, current);
             try {
                 mascotas[index] = { ...pet, fotoUrl: clean };
                 await setDoc(window.getUserPath(window.currentUser.uid), {
+                    uid: window.currentUser.uid,
                     mascotas,
-                    fecha_actualizacion: serverTimestamp()
+                    updatedAt: serverTimestamp()
                 }, { merge: true });
                 window.currentUser.data.mascotas = mascotas;
                 window.actualizarUIAuth?.();
@@ -3072,7 +3127,7 @@ Deja el campo vacío para quitar la foto.`, current);
                 const updatedMascotas = mascotas.filter((_, i) => i !== index);
                 await setDoc(window.getUserPath(window.currentUser.uid), {
                     mascotas: updatedMascotas,
-                    fecha_actualizacion: serverTimestamp()
+                    updatedAt: serverTimestamp()
                 }, { merge: true });
 
                 window.currentUser.data.mascotas = updatedMascotas;
@@ -3183,12 +3238,12 @@ Deja el campo vacío para quitar la foto.`, current);
                 };
                 
                 await setDoc(window.getUserPath(cred.user.uid), {
+                    uid: cred.user.uid,
                     mascotas: [nuevaMascota],
                     puntos: 0,
                     puntos_historicos: 0,
-                    descuento_usado: false,
                     email: cred.user.email || '',
-                    fecha_actualizacion: serverTimestamp()
+                    updatedAt: serverTimestamp()
                 }, { merge: true });
 
                 window.state.nombreMascota = nombre;
@@ -3384,10 +3439,10 @@ Deja el campo vacío para quitar la foto.`, current);
                 data.mascotas.push(nuevaMascota);
 
                 await setDoc(window.getUserPath(window.currentUser.uid), {
+                    uid: window.currentUser.uid,
                     mascotas: data.mascotas,
                     puntos: data.puntos || 0,
                     puntos_historicos: data.puntos_historicos || data.puntos || 0,
-                    descuento_usado: data.descuento_usado || false,
                     email: window.currentUser.email || '',
                     nombre: contactName,
                     nombre_persona: contactName,
@@ -3396,7 +3451,7 @@ Deja el campo vacío para quitar la foto.`, current);
                     telefono: phone,
                     phone: phone,
                     whatsapp: phone,
-                    fecha_actualizacion: serverTimestamp()
+                    updatedAt: serverTimestamp()
                 }, { merge: true });
 
                 try { localStorage.setItem('milkarf_contact_phone', phone); } catch(e) {}
@@ -3507,7 +3562,7 @@ Deja el campo vacío para quitar la foto.`, current);
             if(existingIndex >= 0) mascotas[existingIndex] = { ...mascotas[existingIndex], ...petPayload, id: mascotas[existingIndex].id || petPayload.id };
             else mascotas.push(petPayload);
             try {
-                await setDoc(window.getUserPath(window.currentUser.uid), { mascotas }, { merge: true });
+                await setDoc(window.getUserPath(window.currentUser.uid), { uid: window.currentUser.uid, mascotas, updatedAt: serverTimestamp() }, { merge: true });
                 window.currentUser.data = { ...data, mascotas };
                 window.selectedDashboardPetIndex = Math.max(0, mascotas.findIndex(m => String(m.nombre || '').toLowerCase() === String(r.nombre || '').toLowerCase()));
                 window.state.nombreMascota = r.nombre;
@@ -3698,12 +3753,18 @@ Deja el campo vacío para quitar la foto.`, current);
             window.descuentoAplicado = true;
             if (db && window.currentUser?.uid) {
                 try {
+                    const cleanPhone = telefono.replace(/\D/g, '');
                     await setDoc(window.getUserPath(window.currentUser.uid), {
-                        telefono: telefono.replace(/\D/g, ''),
-                        nombre_contacto: nombre,
-                        mascota_descuento: mascota
+                        uid: window.currentUser.uid,
+                        telefono: cleanPhone,
+                        phone: cleanPhone,
+                        whatsapp: cleanPhone,
+                        nombre: nombre,
+                        nombre_persona: nombre,
+                        userName: nombre,
+                        updatedAt: serverTimestamp()
                     }, { merge: true });
-                    window.currentUser.data = { ...(window.currentUser.data || {}), telefono: telefono.replace(/\D/g, ''), nombre_contacto: nombre, mascota_descuento: mascota };
+                    window.currentUser.data = { ...(window.currentUser.data || {}), telefono: cleanPhone, phone: cleanPhone, whatsapp: cleanPhone, nombre, nombre_persona: nombre, userName: nombre };
                 } catch(e) { console.warn('No se pudo guardar el teléfono de contacto:', e); }
             }
             window.cerrarModalDescuento();
@@ -3954,7 +4015,7 @@ Deja el campo vacío para quitar la foto.`, current);
             }
             const uid = auth?.currentUser?.uid || window.currentUser?.uid || null;
             const token = window.getClientToken();
-            if(!uid && !token) {
+            if(!uid) {
                 container.innerHTML = '<p class="text-xs text-gray-500 font-medium">Inicia sesión o realiza un pedido para ver su estado.</p>';
                 return;
             }
@@ -3962,7 +4023,7 @@ Deja el campo vacío para quitar la foto.`, current);
             container.innerHTML = '<p class="text-xs text-gray-500 font-semibold bg-white dark:bg-darkcard rounded-xl p-3 border border-purple-border/30">Consultando tus pedidos...</p>';
             try {
                 const ordersRef = window.getOrdersCollectionRef();
-                const qRef = uid ? query(ordersRef, where('uid', '==', uid)) : query(ordersRef, where('clientToken', '==', token));
+                const qRef = window.secureUserQuery(ordersRef, uid);
                 unsubUserOrders = onSnapshot(qRef, (snapshot) => {
                     const orders = [];
                     snapshot.forEach(d => orders.push({ id: d.id, ...d.data() }));
@@ -4038,7 +4099,7 @@ Deja el campo vacío para quitar la foto.`, current);
             const ordersRef = window.getOrdersCollectionRef();
             
             if(unsubAdmin) { unsubAdmin(); unsubAdmin = null; }
-            unsubAdmin = onSnapshot(ordersRef, (snapshot) => {
+            unsubAdmin = onSnapshot(window.secureAdminQuery(ordersRef), (snapshot) => {
                 let orders = [];
                 snapshot.forEach(doc => orders.push({id: doc.id, ...doc.data()}));
                 orders.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -4128,7 +4189,7 @@ Deja el campo vacío para quitar la foto.`, current);
             const usersRef = window.getUsersCollectionRef();
 
             try {
-                const snapshot = await getDocs(usersRef);
+                const snapshot = await getDocs(window.secureAdminQuery(usersRef));
                 let users = [];
                 snapshot.forEach(doc => users.push({id: doc.id, ...doc.data()}));
                 
@@ -4208,20 +4269,14 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if(!ok) return;
             try {
                 await deleteDoc(window.getUserPath(uid));
-                const ordersSnap = await getDocs(window.getOrdersCollectionRef());
+                const ordersSnap = await getDocs(query(window.getOrdersCollectionRef(), where('uid', '==', uid), limit(window.ADMIN_QUERY_LIMIT)));
                 const orderDeletes = [];
-                ordersSnap.forEach(d => {
-                    const data = d.data();
-                    if(data.uid === uid) orderDeletes.push(deleteDoc(d.ref));
-                });
+                ordersSnap.forEach(d => orderDeletes.push(deleteDoc(d.ref)));
                 await Promise.all(orderDeletes);
                 try {
-                    const redeemsSnap = await getDocs(window.getRedeemsCollectionRef());
+                    const redeemsSnap = await getDocs(query(window.getRedeemsCollectionRef(), where('uid', '==', uid), limit(window.ADMIN_QUERY_LIMIT)));
                     const redeemDeletes = [];
-                    redeemsSnap.forEach(d => {
-                        const data = d.data();
-                        if(data.uid === uid) redeemDeletes.push(deleteDoc(d.ref));
-                    });
+                    redeemsSnap.forEach(d => redeemDeletes.push(deleteDoc(d.ref)));
                     await Promise.all(redeemDeletes);
                 } catch(e) {
                     console.warn('No se pudieron limpiar algunos canjes asociados:', e);
@@ -4251,7 +4306,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const usersRef = window.getUsersCollectionRef();
 
             try {
-                const snapshot = await getDocs(usersRef);
+                const snapshot = await getDocs(window.secureAdminQuery(usersRef));
                 let petBirthdays = [];
                 
                 snapshot.forEach(doc => {
@@ -4469,22 +4524,22 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const ok = confirm(`¿Deseas canjear ${item.points} puntos por ${item.name}?`);
             if(!ok) return;
             try {
-                const newPts = currentPts - item.points;
-                await setDoc(window.getUserPath(window.currentUser.uid), { puntos: newPts }, { merge: true });
                 await addDoc(window.getRedeemsCollectionRef(), {
                     uid: window.currentUser.uid,
-                    userName: window.currentUser.displayName || window.currentUser.email || 'Usuario Milkarf',
+                    userName: window.currentUser.data?.nombre || window.currentUser.displayName || window.currentUser.email || 'Usuario Milkarf',
                     email: window.currentUser.email || '',
+                    phone: window.currentUser.data?.phone || window.currentUser.data?.telefono || window.currentUser.data?.whatsapp || '',
+                    telefono: window.currentUser.data?.telefono || window.currentUser.data?.phone || window.currentUser.data?.whatsapp || '',
                     itemId: item.id,
                     itemName: item.name,
                     benefit: item.benefit,
                     points: item.points,
+                    pointsCost: item.points,
+                    costoPuntos: item.points,
                     status: 'solicitado',
                     createdAt: new Date().toISOString()
                 });
-                window.currentUser.data = { ...(window.currentUser.data || {}), puntos: newPts };
-                window.actualizarUIAuth();
-                window.showToast('Canje registrado. Te llevaremos a WhatsApp.', 'success');
+                window.showToast('Canje solicitado. El equipo Milkarf validará y descontará los puntos al aprobarlo.', 'success');
                 const msg = window.getWhatsAppTemplate('userRedeem', {
                     itemName: item.name,
                     benefit: item.benefit,
@@ -4519,7 +4574,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                     await setDoc(userRef, {
                         puntos: ptsDispBefore + pointsToGive,
                         puntos_historicos: ptsHistBefore + pointsToGive,
-                        fecha_actualizacion: serverTimestamp()
+                        updatedAt: serverTimestamp()
                     }, { merge: true });
                 }
 
@@ -4927,7 +4982,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                             phone,
                             telefono: phone,
                             whatsapp: phone,
-                            fecha_actualizacion: serverTimestamp()
+                            updatedAt: serverTimestamp()
                         }, { merge: true });
                     }
                 } catch(error) {
@@ -5030,9 +5085,9 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             container.innerHTML = window.adminLoadingState('Preparando resumen operativo...');
             try {
                 const [ordersSnap, usersSnap, redeemsSnap] = await Promise.all([
-                    getDocs(window.getOrdersCollectionRef()),
-                    getDocs(window.getUsersCollectionRef()),
-                    getDocs(window.getRedeemsCollectionRef()).catch(() => ({ forEach: () => {} }))
+                    getDocs(window.secureAdminQuery(window.getOrdersCollectionRef())),
+                    getDocs(window.secureAdminQuery(window.getUsersCollectionRef())),
+                    getDocs(window.secureAdminQuery(window.getRedeemsCollectionRef())).catch(() => ({ forEach: () => {} }))
                 ]);
                 const orders = []; ordersSnap.forEach(d => orders.push({id: d.id, ...d.data()}));
                 const users = []; usersSnap.forEach(d => users.push({id: d.id, ...d.data()}));
@@ -5100,7 +5155,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if(!container) return;
             if(unsubAdmin) { unsubAdmin(); unsubAdmin = null; }
             container.innerHTML = window.adminLoadingState('Sincronizando pedidos...');
-            unsubAdmin = onSnapshot(window.getOrdersCollectionRef(), (snapshot) => {
+            unsubAdmin = onSnapshot(window.secureAdminQuery(window.getOrdersCollectionRef()), (snapshot) => {
                 const orders = [];
                 snapshot.forEach(docSnap => orders.push({id: docSnap.id, ...docSnap.data()}));
                 orders.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
@@ -5210,7 +5265,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if(!container) return;
             container.innerHTML = window.adminLoadingState('Cargando clientes...');
             try {
-                const snapshot = await getDocs(window.getUsersCollectionRef());
+                const snapshot = await getDocs(window.secureAdminQuery(window.getUsersCollectionRef()));
                 const users = [];
                 snapshot.forEach(docSnap => users.push({id: docSnap.id, ...docSnap.data()}));
                 users.sort((a,b) => (b.puntos_historicos || b.puntos || 0) - (a.puntos_historicos || a.puntos || 0));
@@ -5297,7 +5352,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if(!container) return;
             container.innerHTML = window.adminLoadingState('Analizando cumpleaños...');
             try {
-                const snapshot = await getDocs(window.getUsersCollectionRef());
+                const snapshot = await getDocs(window.secureAdminQuery(window.getUsersCollectionRef()));
                 const users = []; snapshot.forEach(d => users.push({id:d.id, ...d.data()}));
                 const all = window.computeAdminBirthdays(users);
                 const groups = [{title:'Hoy cumplen', items: all.filter(p => p.daysLeft === 0)}, {title:'Próximos 7 días', items: all.filter(p => p.daysLeft > 0 && p.daysLeft <= 7)}, {title:'Próximos 30 días', items: all.filter(p => p.daysLeft > 7 && p.daysLeft <= 30)}, {title:'Más adelante', items: all.filter(p => p.daysLeft > 30).slice(0, 12)}];
@@ -5323,7 +5378,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if(!container) return;
             container.innerHTML = window.adminLoadingState('Cargando canjes...');
             try {
-                const snap = await getDocs(window.getRedeemsCollectionRef());
+                const snap = await getDocs(window.secureAdminQuery(window.getRedeemsCollectionRef()));
                 const redeems = []; snap.forEach(d => redeems.push({id:d.id, ...d.data()}));
                 redeems.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
                 window.adminCache.redeems = redeems;
@@ -6038,15 +6093,11 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 let createdOrderId = null;
                 try {
                     if (discountApplied && isLogged) {
-                        if (db) {
-                            await setDoc(window.getUserPath(window.currentUser.uid), { descuento_usado: true }, { merge: true });
-                        } else {
-                            let reclamados = [];
-                            try { reclamados = JSON.parse(localStorage.getItem('milkarf_descuentos_uids') || '[]'); } catch(e){}
-                            if (!reclamados.includes(window.currentUser.uid)) {
-                                reclamados.push(window.currentUser.uid);
-                                try { localStorage.setItem('milkarf_descuentos_uids', JSON.stringify(reclamados)); } catch(e){}
-                            }
+                        let reclamados = [];
+                        try { reclamados = JSON.parse(localStorage.getItem('milkarf_descuentos_uids') || '[]'); } catch(e){}
+                        if (!reclamados.includes(window.currentUser.uid)) {
+                            reclamados.push(window.currentUser.uid);
+                            try { localStorage.setItem('milkarf_descuentos_uids', JSON.stringify(reclamados)); } catch(e){}
                         }
                         if(window.currentUser.data) window.currentUser.data.descuento_usado = true;
                     }
@@ -6054,8 +6105,19 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
 
                 if (db) {
                     try {
+                        let writeUid = auth?.currentUser?.uid || window.currentUser?.uid || null;
+                        if(!writeUid && auth) {
+                            try {
+                                const anonCred = await signInAnonymously(auth);
+                                writeUid = anonCred?.user?.uid || null;
+                                window.currentUser = anonCred?.user || window.currentUser;
+                            } catch(authError) {
+                                console.warn('No se pudo crear sesión anónima para registrar el pedido:', authError);
+                            }
+                        }
+                        if(!writeUid) throw new Error('No hay sesión autenticada para registrar el pedido.');
                         const orderData = {
-                            uid: isLogged ? window.currentUser.uid : sessionUid,
+                            uid: isLogged ? window.currentUser.uid : writeUid,
                             registeredUser: !!isLogged,
                             clientToken,
                             userName: isLogged ? (clientNameForOrder || window.currentUser.email) : 'Usuario Invitado',
@@ -6074,7 +6136,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                             selectedPet: window.state.nombreMascota || '',
                             createdAt
                         };
-                        await setDoc(window.getOrderDocRef(localOrderId), { ...orderData, localId: localOrderId }, { merge: true });
+                        await setDoc(window.getOrderDocRef(localOrderId), window.sanitizeClientOrderForWrite({ ...orderData, localId: localOrderId }), { merge: true });
                         createdOrderId = localOrderId;
                         window.lastOrderId = createdOrderId;
                         try { localStorage.setItem('milkarf_last_order_id', createdOrderId); } catch(e){}
@@ -6504,10 +6566,10 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 };
 
                 await setDoc(window.getUserPath(cred.user.uid), {
+                    uid: cred.user.uid,
                     mascotas: [nuevaMascota],
                     puntos: 0,
                     puntos_historicos: 0,
-                    descuento_usado: false,
                     email: cred.user.email || '',
                     nombre: clientName,
                     nombre_persona: clientName,
@@ -6516,7 +6578,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                     telefono: phone,
                     phone: phone,
                     whatsapp: phone,
-                    fecha_actualizacion: serverTimestamp()
+                    updatedAt: serverTimestamp()
                 }, { merge: true });
 
                 try { localStorage.setItem('milkarf_contact_phone', phone); } catch(e) {}
@@ -6622,7 +6684,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if(unsubUserRedeems && !force) return;
             if(unsubUserRedeems) { unsubUserRedeems(); unsubUserRedeems = null; }
             try {
-                const qRef = query(window.getRedeemsCollectionRef(), where('uid', '==', window.currentUser.uid));
+                const qRef = window.secureUserQuery(window.getRedeemsCollectionRef(), window.currentUser.uid);
                 unsubUserRedeems = onSnapshot(qRef, (snap) => {
                     const redeems = []; snap.forEach(d => redeems.push({id:d.id, ...d.data()}));
                     redeems.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
@@ -6691,7 +6753,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if(!db) { container.innerHTML = window.adminEmptyState('Firebase no disponible', 'No se pudo conectar con la base de datos.', 'wifi-off'); return; }
             container.innerHTML = window.adminLoadingState('Construyendo resumen operativo...');
             try {
-                const [ordersSnap, usersSnap, redeemsSnap] = await Promise.all([getDocs(window.getOrdersCollectionRef()), getDocs(window.getUsersCollectionRef()), getDocs(window.getRedeemsCollectionRef())]);
+                const [ordersSnap, usersSnap, redeemsSnap] = await Promise.all([getDocs(window.secureAdminQuery(window.getOrdersCollectionRef())), getDocs(window.secureAdminQuery(window.getUsersCollectionRef())), getDocs(window.secureAdminQuery(window.getRedeemsCollectionRef()))]);
                 const orders = []; ordersSnap.forEach(d => orders.push({id: d.id, ...d.data()}));
                 const users = []; usersSnap.forEach(d => users.push({id: d.id, ...d.data()}));
                 const redeems = []; redeemsSnap.forEach(d => redeems.push({id: d.id, ...d.data()}));
@@ -6862,7 +6924,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const uid = (window.currentUser && window.currentUser.uid) || authUser?.uid || null;
             const hasRealSession = !!(window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email));
             const token = window.getClientToken();
-            if(!uid && !token) {
+            if(!uid) {
                 activeContainer.innerHTML = '<p class="text-xs text-gray-500 font-medium bg-white dark:bg-darkcard border border-purple-border/30 rounded-2xl p-4">Realiza un pedido para ver su estado aquí.</p>';
                 return;
             }
@@ -6889,8 +6951,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                     console.warn('Error creando listener de pedidos por ' + key + ':', error);
                 }
             };
-            if(uid) listen('uid', query(ordersRef, where('uid', '==', uid)));
-            if(token) listen('token', query(ordersRef, where('clientToken', '==', token)));
+            if(uid) listen('uid', window.secureUserQuery(ordersRef, uid));
             unsubUserOrders = () => unsubs.forEach(fn => { try { fn(); } catch(e) {} });
             if(forceNavigate) window.navigateTo?.('view-dashboard');
         };
@@ -7080,9 +7141,20 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             for(const order of pending) {
                 try {
                     const orderId = order.localId || order.id || ('local_' + Date.now());
-                    const cleanOrder = { ...order, localOnly: false, localId: orderId };
+                    let writeUid = auth?.currentUser?.uid || window.currentUser?.uid || null;
+                    if(!writeUid && auth) {
+                        try {
+                            const anonCred = await signInAnonymously(auth);
+                            writeUid = anonCred?.user?.uid || null;
+                            window.currentUser = anonCred?.user || window.currentUser;
+                        } catch(authError) {
+                            console.warn('No se pudo crear sesión anónima para sincronizar pedido:', authError);
+                        }
+                    }
+                    if(!writeUid) throw new Error('No hay sesión autenticada para sincronizar el pedido.');
+                    const cleanOrder = { ...order, uid: order.uid && order.uid !== 'anonimo' ? order.uid : writeUid, localOnly: false, localId: orderId };
                     delete cleanOrder.id;
-                    await setDoc(window.getOrderDocRef(orderId), cleanOrder, { merge: true });
+                    await setDoc(window.getOrderDocRef(orderId), window.sanitizeClientOrderForWrite(cleanOrder), { merge: true });
                     window.cacheUserOrderLocal?.({ ...order, id: orderId, localOnly: false });
                 } catch(error) {
                     console.warn('Pedido pendiente no sincronizado aún:', error);

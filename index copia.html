@@ -19,6 +19,8 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Exportar nota de entrega como imagen -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
 
     <script>
         tailwind.config = {
@@ -147,6 +149,135 @@
         #cart-fab.pop { animation: fabPop 0.45s cubic-bezier(0.34,1.56,0.64,1); }
         #cart-badge { transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); }
         #cart-fab.pop #cart-badge { transform: scale(1.3) translateZ(0); }
+
+        .milkarf-input-focus:focus {
+            border-color: #421d8e !important;
+            box-shadow: 0 0 0 4px rgba(66, 29, 142, 0.08);
+        }
+
+        #delivery-note-capture-wrap {
+            position: fixed;
+            left: -99999px;
+            top: 0;
+            width: 1080px;
+            background: #f5f0e8;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .delivery-capture-card {
+            width: 1080px;
+            min-height: 1350px;
+            background: #f5f0e8;
+            font-family: 'Montserrat', sans-serif;
+            color: #421d8e;
+            padding: 64px;
+            box-sizing: border-box;
+        }
+        .delivery-capture-inner {
+            background: #ffffff;
+            border-radius: 48px;
+            overflow: hidden;
+            box-shadow: 0 24px 70px rgba(66,29,142,0.16);
+            border: 1px solid rgba(66,29,142,0.10);
+        }
+        .delivery-capture-head {
+            background: linear-gradient(135deg,#2e1060,#421d8e);
+            padding: 52px 58px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 32px;
+        }
+        .delivery-capture-logo {
+            width: 130px;
+            height: 130px;
+            object-fit: contain;
+            background: rgba(255,255,255,0.12);
+            border-radius: 34px;
+            padding: 12px;
+        }
+        .delivery-capture-kicker {
+            font-size: 22px;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            color: #b9cb25;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+        .delivery-capture-title {
+            font-size: 54px;
+            line-height: 1;
+            font-weight: 900;
+            margin: 0;
+        }
+        .delivery-capture-date {
+            margin-top: 14px;
+            font-size: 24px;
+            color: rgba(255,255,255,0.72);
+            font-weight: 700;
+        }
+        .delivery-capture-body { padding: 54px 58px 44px; }
+        .delivery-capture-section {
+            background: #faf8ff;
+            border: 1px solid #e8e0f0;
+            border-radius: 30px;
+            padding: 30px;
+            margin-bottom: 28px;
+        }
+        .delivery-capture-label {
+            font-size: 18px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(66,29,142,0.48);
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+        .delivery-capture-client { font-size: 32px; font-weight: 900; color: #2e1060; margin: 0; }
+        .delivery-capture-pet { font-size: 22px; font-weight: 700; color: rgba(66,29,142,0.62); margin-top: 8px; }
+        .delivery-capture-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 24px;
+            align-items: start;
+            border-bottom: 1px solid rgba(66,29,142,0.10);
+            padding: 24px 0;
+        }
+        .delivery-capture-item:last-child { border-bottom: 0; }
+        .delivery-capture-item-name { font-size: 25px; font-weight: 900; color: #2e1060; }
+        .delivery-capture-item-sub { font-size: 19px; font-weight: 700; color: rgba(66,29,142,0.58); margin-top: 7px; }
+        .delivery-capture-item-price { font-size: 26px; font-weight: 900; color: #421d8e; white-space: nowrap; }
+        .delivery-capture-totals {
+            background: linear-gradient(135deg,#2e1060,#421d8e);
+            border-radius: 32px;
+            padding: 34px;
+            color: #ffffff;
+            margin-bottom: 28px;
+        }
+        .delivery-capture-total-row { display:flex; justify-content:space-between; align-items:center; font-size: 22px; font-weight: 800; padding: 11px 0; color: rgba(255,255,255,0.80); }
+        .delivery-capture-final { border-top: 1px solid rgba(255,255,255,0.22); margin-top: 10px; padding-top: 24px; }
+        .delivery-capture-final span:first-child { font-size: 20px; letter-spacing: 0.18em; text-transform: uppercase; color: #b9cb25; font-weight: 900; }
+        .delivery-capture-final span:last-child { font-size: 48px; color: #b9cb25; font-weight: 900; }
+        .delivery-capture-payment {
+            background: #fff0f5;
+            border-left: 10px solid #d72b8f;
+            border-radius: 0 28px 28px 0;
+            padding: 30px 34px;
+            color: #421d8e;
+            font-size: 22px;
+            line-height: 1.65;
+            font-weight: 700;
+        }
+        .delivery-capture-payment strong { font-weight: 900; color: #2e1060; }
+        .delivery-capture-footer {
+            text-align: center;
+            padding: 28px 58px 44px;
+            color: rgba(66,29,142,0.48);
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 1.6;
+        }
 
         /* UX refinada: navegación móvil más inmediata */
         #mobile-bottom-nav button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: transform 0.08s ease, background-color 0.12s ease; }
@@ -1292,10 +1423,10 @@
                         </div>
                     </div>
 
-                    <button id="btn-finalizar-pedido" onclick="window.finalizarPedido()" class="w-full flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20ba59] text-white font-extrabold text-lg py-5 rounded-[1.25rem] shadow-xl shadow-green/20 hover:shadow-glow-green transition-all active:scale-95 group">
+                    <a id="btn-finalizar-pedido" href="#" target="_blank" rel="noopener noreferrer" onclick="return window.finalizarPedido(event)" class="w-full flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20ba59] text-white font-extrabold text-lg py-5 rounded-[1.25rem] shadow-xl shadow-green/20 hover:shadow-glow-green transition-all active:scale-95 group">
                         <i data-lucide="send" class="w-6 h-6 shrink-0 group-hover:translate-x-1 transition-transform"></i>
                         Pedir por WhatsApp
-                    </button>
+                    </a>
 
                     <button id="btn-ver-mis-pedidos" onclick="window.navigateTo('view-dashboard'); window.startUserOrdersListener(true);" class="hidden w-full flex items-center justify-center gap-2 bg-white dark:bg-darkcard border border-green/30 text-green-dark dark:text-green font-extrabold text-sm py-3.5 rounded-xl shadow-sm hover:bg-green/10 transition-all active:scale-95">
                         <i data-lucide="clipboard-check" class="w-4 h-4"></i> Ver estado de mi pedido
@@ -1561,10 +1692,12 @@
 
                         <div id="delivery-note-error" class="hidden bg-pink/10 border border-pink/20 text-pink text-xs font-bold rounded-xl p-3"></div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <button type="button" onclick="window.closeDeliveryNoteModal()" class="w-full bg-white dark:bg-[#0d0718] border border-purple-border/60 dark:border-purple/30 text-purple dark:text-white font-black text-xs uppercase tracking-widest py-3.5 rounded-xl">Cancelar</button>
-                            <button type="button" onclick="window.sendDeliveryNoteToClient()" class="w-full bg-green hover:bg-[#a6b621] text-purple-dark font-black text-xs uppercase tracking-widest py-3.5 rounded-xl shadow-md">Enviar por WhatsApp</button>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <button type="button" onclick="window.closeDeliveryNoteModal()" class="w-full bg-white dark:bg-[#0d0718] border border-purple-border/60 dark:border-purple/30 text-purple dark:text-white font-black text-[10px] uppercase tracking-widest py-3.5 rounded-xl">Cancelar</button>
+                            <button type="button" onclick="window.downloadDeliveryNoteImage()" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/60 dark:border-purple/30 text-purple dark:text-green font-black text-[10px] uppercase tracking-widest py-3.5 rounded-xl">Descargar imagen</button>
+                            <button type="button" onclick="window.sendDeliveryNoteToClient()" class="w-full bg-green hover:bg-[#a6b621] text-purple-dark font-black text-[10px] uppercase tracking-widest py-3.5 rounded-xl shadow-md">Enviar nota visual</button>
                         </div>
+                        <p class="text-[10px] text-purple/45 dark:text-gray-500 font-semibold leading-relaxed text-center mt-2">En celulares compatibles se abrirá el menú para compartir la imagen. Si no está disponible, la nota se descargará y se abrirá WhatsApp con el texto de respaldo.</p>
                     </div>
                 </div>
             </div>
@@ -1623,8 +1756,9 @@
                         </div>
 
                         <div class="pt-2 space-y-3">
-                            <p class="text-[11px] text-purple font-black uppercase tracking-widest text-center">Tu Cuenta</p>
-                            <input type="email" id="auth-email-reg" placeholder="Tu mejor correo" autocomplete="email" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
+                            <p class="text-[11px] text-purple font-black uppercase tracking-widest text-center">Tus datos de contacto</p>
+                            <input type="text" id="auth-name-reg" placeholder="Tu nombre y apellido" autocomplete="name" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left milkarf-input-focus">
+                            <input type="email" id="auth-email-reg" placeholder="Tu mejor correo" autocomplete="email" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left milkarf-input-focus">
                             <input type="tel" id="auth-phone-reg" placeholder="WhatsApp de contacto (ej. 0412 000 0000)" autocomplete="tel" inputmode="tel" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
                             <p class="text-[10px] text-purple/50 dark:text-gray-500 font-semibold leading-tight -mt-1">Usaremos este número para confirmar pedidos y enviar notas de entrega.</p>
                             <input type="password" id="auth-pass-reg" placeholder="Crea contraseña (min. 6)" autocomplete="new-password" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
@@ -1651,7 +1785,8 @@
                     <h4 class="text-sm font-black text-purple-dark dark:text-white text-center mb-2">¡Último paso!</h4>
                     <p class="text-[10px] text-gray-500 text-center mb-4 font-medium leading-relaxed">Completa los datos de tu peludo para brindarle atención personalizada y finalizar tu registro.</p>
                     
-                    <input type="tel" id="pet-contact-whatsapp" placeholder="WhatsApp de contacto (ej. 0412 000 0000)" autocomplete="tel" inputmode="tel" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple mb-3">
+                    <input type="text" id="pet-contact-name" placeholder="Tu nombre y apellido" autocomplete="name" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple mb-3 milkarf-input-focus">
+                    <input type="tel" id="pet-contact-whatsapp" placeholder="WhatsApp de contacto (ej. 0412 000 0000)" autocomplete="tel" inputmode="tel" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple mb-3 milkarf-input-focus">
                     <p class="text-[10px] text-purple/50 dark:text-gray-500 font-semibold leading-tight -mt-2 mb-3 text-center">Así podremos enviarte confirmaciones y notas de entrega.</p>
 
                     <div class="flex gap-2 mb-2">
@@ -1728,7 +1863,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithCustomToken, signInAnonymously, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithCustomToken, signInAnonymously, setPersistence, browserLocalPersistence, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, addDoc, getDocs, serverTimestamp, onSnapshot, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // =========================================================================================
@@ -1972,32 +2107,88 @@
                 .trim();
         };
 
-        window.buildWhatsAppUrl = function(message, phone = window.WA_NUMBER) {
-            const cleanPhone = window.normalizePhone ? window.normalizePhone(phone || window.WA_NUMBER) : String(phone || window.WA_NUMBER || '').replace(/\D/g, '');
-            return 'https://wa.me/' + cleanPhone + '?text=' + encodeURIComponent(window.sanitizeWhatsAppMessage(message));
+        window.isMobileDevice = function() {
+            return /Android|iPhone|iPad|iPod|Mobile|Instagram|FBAN|FBAV/i.test(navigator.userAgent || '');
         };
 
-        window.openWhatsAppMessage = function(message, phone = window.WA_NUMBER) {
-            const url = window.buildWhatsAppUrl(message, phone);
-            const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+        window.buildWhatsAppLinks = function(message, phone = window.WA_NUMBER) {
+            const cleanPhone = window.normalizePhone ? window.normalizePhone(phone || window.WA_NUMBER) : String(phone || window.WA_NUMBER || '').replace(/\D/g, '');
+            const cleanMessage = window.sanitizeWhatsAppMessage ? window.sanitizeWhatsAppMessage(message || '') : String(message || '').trim();
+            const encoded = encodeURIComponent(cleanMessage);
+            const phonePart = cleanPhone ? `phone=${cleanPhone}&` : '';
+            return {
+                phone: cleanPhone,
+                message: cleanMessage,
+                app: `whatsapp://send?${phonePart}text=${encoded}`,
+                api: `https://api.whatsapp.com/send?${phonePart}text=${encoded}`,
+                wa: cleanPhone ? `https://wa.me/${cleanPhone}?text=${encoded}` : `https://wa.me/?text=${encoded}`,
+                web: cleanPhone ? `https://web.whatsapp.com/send?phone=${cleanPhone}&text=${encoded}` : `https://web.whatsapp.com/send?text=${encoded}`
+            };
+        };
+
+        window.buildWhatsAppUrl = function(message, phone = window.WA_NUMBER) {
+            return window.buildWhatsAppLinks(message, phone).api;
+        };
+
+        window.showWhatsAppManualFallback = function(url) {
+            if(!url) return;
+            let fallback = document.getElementById('whatsapp-manual-fallback');
+            if(!fallback) {
+                fallback = document.createElement('div');
+                fallback.id = 'whatsapp-manual-fallback';
+                fallback.className = 'fixed left-4 right-4 bottom-24 md:left-auto md:right-6 md:bottom-6 md:w-[360px] z-[1200] bg-white dark:bg-darkcard border border-green/30 rounded-2xl shadow-2xl p-4 text-left';
+                fallback.innerHTML = `
+                    <button type="button" aria-label="Cerrar" class="absolute top-3 right-3 text-gray-400 hover:text-pink" onclick="this.closest('#whatsapp-manual-fallback')?.remove()"><i data-lucide="x" class="w-4 h-4"></i></button>
+                    <p class="text-sm font-black text-purple-dark dark:text-white pr-6">No se abrió WhatsApp automáticamente.</p>
+                    <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Toca el botón para continuar con la atención en WhatsApp.</p>
+                    <a id="whatsapp-manual-fallback-link" class="mt-3 flex items-center justify-center gap-2 w-full bg-[#25D366] text-white font-black text-xs uppercase tracking-widest py-3 rounded-xl" target="_blank" rel="noopener noreferrer">Abrir WhatsApp</a>`;
+                document.body.appendChild(fallback);
+            }
+            const link = fallback.querySelector('#whatsapp-manual-fallback-link');
+            if(link) link.href = url;
+            window.refreshIcons?.();
+            setTimeout(() => fallback?.remove(), 12000);
+        };
+
+        window.openWhatsAppMessage = function(message, phone = window.WA_NUMBER, options = {}) {
+            const links = window.buildWhatsAppLinks(message, phone);
+            const isMobile = window.isMobileDevice?.() || false;
+            const mainUrl = isMobile ? links.api : links.web;
+            let opened = false;
             try {
                 if(isMobile) {
-                    // En móviles es más confiable navegar directamente en el mismo gesto del usuario.
-                    window.location.href = url;
-                    return;
+                    // En celulares y navegadores internos, la navegación directa desde el gesto del usuario es lo más confiable.
+                    window.location.assign(mainUrl);
+                    opened = true;
+                } else {
+                    const a = document.createElement('a');
+                    a.href = mainUrl;
+                    a.target = '_blank';
+                    a.rel = 'noopener noreferrer';
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    opened = true;
+                    setTimeout(() => a.remove(), 800);
                 }
-                const a = document.createElement('a');
-                a.href = url;
-                a.target = '_blank';
-                a.rel = 'noopener noreferrer';
-                a.style.display = 'none';
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(() => a.remove(), 600);
             } catch(error) {
-                const opened = window.open(url, '_blank', 'noopener,noreferrer');
-                if(!opened) window.location.href = url;
+                try {
+                    const win = window.open(mainUrl, '_blank', 'noopener,noreferrer');
+                    opened = !!win;
+                    if(!opened && isMobile) window.location.href = links.wa;
+                } catch(e) {
+                    try { window.location.href = links.wa; opened = true; } catch(_) {}
+                }
             }
+
+            if(options.showFallback !== false) {
+                setTimeout(() => {
+                    if(!opened || document.visibilityState === 'visible') {
+                        window.showWhatsAppManualFallback?.(links.api);
+                    }
+                }, options.fallbackDelay || 1400);
+            }
+            return links.api;
         };
 
         window.getWhatsAppTemplate = function(type = 'general', data = {}) {
@@ -2170,7 +2361,7 @@ Queremos confirmar disponibilidad y coordinar la entrega.`;
             window.currentWeightRes = '250gr';
             if(unsubUserOrders) { unsubUserOrders(); unsubUserOrders = null; }
             if(typeof unsubUserRedeems !== 'undefined' && unsubUserRedeems) { unsubUserRedeems(); unsubUserRedeems = null; }
-            ['calc-nombre','pesoInput','auth-email-login','auth-pass-login','auth-email-reg','auth-phone-reg','auth-pass-reg','auth-name-reg','pet-contact-whatsapp','reg-pet-nombre','reg-pet-edad','reg-pet-peso','reg-pet-raza','reg-pet-cumple','pet-nombre','pet-edad','pet-peso','pet-raza','pet-cumple','desc-nombre','desc-telefono','desc-mascota'].forEach(id => {
+            ['calc-nombre','pesoInput','auth-email-login','auth-pass-login','auth-email-reg','auth-phone-reg','auth-pass-reg','auth-name-reg','pet-contact-name','pet-contact-whatsapp','reg-pet-nombre','reg-pet-edad','reg-pet-peso','reg-pet-raza','reg-pet-cumple','pet-nombre','pet-edad','pet-peso','pet-raza','pet-cumple','desc-nombre','desc-telefono','desc-mascota'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el) el.value = '';
             });
@@ -3119,11 +3310,15 @@ Deja el campo vacío para quitar la foto.`, current);
             const authSeparator = document.getElementById('auth-separator');
             if (authSeparator) authSeparator.classList.add('hidden');
 
+            const contactNameEl = document.getElementById('pet-contact-name');
+            if(contactNameEl && !contactNameEl.value) contactNameEl.value = window.currentUser?.displayName || window.currentUser?.data?.nombre || '';
+
             const formPetProfile = document.getElementById('form-pet-profile');
             if (formPetProfile) formPetProfile.classList.remove('hidden');
         };
 
         window.guardarPerfilMascota = async function() {
+            const contactNameEl = document.getElementById('pet-contact-name');
             const phoneEl = document.getElementById('pet-contact-whatsapp');
             const tipoEl = document.getElementById('pet-tipo');
             const nombreEl = document.getElementById('pet-nombre');
@@ -3135,6 +3330,7 @@ Deja el campo vacío para quitar la foto.`, current);
 
             if(!tipoEl || !nombreEl || !edadEl || !pesoEl || !err) return;
 
+            const contactName = contactNameEl ? contactNameEl.value.trim() : (window.currentUser?.displayName || '');
             const rawPhone = phoneEl ? phoneEl.value.trim() : '';
             const phone = window.normalizePhone(rawPhone);
             const tipo = tipoEl.value;
@@ -3143,6 +3339,12 @@ Deja el campo vacío para quitar la foto.`, current);
             const peso = pesoEl.value.trim();
             const raza = razaEl ? razaEl.value.trim() : '';
             const cumple = cumpleEl ? cumpleEl.value : '';
+
+            if(!contactName) {
+                err.textContent = "Agrega tu nombre para personalizar pedidos y notas de entrega.";
+                err.classList.remove('hidden');
+                return;
+            }
 
             if(!phone || phone.length < 10) {
                 err.textContent = "Agrega un número de WhatsApp válido para poder confirmar pedidos y notas de entrega.";
@@ -3187,6 +3389,10 @@ Deja el campo vacío para quitar la foto.`, current);
                     puntos_historicos: data.puntos_historicos || data.puntos || 0,
                     descuento_usado: data.descuento_usado || false,
                     email: window.currentUser.email || '',
+                    nombre: contactName,
+                    nombre_persona: contactName,
+                    userName: contactName,
+                    displayName: contactName,
                     telefono: phone,
                     phone: phone,
                     whatsapp: phone,
@@ -3194,12 +3400,12 @@ Deja el campo vacío para quitar la foto.`, current);
                 }, { merge: true });
 
                 try { localStorage.setItem('milkarf_contact_phone', phone); } catch(e) {}
-                window.currentUser.data = { ...data, mascotas: data.mascotas, telefono: phone, phone: phone, whatsapp: phone };
+                window.currentUser.data = { ...data, mascotas: data.mascotas, nombre: contactName, nombre_persona: contactName, userName: contactName, displayName: contactName, telefono: phone, phone: phone, whatsapp: phone };
                 window.state.nombreMascota = nombre;
 
                 window.actualizarUIAuth();
                 window.cerrarModalAuth();
-                window.showToast("WhatsApp y mascota guardados con éxito.", 'success');
+                window.showToast("Datos de contacto y mascota guardados con éxito.", 'success');
 
                 if (btn) { btn.textContent = "Guardar y Finalizar"; btn.disabled = false; }
             } catch(e) {
@@ -4446,7 +4652,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const deliveryDate = document.getElementById('delivery-note-date')?.value || order.deliveryDate || '';
             const items = window.getDeliveryNoteItems(order);
             const productTotal = Number(order.total || items.reduce((sum, i) => sum + (Number(i.price || 0) * Number(i.qty || 0)), 0));
-            const clientName = order.userName || order.nombre || order.email || 'Cliente Milkarf';
+            const clientName = order.userName || order.nombre_persona || order.nombre || order.displayName || order.email || 'Cliente Milkarf';
             const petName = order.selectedPet || items.find(i => i.forPet)?.forPet || 'tu mascota';
             return {
                 order,
@@ -4510,6 +4716,118 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if(deliveryTotalEl) deliveryTotalEl.textContent = '$' + payload.deliveryCost.toFixed(2);
             if(finalTotalEl) finalTotalEl.textContent = '$' + payload.finalTotal.toFixed(2);
             if(messagePreview) messagePreview.textContent = message;
+            window.renderDeliveryNoteCapture?.(payload);
+        };
+
+        window.renderDeliveryNoteCapture = function(payload = {}) {
+            const target = document.getElementById('delivery-note-capture');
+            if(!target) return;
+            const safe = window.escapeHTML || ((v) => String(v ?? ''));
+            const items = Array.isArray(payload.items) ? payload.items : [];
+            const itemsHtml = items.length ? items.map(item => {
+                const lineTotal = Number(item.price || 0) * Number(item.qty || 0);
+                const weight = item.weight ? ` (${safe(item.weight)})` : '';
+                const pet = item.forPet ? `Para ${safe(item.forPet)}` : 'Para la mascota registrada';
+                return `<div class="delivery-capture-item">
+                    <div>
+                        <div class="delivery-capture-item-name">${safe(item.name || 'Producto Milkarf')}${weight}</div>
+                        <div class="delivery-capture-item-sub">${Number(item.qty || 0)} unidad(es) · ${pet}</div>
+                    </div>
+                    <div class="delivery-capture-item-price">$${lineTotal.toFixed(2)}</div>
+                </div>`;
+            }).join('') : '<div class="delivery-capture-item"><div class="delivery-capture-item-name">Pedido Milkarf</div><div class="delivery-capture-item-price">$0.00</div></div>';
+
+            target.innerHTML = `<div class="delivery-capture-card">
+                <div class="delivery-capture-inner">
+                    <div class="delivery-capture-head">
+                        <div>
+                            <div class="delivery-capture-kicker">Milkarf</div>
+                            <h1 class="delivery-capture-title">Nota de entrega</h1>
+                            <div class="delivery-capture-date">Entrega: ${safe(payload.deliveryDateLabel || 'Por confirmar')}</div>
+                        </div>
+                        <img class="delivery-capture-logo" src="logo.png" alt="Milkarf" onerror="this.style.display='none'">
+                    </div>
+                    <div class="delivery-capture-body">
+                        <div class="delivery-capture-section">
+                            <div class="delivery-capture-label">Cliente</div>
+                            <p class="delivery-capture-client">${safe(payload.clientName || 'Cliente Milkarf')}</p>
+                            <div class="delivery-capture-pet">Mascota asociada: ${safe(payload.petName || 'tu mascota')}</div>
+                        </div>
+                        <div class="delivery-capture-section">
+                            <div class="delivery-capture-label">Detalle del pedido</div>
+                            ${itemsHtml}
+                        </div>
+                        <div class="delivery-capture-totals">
+                            <div class="delivery-capture-total-row"><span>Total productos</span><span>$${Number(payload.productTotal || 0).toFixed(2)}</span></div>
+                            <div class="delivery-capture-total-row"><span>Delivery</span><span>$${Number(payload.deliveryCost || 0).toFixed(2)}</span></div>
+                            <div class="delivery-capture-total-row delivery-capture-final"><span>Total a pagar</span><span>$${Number(payload.finalTotal || 0).toFixed(2)}</span></div>
+                        </div>
+                        <div class="delivery-capture-payment">
+                            <strong>Datos de pago</strong><br>
+                            Banco de Venezuela<br>
+                            Cuenta: 0102 0443 7700 0093 1771<br>
+                            C.I: 20.530.321<br>
+                            Pago móvil: 0414-179-1136<br><br>
+                            Pago en Bs. a tasa BCV del día. Si pagas en divisas, puedes consultarnos por el descuento disponible.
+                        </div>
+                    </div>
+                    <div class="delivery-capture-footer">
+                        Cuando realices el pago, envía el comprobante por WhatsApp para confirmar tu pedido.
+                        <br>Milkarf · Nutrición natural para mascotas
+                    </div>
+                </div>
+            </div>`;
+        };
+
+        window.getDeliveryNoteCanvas = async function() {
+            const orderId = document.getElementById('delivery-note-order-id')?.value || '';
+            const order = window.getAdminOrderById(orderId);
+            if(!order) throw new Error('No se encontró el pedido para generar la nota.');
+            const payload = window.getDeliveryNotePayload(order);
+            window.renderDeliveryNoteCapture?.(payload);
+            const target = document.getElementById('delivery-note-capture');
+            if(!target) throw new Error('No se encontró el contenedor de la nota visual.');
+            if(!window.html2canvas) throw new Error('La librería para generar imagen aún no ha cargado. Intenta nuevamente en unos segundos.');
+            await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            return await window.html2canvas(target.firstElementChild || target, {
+                scale: 2,
+                backgroundColor: '#f5f0e8',
+                useCORS: true,
+                allowTaint: true,
+                logging: false,
+                windowWidth: 1200
+            });
+        };
+
+        window.canvasToBlob = function(canvas) {
+            return new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 1));
+        };
+
+        window.getDeliveryNoteFileName = function(order = {}) {
+            const base = `nota-entrega-milkarf-${order.userName || order.nombre || order.id || Date.now()}`;
+            return String(base).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '.png';
+        };
+
+        window.downloadDeliveryNoteImage = async function() {
+            const err = document.getElementById('delivery-note-error');
+            if(err) { err.classList.add('hidden'); err.textContent = ''; }
+            try {
+                const orderId = document.getElementById('delivery-note-order-id')?.value || '';
+                const order = window.getAdminOrderById(orderId) || {};
+                window.updateDeliveryNotePreview?.();
+                const canvas = await window.getDeliveryNoteCanvas();
+                const link = document.createElement('a');
+                link.download = window.getDeliveryNoteFileName(order);
+                link.href = canvas.toDataURL('image/png', 1);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.showToast?.('Nota visual descargada en alta calidad.', 'success');
+            } catch(error) {
+                console.error('Error generando nota visual:', error);
+                if(err) { err.textContent = error.message || 'No se pudo generar la imagen de la nota.'; err.classList.remove('hidden'); }
+                else window.showToast?.('No se pudo generar la imagen de la nota.');
+            }
         };
 
         window.openDeliveryNoteModal = function(orderId) {
@@ -4617,8 +4935,40 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 }
             }
 
-            window.openWhatsAppMessage(message, phone);
-            window.showToast?.('Nota de entrega lista para WhatsApp.', 'success');
+            try {
+                window.updateDeliveryNotePreview?.();
+                const canvas = await window.getDeliveryNoteCanvas();
+                const blob = await window.canvasToBlob(canvas);
+                const fileName = window.getDeliveryNoteFileName(order);
+                const file = blob ? new File([blob], fileName, { type: 'image/png' }) : null;
+                const shareText = `Nota de entrega Milkarf para ${payload.clientName}. Total a pagar: $${payload.finalTotal.toFixed(2)}.`;
+
+                if(file && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+                    await navigator.share({
+                        title: 'Nota de entrega Milkarf',
+                        text: shareText,
+                        files: [file]
+                    });
+                    window.showToast?.('Nota visual lista para compartir por WhatsApp.', 'success');
+                } else {
+                    if(blob) {
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                        setTimeout(() => URL.revokeObjectURL(url), 5000);
+                    }
+                    window.openWhatsAppMessage(message, phone);
+                    window.showToast?.('La imagen se descargó. Adjunta la nota en el chat de WhatsApp que se abrirá.', 'success');
+                }
+            } catch(imageError) {
+                console.warn('No se pudo generar o compartir la nota visual. Se enviará texto de respaldo:', imageError);
+                window.openWhatsAppMessage(message, phone);
+                window.showToast?.('No se pudo generar la imagen. Se abrió WhatsApp con el texto de la nota.', 'success');
+            }
             window.closeDeliveryNoteModal();
         };
 
@@ -5587,8 +5937,9 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             );
         };
 
-        window.finalizarPedido = function() {
-            if (!window.cart.length) return;
+        window.finalizarPedido = function(event) {
+            if(event) event.preventDefault();
+            if (!window.cart.length) { window.showToast?.('Agrega productos antes de pedir por WhatsApp.'); return false; }
 
             const tot = window.cart.reduce((s,i) => s + (i.price*i.qty), 0);
             const discountApplied = !!window.descuentoAplicado;
@@ -5596,6 +5947,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const clientToken = window.getClientToken();
             const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
             const contactPhone = window.normalizePhone(window.currentUser?.data?.telefono || window.currentUser?.data?.phone || window.currentUser?.data?.whatsapp || (() => { try { return localStorage.getItem('milkarf_contact_phone') || ''; } catch(e) { return ''; } })());
+            const clientNameForOrder = (window.currentUser?.data?.nombre || window.currentUser?.data?.nombre_persona || window.currentUser?.data?.userName || window.currentUser?.displayName || window.currentUser?.email || '').trim();
             const sessionUid = auth?.currentUser?.uid || window.currentUser?.uid || 'anonimo';
             const orderItems = window.cart.map(i => ({name: i.name, weight: i.weight, qty: i.qty, price: i.price, forPet: i.forPet || ''}));
             const createdAt = new Date().toISOString();
@@ -5615,7 +5967,9 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 uid: isLogged ? window.currentUser.uid : sessionUid,
                 clientToken,
                 registeredUser: !!isLogged,
-                userName: isLogged ? (window.currentUser.displayName || window.currentUser.email) : 'Usuario Invitado',
+                userName: isLogged ? (clientNameForOrder || window.currentUser.email) : 'Usuario Invitado',
+                nombre: isLogged ? clientNameForOrder : '',
+                nombre_persona: isLogged ? clientNameForOrder : '',
                 email: isLogged ? (window.currentUser.email || '') : '',
                 phone: contactPhone,
                 telefono: contactPhone,
@@ -5631,15 +5985,20 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 localOnly: true
             };
 
-            // Registrar visualmente el pedido antes de salir a WhatsApp para que el usuario vea estado al volver.
+            // Guardar copia local antes de abrir WhatsApp para que el estado aparezca al volver a la web.
             window.cacheUserOrderLocal?.(pendingOrderForCache);
-            window.renderUserOrders?.(window.getLocalUserOrders?.() || [pendingOrderForCache]);
-            window.actualizarUIAuth?.();
-            window.showCartPostOrderState?.(null);
-            window.showToast('Tu pedido quedó en proceso. Continúa la atención por WhatsApp.', 'success');
+            window.queuePendingOrderForSync?.(pendingOrderForCache);
 
             // Apertura inmediata y directa para evitar bloqueos de navegadores móviles.
-            window.openWhatsAppMessage(msg);
+            window.openWhatsAppMessage(msg, window.WA_NUMBER, { showFallback: true, directGesture: true });
+
+            // Actualización visual no bloqueante posterior al gesto principal.
+            setTimeout(() => {
+                window.renderUserOrders?.(window.getLocalUserOrders?.() || [pendingOrderForCache]);
+                window.actualizarUIAuth?.();
+                window.showCartPostOrderState?.(null);
+                window.showToast('Tu pedido quedó en proceso. Continúa la atención por WhatsApp.', 'success');
+            }, 80);
 
             // Guardado no bloqueante: no debe retrasar la apertura de WhatsApp.
             void (async () => {
@@ -5666,10 +6025,13 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                             uid: isLogged ? window.currentUser.uid : sessionUid,
                             registeredUser: !!isLogged,
                             clientToken,
-                            userName: isLogged ? (window.currentUser.displayName || window.currentUser.email) : 'Usuario Invitado',
+                            userName: isLogged ? (clientNameForOrder || window.currentUser.email) : 'Usuario Invitado',
+                            nombre: isLogged ? clientNameForOrder : '',
+                            nombre_persona: isLogged ? clientNameForOrder : '',
                             email: isLogged ? (window.currentUser.email || '') : '',
                             phone: contactPhone,
                             telefono: contactPhone,
+                            whatsapp: contactPhone,
                             items: orderItems,
                             total: finalTot,
                             descuentoAplicado: discountApplied,
@@ -5679,8 +6041,8 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                             selectedPet: window.state.nombreMascota || '',
                             createdAt
                         };
-                        const orderDoc = await addDoc(window.getOrdersCollectionRef(), orderData);
-                        createdOrderId = orderDoc.id;
+                        await setDoc(window.getOrderDocRef(localOrderId), { ...orderData, localId: localOrderId }, { merge: true });
+                        createdOrderId = localOrderId;
                         window.lastOrderId = createdOrderId;
                         try { localStorage.setItem('milkarf_last_order_id', createdOrderId); } catch(e){}
                         pendingOrderForCache.id = createdOrderId;
@@ -6050,6 +6412,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if(!auth || !db) { window.showToast("Base de datos no configurada."); return; }
 
             const emailEl = document.getElementById('auth-email-reg');
+            const nameEl = document.getElementById('auth-name-reg');
             const phoneEl = document.getElementById('auth-phone-reg');
             const passEl = document.getElementById('auth-pass-reg');
             const tipoEl = document.getElementById('reg-pet-tipo');
@@ -6061,6 +6424,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const err = document.getElementById('auth-error');
 
             const email = emailEl ? emailEl.value.trim() : '';
+            const clientName = nameEl ? nameEl.value.trim() : '';
             const rawPhone = phoneEl ? phoneEl.value.trim() : '';
             const phone = window.normalizePhone(rawPhone);
             const pass = passEl ? passEl.value : '';
@@ -6071,9 +6435,9 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const raza = razaEl ? razaEl.value.trim() : '';
             const cumple = cumpleEl ? cumpleEl.value : '';
 
-            if(!email || pass.length < 6 || !phone || phone.length < 10 || !nombre || !edad || !peso) {
+            if(!clientName || !email || pass.length < 6 || !phone || phone.length < 10 || !nombre || !edad || !peso) {
                 if (err) {
-                    err.textContent = "Completa correo, WhatsApp, contraseña y los datos requeridos de tu mascota.";
+                    err.textContent = "Completa tu nombre, correo, WhatsApp, contraseña y los datos requeridos de tu mascota.";
                     err.classList.remove('hidden');
                 }
                 return;
@@ -6093,6 +6457,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 if (btn) { btn.textContent = "Registrando..."; btn.disabled = true; }
 
                 const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                try { await updateProfile(cred.user, { displayName: clientName }); } catch(profileErr) { console.warn('No se pudo actualizar displayName:', profileErr); }
 
                 const nuevaMascota = { 
                     id: Date.now().toString(), 
@@ -6110,6 +6475,10 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                     puntos_historicos: 0,
                     descuento_usado: false,
                     email: cred.user.email || '',
+                    nombre: clientName,
+                    nombre_persona: clientName,
+                    userName: clientName,
+                    displayName: clientName,
                     telefono: phone,
                     phone: phone,
                     whatsapp: phone,
@@ -6119,9 +6488,9 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 try { localStorage.setItem('milkarf_contact_phone', phone); } catch(e) {}
                 window.state.nombreMascota = nombre;
 
-                [emailEl, phoneEl, passEl, nombreEl, edadEl, pesoEl, razaEl, cumpleEl].forEach(el => { if(el) el.value = ''; });
+                [nameEl, emailEl, phoneEl, passEl, nombreEl, edadEl, pesoEl, razaEl, cumpleEl].forEach(el => { if(el) el.value = ''; });
 
-                window.showToast("Cuenta, WhatsApp y mascota guardados con éxito.", 'success');
+                window.showToast("Cuenta, datos de contacto y mascota guardados con éxito.", 'success');
                 window.cerrarModalAuth();
                 if (btn) { btn.textContent = "Crear Cuenta y Entrar"; btn.disabled = false; }
             } catch(error) {
@@ -6529,14 +6898,180 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             }, true);
         };
 
+
+        // =========================================================================================
+        // NAVEGACIÓN SPA CON HISTORIAL + SINCRONIZACIÓN PENDIENTE + WHATSAPP MÓVIL
+        // =========================================================================================
+        window.VIEW_ROUTES = {
+            'view-home': '#inicio',
+            'view-mision': '#mision',
+            'view-calc': '#calculadora',
+            'view-perros': '#menu-perros',
+            'view-gatos': '#menu-gatos',
+            'view-snacks': '#snacks',
+            'view-faq': '#guia-natural',
+            'view-dashboard': '#perfil',
+            'view-redeems': '#canje-puntos',
+            'view-cart': '#carrito',
+            'view-admin': '#admin'
+        };
+        window.ROUTE_VIEWS = Object.fromEntries(Object.entries(window.VIEW_ROUTES).map(([view, hash]) => [hash, view]));
+
+        window.getActiveViewId = function() {
+            return document.querySelector('.view.active')?.id || 'view-home';
+        };
+
+        window.getViewFromHash = function(hash = window.location.hash) {
+            const clean = hash || '#inicio';
+            return window.ROUTE_VIEWS?.[clean] || 'view-home';
+        };
+
+        window.closeTopLayerIfNeeded = function() {
+            if(window.menuOpen) { window.forceCloseMenu?.(); return true; }
+            const authMenu = document.getElementById('auth-dropdown-menu');
+            if(authMenu && !authMenu.classList.contains('hidden')) {
+                authMenu.classList.remove('opacity-100', 'scale-100');
+                authMenu.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => authMenu.classList.add('hidden'), 120);
+                return true;
+            }
+            const closers = [
+                ['modal-delivery-note', window.cerrarDeliveryNote],
+                ['modal-admin-canje', window.cerrarModalAdminCanje],
+                ['modal-admin-login', window.cerrarModalAdmin],
+                ['modal-descuento', window.cerrarModalDescuento],
+                ['modal-auth', window.cerrarModalAuth],
+                ['modal-bienvenida', window.cerrarModalBienvenida]
+            ];
+            for(const [id, closer] of closers) {
+                const modal = document.getElementById(id);
+                if(modal && !modal.classList.contains('hidden')) {
+                    if(typeof closer === 'function') closer();
+                    else { modal.classList.add('hidden', 'opacity-0'); modal.classList.remove('flex'); }
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        const __milkarfNavigateCoreForHistory = window.navigateTo;
+        window.navigateTo = function(targetId, options = {}) {
+            const opts = { pushHistory: true, replaceHistory: false, fromPopState: false, ...options };
+            const target = document.getElementById(targetId);
+            if(!target || !target.classList.contains('view')) {
+                console.warn('Vista no encontrada para navegación:', targetId);
+                targetId = 'view-home';
+            }
+            const currentView = window.getActiveViewId();
+            if(currentView === targetId) {
+                if(window.menuOpen) window.forceCloseMenu?.();
+                window.refreshMobileBottomNav?.(targetId);
+                if(opts.replaceHistory) {
+                    try { history.replaceState({ view: targetId }, '', window.VIEW_ROUTES[targetId] || '#inicio'); } catch(e) {}
+                }
+                return;
+            }
+            const result = __milkarfNavigateCoreForHistory?.(targetId);
+            window.refreshMobileBottomNav?.(targetId);
+            try {
+                const route = window.VIEW_ROUTES[targetId] || '#inicio';
+                if(opts.replaceHistory) history.replaceState({ view: targetId }, '', route);
+                else if(opts.pushHistory && !opts.fromPopState) history.pushState({ view: targetId }, '', route);
+            } catch(error) { console.warn('No se pudo actualizar historial:', error); }
+            return result;
+        };
+
+        window.initHistoryNavigation = function() {
+            if(window.__milkarf_history_ready) return;
+            window.__milkarf_history_ready = true;
+            const initialView = window.getViewFromHash(window.location.hash);
+            window.navigateTo(initialView, { pushHistory: false, replaceHistory: true });
+            window.addEventListener('popstate', (event) => {
+                const activeNow = window.getActiveViewId();
+                if(window.closeTopLayerIfNeeded?.()) {
+                    try { history.pushState({ view: activeNow }, '', window.VIEW_ROUTES[activeNow] || '#inicio'); } catch(e) {}
+                    return;
+                }
+                const targetView = event.state?.view || window.getViewFromHash(window.location.hash) || 'view-home';
+                window.navigateTo(targetView, { pushHistory: false, fromPopState: true });
+            });
+        };
+
+        window.refreshCheckoutWhatsAppLink = function() {
+            const btn = document.getElementById('btn-finalizar-pedido');
+            if(!btn) return;
+            if(!window.cart || !window.cart.length) { btn.setAttribute('href', '#'); return; }
+            try {
+                const tot = window.cart.reduce((s,i) => s + (Number(i.price || 0) * Number(i.qty || 0)), 0);
+                const discountApplied = !!window.descuentoAplicado;
+                const finalTot = discountApplied ? tot * 0.8 : tot;
+                const msg = window.getWhatsAppTemplate('newOrder', {
+                    items: window.cart.map(i => ({ name: i.name, weight: i.weight, qty: i.qty, forPet: i.forPet || '' })),
+                    subtotal: tot,
+                    discountApplied,
+                    discountAmount: discountApplied ? (tot * 0.2) : 0,
+                    finalTotal: finalTot,
+                    location: window.userLocation || ''
+                });
+                btn.setAttribute('href', window.buildWhatsAppUrl(msg, window.WA_NUMBER));
+            } catch(error) { btn.setAttribute('href', '#'); }
+        };
+
+        const __milkarfUpdateCartForWhatsApp = window.updateCart;
+        if(typeof __milkarfUpdateCartForWhatsApp === 'function') {
+            window.updateCart = function(...args) {
+                const result = __milkarfUpdateCartForWhatsApp.apply(this, args);
+                window.refreshCheckoutWhatsAppLink?.();
+                return result;
+            };
+        }
+
+        window.PENDING_ORDER_SYNC_KEY = 'milkarf_pending_orders_to_sync';
+        window.queuePendingOrderForSync = function(order) {
+            if(!order || !order.id) return;
+            try {
+                const pending = JSON.parse(localStorage.getItem(window.PENDING_ORDER_SYNC_KEY) || '[]');
+                const filtered = pending.filter(o => o.id !== order.id);
+                filtered.unshift({ ...order, queuedAt: new Date().toISOString(), localId: order.localId || order.id });
+                localStorage.setItem(window.PENDING_ORDER_SYNC_KEY, JSON.stringify(filtered.slice(0, 10)));
+            } catch(error) { console.warn('No se pudo guardar pedido pendiente de sincronizar:', error); }
+        };
+
+        window.syncPendingOrders = async function() {
+            if(!db || !window.getOrderDocRef) return;
+            let pending = [];
+            try { pending = JSON.parse(localStorage.getItem(window.PENDING_ORDER_SYNC_KEY) || '[]'); } catch(e) { pending = []; }
+            if(!pending.length) return;
+            const remaining = [];
+            for(const order of pending) {
+                try {
+                    const orderId = order.localId || order.id || ('local_' + Date.now());
+                    const cleanOrder = { ...order, localOnly: false, localId: orderId };
+                    delete cleanOrder.id;
+                    await setDoc(window.getOrderDocRef(orderId), cleanOrder, { merge: true });
+                    window.cacheUserOrderLocal?.({ ...order, id: orderId, localOnly: false });
+                } catch(error) {
+                    console.warn('Pedido pendiente no sincronizado aún:', error);
+                    remaining.push(order);
+                }
+            }
+            try { localStorage.setItem(window.PENDING_ORDER_SYNC_KEY, JSON.stringify(remaining)); } catch(e) {}
+            if(pending.length !== remaining.length) window.startUserOrdersListener?.();
+        };
+
+        window.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') window.syncPendingOrders?.(); });
+        window.addEventListener('online', () => window.syncPendingOrders?.());
+
         window.addEventListener('DOMContentLoaded', () => {
             if (typeof window.refreshIcons === 'function') window.refreshIcons();
             window.setMaxBirthdayDates();
             initApp();
-            window.repairViewState?.('view-home');
             window.initFastMobileNav?.();
+            window.initHistoryNavigation?.();
+            window.syncPendingOrders?.();
+            window.refreshCheckoutWhatsAppLink?.();
             window.initPreloader();
-            setTimeout(() => window.repairViewState?.('view-home'), 1200);
+            setTimeout(() => window.repairViewState?.(window.getActiveViewId?.() || 'view-home'), 1200);
         });
     </script>
 
