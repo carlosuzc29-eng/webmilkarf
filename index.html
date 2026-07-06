@@ -2074,6 +2074,7 @@
         window.cart = [];
         window.qtys = { pollo: 1, res: 1 };
         window.isRegisteringPet = false;
+                window.editingPetIndex = null;
         window.isAdmin = window.isAdmin || false;
         window.authReady = window.authReady || false;
         window.entryReady = window.entryReady || false;
@@ -2204,15 +2205,36 @@
             setTimeout(() => fallback?.remove(), 12000);
         };
 
+        window.isIOSDevice = function() {
+            return /iPhone|iPad|iPod/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        };
+
+        window.isSafariBrowser = function() {
+            const ua = navigator.userAgent || '';
+            return /Safari/i.test(ua) && !/Chrome|CriOS|FxiOS|EdgiOS|Android/i.test(ua);
+        };
+
         window.openWhatsAppMessage = function(message, phone = window.WA_NUMBER, options = {}) {
             const links = window.buildWhatsAppLinks(message, phone);
             const isMobile = window.isMobileDevice?.() || false;
-            const mainUrl = isMobile ? links.api : links.web;
+            const isIOS = window.isIOSDevice?.() || false;
+            const isSafari = window.isSafariBrowser?.() || false;
+            const useWaMe = !!options.preferWaMe || (isIOS && isSafari);
+            const mainUrl = isMobile ? (useWaMe ? links.wa : links.api) : links.web;
             let opened = false;
+
             try {
                 if(isMobile) {
-                    // En celulares y navegadores internos, la navegación directa desde el gesto del usuario es lo más confiable.
-                    window.location.assign(mainUrl);
+                    // iPhone Safari suele ser más confiable con una navegación directa a wa.me/api,
+                    // ejecutada dentro del mismo gesto del usuario y sin esperar Firebase.
+                    if(options.tryAppScheme && !isSafari) {
+                        window.location.href = links.app;
+                        setTimeout(() => {
+                            if(document.visibilityState === 'visible') window.location.href = mainUrl;
+                        }, 650);
+                    } else {
+                        window.location.href = mainUrl;
+                    }
                     opened = true;
                 } else {
                     const a = document.createElement('a');
@@ -2227,22 +2249,26 @@
                 }
             } catch(error) {
                 try {
-                    const win = window.open(mainUrl, '_blank', 'noopener,noreferrer');
-                    opened = !!win;
-                    if(!opened && isMobile) window.location.href = links.wa;
+                    if(isMobile) {
+                        window.location.href = links.wa;
+                        opened = true;
+                    } else {
+                        const win = window.open(mainUrl, '_blank', 'noopener,noreferrer');
+                        opened = !!win;
+                    }
                 } catch(e) {
-                    try { window.location.href = links.wa; opened = true; } catch(_) {}
+                    try { window.location.href = links.api; opened = true; } catch(_) {}
                 }
             }
 
             if(options.showFallback !== false) {
                 setTimeout(() => {
                     if(!opened || document.visibilityState === 'visible') {
-                        window.showWhatsAppManualFallback?.(links.api);
+                        window.showWhatsAppManualFallback?.(links.wa || links.api);
                     }
-                }, options.fallbackDelay || 1400);
+                }, options.fallbackDelay || 1600);
             }
-            return links.api;
+            return mainUrl;
         };
 
         window.getWhatsAppTemplate = function(type = 'general', data = {}) {
@@ -2790,9 +2816,7 @@ Queremos confirmar disponibilidad y coordinar la entrega.`;
             const safeEdad = window.escapeHTML(p.edad || p.etapa || 'Sin etapa registrada');
             const calc = window.getPetCalcData(p);
             const selected = idx === window.selectedDashboardPetIndex;
-            const fotoUrlRaw = String(p.fotoUrl || '').trim();
-            const fotoUrl = /^https?:\/\//i.test(fotoUrlRaw) ? window.escapeHTML(fotoUrlRaw) : '';
-            const avatarContent = fotoUrl ? `<img src="${fotoUrl}" alt="Foto de ${safeName}" class="w-full h-full object-cover rounded-full" loading="lazy" decoding="async" onerror="this.outerHTML='${p.tipo === 'gato' ? '🐱' : '🐶'}'">` : (p.tipo === 'gato' ? '🐱' : '🐶');
+            const avatarContent = (p.tipo === 'gato' ? '🐱' : '🐶');
             const calcSummary = calc ? `
                 <div class="mt-3 grid grid-cols-3 gap-2">
                     <div class="bg-white dark:bg-darkcard rounded-xl p-3 border border-purple-border/30 text-center"><p class="text-[9px] font-black text-gray-400 uppercase">Diario</p><p class="text-base font-black text-purple-dark dark:text-white">${Number(calc.gramos || 0)}g</p></div>
@@ -2817,7 +2841,7 @@ Queremos confirmar disponibilidad y coordinar la entrega.`;
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4">
                                 <button type="button" onclick="window.cargarMascotaEnCalculadora(${idx})" class="bg-purple hover:bg-pink text-white text-[10px] font-black uppercase tracking-widest rounded-xl py-3 px-3 flex items-center justify-center gap-2 transition-all active:scale-95"><i data-lucide="calculator" class="w-4 h-4"></i> Calcular</button>
                                 <button type="button" onclick="window.selectDashboardPet(${idx})" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white text-[10px] font-black uppercase tracking-widest rounded-xl py-3 px-3 flex items-center justify-center gap-2 transition-all active:scale-95"><i data-lucide="check-circle" class="w-4 h-4"></i> Usar</button>
-                                <button type="button" onclick="window.actualizarFotoMascota(${idx})" class="bg-white dark:bg-darkbg border border-purple-border/40 dark:border-purple/20 text-purple dark:text-white text-[10px] font-black uppercase tracking-widest rounded-xl py-3 px-3 flex items-center justify-center gap-2 transition-all active:scale-95"><i data-lucide="camera" class="w-4 h-4"></i> Foto</button>
+                                <button type="button" onclick="window.abrirModalEditarMascota(${idx})" class="bg-white dark:bg-darkbg border border-purple-border/40 dark:border-purple/20 text-purple dark:text-white text-[10px] font-black uppercase tracking-widest rounded-xl py-3 px-3 flex items-center justify-center gap-2 transition-all active:scale-95"><i data-lucide="pencil" class="w-4 h-4"></i> Modificar</button>
                             </div>
                         </div>
                     </div>
@@ -2862,10 +2886,87 @@ Deja el campo vacío para quitar la foto.`, current);
             }
         };
 
-        window.abrirModalAgregarMascota = function() {
+        window.resetPetProfileFormForMode = function(mode = 'add') {
+            const form = document.getElementById('form-pet-profile');
+            if(!form) return;
+            const title = form.querySelector('h4');
+            const desc = form.querySelector('p');
+            const btn = document.getElementById('btn-guardar-perfil');
+            const err = document.getElementById('pet-error');
+            if(err) { err.classList.add('hidden'); err.textContent = ''; }
+            if(mode === 'edit') {
+                if(title) title.textContent = 'Modificar mascota';
+                if(desc) desc.textContent = 'Actualiza la información de tu mascota para mantener sus raciones y pedidos personalizados.';
+                if(btn) btn.textContent = 'Guardar cambios';
+            } else {
+                if(title) title.textContent = '¡Último paso!';
+                if(desc) desc.textContent = 'Completa los datos de tu peludo para brindarle atención personalizada y finalizar tu registro.';
+                if(btn) btn.textContent = 'Guardar y Finalizar';
+            }
+        };
+
+        window.clearPetProfileFields = function({ keepContact = true } = {}) {
+            const ids = ['pet-nombre','pet-edad','pet-peso','pet-raza','pet-cumple'];
+            ids.forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+            if(!keepContact) {
+                const name = document.getElementById('pet-contact-name');
+                const phone = document.getElementById('pet-contact-whatsapp');
+                if(name) name.value = '';
+                if(phone) phone.value = '';
+            }
+            const tipo = document.getElementById('pet-tipo');
+            if(tipo) tipo.value = 'perro';
+            window.selectPetType?.('perro');
+        };
+
+        window.fillPetProfileForm = function(pet = {}) {
+            const contactNameEl = document.getElementById('pet-contact-name');
+            const phoneEl = document.getElementById('pet-contact-whatsapp');
+            if(contactNameEl) contactNameEl.value = window.currentUser?.data?.nombre || window.currentUser?.data?.nombre_persona || window.currentUser?.displayName || '';
+            if(phoneEl) phoneEl.value = window.currentUser?.data?.telefono || window.currentUser?.data?.phone || window.currentUser?.data?.whatsapp || '';
+            const tipo = pet.tipo || 'perro';
+            window.selectPetType?.(tipo);
+            const fields = {
+                'pet-nombre': pet.nombre || '',
+                'pet-edad': pet.edad || pet.etapa || '',
+                'pet-peso': pet.peso || '',
+                'pet-raza': pet.raza || '',
+                'pet-cumple': pet.cumple || ''
+            };
+            Object.entries(fields).forEach(([id, val]) => { const el = document.getElementById(id); if(el) el.value = val; });
+        };
+
+        window.abrirModalEditarMascota = function(index) {
+            window.vibrate?.(20);
+            if(!window.currentUser || !window.currentUser.data) {
+                window.showToast('Inicia sesión para modificar la información de tu mascota.');
+                return;
+            }
+            const mascotas = Array.isArray(window.currentUser.data.mascotas) ? window.currentUser.data.mascotas : [];
+            const pet = mascotas[index];
+            if(!pet) {
+                window.showToast('No encontramos esa mascota para modificar.');
+                return;
+            }
+            window.editingPetIndex = index;
             window.setMaxBirthdayDates();
             window.abrirModalAuth();
-            window.mostrarFormularioMascota();
+            window.mostrarFormularioMascota('edit');
+            window.fillPetProfileForm(pet);
+            window.resetPetProfileFormForMode('edit');
+        };
+
+        window.abrirModalAgregarMascota = function() {
+            window.editingPetIndex = null;
+            window.setMaxBirthdayDates();
+            window.abrirModalAuth();
+            window.mostrarFormularioMascota('add');
+            window.clearPetProfileFields({ keepContact: true });
+            const contactNameEl = document.getElementById('pet-contact-name');
+            const phoneEl = document.getElementById('pet-contact-whatsapp');
+            if(contactNameEl && !contactNameEl.value) contactNameEl.value = window.currentUser?.data?.nombre || window.currentUser?.data?.nombre_persona || window.currentUser?.displayName || '';
+            if(phoneEl && !phoneEl.value) phoneEl.value = window.currentUser?.data?.telefono || window.currentUser?.data?.phone || window.currentUser?.data?.whatsapp || '';
+            window.resetPetProfileFormForMode('add');
         };
 
         window.abrirModalAuth = function() {
@@ -3350,7 +3451,7 @@ Deja el campo vacío para quitar la foto.`, current);
             }
         };
 
-        window.mostrarFormularioMascota = function() {
+        window.mostrarFormularioMascota = function(mode = 'add') {
             window.isRegisteringPet = true;
             
             const authLoggedOut = document.getElementById('auth-logged-out');
@@ -3370,6 +3471,7 @@ Deja el campo vacío para quitar la foto.`, current);
 
             const formPetProfile = document.getElementById('form-pet-profile');
             if (formPetProfile) formPetProfile.classList.remove('hidden');
+            window.resetPetProfileFormForMode?.(mode);
         };
 
         window.guardarPerfilMascota = async function() {
@@ -3425,7 +3527,7 @@ Deja el campo vacío para quitar la foto.`, current);
                 if (btn) { btn.textContent = "Guardando..."; btn.disabled = true; }
 
                 const nuevaMascota = {
-                    id: Date.now().toString(),
+                    id: (Number.isInteger(window.editingPetIndex) && window.currentUser?.data?.mascotas?.[window.editingPetIndex]?.id) ? window.currentUser.data.mascotas[window.editingPetIndex].id : Date.now().toString(),
                     tipo: tipo,
                     nombre: nombre,
                     edad: edad,
@@ -3435,8 +3537,13 @@ Deja el campo vacío para quitar la foto.`, current);
                 };
 
                 const data = window.currentUser.data || { puntos: 0, puntos_historicos: 0, descuento_usado: false };
-                if (!data.mascotas) data.mascotas = [];
-                data.mascotas.push(nuevaMascota);
+                if (!Array.isArray(data.mascotas)) data.mascotas = [];
+                const editIndex = Number.isInteger(window.editingPetIndex) ? window.editingPetIndex : null;
+                if(editIndex !== null && data.mascotas[editIndex]) {
+                    data.mascotas[editIndex] = { ...data.mascotas[editIndex], ...nuevaMascota };
+                } else {
+                    data.mascotas.push(nuevaMascota);
+                }
 
                 await setDoc(window.getUserPath(window.currentUser.uid), {
                     uid: window.currentUser.uid,
@@ -3460,14 +3567,15 @@ Deja el campo vacío para quitar la foto.`, current);
 
                 window.actualizarUIAuth();
                 window.cerrarModalAuth();
-                window.showToast("Datos de contacto y mascota guardados con éxito.", 'success');
+                window.showToast(editIndex !== null ? 'Información de mascota actualizada con éxito.' : 'Datos de contacto y mascota guardados con éxito.', 'success');
+                window.editingPetIndex = null;
 
-                if (btn) { btn.textContent = "Guardar y Finalizar"; btn.disabled = false; }
+                if (btn) { btn.textContent = (editIndex !== null ? 'Guardar cambios' : 'Guardar y Finalizar'); btn.disabled = false; }
             } catch(e) {
                 err.textContent = "Error al guardar perfil. Intenta de nuevo.";
                 err.classList.remove('hidden');
                 const btn = document.getElementById('btn-guardar-perfil');
-                if (btn) { btn.textContent = "Guardar y Finalizar"; btn.disabled = false; }
+                if (btn) { btn.textContent = (Number.isInteger(window.editingPetIndex) ? 'Guardar cambios' : 'Guardar y Finalizar'); btn.disabled = false; }
             }
         };
 
@@ -6038,9 +6146,9 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
         };
 
         window.finalizarPedido = function(event) {
+            if(event) event.preventDefault();
             const btn = event?.currentTarget || document.getElementById('btn-finalizar-pedido');
             if (!window.cart.length) {
-                if(event) event.preventDefault();
                 window.showToast?.('Agrega productos antes de pedir por WhatsApp.');
                 return false;
             }
@@ -6068,7 +6176,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
 
             const links = window.buildWhatsAppLinks(msg, window.WA_NUMBER);
             if(btn) {
-                btn.setAttribute('href', links.api);
+                btn.setAttribute('href', (window.isIOSDevice?.() ? links.wa : links.api));
                 btn.setAttribute('target', window.isMobileDevice?.() ? '_self' : '_blank');
                 btn.setAttribute('rel', 'noopener noreferrer');
             }
@@ -6103,19 +6211,19 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             window.renderUserOrders?.(window.getLocalUserOrders?.() || [pendingOrderForCache]);
             window.actualizarUIAuth?.();
             window.showCartPostOrderState?.(localOrderId);
-            // showCartPostOrderState vacía el carrito y refresca el enlace; por eso restauramos aquí el href real
-            // antes de que el navegador ejecute la navegación predeterminada del <a>.
             if(btn) {
-                btn.setAttribute('href', links.api);
-                btn.setAttribute('target', window.isMobileDevice?.() ? '_self' : '_blank');
+                btn.setAttribute('href', links.wa || links.api);
+                btn.setAttribute('target', '_self');
                 btn.setAttribute('rel', 'noopener noreferrer');
             }
             window.showToast('Tu pedido quedó en proceso. Continúa la atención por WhatsApp.', 'success');
 
-            // Fallback visible si el navegador interno no abre WhatsApp automáticamente.
-            setTimeout(() => {
-                if(document.visibilityState === 'visible') window.showWhatsAppManualFallback?.(links.api);
-            }, 1400);
+            // Safari en iPhone necesita que WhatsApp se abra por navegación directa dentro del mismo gesto.
+            window.openWhatsAppMessage?.(msg, window.WA_NUMBER, {
+                directGesture: true,
+                preferWaMe: true,
+                fallbackDelay: 1800
+            });
 
             // Guardado no bloqueante: no debe retrasar ni bloquear la apertura de WhatsApp.
             void (async () => {
@@ -6181,8 +6289,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 }
             })();
 
-            // No prevenimos el enlace: el href real abre WhatsApp de forma más confiable en celulares.
-            return true;
+            return false;
         };
 
         function initApp() {
@@ -7141,7 +7248,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                     location: window.userLocation || ''
                 });
                 const links = window.buildWhatsAppLinks(msg, window.WA_NUMBER);
-                btn.setAttribute('href', links.api);
+                btn.setAttribute('href', (window.isIOSDevice?.() ? links.wa : links.api));
                 btn.setAttribute('target', window.isMobileDevice?.() ? '_self' : '_blank');
                 btn.setAttribute('rel', 'noopener noreferrer');
             } catch(error) { btn.setAttribute('href', '#'); }
