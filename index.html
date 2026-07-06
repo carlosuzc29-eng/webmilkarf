@@ -7482,6 +7482,193 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if(tab === 'canjes') return window.loadAdminRedeems?.();
             if(tab === 'cumples') return window.loadAdminBirthdays?.();
         };
+
+
+        /* =========================================================
+           ADMIN RESUMEN ANTI-BLOQUEO
+           Evita que el panel se quede indefinidamente en
+           "Construyendo resumen operativo" cuando Firestore tarda,
+           falla una colección, falta un índice o hay permisos cerrados.
+           ========================================================= */
+        window.withAdminTimeout = function(promise, label = 'consulta', ms = 6500) {
+            let timer;
+            const timeout = new Promise((_, reject) => {
+                timer = setTimeout(() => {
+                    const err = new Error(`Tiempo de espera agotado al cargar ${label}.`);
+                    err.code = 'milkarf/timeout';
+                    reject(err);
+                }, ms);
+            });
+            return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+        };
+
+        window.adminSafeGetCollection = async function(label, collectionRef, max = window.ADMIN_QUERY_LIMIT || 50, timeoutMs = 6500) {
+            try {
+                if(!db) throw Object.assign(new Error('Firestore no está inicializado.'), { code: 'milkarf/no-db' });
+                if(!collectionRef) throw Object.assign(new Error(`Referencia no disponible para ${label}.`), { code: 'milkarf/no-ref' });
+                const safeLimit = Math.min(Number(max) || window.ADMIN_QUERY_LIMIT || 50, window.ADMIN_QUERY_LIMIT || 50);
+                const q = window.secureAdminQuery ? window.secureAdminQuery(collectionRef, safeLimit) : query(collectionRef, limit(safeLimit));
+                const snap = await window.withAdminTimeout(getDocs(q), label, timeoutMs);
+                const items = [];
+                snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+                return { ok: true, label, items, error: null };
+            } catch(error) {
+                console.error(`Milkarf admin: error cargando ${label}:`, error);
+                return { ok: false, label, items: [], error };
+            }
+        };
+
+        window.renderAdminSummaryFallback = function(results = []) {
+            const detail = results.filter(r => !r.ok).map(r => window.renderFirestorePermissionHelp?.(r.error, r.label) || '').join('');
+            return `
+                <div class="space-y-5">
+                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-7 text-center shadow-sm">
+                        <div class="w-14 h-14 mx-auto rounded-2xl bg-purple-light dark:bg-purple/15 text-purple dark:text-green flex items-center justify-center mb-4"><i data-lucide="refresh-cw" class="w-7 h-7"></i></div>
+                        <h3 class="text-xl font-black text-purple-dark dark:text-white">No se pudo completar el resumen</h3>
+                        <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 mt-2 max-w-xl mx-auto leading-relaxed">El panel no se quedó cargando, pero Firestore no respondió correctamente en una o más colecciones. Puedes abrir las pestañas de Pedidos, Clientes o Canjes para revisar cada módulo por separado.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+                            <button onclick="window.switchAdminTab('pedidos')" class="bg-pink/10 text-pink border border-pink/20 font-black text-xs uppercase tracking-widest py-3 rounded-2xl">Pedidos</button>
+                            <button onclick="window.switchAdminTab('usuarios')" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white font-black text-xs uppercase tracking-widest py-3 rounded-2xl">Clientes</button>
+                            <button onclick="window.switchAdminTab('canjes')" class="bg-green/15 text-green-dark dark:text-green font-black text-xs uppercase tracking-widest py-3 rounded-2xl">Canjes</button>
+                        </div>
+                    </div>
+                    ${detail}
+                </div>`;
+        };
+
+        window.loadAdminSummary = async function() {
+            const container = document.getElementById('admin-summary-container');
+            if(!container) return;
+            if(!window.isAdmin) {
+                container.innerHTML = window.adminEmptyState('Acceso restringido', 'Debes iniciar sesión como administrador para ver el resumen.', 'lock');
+                window.refreshIcons?.(container);
+                return;
+            }
+            if(!db) {
+                container.innerHTML = window.adminEmptyState('Firebase no disponible', 'No se pudo conectar con la base de datos.', 'wifi-off');
+                window.refreshIcons?.(container);
+                return;
+            }
+
+            const runId = Date.now().toString(36);
+            window.__adminSummaryRunId = runId;
+            container.innerHTML = window.adminLoadingState('Construyendo resumen operativo...');
+
+            // Watchdog visual: aunque Firestore tarde, el panel no queda pegado para siempre.
+            const watchdog = setTimeout(() => {
+                if(window.__adminSummaryRunId === runId && container.textContent.includes('Construyendo resumen operativo')) {
+                    container.innerHTML = `
+                        <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-8 text-center shadow-sm">
+                            <div class="w-14 h-14 mx-auto rounded-2xl bg-pink/10 text-pink flex items-center justify-center mb-4"><i data-lucide="wifi-off" class="w-7 h-7"></i></div>
+                            <h3 class="text-xl font-black text-purple-dark dark:text-white">Firestore está tardando en responder</h3>
+                            <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 mt-2 max-w-lg mx-auto leading-relaxed">El resumen no pudo completarse a tiempo. Revisa permisos, conexión o abre un módulo individual.</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+                                <button onclick="window.switchAdminTab('pedidos')" class="bg-pink/10 text-pink border border-pink/20 font-black text-xs uppercase tracking-widest py-3 rounded-2xl">Pedidos</button>
+                                <button onclick="window.switchAdminTab('usuarios')" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white font-black text-xs uppercase tracking-widest py-3 rounded-2xl">Clientes</button>
+                                <button onclick="window.switchAdminTab('canjes')" class="bg-green/15 text-green-dark dark:text-green font-black text-xs uppercase tracking-widest py-3 rounded-2xl">Canjes</button>
+                            </div>
+                            <button onclick="window.loadAdminSummary()" class="mt-4 text-[10px] font-black uppercase tracking-widest text-purple">Reintentar resumen</button>
+                        </div>`;
+                    window.refreshIcons?.(container);
+                }
+            }, 7200);
+
+            try {
+                const refs = {
+                    pedidos: window.getOrdersCollectionRef?.(),
+                    usuarios: window.getUsersCollectionRef?.(),
+                    canjes: window.getRedeemsCollectionRef?.()
+                };
+
+                const results = await Promise.allSettled([
+                    window.adminSafeGetCollection('pedidos', refs.pedidos, 50, 6000),
+                    window.adminSafeGetCollection('usuarios', refs.usuarios, 50, 6000),
+                    window.adminSafeGetCollection('canjes', refs.canjes, 30, 6000)
+                ]);
+
+                if(window.__adminSummaryRunId !== runId) return;
+                clearTimeout(watchdog);
+
+                const [ordersResult, usersResult, redeemsResult] = results.map((r, idx) => {
+                    const label = ['pedidos', 'usuarios', 'canjes'][idx];
+                    return r.status === 'fulfilled' ? r.value : { ok: false, label, items: [], error: r.reason };
+                });
+
+                const orders = ordersResult.ok ? ordersResult.items : [];
+                const users = usersResult.ok ? usersResult.items : [];
+                const redeems = redeemsResult.ok ? redeemsResult.items : [];
+                window.adminCache = window.adminCache || {};
+                Object.assign(window.adminCache, { orders, users, redeems });
+
+                const hardFailures = [ordersResult, usersResult].filter(r => !r.ok);
+                const softFailures = [redeemsResult].filter(r => !r.ok);
+
+                if(hardFailures.length && !orders.length && !users.length) {
+                    container.innerHTML = window.renderAdminSummaryFallback([ordersResult, usersResult, redeemsResult]);
+                    window.refreshIcons?.(container);
+                    return;
+                }
+
+                const getStatus = o => String(o.status || o.estado || 'en_proceso').toLowerCase();
+                const inProcess = orders.filter(o => ['pendiente','en_proceso','proceso','solicitado'].includes(getStatus(o))).length;
+                const confirmed = orders.filter(o => getStatus(o) === 'confirmado').length;
+                const completed = orders.filter(o => getStatus(o) === 'completado').length;
+                const pendingRedeems = redeems.filter(r => ['solicitado','pendiente'].includes(String(r.status || r.estado || '').toLowerCase())).length;
+                const totalCompleted = orders.filter(o => getStatus(o) === 'completado').reduce((sum,o) => sum + Number(o.totalWithDelivery || o.total || 0), 0);
+
+                const productCount = {};
+                orders.forEach(o => (Array.isArray(o.items) ? o.items : []).forEach(i => {
+                    const name = i.name || i.producto || i.title || 'Producto';
+                    productCount[name] = (productCount[name] || 0) + Number(i.qty || i.cantidad || 1);
+                }));
+                const topProduct = Object.entries(productCount).sort((a,b) => b[1]-a[1])[0]?.[0] || 'Sin datos';
+                const topUser = users.slice().sort((a,b) => Number(b.puntos_historicos || b.puntosHistoricos || b.pointsHistorical || b.puntos || 0) - Number(a.puntos_historicos || a.puntosHistoricos || a.pointsHistorical || a.puntos || 0))[0];
+                const recentOrders = orders.slice().sort((a,b) => new Date(b.createdAt || b.created_at || 0) - new Date(a.createdAt || a.created_at || 0)).slice(0, 5);
+                const recentRedeems = redeems.slice().sort((a,b) => new Date(b.createdAt || b.created_at || 0) - new Date(a.createdAt || a.created_at || 0)).slice(0, 4);
+
+                container.innerHTML = `
+                    ${[...hardFailures, ...softFailures].length ? `<div class="mb-5 space-y-3">${[...hardFailures, ...softFailures].map(r => window.renderFirestorePermissionHelp?.(r.error, r.label) || '').join('')}</div>` : ''}
+                    <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-6">
+                        ${window.adminMetricCard('En proceso', inProcess, 'clock', 'pink')}
+                        ${window.adminMetricCard('Confirmados', confirmed, 'check-circle', 'green')}
+                        ${window.adminMetricCard('Completados', completed, 'package-check', 'purple')}
+                        ${window.adminMetricCard('Clientes', users.length, 'users', 'purple')}
+                        ${window.adminMetricCard('Canjes pendientes', pendingRedeems, 'gift', 'pink')}
+                        ${window.adminMetricCard('Ventas completadas', '$' + totalCompleted.toFixed(2), 'trending-up', 'green')}
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
+                        <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-5 shadow-sm">
+                            <p class="text-[10px] font-black uppercase tracking-widest text-purple/50 mb-1">Producto más pedido</p>
+                            <h3 class="text-xl font-black text-purple-dark dark:text-white">${window.escapeHTML(topProduct)}</h3>
+                        </div>
+                        <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-5 shadow-sm">
+                            <p class="text-[10px] font-black uppercase tracking-widest text-purple/50 mb-1">Cliente con más puntos</p>
+                            <h3 class="text-xl font-black text-purple-dark dark:text-white">${window.escapeHTML(topUser?.nombre || topUser?.displayName || topUser?.email || 'Sin datos')}</h3>
+                        </div>
+                        <div class="bg-green/10 rounded-3xl border border-green/20 p-5 shadow-sm">
+                            <p class="text-[10px] font-black uppercase tracking-widest text-green-dark mb-1">Acción sugerida</p>
+                            <h3 class="text-base font-black text-purple-dark dark:text-white">Revisar pedidos en proceso y enviar nota de entrega.</h3>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-5 shadow-sm">
+                            <div class="flex items-center justify-between mb-4"><h3 class="text-sm font-black text-purple-dark dark:text-white uppercase tracking-widest">Pedidos recientes</h3><button onclick="window.switchAdminTab('pedidos')" class="text-[10px] font-black text-pink uppercase">Gestionar</button></div>
+                            <div class="space-y-3">${recentOrders.length ? recentOrders.map(o => window.buildAdminMiniOrder ? window.buildAdminMiniOrder(o) : `<div>${window.escapeHTML(o.id || 'Pedido')}</div>`).join('') : window.adminEmptyState('Sin pedidos', 'Cuando entren pedidos aparecerán aquí.', 'shopping-bag')}</div>
+                        </div>
+                        <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-5 shadow-sm">
+                            <div class="flex items-center justify-between mb-4"><h3 class="text-sm font-black text-purple-dark dark:text-white uppercase tracking-widest">Canjes recientes</h3><button onclick="window.switchAdminTab('canjes')" class="text-[10px] font-black text-pink uppercase">Gestionar</button></div>
+                            <div class="space-y-3">${recentRedeems.length ? recentRedeems.map(r => window.buildAdminRedeemMini ? window.buildAdminRedeemMini(r) : `<div>${window.escapeHTML(r.id || 'Canje')}</div>`).join('') : window.adminEmptyState('Sin canjes pendientes', 'Las solicitudes de puntos aparecerán aquí.', 'gift')}</div>
+                        </div>
+                    </div>`;
+                window.refreshIcons?.(container);
+            } catch(error) {
+                clearTimeout(watchdog);
+                console.error('Milkarf admin: resumen falló fuera de consultas:', error);
+                container.innerHTML = window.renderAdminSummaryFallback([{ ok: false, label: 'resumen', items: [], error }]);
+                window.refreshIcons?.(container);
+            }
+        };
+
         window.addEventListener('DOMContentLoaded', () => {
             if (typeof window.refreshIcons === 'function') window.refreshIcons();
             window.setMaxBirthdayDates();
