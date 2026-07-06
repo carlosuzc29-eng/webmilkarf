@@ -1423,10 +1423,10 @@
                         </div>
                     </div>
 
-                    <button id="btn-finalizar-pedido" onclick="window.finalizarPedido()" class="w-full flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20ba59] text-white font-extrabold text-lg py-5 rounded-[1.25rem] shadow-xl shadow-green/20 hover:shadow-glow-green transition-all active:scale-95 group">
+                    <a id="btn-finalizar-pedido" href="#" target="_blank" rel="noopener noreferrer" onclick="return window.finalizarPedido(event)" class="w-full flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20ba59] text-white font-extrabold text-lg py-5 rounded-[1.25rem] shadow-xl shadow-green/20 hover:shadow-glow-green transition-all active:scale-95 group">
                         <i data-lucide="send" class="w-6 h-6 shrink-0 group-hover:translate-x-1 transition-transform"></i>
                         Pedir por WhatsApp
-                    </button>
+                    </a>
 
                     <button id="btn-ver-mis-pedidos" onclick="window.navigateTo('view-dashboard'); window.startUserOrdersListener(true);" class="hidden w-full flex items-center justify-center gap-2 bg-white dark:bg-darkcard border border-green/30 text-green-dark dark:text-green font-extrabold text-sm py-3.5 rounded-xl shadow-sm hover:bg-green/10 transition-all active:scale-95">
                         <i data-lucide="clipboard-check" class="w-4 h-4"></i> Ver estado de mi pedido
@@ -2107,32 +2107,88 @@
                 .trim();
         };
 
-        window.buildWhatsAppUrl = function(message, phone = window.WA_NUMBER) {
-            const cleanPhone = window.normalizePhone ? window.normalizePhone(phone || window.WA_NUMBER) : String(phone || window.WA_NUMBER || '').replace(/\D/g, '');
-            return 'https://wa.me/' + cleanPhone + '?text=' + encodeURIComponent(window.sanitizeWhatsAppMessage(message));
+        window.isMobileDevice = function() {
+            return /Android|iPhone|iPad|iPod|Mobile|Instagram|FBAN|FBAV/i.test(navigator.userAgent || '');
         };
 
-        window.openWhatsAppMessage = function(message, phone = window.WA_NUMBER) {
-            const url = window.buildWhatsAppUrl(message, phone);
-            const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+        window.buildWhatsAppLinks = function(message, phone = window.WA_NUMBER) {
+            const cleanPhone = window.normalizePhone ? window.normalizePhone(phone || window.WA_NUMBER) : String(phone || window.WA_NUMBER || '').replace(/\D/g, '');
+            const cleanMessage = window.sanitizeWhatsAppMessage ? window.sanitizeWhatsAppMessage(message || '') : String(message || '').trim();
+            const encoded = encodeURIComponent(cleanMessage);
+            const phonePart = cleanPhone ? `phone=${cleanPhone}&` : '';
+            return {
+                phone: cleanPhone,
+                message: cleanMessage,
+                app: `whatsapp://send?${phonePart}text=${encoded}`,
+                api: `https://api.whatsapp.com/send?${phonePart}text=${encoded}`,
+                wa: cleanPhone ? `https://wa.me/${cleanPhone}?text=${encoded}` : `https://wa.me/?text=${encoded}`,
+                web: cleanPhone ? `https://web.whatsapp.com/send?phone=${cleanPhone}&text=${encoded}` : `https://web.whatsapp.com/send?text=${encoded}`
+            };
+        };
+
+        window.buildWhatsAppUrl = function(message, phone = window.WA_NUMBER) {
+            return window.buildWhatsAppLinks(message, phone).api;
+        };
+
+        window.showWhatsAppManualFallback = function(url) {
+            if(!url) return;
+            let fallback = document.getElementById('whatsapp-manual-fallback');
+            if(!fallback) {
+                fallback = document.createElement('div');
+                fallback.id = 'whatsapp-manual-fallback';
+                fallback.className = 'fixed left-4 right-4 bottom-24 md:left-auto md:right-6 md:bottom-6 md:w-[360px] z-[1200] bg-white dark:bg-darkcard border border-green/30 rounded-2xl shadow-2xl p-4 text-left';
+                fallback.innerHTML = `
+                    <button type="button" aria-label="Cerrar" class="absolute top-3 right-3 text-gray-400 hover:text-pink" onclick="this.closest('#whatsapp-manual-fallback')?.remove()"><i data-lucide="x" class="w-4 h-4"></i></button>
+                    <p class="text-sm font-black text-purple-dark dark:text-white pr-6">No se abrió WhatsApp automáticamente.</p>
+                    <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Toca el botón para continuar con la atención en WhatsApp.</p>
+                    <a id="whatsapp-manual-fallback-link" class="mt-3 flex items-center justify-center gap-2 w-full bg-[#25D366] text-white font-black text-xs uppercase tracking-widest py-3 rounded-xl" target="_blank" rel="noopener noreferrer">Abrir WhatsApp</a>`;
+                document.body.appendChild(fallback);
+            }
+            const link = fallback.querySelector('#whatsapp-manual-fallback-link');
+            if(link) link.href = url;
+            window.refreshIcons?.();
+            setTimeout(() => fallback?.remove(), 12000);
+        };
+
+        window.openWhatsAppMessage = function(message, phone = window.WA_NUMBER, options = {}) {
+            const links = window.buildWhatsAppLinks(message, phone);
+            const isMobile = window.isMobileDevice?.() || false;
+            const mainUrl = isMobile ? links.api : links.web;
+            let opened = false;
             try {
                 if(isMobile) {
-                    // En móviles es más confiable navegar directamente en el mismo gesto del usuario.
-                    window.location.href = url;
-                    return;
+                    // En celulares y navegadores internos, la navegación directa desde el gesto del usuario es lo más confiable.
+                    window.location.assign(mainUrl);
+                    opened = true;
+                } else {
+                    const a = document.createElement('a');
+                    a.href = mainUrl;
+                    a.target = '_blank';
+                    a.rel = 'noopener noreferrer';
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    opened = true;
+                    setTimeout(() => a.remove(), 800);
                 }
-                const a = document.createElement('a');
-                a.href = url;
-                a.target = '_blank';
-                a.rel = 'noopener noreferrer';
-                a.style.display = 'none';
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(() => a.remove(), 600);
             } catch(error) {
-                const opened = window.open(url, '_blank', 'noopener,noreferrer');
-                if(!opened) window.location.href = url;
+                try {
+                    const win = window.open(mainUrl, '_blank', 'noopener,noreferrer');
+                    opened = !!win;
+                    if(!opened && isMobile) window.location.href = links.wa;
+                } catch(e) {
+                    try { window.location.href = links.wa; opened = true; } catch(_) {}
+                }
             }
+
+            if(options.showFallback !== false) {
+                setTimeout(() => {
+                    if(!opened || document.visibilityState === 'visible') {
+                        window.showWhatsAppManualFallback?.(links.api);
+                    }
+                }, options.fallbackDelay || 1400);
+            }
+            return links.api;
         };
 
         window.getWhatsAppTemplate = function(type = 'general', data = {}) {
@@ -5881,8 +5937,9 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             );
         };
 
-        window.finalizarPedido = function() {
-            if (!window.cart.length) return;
+        window.finalizarPedido = function(event) {
+            if(event) event.preventDefault();
+            if (!window.cart.length) { window.showToast?.('Agrega productos antes de pedir por WhatsApp.'); return false; }
 
             const tot = window.cart.reduce((s,i) => s + (i.price*i.qty), 0);
             const discountApplied = !!window.descuentoAplicado;
@@ -5928,15 +5985,20 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 localOnly: true
             };
 
-            // Registrar visualmente el pedido antes de salir a WhatsApp para que el usuario vea estado al volver.
+            // Guardar copia local antes de abrir WhatsApp para que el estado aparezca al volver a la web.
             window.cacheUserOrderLocal?.(pendingOrderForCache);
-            window.renderUserOrders?.(window.getLocalUserOrders?.() || [pendingOrderForCache]);
-            window.actualizarUIAuth?.();
-            window.showCartPostOrderState?.(null);
-            window.showToast('Tu pedido quedó en proceso. Continúa la atención por WhatsApp.', 'success');
+            window.queuePendingOrderForSync?.(pendingOrderForCache);
 
             // Apertura inmediata y directa para evitar bloqueos de navegadores móviles.
-            window.openWhatsAppMessage(msg);
+            window.openWhatsAppMessage(msg, window.WA_NUMBER, { showFallback: true, directGesture: true });
+
+            // Actualización visual no bloqueante posterior al gesto principal.
+            setTimeout(() => {
+                window.renderUserOrders?.(window.getLocalUserOrders?.() || [pendingOrderForCache]);
+                window.actualizarUIAuth?.();
+                window.showCartPostOrderState?.(null);
+                window.showToast('Tu pedido quedó en proceso. Continúa la atención por WhatsApp.', 'success');
+            }, 80);
 
             // Guardado no bloqueante: no debe retrasar la apertura de WhatsApp.
             void (async () => {
@@ -5979,8 +6041,8 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                             selectedPet: window.state.nombreMascota || '',
                             createdAt
                         };
-                        const orderDoc = await addDoc(window.getOrdersCollectionRef(), orderData);
-                        createdOrderId = orderDoc.id;
+                        await setDoc(window.getOrderDocRef(localOrderId), { ...orderData, localId: localOrderId }, { merge: true });
+                        createdOrderId = localOrderId;
                         window.lastOrderId = createdOrderId;
                         try { localStorage.setItem('milkarf_last_order_id', createdOrderId); } catch(e){}
                         pendingOrderForCache.id = createdOrderId;
@@ -6836,14 +6898,180 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             }, true);
         };
 
+
+        // =========================================================================================
+        // NAVEGACIÓN SPA CON HISTORIAL + SINCRONIZACIÓN PENDIENTE + WHATSAPP MÓVIL
+        // =========================================================================================
+        window.VIEW_ROUTES = {
+            'view-home': '#inicio',
+            'view-mision': '#mision',
+            'view-calc': '#calculadora',
+            'view-perros': '#menu-perros',
+            'view-gatos': '#menu-gatos',
+            'view-snacks': '#snacks',
+            'view-faq': '#guia-natural',
+            'view-dashboard': '#perfil',
+            'view-redeems': '#canje-puntos',
+            'view-cart': '#carrito',
+            'view-admin': '#admin'
+        };
+        window.ROUTE_VIEWS = Object.fromEntries(Object.entries(window.VIEW_ROUTES).map(([view, hash]) => [hash, view]));
+
+        window.getActiveViewId = function() {
+            return document.querySelector('.view.active')?.id || 'view-home';
+        };
+
+        window.getViewFromHash = function(hash = window.location.hash) {
+            const clean = hash || '#inicio';
+            return window.ROUTE_VIEWS?.[clean] || 'view-home';
+        };
+
+        window.closeTopLayerIfNeeded = function() {
+            if(window.menuOpen) { window.forceCloseMenu?.(); return true; }
+            const authMenu = document.getElementById('auth-dropdown-menu');
+            if(authMenu && !authMenu.classList.contains('hidden')) {
+                authMenu.classList.remove('opacity-100', 'scale-100');
+                authMenu.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => authMenu.classList.add('hidden'), 120);
+                return true;
+            }
+            const closers = [
+                ['modal-delivery-note', window.cerrarDeliveryNote],
+                ['modal-admin-canje', window.cerrarModalAdminCanje],
+                ['modal-admin-login', window.cerrarModalAdmin],
+                ['modal-descuento', window.cerrarModalDescuento],
+                ['modal-auth', window.cerrarModalAuth],
+                ['modal-bienvenida', window.cerrarModalBienvenida]
+            ];
+            for(const [id, closer] of closers) {
+                const modal = document.getElementById(id);
+                if(modal && !modal.classList.contains('hidden')) {
+                    if(typeof closer === 'function') closer();
+                    else { modal.classList.add('hidden', 'opacity-0'); modal.classList.remove('flex'); }
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        const __milkarfNavigateCoreForHistory = window.navigateTo;
+        window.navigateTo = function(targetId, options = {}) {
+            const opts = { pushHistory: true, replaceHistory: false, fromPopState: false, ...options };
+            const target = document.getElementById(targetId);
+            if(!target || !target.classList.contains('view')) {
+                console.warn('Vista no encontrada para navegación:', targetId);
+                targetId = 'view-home';
+            }
+            const currentView = window.getActiveViewId();
+            if(currentView === targetId) {
+                if(window.menuOpen) window.forceCloseMenu?.();
+                window.refreshMobileBottomNav?.(targetId);
+                if(opts.replaceHistory) {
+                    try { history.replaceState({ view: targetId }, '', window.VIEW_ROUTES[targetId] || '#inicio'); } catch(e) {}
+                }
+                return;
+            }
+            const result = __milkarfNavigateCoreForHistory?.(targetId);
+            window.refreshMobileBottomNav?.(targetId);
+            try {
+                const route = window.VIEW_ROUTES[targetId] || '#inicio';
+                if(opts.replaceHistory) history.replaceState({ view: targetId }, '', route);
+                else if(opts.pushHistory && !opts.fromPopState) history.pushState({ view: targetId }, '', route);
+            } catch(error) { console.warn('No se pudo actualizar historial:', error); }
+            return result;
+        };
+
+        window.initHistoryNavigation = function() {
+            if(window.__milkarf_history_ready) return;
+            window.__milkarf_history_ready = true;
+            const initialView = window.getViewFromHash(window.location.hash);
+            window.navigateTo(initialView, { pushHistory: false, replaceHistory: true });
+            window.addEventListener('popstate', (event) => {
+                const activeNow = window.getActiveViewId();
+                if(window.closeTopLayerIfNeeded?.()) {
+                    try { history.pushState({ view: activeNow }, '', window.VIEW_ROUTES[activeNow] || '#inicio'); } catch(e) {}
+                    return;
+                }
+                const targetView = event.state?.view || window.getViewFromHash(window.location.hash) || 'view-home';
+                window.navigateTo(targetView, { pushHistory: false, fromPopState: true });
+            });
+        };
+
+        window.refreshCheckoutWhatsAppLink = function() {
+            const btn = document.getElementById('btn-finalizar-pedido');
+            if(!btn) return;
+            if(!window.cart || !window.cart.length) { btn.setAttribute('href', '#'); return; }
+            try {
+                const tot = window.cart.reduce((s,i) => s + (Number(i.price || 0) * Number(i.qty || 0)), 0);
+                const discountApplied = !!window.descuentoAplicado;
+                const finalTot = discountApplied ? tot * 0.8 : tot;
+                const msg = window.getWhatsAppTemplate('newOrder', {
+                    items: window.cart.map(i => ({ name: i.name, weight: i.weight, qty: i.qty, forPet: i.forPet || '' })),
+                    subtotal: tot,
+                    discountApplied,
+                    discountAmount: discountApplied ? (tot * 0.2) : 0,
+                    finalTotal: finalTot,
+                    location: window.userLocation || ''
+                });
+                btn.setAttribute('href', window.buildWhatsAppUrl(msg, window.WA_NUMBER));
+            } catch(error) { btn.setAttribute('href', '#'); }
+        };
+
+        const __milkarfUpdateCartForWhatsApp = window.updateCart;
+        if(typeof __milkarfUpdateCartForWhatsApp === 'function') {
+            window.updateCart = function(...args) {
+                const result = __milkarfUpdateCartForWhatsApp.apply(this, args);
+                window.refreshCheckoutWhatsAppLink?.();
+                return result;
+            };
+        }
+
+        window.PENDING_ORDER_SYNC_KEY = 'milkarf_pending_orders_to_sync';
+        window.queuePendingOrderForSync = function(order) {
+            if(!order || !order.id) return;
+            try {
+                const pending = JSON.parse(localStorage.getItem(window.PENDING_ORDER_SYNC_KEY) || '[]');
+                const filtered = pending.filter(o => o.id !== order.id);
+                filtered.unshift({ ...order, queuedAt: new Date().toISOString(), localId: order.localId || order.id });
+                localStorage.setItem(window.PENDING_ORDER_SYNC_KEY, JSON.stringify(filtered.slice(0, 10)));
+            } catch(error) { console.warn('No se pudo guardar pedido pendiente de sincronizar:', error); }
+        };
+
+        window.syncPendingOrders = async function() {
+            if(!db || !window.getOrderDocRef) return;
+            let pending = [];
+            try { pending = JSON.parse(localStorage.getItem(window.PENDING_ORDER_SYNC_KEY) || '[]'); } catch(e) { pending = []; }
+            if(!pending.length) return;
+            const remaining = [];
+            for(const order of pending) {
+                try {
+                    const orderId = order.localId || order.id || ('local_' + Date.now());
+                    const cleanOrder = { ...order, localOnly: false, localId: orderId };
+                    delete cleanOrder.id;
+                    await setDoc(window.getOrderDocRef(orderId), cleanOrder, { merge: true });
+                    window.cacheUserOrderLocal?.({ ...order, id: orderId, localOnly: false });
+                } catch(error) {
+                    console.warn('Pedido pendiente no sincronizado aún:', error);
+                    remaining.push(order);
+                }
+            }
+            try { localStorage.setItem(window.PENDING_ORDER_SYNC_KEY, JSON.stringify(remaining)); } catch(e) {}
+            if(pending.length !== remaining.length) window.startUserOrdersListener?.();
+        };
+
+        window.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') window.syncPendingOrders?.(); });
+        window.addEventListener('online', () => window.syncPendingOrders?.());
+
         window.addEventListener('DOMContentLoaded', () => {
             if (typeof window.refreshIcons === 'function') window.refreshIcons();
             window.setMaxBirthdayDates();
             initApp();
-            window.repairViewState?.('view-home');
             window.initFastMobileNav?.();
+            window.initHistoryNavigation?.();
+            window.syncPendingOrders?.();
+            window.refreshCheckoutWhatsAppLink?.();
             window.initPreloader();
-            setTimeout(() => window.repairViewState?.('view-home'), 1200);
+            setTimeout(() => window.repairViewState?.(window.getActiveViewId?.() || 'view-home'), 1200);
         });
     </script>
 
