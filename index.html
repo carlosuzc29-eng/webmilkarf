@@ -205,7 +205,7 @@
                     <div id="top-pets-icons" class="text-[10px] sm:text-xs bg-purple/10 dark:bg-purple/20 px-2 py-1 rounded-lg border border-purple/10 flex items-center gap-0.5">🐾</div>
                     <div class="flex flex-col items-start text-left">
                         <span class="text-[10px] leading-none truncate max-w-[60px] sm:max-w-[90px]" id="top-auth-text">Usuario</span>
-                        <span class="text-[9px] text-green font-black leading-none mt-1" id="top-auth-pts">0 pts</span>
+                        <span class="text-[9px] text-green font-black leading-none mt-1" id="top-auth-pts">0 ptos</span>
                     </div>
                 </div>
                 <i data-lucide="chevron-down" class="w-3 h-3 ml-1 opacity-70"></i>
@@ -227,7 +227,7 @@
                         <p id="dropdown-user-name" class="text-sm font-black text-purple-dark dark:text-white truncate mt-0.5">Usuario</p>
                     </div>
                     <button class="w-full text-left px-4 py-3 text-sm font-bold text-purple-dark dark:text-white hover:bg-purple/5 transition-colors flex items-center" data-action="go-dashboard">
-                        <i data-lucide="layout-dashboard" class="w-4 h-4 inline-block mr-3 text-green"></i> <span class="flex-1">Mi Núcleo & Puntos</span>
+                        <i data-lucide="layout-dashboard" class="w-4 h-4 inline-block mr-3 text-green"></i> <span class="flex-1">Mis mascotas y Milkarf Points</span>
                     </button>
                     <button class="w-full text-left px-4 py-3 text-sm font-bold text-pink hover:bg-pink/5 transition-colors flex items-center" data-action="logout">
                         <i data-lucide="log-out" class="w-4 h-4 inline-block mr-3"></i> Cerrar Sesión
@@ -251,13 +251,14 @@
         <!-- MENÚ PRINCIPAL (CLIENTES) -->
         <ul id="main-nav-links" class="nav-links space-y-6 text-center">
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-home">Inicio</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-mision">Misión</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-mision">Misión Milkarf</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-calc">Calculadora Nutricional</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-perros">Línea Perros</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-gatos">Línea Gatos</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-snacks">Snacks</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-pink hover:text-white tracking-wider uppercase block" data-target="view-dashboard">Mi Perfil 🎁</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-faq">Guía de Transición</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-pink hover:text-white tracking-wider uppercase block" data-target="view-dashboard">Mis mascotas y Milkarf Points</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-green hover:text-white tracking-wider uppercase block" data-target="view-redeems">Canje de puntos</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-faq">Guía para empezar natural</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-green hover:text-white tracking-wider uppercase block flex items-center gap-3 justify-center" data-target="view-cart">🛒 Mi Carrito</a></li>
         </ul>
         
@@ -292,7 +293,7 @@
                     </div>
 
                     <button class="nav-btn mb-8 flex items-center gap-3 bg-white dark:bg-darkcard border border-purple-border dark:border-purple/30 px-6 py-3.5 rounded-full text-purple dark:text-white hover:text-pink hover:border-pink/40 font-extrabold text-sm tracking-wide shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5" data-target="view-mision">
-                        <i data-lucide="sparkles" class="w-4 h-4 text-pink"></i> Nuestra misión
+                        <i data-lucide="sparkles" class="w-4 h-4 text-pink"></i> Misión Milkarf
                     </button>
 
                     <div class="nav-card w-full max-w-2xl bg-gradient-to-br from-purple to-purple-dark dark:from-[#2e1060] dark:to-[#1a0836] text-white rounded-3xl p-6 md:p-8 flex items-center justify-between shadow-2xl border border-white/10 transition-all duration-300 select-none cursor-pointer mb-8" data-target="view-calc">
@@ -334,7 +335,7 @@
                             <div class="absolute inset-0 bg-gradient-to-t from-pink-dark/95 via-pink/50 dark:from-[#180e29]/95 dark:via-[#180e29]/50 to-transparent z-10"></div>
                             <div class="absolute bottom-6 left-6 z-20 text-left">
                                 <span class="text-[10px] font-black text-green tracking-wider uppercase block mb-1">Filosofía</span>
-                                <h2 class="text-2xl font-black text-white leading-tight">Guía de<br>Transición</h2>
+                                <h2 class="text-2xl font-black text-white leading-tight">Guía para<br>empezar natural</h2>
                             </div>
                         </div>
 
@@ -380,104 +381,38 @@
                     <button class="nav-btn flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300 mx-auto md:mx-0" data-target="view-home">
                         <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Inicio
                     </button>
-                    <h2 class="text-3xl md:text-4xl font-black text-purple-dark dark:text-white mt-4">Nuestra Esencia</h2>
-                    <p class="text-sm font-bold text-pink uppercase tracking-widest mt-1">El origen de la salud animal</p>
+                    <h2 class="text-3xl md:text-4xl font-black text-purple-dark dark:text-white mt-4">Misión Milkarf</h2>
+                    <p class="text-sm font-bold text-pink uppercase tracking-widest mt-1">Alimentar con intención, ciencia y amor</p>
                 </div>
 
                 <div class="max-w-2xl w-full space-y-6">
                     <div class="rounded-3xl p-6 md:p-8 bg-gradient-to-br from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#1a0836] text-white shadow-xl relative overflow-hidden text-left">
                         <div class="absolute -right-8 -bottom-8 text-white/5"><i data-lucide="heart" class="w-40 h-40"></i></div>
-                        <h3 class="text-green text-xl md:text-2xl font-black mb-4">¿Quiénes Somos?</h3>
+                        <h3 class="text-green text-xl md:text-2xl font-black mb-4">¿Quiénes somos?</h3>
                         <p class="text-purple-light/95 dark:text-gray-300 text-sm md:text-base leading-relaxed relative z-10">
-                            Nacimos bajo una convicción clara: darles a nuestros consentidos lo mejor para su bienestar. Las mascotas merecen una nutrición adaptada a su naturaleza, no a la conveniencia industrial. De la mano de veterinarios nutricionistas, creamos recetas con ingredientes 100% frescos, crudos y biológicamente correctos. <br><br>
-                            Nuestra misión es transformar la salud y prolongar la felicidad de tu mascota a través de nutrición natural, real y completa, <strong class="text-green">como su cuerpo lo pide.</strong>
+                            En Milkarf creemos que las mascotas merecen una alimentación real, natural y adaptada a su cuerpo. Nacimos para ofrecer una alternativa más consciente para tutores que quieren cuidar a sus peludos desde lo que comen todos los días. <br><br>
+                            Nuestra misión es acompañar su bienestar con fórmulas completas, ingredientes seleccionados y una guía responsable para que cada transición sea segura, progresiva y personalizada.
                         </p>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
                         <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-2xl p-6 shadow-md">
                             <div class="w-10 h-10 rounded-full bg-pink/10 flex items-center justify-center text-pink mb-3"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
-                            <h4 class="text-purple-dark dark:text-white font-extrabold text-sm mb-1">Nutrición Científica</h4>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">Diseñado estrictamente bajo las normativas nutricionales globales del NRC para garantizar un balance biológico perfecto.</p>
+                            <h4 class="text-purple-dark dark:text-white font-extrabold text-sm mb-1">Criterio nutricional</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Formulamos bajo criterios nutricionales de referencia como NRC/FEDIAF para construir una alimentación más completa, equilibrada y responsable.</p>
                         </div>
                         <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-2xl p-6 shadow-md">
                             <div class="w-10 h-10 rounded-full bg-green/10 flex items-center justify-center text-green-dark dark:text-green mb-3"><i data-lucide="leaf" class="w-5 h-5"></i></div>
-                            <h4 class="text-purple-dark dark:text-white font-extrabold text-sm mb-1">Ingredientes Locales Reales</h4>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">Utilizamos únicamente carne de res premium, pollo de granja, vegetales frescos y aceites de primera prensa en frío.</p>
+                            <h4 class="text-purple-dark dark:text-white font-extrabold text-sm mb-1">Ingredientes reales</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Trabajamos con fuentes animales, vegetales, semillas, vitaminas y minerales seleccionados para acompañar la nutrición diaria de cada mascota.</p>
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 md:p-8 shadow-xl text-left edu-card">
-                        <div class="flex items-start gap-4 mb-5">
-                            <div class="w-12 h-12 rounded-2xl bg-green/15 flex items-center justify-center text-green-dark dark:text-green shrink-0"><i data-lucide="sprout" class="w-6 h-6"></i></div>
-                            <div>
-                                <p class="text-[10px] font-black text-pink uppercase tracking-widest mb-1">Educación nutricional</p>
-                                <h3 class="text-2xl font-black text-purple-dark dark:text-white">¿Por qué elegir nutrición natural?</h3>
-                            </div>
-                        </div>
-                        <p class="text-sm md:text-base leading-relaxed text-gray-600 dark:text-gray-300 font-medium mb-6">
-                            Cada mascota tiene necesidades diferentes. Su edad, peso, nivel de actividad y condición corporal influyen en la cantidad y calidad de nutrientes que necesita. En Milkarf trabajamos con ingredientes reales y fórmulas pensadas para acompañar su bienestar desde una alimentación más consciente, completa y adaptada a su naturaleza.
-                        </p>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div class="rounded-2xl bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Ingredientes reales</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Carnes, vísceras, vegetales, semillas, vitaminas y minerales.</p></div>
-                            <div class="rounded-2xl bg-green-light dark:bg-green/10 border border-green/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Porciones personalizadas</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Según peso, etapa y nivel de actividad.</p></div>
-                            <div class="rounded-2xl bg-pink-light dark:bg-pink/10 border border-pink/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Balance nutricional</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">No es solo mezclar alimentos: es formular con propósito.</p></div>
-                            <div class="rounded-2xl bg-white dark:bg-darkbg border border-purple-border/40 dark:border-purple/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Transición acompañada</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">El cambio debe hacerse de forma progresiva y responsable.</p></div>
-                        </div>
+                    <div class="bg-green/10 dark:bg-green/5 border border-green/20 rounded-3xl p-5 text-left">
+                        <p class="text-sm text-purple-dark dark:text-gray-200 font-bold leading-relaxed">Para aprender más sobre nutrición natural, transición, ingredientes y dudas frecuentes, visita la guía educativa de Milkarf.</p>
+                        <button class="nav-btn mt-4 bg-purple hover:bg-pink text-white font-black text-xs uppercase tracking-widest px-5 py-3 rounded-2xl shadow-md" data-target="view-faq">Ir a la guía para empezar natural</button>
                     </div>
-
-                    <div class="bg-gradient-to-br from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#1a0836] rounded-3xl p-6 md:p-8 text-white shadow-xl text-left relative overflow-hidden">
-                        <div class="absolute -right-10 -top-10 text-white/5"><i data-lucide="clipboard-check" class="w-40 h-40"></i></div>
-                        <h3 class="text-green text-2xl font-black mb-3 relative z-10">Natural no significa improvisado</h3>
-                        <p class="text-sm md:text-base leading-relaxed text-purple-light/90 dark:text-gray-300 font-medium mb-6 relative z-10">
-                            Una alimentación natural responsable no se basa en sobras, premios o mezclas al azar. Para que realmente aporte bienestar, debe estar formulada con ingredientes adecuados, proporciones correctas y micronutrientes que ayuden a completar la dieta.
-                        </p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
-                            <div class="rounded-2xl bg-white/10 border border-white/10 p-5">
-                                <h4 class="font-black text-pink-light mb-3 text-sm uppercase tracking-wider">Comida casera sin fórmula</h4>
-                                <ul class="space-y-2 text-xs text-white/80 font-semibold"><li>• Puede ser incompleta.</li><li>• No siempre respeta proporciones.</li><li>• Puede exceder o faltar nutrientes.</li><li>• Depende de intuición.</li></ul>
-                            </div>
-                            <div class="rounded-2xl bg-green/15 border border-green/30 p-5">
-                                <h4 class="font-black text-green mb-3 text-sm uppercase tracking-wider">Nutrición natural formulada</h4>
-                                <ul class="space-y-2 text-xs text-white/85 font-semibold"><li>• Busca cubrir necesidades nutricionales.</li><li>• Considera peso, edad y etapa.</li><li>• Incluye vitaminas y minerales.</li><li>• Se apoya en criterios nutricionales.</li></ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 md:p-8 shadow-xl text-left edu-card">
-                        <div class="flex items-start gap-4 mb-5">
-                            <div class="w-12 h-12 rounded-2xl bg-pink/10 flex items-center justify-center text-pink shrink-0"><i data-lucide="list-checks" class="w-6 h-6"></i></div>
-                            <div>
-                                <p class="text-[10px] font-black text-green-dark dark:text-green uppercase tracking-widest mb-1">Fórmula con intención</p>
-                                <h3 class="text-2xl font-black text-purple-dark dark:text-white">Cada ingrediente tiene una función</h3>
-                            </div>
-                        </div>
-                        <p class="text-sm leading-relaxed text-gray-600 dark:text-gray-300 font-medium mb-5">
-                            En Milkarf cada ingrediente cumple un papel dentro de la fórmula. Combinamos fuentes animales, vegetales y micronutrientes para crear una alimentación más completa y consciente.
-                        </p>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Proteína animal:</strong> <span class="text-gray-600 dark:text-gray-400">ayuda al mantenimiento muscular.</span></div>
-                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Vísceras selectas:</strong> <span class="text-gray-600 dark:text-gray-400">aportan variedad nutricional.</span></div>
-                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Vegetales frescos:</strong> <span class="text-gray-600 dark:text-gray-400">aportan fibra y micronutrientes.</span></div>
-                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Vitaminas y minerales:</strong> <span class="text-gray-600 dark:text-gray-400">ayudan a completar la fórmula.</span></div>
-                        </div>
-                    </div>
-
-                    <div class="bg-green-light dark:bg-green/10 border border-green/20 rounded-3xl p-6 md:p-8 text-left">
-                        <h3 class="text-2xl font-black text-purple-dark dark:text-white mb-3">Nuestro enfoque nutricional</h3>
-                        <p class="text-sm leading-relaxed text-gray-600 dark:text-gray-300 font-medium mb-4">
-                            En Milkarf no creemos en alimentar por moda. Creemos en alimentar con intención: ingredientes reales, raciones calculadas, transición responsable y fórmulas que respetan las necesidades de cada mascota.
-                        </p>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Criterios nutricionales</span>
-                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Ingredientes seleccionados</span>
-                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Porciones adaptadas</span>
-                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Educación para tutores</span>
-                        </div>
-                    </div>
-
                 </div>
-                <!-- ESPACIADOR INFERIOR -->
                 <div class="h-24 w-full shrink-0 pointer-events-none"></div>
             </div>
         </section>
@@ -724,6 +659,22 @@
                     </div>
                 </div>
 
+                <div class="w-full max-w-4xl mb-6 bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/20 rounded-3xl p-5 shadow-sm">
+                    <div class="flex items-start gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-2xl bg-pink/10 text-pink flex items-center justify-center shrink-0"><i data-lucide="package-check" class="w-5 h-5"></i></div>
+                        <div class="text-left">
+                            <p class="text-[10px] font-black uppercase tracking-widest text-green-dark dark:text-green mb-1">Guía orientativa</p>
+                            <h3 class="text-lg font-black text-purple-dark dark:text-white">¿Qué presentación elegir?</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">La presentación ideal depende de la ración diaria. Usa la calculadora para una recomendación personalizada.</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-left">
+                        <div class="rounded-2xl bg-purple/10 dark:bg-purple/20 border border-purple/20 p-4"><p class="text-sm font-black text-purple-dark dark:text-white">250g</p><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Prueba inicial, razas pequeñas o porciones bajas.</p></div>
+                        <div class="rounded-2xl bg-pink/10 dark:bg-pink/10 border border-pink/20 p-4"><p class="text-sm font-black text-purple-dark dark:text-white">550g</p><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Razas medianas o consumo moderado.</p></div>
+                        <div class="rounded-2xl bg-green/10 dark:bg-green/10 border border-green/20 p-4"><p class="text-sm font-black text-purple-dark dark:text-white">850g</p><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Razas grandes, hogares con varias mascotas o pedidos mensuales.</p></div>
+                    </div>
+                </div>
+
                 <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 justify-center mt-4 pb-8">
                     <!-- Producto 1: Pollo -->
                     <div class="bg-white dark:bg-darkcard rounded-3xl overflow-hidden shadow-2xl dark:shadow-purple/10 border border-purple-border/20 dark:border-purple/20 flex flex-col h-full">
@@ -919,7 +870,7 @@
                     <button class="nav-btn flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300" data-target="view-home">
                         <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Inicio
                     </button>
-                    <h2 class="text-3xl font-black text-purple-dark dark:text-white mt-4">Mi Perfil 🎁</h2>
+                    <h2 class="text-3xl font-black text-purple-dark dark:text-white mt-4">Mis mascotas y Milkarf Points</h2>
                 </div>
 
                 <div class="max-w-2xl w-full bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-[2rem] p-6 shadow-xl text-left">
@@ -946,7 +897,7 @@
                                 </div>
                                 <div class="text-right flex flex-col items-end">
                                     <p class="text-[10px] uppercase tracking-wider font-bold opacity-80 mb-0.5">Disponibles</p>
-                                    <p class="text-3xl font-black leading-none"><span id="ben-user-pts">0</span> <span class="text-sm opacity-80">pts</span></p>
+                                    <p class="text-3xl font-black leading-none"><span id="ben-user-pts">0</span> <span class="text-sm opacity-80">ptos</span></p>
                                 </div>
                             </div>
                             <!-- Progress Bar -->
@@ -972,10 +923,10 @@
                         </div>
                     </div>
 
-                    <!-- Núcleo Multiespecies (Mascotas del usuario) -->
+                    <!-- Familia multiespecie (Mascotas del usuario) -->
                     <div class="mt-6 border-t border-purple/10 pt-6">
                         <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-                            <i data-lucide="users" class="w-5 h-5 text-pink"></i> Mi Núcleo Multiespecies
+                            <i data-lucide="users" class="w-5 h-5 text-pink"></i> Mi familia multiespecie
                         </h4>
                         <div id="dashboard-pets-list" class="space-y-3">
                             <p class="text-xs text-gray-500 font-medium">Inicia sesión para ver y registrar a tus mascotas.</p>
@@ -1011,22 +962,17 @@
                         </div>
                         <div id="user-orders-list" class="hidden"></div>
                     </div>
-
-                    <!-- Canje de puntos del usuario -->
+                    <!-- Acceso a canje de puntos -->
                     <div class="mt-6 border-t border-purple/10 pt-6">
-                        <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
-                            <i data-lucide="gift" class="w-5 h-5 text-pink"></i> Canje de Puntos
-                        </h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mb-4">Usa tus puntos disponibles para solicitar productos y beneficios. El canje se envía por WhatsApp y queda registrado en tu perfil.</p>
-                        <div id="redeem-items-list" class="grid grid-cols-1 gap-3">
-                            <p class="text-xs text-gray-500 font-medium">Inicia sesión para ver beneficios disponibles.</p>
-                        </div>
-                        <div class="mt-5 bg-purple-light/70 dark:bg-purple/10 rounded-2xl border border-purple-border/40 dark:border-purple/20 p-4">
-                            <div class="flex items-center justify-between gap-3 mb-3">
-                                <h5 class="text-[10px] font-black uppercase tracking-widest text-purple-dark dark:text-white flex items-center gap-2"><i data-lucide="history" class="w-4 h-4 text-green"></i> Mis canjes recientes</h5>
-                                <button type="button" onclick="window.startUserRedeemsListener(true)" class="text-[9px] font-black text-purple bg-white dark:bg-darkcard border border-purple/20 px-2.5 py-1.5 rounded-lg uppercase tracking-widest">Actualizar</button>
+                        <div class="bg-green/10 dark:bg-green/5 border border-green/25 rounded-3xl p-5 text-left">
+                            <div class="flex items-start gap-3">
+                                <div class="w-11 h-11 rounded-2xl bg-green/20 text-green-dark dark:text-green flex items-center justify-center shrink-0"><i data-lucide="gift" class="w-5 h-5"></i></div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider">Canje de puntos</h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-1">Tus beneficios y solicitudes de canje están en una sección aparte para que tu perfil se mantenga más ordenado.</p>
+                                    <button type="button" onclick="window.navigateTo('view-redeems'); window.renderRedeemItems?.(); window.startUserRedeemsListener?.(true);" class="mt-4 w-full bg-green hover:bg-[#a6b621] text-purple-dark font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl shadow-sm transition-all active:scale-95">Ir a canje de puntos</button>
+                                </div>
                             </div>
-                            <div id="user-redeems-history" class="space-y-2"><p class="text-xs text-gray-500 font-medium">Tus solicitudes de canje aparecerán aquí.</p></div>
                         </div>
                     </div>
 
@@ -1045,9 +991,9 @@
                         <div class="bg-white dark:bg-[#0d0718] p-4 rounded-2xl border border-purple-border/50 dark:border-purple/20 shadow-sm">
                             <h5 class="text-[10px] font-black uppercase tracking-widest text-pink mb-3">Niveles</h5>
                             <div class="space-y-2 text-xs font-bold text-purple-dark dark:text-gray-200">
-                                <p>🐶 Cachorro (0–100 pts): <span class="text-gray-500 dark:text-gray-400 font-semibold">ganas 1 pt por $1</span></p>
-                                <p>💛 Consentido (101–499 pts): <span class="text-gray-500 dark:text-gray-400 font-semibold">ganas 1.25 pt por $1</span></p>
-                                <p>👑 Milkarf VIP (500+ pts): <span class="text-gray-500 dark:text-gray-400 font-semibold">ganas 1.5 pt por $1</span></p>
+                                <p>🐶 Cachorro (0–100 puntos): <span class="text-gray-500 dark:text-gray-400 font-semibold">ganas 1 punto por $1</span></p>
+                                <p>💛 Consentido (101–499 puntos): <span class="text-gray-500 dark:text-gray-400 font-semibold">ganas 1.25 puntos por $1</span></p>
+                                <p>👑 Milkarf VIP (500+ puntos): <span class="text-gray-500 dark:text-gray-400 font-semibold">ganas 1.5 puntos por $1</span></p>
                             </div>
                             <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium leading-relaxed mt-4 bg-purple-light/70 dark:bg-purple/10 p-3 rounded-xl border border-purple-border/40 dark:border-purple/20">Subes de nivel solo con tus compras, y al llegar te quedas ahí para siempre. Luego podrás canjear tus puntos por diferentes productos y sorpresas. Tu nivel se mantiene!</p>
                         </div>
@@ -1077,15 +1023,46 @@
                                 </div>
                             </div>
                         </div>
-
-                        <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider mt-6">¿Cómo sumar más puntos?</h4>
-                        <ul class="text-xs text-gray-500 font-medium space-y-2 list-disc pl-4">
-                            <li><strong>Referido con aval de su veterinario:</strong> Bonus de puntos (activa el canal clínico).</li>
-                            <li><strong>Testimonio con foto antes/después:</strong> Bonus de puntos por ayudarnos a crecer.</li>
-                        </ul>
+                        <div class="bg-green/10 dark:bg-green/5 border border-green/25 rounded-2xl p-4 mt-6">
+                            <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider flex items-center gap-2"><i data-lucide="stethoscope" class="w-4 h-4 text-green-dark dark:text-green"></i> Recomendación veterinaria</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-2">Suma <strong class="text-purple-dark dark:text-white">20 puntos</strong> por recomendación veterinaria validada por el equipo Milkarf. Este beneficio se acredita una sola vez por usuario y se confirma desde administración.</p>
+                        </div>
                     </div>
                 </div>
                 <!-- ESPACIADOR INFERIOR -->
+                <div class="h-24 w-full shrink-0 pointer-events-none"></div>
+            </div>
+        </section>
+
+
+        <!-- VISTA CANJE DE PUNTOS -->
+        <section id="view-redeems" class="view next">
+            <div class="view-wrapper">
+                <div class="max-w-2xl w-full mb-6">
+                    <button class="nav-btn flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300" data-target="view-dashboard">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al perfil
+                    </button>
+                    <h2 class="text-3xl font-black text-purple-dark dark:text-white mt-4">Canje de puntos</h2>
+                    <p class="text-sm font-bold text-pink uppercase tracking-widest mt-1">Beneficios Milkarf para tu familia multiespecie</p>
+                </div>
+                <div class="max-w-2xl w-full bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-[2rem] p-6 shadow-xl text-left">
+                    <div class="mt-6 border-t border-purple/10 pt-6">
+                        <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
+                            <i data-lucide="gift" class="w-5 h-5 text-pink"></i> Canje de Puntos
+                        </h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mb-4">Usa tus puntos disponibles para solicitar productos y beneficios. El canje se envía por WhatsApp y queda registrado en tu perfil.</p>
+                        <div id="redeem-items-list" class="grid grid-cols-1 gap-3">
+                            <p class="text-xs text-gray-500 font-medium">Inicia sesión para ver beneficios disponibles.</p>
+                        </div>
+                        <div class="mt-5 bg-purple-light/70 dark:bg-purple/10 rounded-2xl border border-purple-border/40 dark:border-purple/20 p-4">
+                            <div class="flex items-center justify-between gap-3 mb-3">
+                                <h5 class="text-[10px] font-black uppercase tracking-widest text-purple-dark dark:text-white flex items-center gap-2"><i data-lucide="history" class="w-4 h-4 text-green"></i> Mis canjes recientes</h5>
+                                <button type="button" onclick="window.startUserRedeemsListener(true)" class="text-[9px] font-black text-purple bg-white dark:bg-darkcard border border-purple/20 px-2.5 py-1.5 rounded-lg uppercase tracking-widest">Actualizar</button>
+                            </div>
+                            <div id="user-redeems-history" class="space-y-2"><p class="text-xs text-gray-500 font-medium">Tus solicitudes de canje aparecerán aquí.</p></div>
+                        </div>
+                    </div>
+                </div>
                 <div class="h-24 w-full shrink-0 pointer-events-none"></div>
             </div>
         </section>
@@ -1097,10 +1074,63 @@
                     <button class="nav-btn flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300" data-target="view-home">
                         <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Inicio
                     </button>
-                    <h2 class="text-3xl font-black text-purple-dark dark:text-white mt-4">Transición y FAQ</h2>
+                    <h2 class="text-3xl font-black text-purple-dark dark:text-white mt-4">Guía para empezar natural</h2>
                 </div>
 
                 <div class="max-w-2xl w-full space-y-3 pb-8">
+
+                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 md:p-8 shadow-xl text-left edu-card mb-4">
+                        <div class="flex items-start gap-4 mb-5">
+                            <div class="w-12 h-12 rounded-2xl bg-green/15 flex items-center justify-center text-green-dark dark:text-green shrink-0"><i data-lucide="sprout" class="w-6 h-6"></i></div>
+                            <div>
+                                <p class="text-[10px] font-black text-pink uppercase tracking-widest mb-1">Aprende lo natural</p>
+                                <h3 class="text-2xl font-black text-purple-dark dark:text-white">¿Por qué elegir nutrición natural?</h3>
+                            </div>
+                        </div>
+                        <p class="text-sm md:text-base leading-relaxed text-gray-600 dark:text-gray-300 font-medium mb-6">
+                            Cada mascota tiene necesidades diferentes. Su edad, peso, nivel de actividad y condición corporal influyen en la cantidad y calidad de nutrientes que necesita. En Milkarf trabajamos con ingredientes reales y fórmulas pensadas para acompañar su bienestar desde una alimentación más consciente, completa y adaptada a su naturaleza.
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="rounded-2xl bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Ingredientes reales</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Carnes, vísceras, vegetales, semillas, vitaminas y minerales.</p></div>
+                            <div class="rounded-2xl bg-green-light dark:bg-green/10 border border-green/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Porciones personalizadas</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Según peso, etapa y nivel de actividad.</p></div>
+                            <div class="rounded-2xl bg-pink-light dark:bg-pink/10 border border-pink/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Balance nutricional</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">No es solo mezclar alimentos: es formular con propósito.</p></div>
+                            <div class="rounded-2xl bg-white dark:bg-darkbg border border-purple-border/40 dark:border-purple/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Transición acompañada</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">El cambio debe hacerse de forma progresiva y responsable.</p></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#1a0836] rounded-3xl p-6 md:p-8 text-white shadow-xl text-left relative overflow-hidden mb-4">
+                        <div class="absolute -right-10 -top-10 text-white/5"><i data-lucide="clipboard-check" class="w-40 h-40"></i></div>
+                        <h3 class="text-green text-2xl font-black mb-3 relative z-10">Natural no significa improvisado</h3>
+                        <p class="text-sm md:text-base leading-relaxed text-purple-light/90 dark:text-gray-300 font-medium mb-6 relative z-10">
+                            Una alimentación natural responsable no se basa en sobras, premios o mezclas al azar. Para que realmente aporte bienestar, debe estar formulada con ingredientes adecuados, proporciones correctas y micronutrientes que ayuden a completar la dieta.
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
+                            <div class="rounded-2xl bg-white/10 border border-white/10 p-5"><h4 class="font-black text-pink-light mb-3 text-sm uppercase tracking-wider">Comida casera sin fórmula</h4><ul class="space-y-2 text-xs text-white/80 font-semibold"><li>• Puede ser incompleta.</li><li>• No siempre respeta proporciones.</li><li>• Puede exceder o faltar nutrientes.</li><li>• Depende de intuición.</li></ul></div>
+                            <div class="rounded-2xl bg-green/15 border border-green/30 p-5"><h4 class="font-black text-green mb-3 text-sm uppercase tracking-wider">Nutrición natural formulada</h4><ul class="space-y-2 text-xs text-white/85 font-semibold"><li>• Busca cubrir necesidades nutricionales.</li><li>• Considera peso, edad y etapa.</li><li>• Incluye vitaminas y minerales.</li><li>• Se apoya en criterios nutricionales.</li></ul></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 md:p-8 shadow-xl text-left edu-card mb-4">
+                        <div class="flex items-start gap-4 mb-5"><div class="w-12 h-12 rounded-2xl bg-pink/10 flex items-center justify-center text-pink shrink-0"><i data-lucide="list-checks" class="w-6 h-6"></i></div><div><p class="text-[10px] font-black text-green-dark dark:text-green uppercase tracking-widest mb-1">Fórmula con intención</p><h3 class="text-2xl font-black text-purple-dark dark:text-white">Cada ingrediente tiene una función</h3></div></div>
+                        <p class="text-sm leading-relaxed text-gray-600 dark:text-gray-300 font-medium mb-5">En Milkarf cada ingrediente cumple un papel dentro de la fórmula. Combinamos fuentes animales, vegetales y micronutrientes para crear una alimentación más completa y consciente.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Proteína animal:</strong><p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Ayuda al mantenimiento muscular.</p></div>
+                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Vísceras selectas:</strong><p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Aportan variedad nutricional.</p></div>
+                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Vegetales frescos:</strong><p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Aportan fibra y micronutrientes.</p></div>
+                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Vitaminas y minerales:</strong><p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Ayudan a completar la fórmula.</p></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-green/10 dark:bg-green/5 rounded-3xl p-6 border border-green/20 text-left mb-4">
+                        <h3 class="text-xl font-black text-purple-dark dark:text-white mb-2">Nuestro enfoque nutricional</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 font-semibold leading-relaxed mb-4">En Milkarf no creemos en alimentar por moda. Creemos en alimentar con intención: ingredientes reales, raciones calculadas, transición responsable y fórmulas que respetan las necesidades de cada mascota.</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Criterios NRC/FEDIAF</span>
+                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Ingredientes seleccionados</span>
+                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Porciones adaptadas</span>
+                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Educación para tutores</span>
+                        </div>
+                    </div>
 
                     <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 shadow-xl text-left mb-6">
                         <div class="flex items-start gap-4 mb-5">
@@ -1286,11 +1316,11 @@
                             <h3 class="text-2xl md:text-3xl font-black text-purple-dark dark:text-white leading-tight">Tu pedido quedó en proceso</h3>
                         </div>
                         <p class="text-sm text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">
-                            Gracias por elegir Milkarf. El equipo revisará tu solicitud, confirmará disponibilidad y continuará la atención por WhatsApp.
+                            Gracias por elegir Milkarf. Continúa por WhatsApp para que nuestro equipo confirme disponibilidad, datos de entrega y forma de pago.
                         </p>
                         <div class="bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 rounded-2xl p-4 text-left">
                             <p class="text-[11px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">
-                                Podrás ver este pedido como <b class="text-pink">En proceso</b> en tu perfil hasta que sea confirmado desde administración.
+                                El pedido aparecerá como <b class="text-pink">En proceso</b> en tu perfil. Los puntos se sumarán cuando el equipo lo complete desde administración.
                             </p>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
@@ -1441,9 +1471,9 @@
                 <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">Seleccionar Regalo / Canje</label>
                 <select id="canje-item" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-purple-dark dark:text-white" onchange="document.getElementById('canje-costo').value = this.value;">
                     <option value="" disabled selected>Elige un regalo del catálogo...</option>
-                    <option value="100">Snack de Hígado (100 pts)</option>
-                    <option value="150">Treat Deshidratado (150 pts)</option>
-                    <option value="300">Bolsa 250g Extra (300 pts)</option>
+                    <option value="100">Snack de Hígado (100 puntos)</option>
+                    <option value="150">Treat Deshidratado (150 puntos)</option>
+                    <option value="300">Bolsa 250g Extra (300 puntos)</option>
                     <option value="custom">Otro (Ingreso manual)</option>
                 </select>
                 
@@ -1837,7 +1867,20 @@
         };
 
         window.openWhatsAppMessage = function(message, phone = window.WA_NUMBER) {
-            window.open(window.buildWhatsAppUrl(message, phone), '_blank', 'noopener,noreferrer');
+            const url = window.buildWhatsAppUrl(message, phone);
+            try {
+                const a = document.createElement('a');
+                a.href = url;
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => a.remove(), 600);
+            } catch(error) {
+                const opened = window.open(url, '_blank', 'noopener,noreferrer');
+                if(!opened) window.location.href = url;
+            }
         };
 
         window.getWhatsAppTemplate = function(type = 'general', data = {}) {
@@ -1892,7 +1935,7 @@ Quiero solicitar el canje de mis puntos.
 
 Beneficio: ${data.itemName || 'Beneficio Milkarf'}
 Detalle: ${data.benefit || 'Beneficio disponible'}
-Puntos descontados: ${Number(data.points || 0)} pts
+Puntos descontados: ${Number(data.points || 0)} ptos
 Usuario: ${userName}
 
 Por favor, confirmen disponibilidad y próximos pasos para coordinar la entrega.`;
@@ -1925,7 +1968,7 @@ Si deseas, podemos orientarte con recomendaciones según su perfil.`;
                     return `Hola, te escribimos de Milkarf sobre tu solicitud de canje.
 
 Beneficio solicitado: ${data.itemName || data.benefit || 'Beneficio Milkarf'}
-Puntos utilizados: ${Number(data.points || 0)} pts
+Puntos utilizados: ${Number(data.points || 0)} ptos
 
 Queremos confirmar disponibilidad y coordinar la entrega.`;
 
@@ -2100,6 +2143,10 @@ Queremos confirmar disponibilidad y coordinar la entrega.`;
             window.lastScrollY = 0;
             if (targetId === 'view-calc') {
                 window.prepareCalculatorInputs(true);
+            }
+            if (targetId === 'view-redeems') {
+                window.renderRedeemItems?.();
+                window.startUserRedeemsListener?.(true);
             }
             window.setMaxBirthdayDates();
             if (window.menuOpen) {
@@ -2317,6 +2364,9 @@ Queremos confirmar disponibilidad y coordinar la entrega.`;
             const safeEdad = window.escapeHTML(p.edad || p.etapa || 'Sin etapa registrada');
             const calc = window.getPetCalcData(p);
             const selected = idx === window.selectedDashboardPetIndex;
+            const fotoUrlRaw = String(p.fotoUrl || '').trim();
+            const fotoUrl = /^https?:\/\//i.test(fotoUrlRaw) ? window.escapeHTML(fotoUrlRaw) : '';
+            const avatarContent = fotoUrl ? `<img src="${fotoUrl}" alt="Foto de ${safeName}" class="w-full h-full object-cover rounded-full" loading="lazy" decoding="async" onerror="this.outerHTML='${p.tipo === 'gato' ? '🐱' : '🐶'}'">` : (p.tipo === 'gato' ? '🐱' : '🐶');
             const calcSummary = calc ? `
                 <div class="mt-3 grid grid-cols-3 gap-2">
                     <div class="bg-white dark:bg-darkcard rounded-xl p-3 border border-purple-border/30 text-center"><p class="text-[9px] font-black text-gray-400 uppercase">Diario</p><p class="text-base font-black text-purple-dark dark:text-white">${Number(calc.gramos || 0)}g</p></div>
@@ -2330,7 +2380,7 @@ Queremos confirmar disponibilidad y coordinar la entrega.`;
             return `
                 <div class="rounded-2xl border ${selected ? 'border-green shadow-md shadow-green/10 bg-green/5 dark:bg-green/10' : 'border-purple-border/30 dark:border-purple/20 bg-white dark:bg-darkcard'} p-4 relative overflow-hidden">
                     <div class="flex items-start gap-4">
-                        <button type="button" onclick="window.selectDashboardPet(${idx})" class="w-12 h-12 rounded-full ${selected ? 'bg-green text-purple-dark' : 'bg-purple-light dark:bg-[#0d0718] text-purple dark:text-white'} flex items-center justify-center text-2xl shadow-sm border border-purple/10 shrink-0 active:scale-95" aria-label="Seleccionar mascota">${p.tipo === 'gato' ? '🐱' : '🐶'}</button>
+                        <button type="button" onclick="window.selectDashboardPet(${idx})" class="w-12 h-12 rounded-full ${selected ? 'bg-green text-purple-dark' : 'bg-purple-light dark:bg-[#0d0718] text-purple dark:text-white'} flex items-center justify-center text-2xl shadow-sm border border-purple/10 shrink-0 active:scale-95 overflow-hidden" aria-label="Seleccionar mascota">${avatarContent}</button>
                         <div class="min-w-0 flex-1 pr-9">
                             <div class="flex flex-wrap items-center gap-2">
                                 <h5 class="font-black text-purple-dark dark:text-white text-base truncate">${safeName}</h5>
@@ -2338,14 +2388,51 @@ Queremos confirmar disponibilidad y coordinar la entrega.`;
                             </div>
                             <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-0.5 truncate">${safePeso}kg · ${safeEdad}${p.cumple ? ` · Nac: ${window.escapeHTML(p.cumple)}` : ''}</p>
                             ${calcSummary}
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
-                                <button type="button" onclick="window.cargarMascotaEnCalculadora(${idx})" class="bg-purple hover:bg-pink text-white text-[10px] font-black uppercase tracking-widest rounded-xl py-3 px-3 flex items-center justify-center gap-2 transition-all active:scale-95"><i data-lucide="calculator" class="w-4 h-4"></i> Calcular porción</button>
-                                <button type="button" onclick="window.selectDashboardPet(${idx})" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white text-[10px] font-black uppercase tracking-widest rounded-xl py-3 px-3 flex items-center justify-center gap-2 transition-all active:scale-95"><i data-lucide="check-circle" class="w-4 h-4"></i> Usar para pedido</button>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4">
+                                <button type="button" onclick="window.cargarMascotaEnCalculadora(${idx})" class="bg-purple hover:bg-pink text-white text-[10px] font-black uppercase tracking-widest rounded-xl py-3 px-3 flex items-center justify-center gap-2 transition-all active:scale-95"><i data-lucide="calculator" class="w-4 h-4"></i> Calcular</button>
+                                <button type="button" onclick="window.selectDashboardPet(${idx})" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white text-[10px] font-black uppercase tracking-widest rounded-xl py-3 px-3 flex items-center justify-center gap-2 transition-all active:scale-95"><i data-lucide="check-circle" class="w-4 h-4"></i> Usar</button>
+                                <button type="button" onclick="window.actualizarFotoMascota(${idx})" class="bg-white dark:bg-darkbg border border-purple-border/40 dark:border-purple/20 text-purple dark:text-white text-[10px] font-black uppercase tracking-widest rounded-xl py-3 px-3 flex items-center justify-center gap-2 transition-all active:scale-95"><i data-lucide="camera" class="w-4 h-4"></i> Foto</button>
                             </div>
                         </div>
                     </div>
                     <button type="button" onclick="window.eliminarMascota(${idx})" aria-label="Eliminar mascota" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white dark:bg-darkcard border border-pink/20 text-pink hover:bg-pink hover:text-white flex items-center justify-center transition-all shadow-sm active:scale-95"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                 </div>`;
+        };
+
+
+        window.actualizarFotoMascota = async function(index) {
+            window.vibrate?.(20);
+            if(!window.currentUser || !window.currentUser.data || !db) {
+                window.showToast('Inicia sesión para editar la foto de tu mascota.');
+                return;
+            }
+            const mascotas = Array.isArray(window.currentUser.data.mascotas) ? [...window.currentUser.data.mascotas] : [];
+            const pet = mascotas[index];
+            if(!pet) return;
+            const current = pet.fotoUrl || '';
+            const url = prompt(`Pega el enlace de la foto de ${pet.nombre || 'tu mascota'}.
+
+Debe ser una URL que comience con https://.
+Deja el campo vacío para quitar la foto.`, current);
+            if(url === null) return;
+            const clean = String(url || '').trim();
+            if(clean && !/^https:\/\//i.test(clean)) {
+                window.showToast('La foto debe ser un enlace seguro que comience con https://');
+                return;
+            }
+            try {
+                mascotas[index] = { ...pet, fotoUrl: clean };
+                await setDoc(window.getUserPath(window.currentUser.uid), {
+                    mascotas,
+                    fecha_actualizacion: serverTimestamp()
+                }, { merge: true });
+                window.currentUser.data.mascotas = mascotas;
+                window.actualizarUIAuth?.();
+                window.showToast(clean ? 'Foto de mascota actualizada.' : 'Foto de mascota eliminada.', 'success');
+            } catch(error) {
+                console.error('Error actualizando foto de mascota:', error);
+                window.showToast('No se pudo guardar la foto. Inténtalo de nuevo.');
+            }
         };
 
         window.abrirModalAgregarMascota = function() {
@@ -2496,7 +2583,7 @@ Queremos confirmar disponibilidad y coordinar la entrega.`;
                 if(topText) topText.textContent = primerNombre;
                 
                 if(topPts) {
-                    topPts.textContent = puntosDisp + ' pts';
+                    topPts.textContent = puntosDisp + ' ptos';
                     topPts.classList.remove('hidden');
                 }
 
@@ -2606,7 +2693,7 @@ Queremos confirmar disponibilidad y coordinar la entrega.`;
             const pet = mascotas[index];
             if(!pet) return;
 
-            const ok = confirm(`¿Seguro que deseas eliminar a ${pet.nombre || 'esta mascota'} de tu núcleo?`);
+            const ok = confirm(`¿Seguro que deseas eliminar a ${pet.nombre || 'esta mascota'} de tu familia?`);
             if(!ok) return;
 
             try {
@@ -3504,7 +3591,7 @@ Queremos confirmar disponibilidad y coordinar la entrega.`;
                 const total = typeof o.total === 'number' ? '$' + o.total.toFixed(2) : '';
                 const points = Number(o.pointsAwarded || o.pointsGranted || 0);
                 let helper = 'Pedido recibido. Está pendiente por confirmación del administrador.';
-                if(['confirmado','verificado'].includes(status)) helper = points > 0 ? `Pedido confirmado. Puntos estimados: +${points} pts.` : 'Pedido confirmado por administración.';
+                if(['confirmado','verificado'].includes(status)) helper = points > 0 ? `Pedido confirmado. Puntos estimados: +${points} puntos.` : 'Pedido confirmado por administración.';
                 if(status === 'completado') helper = points > 0 ? `Pedido completado. Sumaste +${points} puntos con esta compra.` : 'Pedido completado por administración.';
                 if(status === 'cancelado') helper = 'Pedido cancelado. Escríbenos si necesitas revisar este pedido.';
                 return `
@@ -3522,7 +3609,7 @@ Queremos confirmar disponibilidad y coordinar la entrega.`;
                         </div>
                         <div class="mt-3 ml-1 bg-purple-light/70 dark:bg-[#0d0718] border border-purple-border/30 dark:border-purple/20 rounded-xl p-3">
                             <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">${window.escapeHTML(helper)}</p>
-                            ${points > 0 ? `<div class="mt-2 inline-flex items-center gap-1 bg-green/15 text-green-dark dark:text-green border border-green/20 rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest"><i data-lucide="sparkles" class="w-3 h-3"></i> +${points} pts</div>` : ''}
+                            ${points > 0 ? `<div class="mt-2 inline-flex items-center gap-1 bg-green/15 text-green-dark dark:text-green border border-green/20 rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest"><i data-lucide="sparkles" class="w-3 h-3"></i> +${points} ptos</div>` : ''}
                         </div>
                     </div>`;
             }).join('');
@@ -3676,10 +3763,10 @@ Queremos confirmar disponibilidad y coordinar la entrega.`;
                         <div class="flex justify-between items-start mb-2">
                             <div class="pr-2 min-w-0">
                                 <p class="font-black text-purple-dark dark:text-white text-sm truncate leading-tight">${email}</p>
-                                <p class="text-[10px] font-bold text-gray-500 mt-1">${levelObj.nombre} (Histórico: ${ptsHist} pts)</p>
+                                <p class="text-[10px] font-bold text-gray-500 mt-1">${levelObj.nombre} (Histórico: ${ptsHist} puntos)</p>
                             </div>
                             <div class="flex flex-col items-end shrink-0 gap-2">
-                                <span class="text-xs font-black text-purple dark:text-white bg-purple-light dark:bg-purple/20 px-3 py-1.5 rounded-xl border border-purple/20 shadow-sm">${ptsDisp} pts</span>
+                                <span class="text-xs font-black text-purple dark:text-white bg-purple-light dark:bg-purple/20 px-3 py-1.5 rounded-xl border border-purple/20 shadow-sm">${ptsDisp} ptos</span>
                             </div>
                         </div>
                         <div class="flex items-center justify-between mb-4 mt-3">
@@ -3838,7 +3925,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             }
         };
 
-        window.abrirModalCanje = function(uid, email, pts) {
+        window.abrirModalCanje = function(uid, email, puntos) {
             if(!window.isAdmin) {
                 window.showToast('Debes iniciar sesión como administrador.');
                 return;
@@ -3922,7 +4009,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 const userRef = window.getUserPath(uid);
                 await setDoc(userRef, { puntos: currentPts - cost }, { merge: true });
                 
-                window.showToast(`¡Éxito! Se descontaron ${cost} pts.`, 'success');
+                window.showToast(`¡Éxito! Se descontaron ${cost} puntos.`, 'success');
                 window.cerrarModalCanje();
                 window.loadAdminUsers(); 
             } catch(e) {
@@ -3949,7 +4036,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                         <div class="text-left min-w-0">
                             <h5 class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(item.name)}</h5>
                             <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-1">${window.escapeHTML(item.benefit)}</p>
-                            <p class="text-[10px] font-black text-pink uppercase tracking-widest mt-2">${item.points} pts</p>
+                            <p class="text-[10px] font-black text-pink uppercase tracking-widest mt-2">${item.points} ptos</p>
                         </div>
                         <button type="button" onclick="window.canjearPuntosUsuario('${item.id}')" class="shrink-0 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 ${canUse ? 'bg-green text-purple-dark hover:bg-[#a6b621]' : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'}" ${canUse ? '' : 'disabled'}>
                             Canjear
@@ -4042,7 +4129,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                     pointsGranted: pointsToGive
                 }, { merge: true });
 
-                window.showToast(`Pedido completado. +${pointsToGive} pts ${isVIP ? '(VIP 1.5x)' : ''}`, 'success');
+                window.showToast(`Pedido completado. +${pointsToGive} ptos ${isVIP ? '(VIP 1.5x)' : ''}`, 'success');
                 if(window.adminCurrentTab === 'resumen') window.loadAdminSummary?.();
             } catch(e) {
                 window.showToast('Error al completar pedido y otorgar puntos.');
@@ -4246,7 +4333,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
 
         window.buildAdminRedeemMini = function(r) {
             return `<div class="rounded-2xl border border-purple-border/30 dark:border-purple/20 bg-purple-light/40 dark:bg-[#0d0718] p-4 text-left">
-                <div class="flex justify-between gap-3"><div><p class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</p><p class="text-[10px] text-gray-500 font-bold mt-1">${window.escapeHTML(r.email || r.userName || 'Cliente')} · ${Number(r.points || 0)} pts</p></div><span class="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg bg-pink/10 text-pink border border-pink/20 h-fit">${window.escapeHTML(r.status || 'solicitado')}</span></div>
+                <div class="flex justify-between gap-3"><div><p class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</p><p class="text-[10px] text-gray-500 font-bold mt-1">${window.escapeHTML(r.email || r.userName || 'Cliente')} · ${Number(r.points || 0)} ptos</p></div><span class="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg bg-pink/10 text-pink border border-pink/20 h-fit">${window.escapeHTML(r.status || 'solicitado')}</span></div>
             </div>`;
         };
 
@@ -4348,7 +4435,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 <div class="absolute top-0 left-0 w-1 h-full ${window.getOrderStatusInfo(status).bar}"></div>
                 <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 pl-2">
                     <div class="min-w-0"><div class="flex items-center gap-2 flex-wrap mb-2">${window.renderStatusBadge(status)}<span class="text-[9px] font-black uppercase tracking-widest text-gray-400">#${window.escapeHTML(o.id.slice(0,8))}</span></div><h4 class="font-black text-purple-dark dark:text-white text-base leading-tight truncate">${window.escapeHTML(o.userName || o.email || 'Usuario Invitado')}</h4><p class="text-[10px] text-gray-500 font-bold mt-1">${window.formatAdminDate(o.createdAt)}</p></div>
-                    <div class="text-left md:text-right shrink-0"><span class="text-[10px] text-gray-400 font-black uppercase tracking-widest block">Total</span><span class="font-black text-purple dark:text-white text-2xl">$${totalNumber.toFixed(2)}</span>${o.descuentoAplicado ? '<p class="text-[9px] font-black text-pink uppercase tracking-widest">20% aplicado</p>' : ''}${Number(o.pointsAwarded || o.pointsGranted || 0) > 0 ? `<p class="text-[9px] font-black text-green-dark dark:text-green uppercase tracking-widest mt-1">+${Number(o.pointsAwarded || o.pointsGranted || 0)} pts</p>` : ''}</div>
+                    <div class="text-left md:text-right shrink-0"><span class="text-[10px] text-gray-400 font-black uppercase tracking-widest block">Total</span><span class="font-black text-purple dark:text-white text-2xl">$${totalNumber.toFixed(2)}</span>${o.descuentoAplicado ? '<p class="text-[9px] font-black text-pink uppercase tracking-widest">20% aplicado</p>' : ''}${Number(o.pointsAwarded || o.pointsGranted || 0) > 0 ? `<p class="text-[9px] font-black text-green-dark dark:text-green uppercase tracking-widest mt-1">+${Number(o.pointsAwarded || o.pointsGranted || 0)} ptos</p>` : ''}</div>
                 </div>
                 <div class="bg-purple-light/70 dark:bg-[#0d0718] rounded-2xl p-4 my-4 border border-purple-border/30 dark:border-purple/20 ml-2"><ul class="space-y-2">${items}</ul></div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 ml-2">
@@ -4421,7 +4508,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             }).join('');
             return `<div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left">
                 <div class="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
-                    <div class="min-w-0"><div class="flex items-center gap-2 flex-wrap"><h4 class="font-black text-purple-dark dark:text-white text-base truncate">${window.escapeHTML(email)}</h4><span class="text-[9px] font-black uppercase tracking-widest bg-purple-light dark:bg-purple/20 text-purple dark:text-white px-2 py-1 rounded-lg border border-purple/20">${window.escapeHTML(levelObj.nombre)}</span></div><p class="text-[10px] text-gray-500 font-bold mt-1">Histórico: ${ptsHist} pts · Disponibles: ${ptsDisp} pts</p></div>
+                    <div class="min-w-0"><div class="flex items-center gap-2 flex-wrap"><h4 class="font-black text-purple-dark dark:text-white text-base truncate">${window.escapeHTML(email)}</h4><span class="text-[9px] font-black uppercase tracking-widest bg-purple-light dark:bg-purple/20 text-purple dark:text-white px-2 py-1 rounded-lg border border-purple/20">${window.escapeHTML(levelObj.nombre)}</span></div><p class="text-[10px] text-gray-500 font-bold mt-1">Histórico: ${ptsHist} ptos · Disponibles: ${ptsDisp} ptos</p></div>
                     <div class="grid grid-cols-2 sm:flex gap-2"><button onclick="window.abrirModalCanje('${u.id}', '${window.escapeHTML(email)}', ${ptsDisp})" class="text-[10px] bg-green hover:bg-[#a6b621] text-purple-dark px-3 py-2.5 rounded-xl font-black uppercase tracking-widest shadow-sm transition-all flex items-center gap-1 justify-center"><i data-lucide="gift" class="w-3.5 h-3.5"></i> Canjear</button><button onclick="window.eliminarUsuarioAdmin('${u.id}', '${window.escapeHTML(email)}')" class="text-[10px] bg-pink/10 hover:bg-pink text-pink hover:text-white px-3 py-2.5 rounded-xl font-black uppercase tracking-widest shadow-sm transition-all flex items-center gap-1 border border-pink/20 justify-center"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Eliminar</button></div>
                 </div><div class="mt-4 border-t border-purple/10 pt-4"><p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Mascotas (${pets.length})</p><div class="grid grid-cols-1 md:grid-cols-2 gap-2">${mascotas || '<p class="text-xs text-gray-400 italic font-medium">Sin mascotas registradas</p>'}</div></div>
             </div>`;
@@ -4491,7 +4578,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
         window.renderAdminRedeemsPanel = function() {
             const container = document.getElementById('admin-redeems-container');
             if(!container) return;
-            container.innerHTML = `<div class="grid grid-cols-1 lg:grid-cols-[1.4fr_.8fr] gap-5"><div class="space-y-4"><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-5 shadow-sm"><div class="flex justify-between items-center gap-3"><div><h3 class="text-xl font-black text-purple-dark dark:text-white">Solicitudes de canje</h3><p class="text-xs text-gray-500 font-semibold mt-1">Aprueba, marca entregado o contacta al cliente.</p></div><button onclick="window.loadAdminRedeems()" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest">Actualizar</button></div></div><div id="admin-redeems-list" class="space-y-4"></div></div><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-5 shadow-sm h-fit"><h3 class="text-lg font-black text-purple-dark dark:text-white mb-3">Catálogo de beneficios</h3><div class="space-y-3">${window.REDEEM_ITEMS.map(i => `<div class="bg-purple-light/70 dark:bg-[#0d0718] rounded-2xl p-4 border border-purple-border/30"><p class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(i.name)}</p><p class="text-xs text-gray-500 font-semibold mt-1">${window.escapeHTML(i.benefit)}</p><p class="text-[10px] font-black text-pink uppercase tracking-widest mt-2">${i.points} pts</p></div>`).join('')}</div></div></div>`;
+            container.innerHTML = `<div class="grid grid-cols-1 lg:grid-cols-[1.4fr_.8fr] gap-5"><div class="space-y-4"><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-5 shadow-sm"><div class="flex justify-between items-center gap-3"><div><h3 class="text-xl font-black text-purple-dark dark:text-white">Solicitudes de canje</h3><p class="text-xs text-gray-500 font-semibold mt-1">Aprueba, marca entregado o contacta al cliente.</p></div><button onclick="window.loadAdminRedeems()" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest">Actualizar</button></div></div><div id="admin-redeems-list" class="space-y-4"></div></div><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-5 shadow-sm h-fit"><h3 class="text-lg font-black text-purple-dark dark:text-white mb-3">Catálogo de beneficios</h3><div class="space-y-3">${window.REDEEM_ITEMS.map(i => `<div class="bg-purple-light/70 dark:bg-[#0d0718] rounded-2xl p-4 border border-purple-border/30"><p class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(i.name)}</p><p class="text-xs text-gray-500 font-semibold mt-1">${window.escapeHTML(i.benefit)}</p><p class="text-[10px] font-black text-pink uppercase tracking-widest mt-2">${i.points} ptos</p></div>`).join('')}</div></div></div>`;
             window.filterAdminRedeems();
             window.refreshIcons?.(container);
         };
@@ -4514,7 +4601,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 points: r.points || 0
             });
             const w = window.buildWhatsAppUrl(msg);
-            return `<div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left"><div class="flex flex-col md:flex-row md:items-start justify-between gap-4"><div><span class="inline-flex px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${statusClass}">${window.escapeHTML(status)}</span><h4 class="font-black text-purple-dark dark:text-white text-base mt-3">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</h4><p class="text-xs text-gray-500 font-bold mt-1">${window.escapeHTML(r.email || r.userName || 'Cliente')} · ${Number(r.points || 0)} pts</p><p class="text-[10px] text-gray-400 font-bold mt-1">${window.formatAdminDate(r.createdAt)}</p></div><div class="grid grid-cols-1 sm:grid-cols-3 gap-2"><button onclick="window.actualizarCanjeAdmin('${r.id}', 'aprobado')" class="bg-green text-purple-dark text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest">Aprobar</button><button onclick="window.actualizarCanjeAdmin('${r.id}', 'entregado')" class="bg-purple text-white text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest">Entregado</button><a href="${w}" target="_blank" class="bg-[#25D366]/15 text-[#168d43] dark:text-green border border-[#25D366]/30 text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest text-center">WhatsApp</a></div></div></div>`;
+            return `<div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left"><div class="flex flex-col md:flex-row md:items-start justify-between gap-4"><div><span class="inline-flex px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${statusClass}">${window.escapeHTML(status)}</span><h4 class="font-black text-purple-dark dark:text-white text-base mt-3">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</h4><p class="text-xs text-gray-500 font-bold mt-1">${window.escapeHTML(r.email || r.userName || 'Cliente')} · ${Number(r.points || 0)} ptos</p><p class="text-[10px] text-gray-400 font-bold mt-1">${window.formatAdminDate(r.createdAt)}</p></div><div class="grid grid-cols-1 sm:grid-cols-3 gap-2"><button onclick="window.actualizarCanjeAdmin('${r.id}', 'aprobado')" class="bg-green text-purple-dark text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest">Aprobar</button><button onclick="window.actualizarCanjeAdmin('${r.id}', 'entregado')" class="bg-purple text-white text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest">Entregado</button><a href="${w}" target="_blank" class="bg-[#25D366]/15 text-[#168d43] dark:text-green border border-[#25D366]/30 text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest text-center">WhatsApp</a></div></div></div>`;
         };
 
         window.actualizarCanjeAdmin = async function(redeemId, status) {
@@ -4579,6 +4666,14 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             
             const eMsg = document.getElementById('errorMsg');
             if (eMsg) eMsg.classList.remove('visible');
+        };
+
+
+        window.getBagRecommendation = function(grams = 0) {
+            const g = Number(grams) || 0;
+            if(g <= 250) return { size: '250g', label: '250g', text: 'Presentación sugerida: 250g para prueba inicial, razas pequeñas o porciones bajas.' };
+            if(g <= 550) return { size: '550g', label: '550g', text: 'Presentación sugerida: 550g para razas medianas o consumo moderado.' };
+            return { size: '850g', label: '850g', text: 'Presentación sugerida: 850g para razas grandes, hogares con varias mascotas o pedidos mensuales.' };
         };
 
         window.calcularRacion = function() {
@@ -4699,6 +4794,11 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 }
             }
             
+            const bagReco = window.getBagRecommendation?.(gramos);
+            if(noteEl && bagReco) {
+                noteEl.innerHTML += '<br><br><b>' + bagReco.text + '</b>';
+            }
+
             window.lastCalcResult = {
                 nombre: window.state.nombreMascota,
                 tipo: 'perro',
@@ -5081,92 +5181,107 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             );
         };
 
-        window.finalizarPedido = async function() {
+        window.finalizarPedido = function() {
             if (!window.cart.length) return;
 
             const tot = window.cart.reduce((s,i) => s + (i.price*i.qty), 0);
-            const finalTot = window.descuentoAplicado ? tot * 0.8 : tot;
+            const discountApplied = !!window.descuentoAplicado;
+            const finalTot = discountApplied ? tot * 0.8 : tot;
             const clientToken = window.getClientToken();
-            let createdOrderId = null;
-
-            if (window.descuentoAplicado && window.currentUser && !window.currentUser.isAnonymous && window.currentUser.email) {
-                try {
-                    if (db) {
-                        await setDoc(window.getUserPath(window.currentUser.uid), { descuento_usado: true }, { merge: true });
-                    } else {
-                        let reclamados = [];
-                        try { reclamados = JSON.parse(localStorage.getItem('milkarf_descuentos_uids') || '[]'); } catch(e){}
-                        if (!reclamados.includes(window.currentUser.uid)) {
-                            reclamados.push(window.currentUser.uid);
-                            try { localStorage.setItem('milkarf_descuentos_uids', JSON.stringify(reclamados)); } catch(e){}
-                        }
-                    }
-                    if(window.currentUser.data) window.currentUser.data.descuento_usado = true;
-                } catch (e) { console.error("Error marcando descuento como usado:", e); }
-            }
-
-            if (db) {
-                try {
-                    const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
-                    const sessionUid = auth?.currentUser?.uid || window.currentUser?.uid || 'anonimo';
-                    const orderData = {
-                        uid: isLogged ? window.currentUser.uid : sessionUid,
-                        registeredUser: !!isLogged,
-                        clientToken,
-                        userName: isLogged ? (window.currentUser.displayName || window.currentUser.email) : 'Usuario Invitado',
-                        email: isLogged ? (window.currentUser.email || '') : '',
-                        items: window.cart.map(i => ({name: i.name, weight: i.weight, qty: i.qty, price: i.price, forPet: i.forPet||''})),
-                        total: finalTot,
-                        descuentoAplicado: window.descuentoAplicado,
-                        status: 'en_proceso',
-                        pointsBase: Math.floor(finalTot),
-                        pointsAwarded: 0,
-                        selectedPet: window.state.nombreMascota || '',
-                        createdAt: new Date().toISOString()
-                    };
-                    const orderDoc = await addDoc(window.getOrdersCollectionRef(), orderData);
-                    createdOrderId = orderDoc.id;
-                    window.lastOrderId = createdOrderId;
-                    try { localStorage.setItem('milkarf_last_order_id', createdOrderId); } catch(e){}
-                } catch (error) {
-                    console.error("No se pudo guardar el pedido en el registro: ", error);
-                    window.showToast('No se pudo registrar el pedido, pero puedes enviarlo por WhatsApp.');
-                }
-            }
+            const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
+            const sessionUid = auth?.currentUser?.uid || window.currentUser?.uid || 'anonimo';
+            const orderItems = window.cart.map(i => ({name: i.name, weight: i.weight, qty: i.qty, price: i.price, forPet: i.forPet || ''}));
+            const createdAt = new Date().toISOString();
+            const localOrderId = 'local_' + Date.now();
 
             const msg = window.getWhatsAppTemplate('newOrder', {
-                items: window.cart.map(i => ({ name: i.name, weight: i.weight, qty: i.qty, forPet: i.forPet || '' })),
+                items: orderItems.map(i => ({ name: i.name, weight: i.weight, qty: i.qty, forPet: i.forPet || '' })),
                 subtotal: tot,
-                discountApplied: window.descuentoAplicado,
-                discountAmount: window.descuentoAplicado ? (tot * 0.2) : 0,
+                discountApplied: discountApplied,
+                discountAmount: discountApplied ? (tot * 0.2) : 0,
                 finalTotal: finalTot,
                 location: window.userLocation || ''
             });
+
             const pendingOrderForCache = {
-                id: createdOrderId || ('local_' + Date.now()),
-                uid: (window.currentUser && window.currentUser.uid) ? window.currentUser.uid : '',
+                id: localOrderId,
+                uid: isLogged ? window.currentUser.uid : sessionUid,
                 clientToken,
-                registeredUser: !!(window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email)),
-                userName: window.currentUser?.displayName || window.currentUser?.email || 'Usuario Invitado',
-                email: window.currentUser?.email || '',
-                items: window.cart.map(i => ({name: i.name, weight: i.weight, qty: i.qty, price: i.price, forPet: i.forPet || ''})),
+                registeredUser: !!isLogged,
+                userName: isLogged ? (window.currentUser.displayName || window.currentUser.email) : 'Usuario Invitado',
+                email: isLogged ? (window.currentUser.email || '') : '',
+                items: orderItems,
                 total: finalTot,
-                descuentoAplicado: window.descuentoAplicado,
+                descuentoAplicado: discountApplied,
                 status: 'en_proceso',
                 pointsBase: Math.floor(finalTot),
                 pointsAwarded: 0,
                 pointsGranted: 0,
                 selectedPet: window.state.nombreMascota || '',
-                createdAt: new Date().toISOString(),
-                localOnly: !createdOrderId
+                createdAt,
+                localOnly: true
             };
+
+            // Registrar visualmente el pedido antes de salir a WhatsApp para que el usuario vea estado al volver.
             window.cacheUserOrderLocal?.(pendingOrderForCache);
             window.renderUserOrders?.(window.getLocalUserOrders?.() || [pendingOrderForCache]);
-            window.actualizarUIAuth();
-            window.startUserOrdersListener?.();
-            window.showCartPostOrderState?.(createdOrderId);
-            window.showToast('Pedido en proceso. Puedes revisar su estado desde tu perfil.', 'success');
-            setTimeout(() => window.openWhatsAppMessage(msg), 220);
+            window.actualizarUIAuth?.();
+            window.showCartPostOrderState?.(null);
+            window.showToast('Tu pedido quedó en proceso. Continúa la atención por WhatsApp.', 'success');
+
+            // Apertura inmediata y directa para evitar bloqueos de navegadores móviles.
+            window.openWhatsAppMessage(msg);
+
+            // Guardado no bloqueante: no debe retrasar la apertura de WhatsApp.
+            void (async () => {
+                let createdOrderId = null;
+                try {
+                    if (discountApplied && isLogged) {
+                        if (db) {
+                            await setDoc(window.getUserPath(window.currentUser.uid), { descuento_usado: true }, { merge: true });
+                        } else {
+                            let reclamados = [];
+                            try { reclamados = JSON.parse(localStorage.getItem('milkarf_descuentos_uids') || '[]'); } catch(e){}
+                            if (!reclamados.includes(window.currentUser.uid)) {
+                                reclamados.push(window.currentUser.uid);
+                                try { localStorage.setItem('milkarf_descuentos_uids', JSON.stringify(reclamados)); } catch(e){}
+                            }
+                        }
+                        if(window.currentUser.data) window.currentUser.data.descuento_usado = true;
+                    }
+                } catch (e) { console.error('Error marcando descuento como usado:', e); }
+
+                if (db) {
+                    try {
+                        const orderData = {
+                            uid: isLogged ? window.currentUser.uid : sessionUid,
+                            registeredUser: !!isLogged,
+                            clientToken,
+                            userName: isLogged ? (window.currentUser.displayName || window.currentUser.email) : 'Usuario Invitado',
+                            email: isLogged ? (window.currentUser.email || '') : '',
+                            items: orderItems,
+                            total: finalTot,
+                            descuentoAplicado: discountApplied,
+                            status: 'en_proceso',
+                            pointsBase: Math.floor(finalTot),
+                            pointsAwarded: 0,
+                            selectedPet: window.state.nombreMascota || '',
+                            createdAt
+                        };
+                        const orderDoc = await addDoc(window.getOrdersCollectionRef(), orderData);
+                        createdOrderId = orderDoc.id;
+                        window.lastOrderId = createdOrderId;
+                        try { localStorage.setItem('milkarf_last_order_id', createdOrderId); } catch(e){}
+                        pendingOrderForCache.id = createdOrderId;
+                        pendingOrderForCache.localOnly = false;
+                        window.cacheUserOrderLocal?.(pendingOrderForCache);
+                        window.startUserOrdersListener?.();
+                    } catch (error) {
+                        console.error('No se pudo guardar el pedido en el registro:', error);
+                        window.showToast('Tu pedido abrió en WhatsApp. Si no aparece en el perfil, actualiza en unos segundos.');
+                    }
+                }
+            })();
         };
 
         function initApp() {
@@ -5216,7 +5331,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             // Iniciar Paws
             const frag = document.createDocumentFragment();
             const colors = ['#421d8e', '#b9cb25', '#d72b8f', '#2e1060'];
-            const count = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : (window.innerWidth < 768 ? 4 : 9);
+            const count = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : (window.innerWidth < 768 ? 8 : 18);
             
             for(let i=0; i<count; i++) {
                 const size = 30 + Math.random()*20;
@@ -5500,7 +5615,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             box.innerHTML = stages.map(st => `<div class="rounded-2xl px-2 py-3 border ${ptsHist >= st.min ? 'bg-white/20 border-white/30 text-white' : 'bg-white/10 border-white/10 text-white/60'}">
                 <div class="text-base leading-none">${st.icon}</div>
                 <p class="text-[8px] font-black uppercase tracking-widest mt-1">${st.label}</p>
-                <p class="text-[8px] font-bold opacity-80">${st.min}+ pts</p>
+                <p class="text-[8px] font-bold opacity-80">${st.min}+ ptos</p>
             </div>`).join('');
         };
 
@@ -5550,7 +5665,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const steps = [
                 {label:'Recibido', desc:'Solicitud enviada'},
                 {label:'Confirmación', desc:'Revisión admin'},
-                {label:'Completado', desc: points > 0 ? `+${points} pts` : 'Pedido cerrado'}
+                {label:'Completado', desc: points > 0 ? `+${points} ptos` : 'Pedido cerrado'}
             ];
             if(stepIndex === -1) return `<div class="mt-3 rounded-2xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3 text-[10px] font-bold text-gray-500">Pedido cancelado. Escríbenos si necesitas revisarlo.</div>`;
             return `<div class="mt-4 grid grid-cols-3 gap-2">${steps.map((s, idx) => {
@@ -5595,7 +5710,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                     ${window.renderUserOrderSteps(status, points)}
                     <div class="mt-3 ml-1 bg-purple-light/70 dark:bg-[#0d0718] border border-purple-border/30 dark:border-purple/20 rounded-xl p-3">
                         <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">${window.escapeHTML(helper)}</p>
-                        ${points > 0 ? `<div class="mt-2 inline-flex items-center gap-1 bg-green/15 text-green-dark dark:text-green border border-green/20 rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest"><i data-lucide="sparkles" class="w-3 h-3"></i> +${points} pts ganados</div>` : ''}
+                        ${points > 0 ? `<div class="mt-2 inline-flex items-center gap-1 bg-green/15 text-green-dark dark:text-green border border-green/20 rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest"><i data-lucide="sparkles" class="w-3 h-3"></i> +${points} ptos ganados</div>` : ''}
                     </div>
                 </div>`;
             }).join('');
@@ -5637,7 +5752,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 const status = String(r.status || 'solicitado').toLowerCase();
                 const cls = status === 'entregado' ? 'bg-purple/10 text-purple border-purple/20' : status === 'aprobado' ? 'bg-green/15 text-green-dark dark:text-green border-green/20' : 'bg-pink/10 text-pink border-pink/20';
                 return `<div class="bg-white dark:bg-darkcard rounded-xl border border-purple-border/30 dark:border-purple/20 p-3 flex items-start justify-between gap-3">
-                    <div><p class="text-xs font-black text-purple-dark dark:text-white">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</p><p class="text-[10px] text-gray-500 font-semibold mt-1">${Number(r.points || 0)} pts · ${r.createdAt ? new Date(r.createdAt).toLocaleDateString('es-VE') : 'reciente'}</p></div>
+                    <div><p class="text-xs font-black text-purple-dark dark:text-white">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</p><p class="text-[10px] text-gray-500 font-semibold mt-1">${Number(r.points || 0)} ptos · ${r.createdAt ? new Date(r.createdAt).toLocaleDateString('es-VE') : 'reciente'}</p></div>
                     <span class="text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border ${cls}">${window.escapeHTML(status)}</span>
                 </div>`;
             }).join('');
@@ -5654,11 +5769,11 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const pts = Number(window.currentUser.data?.puntos || 0);
             container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">${window.REDEEM_ITEMS.map(item => {
                 const canUse = pts >= item.points;
-                const missing = Math.max(0, item.points - pts);
+                const missing = Math.max(0, item.points - puntos);
                 return `<div class="bg-white dark:bg-darkcard rounded-3xl border ${canUse ? 'border-green/30' : 'border-purple-border/30 dark:border-purple/20'} p-4 shadow-sm text-left flex flex-col justify-between gap-4">
-                    <div><div class="flex items-start justify-between gap-3"><div><h5 class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(item.name)}</h5><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-1">${window.escapeHTML(item.benefit)}</p></div><div class="shrink-0 bg-pink/10 text-pink border border-pink/20 px-3 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest">${item.points} pts</div></div>
+                    <div><div class="flex items-start justify-between gap-3"><div><h5 class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(item.name)}</h5><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-1">${window.escapeHTML(item.benefit)}</p></div><div class="shrink-0 bg-pink/10 text-pink border border-pink/20 px-3 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest">${item.points} ptos</div></div>
                     <div class="mt-3 w-full bg-purple-light dark:bg-[#0d0718] rounded-full h-2 overflow-hidden"><div class="bg-green h-2 rounded-full" style="width:${Math.min(100, (pts / item.points) * 100)}%"></div></div>
-                    <p class="text-[10px] font-bold ${canUse ? 'text-green-dark dark:text-green' : 'text-gray-400'} mt-2">${canUse ? 'Disponible para canjear' : `Te faltan ${missing} pts`}</p></div>
+                    <p class="text-[10px] font-bold ${canUse ? 'text-green-dark dark:text-green' : 'text-gray-400'} mt-2">${canUse ? 'Disponible para canjear' : `Te faltan ${missing} ptos`}</p></div>
                     <button type="button" onclick="window.canjearPuntosUsuario('${item.id}')" class="w-full px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 ${canUse ? 'bg-green text-purple-dark hover:bg-[#a6b621]' : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'}" ${canUse ? '' : 'disabled'}>Canjear beneficio</button>
                 </div>`;
             }).join('')}</div>`;
@@ -5811,7 +5926,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 ${!compact && typeof window.renderUserOrderSteps === 'function' ? window.renderUserOrderSteps(status, points) : ''}
                 <div class="mt-3 ml-1 bg-purple-light/70 dark:bg-[#0d0718] border border-purple-border/30 dark:border-purple/20 rounded-xl p-3">
                     <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">${window.escapeHTML(helper)}</p>
-                    ${points > 0 ? `<div class="mt-2 inline-flex items-center gap-1 bg-green/15 text-green-dark dark:text-green border border-green/20 rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest"><i data-lucide="sparkles" class="w-3 h-3"></i> +${points} pts ganados</div>` : ''}
+                    ${points > 0 ? `<div class="mt-2 inline-flex items-center gap-1 bg-green/15 text-green-dark dark:text-green border border-green/20 rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest"><i data-lucide="sparkles" class="w-3 h-3"></i> +${points} ptos ganados</div>` : ''}
                 </div>
             </div>`;
         };
