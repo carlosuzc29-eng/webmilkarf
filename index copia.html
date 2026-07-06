@@ -148,6 +148,13 @@
         #cart-badge { transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); }
         #cart-fab.pop #cart-badge { transform: scale(1.3) translateZ(0); }
 
+        /* UX refinada: navegación móvil más inmediata */
+        #mobile-bottom-nav button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: transform 0.08s ease, background-color 0.12s ease; }
+        #mobile-bottom-nav button:active { transform: scale(0.94); }
+        #mobile-bottom-nav button.active-mobile-nav { background: rgba(66, 29, 142, 0.10); color: #421d8e; }
+        @media (prefers-color-scheme: dark) { #mobile-bottom-nav button.active-mobile-nav { background: rgba(185, 203, 37, 0.12); color: #b9cb25; } }
+        @media (max-width: 768px) { .view { transition: transform 0.28s cubic-bezier(0.25, 1, 0.3, 1), opacity 0.18s ease; } }
+
         /* OPTIMIZACIÓN UX / PERFORMANCE */
         .edu-card { transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; }
         .edu-card:hover { transform: translateY(-2px); }
@@ -198,7 +205,7 @@
                     <div id="top-pets-icons" class="text-[10px] sm:text-xs bg-purple/10 dark:bg-purple/20 px-2 py-1 rounded-lg border border-purple/10 flex items-center gap-0.5">🐾</div>
                     <div class="flex flex-col items-start text-left">
                         <span class="text-[10px] leading-none truncate max-w-[60px] sm:max-w-[90px]" id="top-auth-text">Usuario</span>
-                        <span class="text-[9px] text-green font-black leading-none mt-1" id="top-auth-pts">0 pts</span>
+                        <span class="text-[9px] text-green font-black leading-none mt-1" id="top-auth-pts">0 ptos</span>
                     </div>
                 </div>
                 <i data-lucide="chevron-down" class="w-3 h-3 ml-1 opacity-70"></i>
@@ -220,7 +227,7 @@
                         <p id="dropdown-user-name" class="text-sm font-black text-purple-dark dark:text-white truncate mt-0.5">Usuario</p>
                     </div>
                     <button class="w-full text-left px-4 py-3 text-sm font-bold text-purple-dark dark:text-white hover:bg-purple/5 transition-colors flex items-center" data-action="go-dashboard">
-                        <i data-lucide="layout-dashboard" class="w-4 h-4 inline-block mr-3 text-green"></i> <span class="flex-1">Mi Núcleo & Puntos</span>
+                        <i data-lucide="layout-dashboard" class="w-4 h-4 inline-block mr-3 text-green"></i> <span class="flex-1">Mis mascotas y Milkarf Points</span>
                     </button>
                     <button class="w-full text-left px-4 py-3 text-sm font-bold text-pink hover:bg-pink/5 transition-colors flex items-center" data-action="logout">
                         <i data-lucide="log-out" class="w-4 h-4 inline-block mr-3"></i> Cerrar Sesión
@@ -244,13 +251,14 @@
         <!-- MENÚ PRINCIPAL (CLIENTES) -->
         <ul id="main-nav-links" class="nav-links space-y-6 text-center">
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-home">Inicio</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-mision">Misión</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-mision">Misión Milkarf</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-calc">Calculadora Nutricional</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-perros">Línea Perros</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-gatos">Línea Gatos</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-snacks">Snacks</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-pink hover:text-white tracking-wider uppercase block" data-target="view-dashboard">Mi Perfil 🎁</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-faq">Guía de Transición</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-pink hover:text-white tracking-wider uppercase block" data-target="view-dashboard">Mis mascotas y Milkarf Points</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-green hover:text-white tracking-wider uppercase block" data-target="view-redeems">Canje de puntos</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-faq">Guía para empezar natural</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-green hover:text-white tracking-wider uppercase block flex items-center gap-3 justify-center" data-target="view-cart">🛒 Mi Carrito</a></li>
         </ul>
         
@@ -285,7 +293,7 @@
                     </div>
 
                     <button class="nav-btn mb-8 flex items-center gap-3 bg-white dark:bg-darkcard border border-purple-border dark:border-purple/30 px-6 py-3.5 rounded-full text-purple dark:text-white hover:text-pink hover:border-pink/40 font-extrabold text-sm tracking-wide shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5" data-target="view-mision">
-                        <i data-lucide="sparkles" class="w-4 h-4 text-pink"></i> Nuestra misión
+                        <i data-lucide="sparkles" class="w-4 h-4 text-pink"></i> Misión Milkarf
                     </button>
 
                     <div class="nav-card w-full max-w-2xl bg-gradient-to-br from-purple to-purple-dark dark:from-[#2e1060] dark:to-[#1a0836] text-white rounded-3xl p-6 md:p-8 flex items-center justify-between shadow-2xl border border-white/10 transition-all duration-300 select-none cursor-pointer mb-8" data-target="view-calc">
@@ -327,7 +335,7 @@
                             <div class="absolute inset-0 bg-gradient-to-t from-pink-dark/95 via-pink/50 dark:from-[#180e29]/95 dark:via-[#180e29]/50 to-transparent z-10"></div>
                             <div class="absolute bottom-6 left-6 z-20 text-left">
                                 <span class="text-[10px] font-black text-green tracking-wider uppercase block mb-1">Filosofía</span>
-                                <h2 class="text-2xl font-black text-white leading-tight">Guía de<br>Transición</h2>
+                                <h2 class="text-2xl font-black text-white leading-tight">Guía para<br>empezar natural</h2>
                             </div>
                         </div>
 
@@ -349,7 +357,7 @@
                     <footer class="w-full max-w-4xl mx-auto mt-16 pt-8 border-t border-purple-border/50 dark:border-purple/20 text-center flex flex-col items-center gap-5">
                         <div class="bg-purple/10 dark:bg-purple/5 text-purple-dark dark:text-purple-light px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase border border-purple/20">Nutrición Científica & Evolutiva</div>
                         <div class="flex gap-4">
-                            <a href="https://wa.link/pwe23z" target="_blank" class="w-10 h-10 rounded-full bg-white dark:bg-darkcard shadow-md flex items-center justify-center text-[#25D366] hover:scale-110 transition-transform dark:border dark:border-purple/30">
+                            <a href="#" onclick="event.preventDefault(); window.openWhatsApp('general');" class="w-10 h-10 rounded-full bg-white dark:bg-darkcard shadow-md flex items-center justify-center text-[#25D366] hover:scale-110 transition-transform dark:border dark:border-purple/30">
                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                             </a>
                             <a href="https://www.instagram.com/milkarfood" target="_blank" class="w-10 h-10 rounded-full bg-white dark:bg-darkcard shadow-md flex items-center justify-center text-[#d72b8f] hover:scale-110 transition-transform dark:border dark:border-purple/30">
@@ -373,104 +381,38 @@
                     <button class="nav-btn flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300 mx-auto md:mx-0" data-target="view-home">
                         <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Inicio
                     </button>
-                    <h2 class="text-3xl md:text-4xl font-black text-purple-dark dark:text-white mt-4">Nuestra Esencia</h2>
-                    <p class="text-sm font-bold text-pink uppercase tracking-widest mt-1">El origen de la salud animal</p>
+                    <h2 class="text-3xl md:text-4xl font-black text-purple-dark dark:text-white mt-4">Misión Milkarf</h2>
+                    <p class="text-sm font-bold text-pink uppercase tracking-widest mt-1">Alimentar con intención, ciencia y amor</p>
                 </div>
 
                 <div class="max-w-2xl w-full space-y-6">
                     <div class="rounded-3xl p-6 md:p-8 bg-gradient-to-br from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#1a0836] text-white shadow-xl relative overflow-hidden text-left">
                         <div class="absolute -right-8 -bottom-8 text-white/5"><i data-lucide="heart" class="w-40 h-40"></i></div>
-                        <h3 class="text-green text-xl md:text-2xl font-black mb-4">¿Quiénes Somos?</h3>
+                        <h3 class="text-green text-xl md:text-2xl font-black mb-4">¿Quiénes somos?</h3>
                         <p class="text-purple-light/95 dark:text-gray-300 text-sm md:text-base leading-relaxed relative z-10">
-                            Nacimos bajo una convicción clara: darles a nuestros consentidos lo mejor para su bienestar. Las mascotas merecen una nutrición adaptada a su naturaleza, no a la conveniencia industrial. De la mano de veterinarios nutricionistas, creamos recetas con ingredientes 100% frescos, crudos y biológicamente correctos. <br><br>
-                            Nuestra misión es transformar la salud y prolongar la felicidad de tu mascota a través de nutrición natural, real y completa, <strong class="text-green">como su cuerpo lo pide.</strong>
+                            En Milkarf creemos que las mascotas merecen una alimentación real, natural y adaptada a su cuerpo. Nacimos para ofrecer una alternativa más consciente para tutores que quieren cuidar a sus peludos desde lo que comen todos los días. <br><br>
+                            Nuestra misión es acompañar su bienestar con fórmulas completas, ingredientes seleccionados y una guía responsable para que cada transición sea segura, progresiva y personalizada.
                         </p>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
                         <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-2xl p-6 shadow-md">
                             <div class="w-10 h-10 rounded-full bg-pink/10 flex items-center justify-center text-pink mb-3"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
-                            <h4 class="text-purple-dark dark:text-white font-extrabold text-sm mb-1">Nutrición Científica</h4>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">Diseñado estrictamente bajo las normativas nutricionales globales del NRC para garantizar un balance biológico perfecto.</p>
+                            <h4 class="text-purple-dark dark:text-white font-extrabold text-sm mb-1">Criterio nutricional</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Formulamos bajo criterios nutricionales de referencia como NRC/FEDIAF para construir una alimentación más completa, equilibrada y responsable.</p>
                         </div>
                         <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-2xl p-6 shadow-md">
                             <div class="w-10 h-10 rounded-full bg-green/10 flex items-center justify-center text-green-dark dark:text-green mb-3"><i data-lucide="leaf" class="w-5 h-5"></i></div>
-                            <h4 class="text-purple-dark dark:text-white font-extrabold text-sm mb-1">Ingredientes Locales Reales</h4>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">Utilizamos únicamente carne de res premium, pollo de granja, vegetales frescos y aceites de primera prensa en frío.</p>
+                            <h4 class="text-purple-dark dark:text-white font-extrabold text-sm mb-1">Ingredientes reales</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Trabajamos con fuentes animales, vegetales, semillas, vitaminas y minerales seleccionados para acompañar la nutrición diaria de cada mascota.</p>
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 md:p-8 shadow-xl text-left edu-card">
-                        <div class="flex items-start gap-4 mb-5">
-                            <div class="w-12 h-12 rounded-2xl bg-green/15 flex items-center justify-center text-green-dark dark:text-green shrink-0"><i data-lucide="sprout" class="w-6 h-6"></i></div>
-                            <div>
-                                <p class="text-[10px] font-black text-pink uppercase tracking-widest mb-1">Educación nutricional</p>
-                                <h3 class="text-2xl font-black text-purple-dark dark:text-white">¿Por qué elegir nutrición natural?</h3>
-                            </div>
-                        </div>
-                        <p class="text-sm md:text-base leading-relaxed text-gray-600 dark:text-gray-300 font-medium mb-6">
-                            Cada mascota tiene necesidades diferentes. Su edad, peso, nivel de actividad y condición corporal influyen en la cantidad y calidad de nutrientes que necesita. En Milkarf trabajamos con ingredientes reales y fórmulas pensadas para acompañar su bienestar desde una alimentación más consciente, completa y adaptada a su naturaleza.
-                        </p>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div class="rounded-2xl bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Ingredientes reales</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Carnes, vísceras, vegetales, semillas, vitaminas y minerales.</p></div>
-                            <div class="rounded-2xl bg-green-light dark:bg-green/10 border border-green/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Porciones personalizadas</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Según peso, etapa y nivel de actividad.</p></div>
-                            <div class="rounded-2xl bg-pink-light dark:bg-pink/10 border border-pink/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Balance nutricional</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">No es solo mezclar alimentos: es formular con propósito.</p></div>
-                            <div class="rounded-2xl bg-white dark:bg-darkbg border border-purple-border/40 dark:border-purple/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Transición acompañada</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">El cambio debe hacerse de forma progresiva y responsable.</p></div>
-                        </div>
+                    <div class="bg-green/10 dark:bg-green/5 border border-green/20 rounded-3xl p-5 text-left">
+                        <p class="text-sm text-purple-dark dark:text-gray-200 font-bold leading-relaxed">Para aprender más sobre nutrición natural, transición, ingredientes y dudas frecuentes, visita la guía educativa de Milkarf.</p>
+                        <button class="nav-btn mt-4 bg-purple hover:bg-pink text-white font-black text-xs uppercase tracking-widest px-5 py-3 rounded-2xl shadow-md" data-target="view-faq">Ir a la guía para empezar natural</button>
                     </div>
-
-                    <div class="bg-gradient-to-br from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#1a0836] rounded-3xl p-6 md:p-8 text-white shadow-xl text-left relative overflow-hidden">
-                        <div class="absolute -right-10 -top-10 text-white/5"><i data-lucide="clipboard-check" class="w-40 h-40"></i></div>
-                        <h3 class="text-green text-2xl font-black mb-3 relative z-10">Natural no significa improvisado</h3>
-                        <p class="text-sm md:text-base leading-relaxed text-purple-light/90 dark:text-gray-300 font-medium mb-6 relative z-10">
-                            Una alimentación natural responsable no se basa en sobras, premios o mezclas al azar. Para que realmente aporte bienestar, debe estar formulada con ingredientes adecuados, proporciones correctas y micronutrientes que ayuden a completar la dieta.
-                        </p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
-                            <div class="rounded-2xl bg-white/10 border border-white/10 p-5">
-                                <h4 class="font-black text-pink-light mb-3 text-sm uppercase tracking-wider">Comida casera sin fórmula</h4>
-                                <ul class="space-y-2 text-xs text-white/80 font-semibold"><li>• Puede ser incompleta.</li><li>• No siempre respeta proporciones.</li><li>• Puede exceder o faltar nutrientes.</li><li>• Depende de intuición.</li></ul>
-                            </div>
-                            <div class="rounded-2xl bg-green/15 border border-green/30 p-5">
-                                <h4 class="font-black text-green mb-3 text-sm uppercase tracking-wider">Nutrición natural formulada</h4>
-                                <ul class="space-y-2 text-xs text-white/85 font-semibold"><li>• Busca cubrir necesidades nutricionales.</li><li>• Considera peso, edad y etapa.</li><li>• Incluye vitaminas y minerales.</li><li>• Se apoya en criterios nutricionales.</li></ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 md:p-8 shadow-xl text-left edu-card">
-                        <div class="flex items-start gap-4 mb-5">
-                            <div class="w-12 h-12 rounded-2xl bg-pink/10 flex items-center justify-center text-pink shrink-0"><i data-lucide="list-checks" class="w-6 h-6"></i></div>
-                            <div>
-                                <p class="text-[10px] font-black text-green-dark dark:text-green uppercase tracking-widest mb-1">Fórmula con intención</p>
-                                <h3 class="text-2xl font-black text-purple-dark dark:text-white">Cada ingrediente tiene una función</h3>
-                            </div>
-                        </div>
-                        <p class="text-sm leading-relaxed text-gray-600 dark:text-gray-300 font-medium mb-5">
-                            En Milkarf cada ingrediente cumple un papel dentro de la fórmula. Combinamos fuentes animales, vegetales y micronutrientes para crear una alimentación más completa y consciente.
-                        </p>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Proteína animal:</strong> <span class="text-gray-600 dark:text-gray-400">ayuda al mantenimiento muscular.</span></div>
-                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Vísceras selectas:</strong> <span class="text-gray-600 dark:text-gray-400">aportan variedad nutricional.</span></div>
-                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Vegetales frescos:</strong> <span class="text-gray-600 dark:text-gray-400">aportan fibra y micronutrientes.</span></div>
-                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Vitaminas y minerales:</strong> <span class="text-gray-600 dark:text-gray-400">ayudan a completar la fórmula.</span></div>
-                        </div>
-                    </div>
-
-                    <div class="bg-green-light dark:bg-green/10 border border-green/20 rounded-3xl p-6 md:p-8 text-left">
-                        <h3 class="text-2xl font-black text-purple-dark dark:text-white mb-3">Nuestro enfoque nutricional</h3>
-                        <p class="text-sm leading-relaxed text-gray-600 dark:text-gray-300 font-medium mb-4">
-                            En Milkarf no creemos en alimentar por moda. Creemos en alimentar con intención: ingredientes reales, raciones calculadas, transición responsable y fórmulas que respetan las necesidades de cada mascota.
-                        </p>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Criterios nutricionales</span>
-                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Ingredientes seleccionados</span>
-                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Porciones adaptadas</span>
-                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Educación para tutores</span>
-                        </div>
-                    </div>
-
                 </div>
-                <!-- ESPACIADOR INFERIOR -->
                 <div class="h-24 w-full shrink-0 pointer-events-none"></div>
             </div>
         </section>
@@ -717,6 +659,22 @@
                     </div>
                 </div>
 
+                <div class="w-full max-w-4xl mb-6 bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/20 rounded-3xl p-5 shadow-sm">
+                    <div class="flex items-start gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-2xl bg-pink/10 text-pink flex items-center justify-center shrink-0"><i data-lucide="package-check" class="w-5 h-5"></i></div>
+                        <div class="text-left">
+                            <p class="text-[10px] font-black uppercase tracking-widest text-green-dark dark:text-green mb-1">Guía orientativa</p>
+                            <h3 class="text-lg font-black text-purple-dark dark:text-white">¿Qué presentación elegir?</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">La presentación ideal depende de la ración diaria. Usa la calculadora para una recomendación personalizada.</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-left">
+                        <div class="rounded-2xl bg-purple/10 dark:bg-purple/20 border border-purple/20 p-4"><p class="text-sm font-black text-purple-dark dark:text-white">250g</p><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Prueba inicial, razas pequeñas o porciones bajas.</p></div>
+                        <div class="rounded-2xl bg-pink/10 dark:bg-pink/10 border border-pink/20 p-4"><p class="text-sm font-black text-purple-dark dark:text-white">550g</p><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Razas medianas o consumo moderado.</p></div>
+                        <div class="rounded-2xl bg-green/10 dark:bg-green/10 border border-green/20 p-4"><p class="text-sm font-black text-purple-dark dark:text-white">850g</p><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Razas grandes, hogares con varias mascotas o pedidos mensuales.</p></div>
+                    </div>
+                </div>
+
                 <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 justify-center mt-4 pb-8">
                     <!-- Producto 1: Pollo -->
                     <div class="bg-white dark:bg-darkcard rounded-3xl overflow-hidden shadow-2xl dark:shadow-purple/10 border border-purple-border/20 dark:border-purple/20 flex flex-col h-full">
@@ -912,7 +870,7 @@
                     <button class="nav-btn flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300" data-target="view-home">
                         <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Inicio
                     </button>
-                    <h2 class="text-3xl font-black text-purple-dark dark:text-white mt-4">Mi Perfil 🎁</h2>
+                    <h2 class="text-3xl font-black text-purple-dark dark:text-white mt-4">Mis mascotas y Milkarf Points</h2>
                 </div>
 
                 <div class="max-w-2xl w-full bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-[2rem] p-6 shadow-xl text-left">
@@ -939,7 +897,7 @@
                                 </div>
                                 <div class="text-right flex flex-col items-end">
                                     <p class="text-[10px] uppercase tracking-wider font-bold opacity-80 mb-0.5">Disponibles</p>
-                                    <p class="text-3xl font-black leading-none"><span id="ben-user-pts">0</span> <span class="text-sm opacity-80">pts</span></p>
+                                    <p class="text-3xl font-black leading-none"><span id="ben-user-pts">0</span> <span class="text-sm opacity-80">ptos</span></p>
                                 </div>
                             </div>
                             <!-- Progress Bar -->
@@ -965,10 +923,10 @@
                         </div>
                     </div>
 
-                    <!-- Núcleo Multiespecies (Mascotas del usuario) -->
+                    <!-- Familia multiespecie (Mascotas del usuario) -->
                     <div class="mt-6 border-t border-purple/10 pt-6">
                         <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-                            <i data-lucide="users" class="w-5 h-5 text-pink"></i> Mi Núcleo Multiespecies
+                            <i data-lucide="users" class="w-5 h-5 text-pink"></i> Mi familia multiespecie
                         </h4>
                         <div id="dashboard-pets-list" class="space-y-3">
                             <p class="text-xs text-gray-500 font-medium">Inicia sesión para ver y registrar a tus mascotas.</p>
@@ -981,31 +939,40 @@
                     <!-- Estado de pedidos del usuario -->
                     <div class="mt-6 border-t border-purple/10 pt-6">
                         <div class="flex items-center justify-between gap-3 mb-4">
-                            <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider flex items-center gap-2">
-                                <i data-lucide="clipboard-list" class="w-5 h-5 text-green"></i> Mis Pedidos
-                            </h4>
-                            <button type="button" onclick="window.startUserOrdersListener(true)" class="text-[10px] font-black text-purple bg-purple/10 hover:bg-purple/20 px-3 py-1.5 rounded-lg transition-all">Actualizar</button>
-                        </div>
-                        <div id="user-orders-list" class="space-y-3">
-                            <p class="text-xs text-gray-500 font-medium">Cuando realices un pedido, podrás ver aquí si está en proceso, confirmado o completado.</p>
-                        </div>
-                    </div>
-
-                    <!-- Canje de puntos del usuario -->
-                    <div class="mt-6 border-t border-purple/10 pt-6">
-                        <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
-                            <i data-lucide="gift" class="w-5 h-5 text-pink"></i> Canje de Puntos
-                        </h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mb-4">Usa tus puntos disponibles para solicitar productos y beneficios. El canje se envía por WhatsApp y queda registrado en tu perfil.</p>
-                        <div id="redeem-items-list" class="grid grid-cols-1 gap-3">
-                            <p class="text-xs text-gray-500 font-medium">Inicia sesión para ver beneficios disponibles.</p>
-                        </div>
-                        <div class="mt-5 bg-purple-light/70 dark:bg-purple/10 rounded-2xl border border-purple-border/40 dark:border-purple/20 p-4">
-                            <div class="flex items-center justify-between gap-3 mb-3">
-                                <h5 class="text-[10px] font-black uppercase tracking-widest text-purple-dark dark:text-white flex items-center gap-2"><i data-lucide="history" class="w-4 h-4 text-green"></i> Mis canjes recientes</h5>
-                                <button type="button" onclick="window.startUserRedeemsListener(true)" class="text-[9px] font-black text-purple bg-white dark:bg-darkcard border border-purple/20 px-2.5 py-1.5 rounded-lg uppercase tracking-widest">Actualizar</button>
+                            <div>
+                                <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider flex items-center gap-2">
+                                    <i data-lucide="clipboard-list" class="w-5 h-5 text-green"></i> Mis Pedidos
+                                </h4>
+                                <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold mt-1">Aquí verás el pedido pendiente por confirmar. El historial queda guardado aparte para que tu perfil no se haga extenso.</p>
                             </div>
-                            <div id="user-redeems-history" class="space-y-2"><p class="text-xs text-gray-500 font-medium">Tus solicitudes de canje aparecerán aquí.</p></div>
+                            <button type="button" onclick="window.startUserOrdersListener(true)" class="text-[10px] font-black text-purple bg-purple/10 hover:bg-purple/20 px-3 py-1.5 rounded-lg transition-all shrink-0">Actualizar</button>
+                        </div>
+                        <div id="user-active-order" class="space-y-3">
+                            <p class="text-xs text-gray-500 font-medium bg-white dark:bg-darkcard border border-purple-border/30 rounded-2xl p-4">Cuando realices un pedido, aparecerá aquí como en proceso hasta que el equipo Milkarf lo confirme.</p>
+                        </div>
+                        <div class="mt-4">
+                            <button id="btn-toggle-orders-history" type="button" onclick="window.toggleUserOrdersHistory()" class="w-full flex items-center justify-center gap-2 bg-purple-light dark:bg-purple/10 border border-purple-border/40 dark:border-purple/20 text-purple dark:text-white font-black text-[10px] uppercase tracking-widest py-3 rounded-2xl transition-all active:scale-95">
+                                <i data-lucide="history" class="w-4 h-4"></i> Ver historial de pedidos
+                            </button>
+                            <div id="user-orders-history-wrap" class="hidden mt-3">
+                                <div id="user-orders-history" class="space-y-3">
+                                    <p class="text-xs text-gray-500 font-medium bg-white dark:bg-darkcard border border-purple-border/30 rounded-2xl p-4">Aún no tienes pedidos en el historial.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="user-orders-list" class="hidden"></div>
+                    </div>
+                    <!-- Acceso a canje de puntos -->
+                    <div class="mt-6 border-t border-purple/10 pt-6">
+                        <div class="bg-green/10 dark:bg-green/5 border border-green/25 rounded-3xl p-5 text-left">
+                            <div class="flex items-start gap-3">
+                                <div class="w-11 h-11 rounded-2xl bg-green/20 text-green-dark dark:text-green flex items-center justify-center shrink-0"><i data-lucide="gift" class="w-5 h-5"></i></div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider">Canje de puntos</h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-1">Tus beneficios y solicitudes de canje están en una sección aparte para que tu perfil se mantenga más ordenado.</p>
+                                    <button type="button" onclick="window.navigateTo('view-redeems'); window.renderRedeemItems?.(); window.startUserRedeemsListener?.(true);" class="mt-4 w-full bg-green hover:bg-[#a6b621] text-purple-dark font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl shadow-sm transition-all active:scale-95">Ir a canje de puntos</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1024,9 +991,9 @@
                         <div class="bg-white dark:bg-[#0d0718] p-4 rounded-2xl border border-purple-border/50 dark:border-purple/20 shadow-sm">
                             <h5 class="text-[10px] font-black uppercase tracking-widest text-pink mb-3">Niveles</h5>
                             <div class="space-y-2 text-xs font-bold text-purple-dark dark:text-gray-200">
-                                <p>🐶 Cachorro (0–100 pts): <span class="text-gray-500 dark:text-gray-400 font-semibold">ganas 1 pt por $1</span></p>
-                                <p>💛 Consentido (101–499 pts): <span class="text-gray-500 dark:text-gray-400 font-semibold">ganas 1.25 pt por $1</span></p>
-                                <p>👑 Milkarf VIP (500+ pts): <span class="text-gray-500 dark:text-gray-400 font-semibold">ganas 1.5 pt por $1</span></p>
+                                <p>🐶 Cachorro (0–100 puntos): <span class="text-gray-500 dark:text-gray-400 font-semibold">ganas 1 punto por $1</span></p>
+                                <p>💛 Consentido (101–499 puntos): <span class="text-gray-500 dark:text-gray-400 font-semibold">ganas 1.25 puntos por $1</span></p>
+                                <p>👑 Milkarf VIP (500+ puntos): <span class="text-gray-500 dark:text-gray-400 font-semibold">ganas 1.5 puntos por $1</span></p>
                             </div>
                             <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium leading-relaxed mt-4 bg-purple-light/70 dark:bg-purple/10 p-3 rounded-xl border border-purple-border/40 dark:border-purple/20">Subes de nivel solo con tus compras, y al llegar te quedas ahí para siempre. Luego podrás canjear tus puntos por diferentes productos y sorpresas. Tu nivel se mantiene!</p>
                         </div>
@@ -1056,15 +1023,46 @@
                                 </div>
                             </div>
                         </div>
-
-                        <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider mt-6">¿Cómo sumar más puntos?</h4>
-                        <ul class="text-xs text-gray-500 font-medium space-y-2 list-disc pl-4">
-                            <li><strong>Referido con aval de su veterinario:</strong> Bonus de puntos (activa el canal clínico).</li>
-                            <li><strong>Testimonio con foto antes/después:</strong> Bonus de puntos por ayudarnos a crecer.</li>
-                        </ul>
+                        <div class="bg-green/10 dark:bg-green/5 border border-green/25 rounded-2xl p-4 mt-6">
+                            <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider flex items-center gap-2"><i data-lucide="stethoscope" class="w-4 h-4 text-green-dark dark:text-green"></i> Recomendación veterinaria</h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-2">Suma <strong class="text-purple-dark dark:text-white">20 puntos</strong> por recomendación veterinaria validada por el equipo Milkarf. Este beneficio se acredita una sola vez por usuario y se confirma desde administración.</p>
+                        </div>
                     </div>
                 </div>
                 <!-- ESPACIADOR INFERIOR -->
+                <div class="h-24 w-full shrink-0 pointer-events-none"></div>
+            </div>
+        </section>
+
+
+        <!-- VISTA CANJE DE PUNTOS -->
+        <section id="view-redeems" class="view next">
+            <div class="view-wrapper">
+                <div class="max-w-2xl w-full mb-6">
+                    <button class="nav-btn flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300" data-target="view-dashboard">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al perfil
+                    </button>
+                    <h2 class="text-3xl font-black text-purple-dark dark:text-white mt-4">Canje de puntos</h2>
+                    <p class="text-sm font-bold text-pink uppercase tracking-widest mt-1">Beneficios Milkarf para tu familia multiespecie</p>
+                </div>
+                <div class="max-w-2xl w-full bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-[2rem] p-6 shadow-xl text-left">
+                    <div class="mt-6 border-t border-purple/10 pt-6">
+                        <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
+                            <i data-lucide="gift" class="w-5 h-5 text-pink"></i> Canje de Puntos
+                        </h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mb-4">Usa tus puntos disponibles para solicitar productos y beneficios. El canje se envía por WhatsApp y queda registrado en tu perfil.</p>
+                        <div id="redeem-items-list" class="grid grid-cols-1 gap-3">
+                            <p class="text-xs text-gray-500 font-medium">Inicia sesión para ver beneficios disponibles.</p>
+                        </div>
+                        <div class="mt-5 bg-purple-light/70 dark:bg-purple/10 rounded-2xl border border-purple-border/40 dark:border-purple/20 p-4">
+                            <div class="flex items-center justify-between gap-3 mb-3">
+                                <h5 class="text-[10px] font-black uppercase tracking-widest text-purple-dark dark:text-white flex items-center gap-2"><i data-lucide="history" class="w-4 h-4 text-green"></i> Mis canjes recientes</h5>
+                                <button type="button" onclick="window.startUserRedeemsListener(true)" class="text-[9px] font-black text-purple bg-white dark:bg-darkcard border border-purple/20 px-2.5 py-1.5 rounded-lg uppercase tracking-widest">Actualizar</button>
+                            </div>
+                            <div id="user-redeems-history" class="space-y-2"><p class="text-xs text-gray-500 font-medium">Tus solicitudes de canje aparecerán aquí.</p></div>
+                        </div>
+                    </div>
+                </div>
                 <div class="h-24 w-full shrink-0 pointer-events-none"></div>
             </div>
         </section>
@@ -1076,10 +1074,63 @@
                     <button class="nav-btn flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300" data-target="view-home">
                         <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Inicio
                     </button>
-                    <h2 class="text-3xl font-black text-purple-dark dark:text-white mt-4">Transición y FAQ</h2>
+                    <h2 class="text-3xl font-black text-purple-dark dark:text-white mt-4">Guía para empezar natural</h2>
                 </div>
 
                 <div class="max-w-2xl w-full space-y-3 pb-8">
+
+                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 md:p-8 shadow-xl text-left edu-card mb-4">
+                        <div class="flex items-start gap-4 mb-5">
+                            <div class="w-12 h-12 rounded-2xl bg-green/15 flex items-center justify-center text-green-dark dark:text-green shrink-0"><i data-lucide="sprout" class="w-6 h-6"></i></div>
+                            <div>
+                                <p class="text-[10px] font-black text-pink uppercase tracking-widest mb-1">Aprende lo natural</p>
+                                <h3 class="text-2xl font-black text-purple-dark dark:text-white">¿Por qué elegir nutrición natural?</h3>
+                            </div>
+                        </div>
+                        <p class="text-sm md:text-base leading-relaxed text-gray-600 dark:text-gray-300 font-medium mb-6">
+                            Cada mascota tiene necesidades diferentes. Su edad, peso, nivel de actividad y condición corporal influyen en la cantidad y calidad de nutrientes que necesita. En Milkarf trabajamos con ingredientes reales y fórmulas pensadas para acompañar su bienestar desde una alimentación más consciente, completa y adaptada a su naturaleza.
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="rounded-2xl bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Ingredientes reales</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Carnes, vísceras, vegetales, semillas, vitaminas y minerales.</p></div>
+                            <div class="rounded-2xl bg-green-light dark:bg-green/10 border border-green/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Porciones personalizadas</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Según peso, etapa y nivel de actividad.</p></div>
+                            <div class="rounded-2xl bg-pink-light dark:bg-pink/10 border border-pink/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Balance nutricional</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">No es solo mezclar alimentos: es formular con propósito.</p></div>
+                            <div class="rounded-2xl bg-white dark:bg-darkbg border border-purple-border/40 dark:border-purple/20 p-4"><h4 class="font-black text-purple-dark dark:text-white text-sm mb-1">Transición acompañada</h4><p class="text-xs text-gray-500 dark:text-gray-400 font-medium">El cambio debe hacerse de forma progresiva y responsable.</p></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#1a0836] rounded-3xl p-6 md:p-8 text-white shadow-xl text-left relative overflow-hidden mb-4">
+                        <div class="absolute -right-10 -top-10 text-white/5"><i data-lucide="clipboard-check" class="w-40 h-40"></i></div>
+                        <h3 class="text-green text-2xl font-black mb-3 relative z-10">Natural no significa improvisado</h3>
+                        <p class="text-sm md:text-base leading-relaxed text-purple-light/90 dark:text-gray-300 font-medium mb-6 relative z-10">
+                            Una alimentación natural responsable no se basa en sobras, premios o mezclas al azar. Para que realmente aporte bienestar, debe estar formulada con ingredientes adecuados, proporciones correctas y micronutrientes que ayuden a completar la dieta.
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
+                            <div class="rounded-2xl bg-white/10 border border-white/10 p-5"><h4 class="font-black text-pink-light mb-3 text-sm uppercase tracking-wider">Comida casera sin fórmula</h4><ul class="space-y-2 text-xs text-white/80 font-semibold"><li>• Puede ser incompleta.</li><li>• No siempre respeta proporciones.</li><li>• Puede exceder o faltar nutrientes.</li><li>• Depende de intuición.</li></ul></div>
+                            <div class="rounded-2xl bg-green/15 border border-green/30 p-5"><h4 class="font-black text-green mb-3 text-sm uppercase tracking-wider">Nutrición natural formulada</h4><ul class="space-y-2 text-xs text-white/85 font-semibold"><li>• Busca cubrir necesidades nutricionales.</li><li>• Considera peso, edad y etapa.</li><li>• Incluye vitaminas y minerales.</li><li>• Se apoya en criterios nutricionales.</li></ul></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 md:p-8 shadow-xl text-left edu-card mb-4">
+                        <div class="flex items-start gap-4 mb-5"><div class="w-12 h-12 rounded-2xl bg-pink/10 flex items-center justify-center text-pink shrink-0"><i data-lucide="list-checks" class="w-6 h-6"></i></div><div><p class="text-[10px] font-black text-green-dark dark:text-green uppercase tracking-widest mb-1">Fórmula con intención</p><h3 class="text-2xl font-black text-purple-dark dark:text-white">Cada ingrediente tiene una función</h3></div></div>
+                        <p class="text-sm leading-relaxed text-gray-600 dark:text-gray-300 font-medium mb-5">En Milkarf cada ingrediente cumple un papel dentro de la fórmula. Combinamos fuentes animales, vegetales y micronutrientes para crear una alimentación más completa y consciente.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Proteína animal:</strong><p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Ayuda al mantenimiento muscular.</p></div>
+                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Vísceras selectas:</strong><p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Aportan variedad nutricional.</p></div>
+                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Vegetales frescos:</strong><p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Aportan fibra y micronutrientes.</p></div>
+                            <div class="rounded-xl bg-purple-light dark:bg-[#0d0718] p-4 border border-purple-border/30"><strong class="text-purple-dark dark:text-white">Vitaminas y minerales:</strong><p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Ayudan a completar la fórmula.</p></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-green/10 dark:bg-green/5 rounded-3xl p-6 border border-green/20 text-left mb-4">
+                        <h3 class="text-xl font-black text-purple-dark dark:text-white mb-2">Nuestro enfoque nutricional</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 font-semibold leading-relaxed mb-4">En Milkarf no creemos en alimentar por moda. Creemos en alimentar con intención: ingredientes reales, raciones calculadas, transición responsable y fórmulas que respetan las necesidades de cada mascota.</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Criterios NRC/FEDIAF</span>
+                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Ingredientes seleccionados</span>
+                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Porciones adaptadas</span>
+                            <span class="px-3 py-1.5 rounded-full bg-white dark:bg-darkcard text-[10px] font-black text-purple uppercase tracking-wider border border-green/20">Educación para tutores</span>
+                        </div>
+                    </div>
 
                     <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 shadow-xl text-left mb-6">
                         <div class="flex items-start gap-4 mb-5">
@@ -1237,7 +1288,7 @@
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
                             <button onclick="window.navigateTo('view-calc')" class="bg-white dark:bg-darkcard border border-purple/20 text-purple dark:text-white text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl">Calcular ración</button>
                             <button onclick="window.navigateTo('view-faq')" class="bg-white dark:bg-darkcard border border-purple/20 text-purple dark:text-white text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl">Guía transición</button>
-                            <a href="https://wa.link/pwe23z" target="_blank" class="bg-white dark:bg-darkcard border border-green/30 text-green-dark dark:text-green text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl text-center">Ayuda rápida</a>
+                            <a href="#" onclick="event.preventDefault(); window.openWhatsApp('quickHelp');" class="bg-white dark:bg-darkcard border border-green/30 text-green-dark dark:text-green text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl text-center">Ayuda rápida</a>
                         </div>
                     </div>
 
@@ -1261,16 +1312,15 @@
                             <i data-lucide="clipboard-check" class="w-10 h-10"></i>
                         </div>
                         <div>
-                            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-green-dark dark:text-green mb-2">Pedido montado</p>
-                            <h3 class="text-2xl md:text-3xl font-black text-purple-dark dark:text-white leading-tight">Tu solicitud fue enviada por WhatsApp</h3>
-                            <p id="post-order-code" class="text-[10px] font-black text-purple/50 dark:text-gray-500 uppercase tracking-widest mt-3 hidden"></p>
+                            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-green-dark dark:text-green mb-2">Pedido recibido</p>
+                            <h3 class="text-2xl md:text-3xl font-black text-purple-dark dark:text-white leading-tight">Tu pedido quedó en proceso</h3>
                         </div>
                         <p class="text-sm text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">
-                            Limpiamos el carrito para evitar duplicar el pedido. Ahora puedes revisar su estado o volver al menú para armar otro pedido.
+                            Gracias por elegir Milkarf. Continúa por WhatsApp para que nuestro equipo confirme disponibilidad, datos de entrega y forma de pago.
                         </p>
                         <div class="bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 rounded-2xl p-4 text-left">
                             <p class="text-[11px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">
-                                Tu pedido queda como <b class="text-pink">En proceso</b> hasta que el equipo Milkarf lo confirme desde administración. Los puntos se suman cuando el pedido sea completado.
+                                El pedido aparecerá como <b class="text-pink">En proceso</b> en tu perfil. Los puntos se sumarán cuando el equipo lo complete desde administración.
                             </p>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
@@ -1421,9 +1471,9 @@
                 <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block">Seleccionar Regalo / Canje</label>
                 <select id="canje-item" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-purple-dark dark:text-white" onchange="document.getElementById('canje-costo').value = this.value;">
                     <option value="" disabled selected>Elige un regalo del catálogo...</option>
-                    <option value="100">Snack de Hígado (100 pts)</option>
-                    <option value="150">Treat Deshidratado (150 pts)</option>
-                    <option value="300">Bolsa 250g Extra (300 pts)</option>
+                    <option value="100">Snack de Hígado (100 puntos)</option>
+                    <option value="150">Treat Deshidratado (150 puntos)</option>
+                    <option value="300">Bolsa 250g Extra (300 puntos)</option>
                     <option value="custom">Otro (Ingreso manual)</option>
                 </select>
                 
@@ -1431,6 +1481,93 @@
             </div>
 
             <button id="btn-ejecutar-canje" onclick="window.procesarCanje()" class="w-full bg-green text-purple-dark hover:bg-[#a6b621] font-black text-sm py-3.5 rounded-xl transition-all shadow-md mt-6">Confirmar y Descontar</button>
+        </div>
+    </div>
+
+    <!-- MODAL NOTA DE ENTREGA ADMIN -->
+    <div id="modal-delivery-note" class="fixed inset-0 z-[1004] bg-black/80 backdrop-blur-md hidden items-center justify-center opacity-0 transition-opacity duration-300 p-4">
+        <div id="modal-delivery-note-box" class="bg-white dark:bg-darkcard w-full max-w-3xl rounded-[2rem] shadow-2xl transform scale-95 transition-transform duration-300 relative pointer-events-auto flex flex-col text-left border border-green/50 max-h-[92vh] overflow-hidden">
+            <div class="sticky top-0 z-20 bg-white dark:bg-darkcard border-b border-purple-border/40 dark:border-purple/20 px-6 py-5 flex items-start gap-3">
+                <button onclick="window.closeDeliveryNoteModal()" class="absolute top-5 right-5 text-gray-400 hover:text-pink transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <div class="w-11 h-11 bg-green/20 rounded-full flex items-center justify-center text-green-dark shrink-0"><i data-lucide="truck" class="w-5 h-5"></i></div>
+                <div class="pr-8">
+                    <h3 class="text-xl font-black text-purple-dark dark:text-white leading-tight">Nota de entrega</h3>
+                    <p id="delivery-note-subtitle" class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Revisa el pedido, agrega el delivery y envía la nota al WhatsApp del cliente.</p>
+                </div>
+            </div>
+
+            <div class="p-6 overflow-y-auto custom-scroll">
+                <input type="hidden" id="delivery-note-order-id">
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+                    <div>
+                        <label class="text-[10px] font-black text-purple/50 dark:text-gray-500 uppercase tracking-widest block mb-1.5">WhatsApp del cliente</label>
+                        <input type="tel" id="delivery-note-phone" placeholder="Ej. 0412 000 0000" autocomplete="tel" inputmode="tel" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple">
+                        <p class="text-[9px] text-purple/40 dark:text-gray-500 font-bold mt-1">Se normaliza automáticamente al enviar.</p>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-purple/50 dark:text-gray-500 uppercase tracking-widest block mb-1.5">Fecha de entrega</label>
+                        <input type="date" id="delivery-note-date" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-purple/50 dark:text-gray-500 uppercase tracking-widest block mb-1.5">Costo de delivery</label>
+                        <input type="number" id="delivery-note-cost" placeholder="0.00" min="0" step="0.01" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple">
+                        <p class="text-[9px] text-purple/40 dark:text-gray-500 font-bold mt-1">Este costo se coloca manualmente.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-[1.05fr_.95fr] gap-5">
+                    <div class="bg-white dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/20 rounded-[1.5rem] overflow-hidden shadow-sm">
+                        <div class="bg-gradient-to-br from-[#2e1060] to-[#421d8e] px-5 py-4">
+                            <p class="text-[10px] font-black tracking-[0.2em] uppercase text-green">Milkarf</p>
+                            <h4 class="text-lg font-black text-white mt-1">Nota de entrega</h4>
+                            <p id="delivery-note-preview-date" class="text-[11px] text-white/60 font-semibold mt-1">Entrega por confirmar</p>
+                        </div>
+                        <div class="p-5 space-y-4">
+                            <div class="bg-purple-light/70 dark:bg-darkcard rounded-2xl p-4 border border-purple-border/40 dark:border-purple/20">
+                                <p class="text-[9px] font-black text-purple/45 dark:text-gray-500 uppercase tracking-widest">Cliente</p>
+                                <p id="delivery-note-client" class="text-sm font-black text-purple-dark dark:text-white mt-1">Cliente Milkarf</p>
+                                <p id="delivery-note-pet" class="text-xs font-bold text-gray-500 dark:text-gray-400 mt-1">Mascota asociada: por confirmar</p>
+                            </div>
+
+                            <div>
+                                <p class="text-[9px] font-black text-purple/45 dark:text-gray-500 uppercase tracking-widest mb-2">Detalle del pedido</p>
+                                <div id="delivery-note-items-preview" class="space-y-2"></div>
+                            </div>
+
+                            <div class="bg-green/10 border border-green/25 rounded-2xl p-4 space-y-2">
+                                <div class="flex items-center justify-between text-xs font-bold text-purple-dark dark:text-white"><span>Total productos</span><span id="delivery-note-products-total">$0.00</span></div>
+                                <div class="flex items-center justify-between text-xs font-bold text-purple-dark dark:text-white"><span>Delivery</span><span id="delivery-note-delivery-total">$0.00</span></div>
+                                <div class="border-t border-green/30 pt-2 flex items-center justify-between"><span class="text-[10px] font-black uppercase tracking-widest text-green-dark dark:text-green">Total a pagar</span><span id="delivery-note-final-total" class="text-2xl font-black text-purple-dark dark:text-white">$0.00</span></div>
+                            </div>
+
+                            <div class="bg-pink/10 border-l-4 border-pink rounded-r-2xl p-4 text-xs text-purple-dark dark:text-gray-300 font-semibold leading-relaxed">
+                                <strong>Pago:</strong> Banco de Venezuela<br>
+                                Cuenta: 0102 0443 7700 0093 1771<br>
+                                C.I: 20.530.321<br>
+                                Pago móvil: 0414-179-1136
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-purple-light/70 dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 rounded-2xl p-4">
+                            <div class="flex items-center justify-between gap-3 mb-3">
+                                <p class="text-[10px] font-black text-purple/50 dark:text-gray-500 uppercase tracking-widest">Mensaje para WhatsApp</p>
+                                <button type="button" onclick="window.copyDeliveryNoteMessage()" class="text-[9px] font-black uppercase tracking-widest text-purple dark:text-green hover:text-pink">Copiar</button>
+                            </div>
+                            <div id="delivery-note-message-preview" class="text-xs text-gray-600 dark:text-gray-300 font-semibold leading-relaxed whitespace-pre-line max-h-[360px] overflow-y-auto custom-scroll pr-1"></div>
+                        </div>
+
+                        <div id="delivery-note-error" class="hidden bg-pink/10 border border-pink/20 text-pink text-xs font-bold rounded-xl p-3"></div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <button type="button" onclick="window.closeDeliveryNoteModal()" class="w-full bg-white dark:bg-[#0d0718] border border-purple-border/60 dark:border-purple/30 text-purple dark:text-white font-black text-xs uppercase tracking-widest py-3.5 rounded-xl">Cancelar</button>
+                            <button type="button" onclick="window.sendDeliveryNoteToClient()" class="w-full bg-green hover:bg-[#a6b621] text-purple-dark font-black text-xs uppercase tracking-widest py-3.5 rounded-xl shadow-md">Enviar por WhatsApp</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1487,8 +1624,10 @@
 
                         <div class="pt-2 space-y-3">
                             <p class="text-[11px] text-purple font-black uppercase tracking-widest text-center">Tu Cuenta</p>
-                            <input type="email" id="auth-email-reg" placeholder="Tu mejor correo" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
-                            <input type="password" id="auth-pass-reg" placeholder="Crea contraseña (min. 6)" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
+                            <input type="email" id="auth-email-reg" placeholder="Tu mejor correo" autocomplete="email" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
+                            <input type="tel" id="auth-phone-reg" placeholder="WhatsApp de contacto (ej. 0412 000 0000)" autocomplete="tel" inputmode="tel" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
+                            <p class="text-[10px] text-purple/50 dark:text-gray-500 font-semibold leading-tight -mt-1">Usaremos este número para confirmar pedidos y enviar notas de entrega.</p>
+                            <input type="password" id="auth-pass-reg" placeholder="Crea contraseña (min. 6)" autocomplete="new-password" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
                             <button id="btn-reg-email" onclick="window.registrarYGuardarMascota()" type="button" class="w-full bg-green text-purple-dark hover:bg-[#a6b621] font-extrabold text-sm py-3.5 rounded-xl transition-all active:scale-95 shadow-md">Crear Cuenta y Entrar</button>
                         </div>
                     </form>
@@ -1512,6 +1651,9 @@
                     <h4 class="text-sm font-black text-purple-dark dark:text-white text-center mb-2">¡Último paso!</h4>
                     <p class="text-[10px] text-gray-500 text-center mb-4 font-medium leading-relaxed">Completa los datos de tu peludo para brindarle atención personalizada y finalizar tu registro.</p>
                     
+                    <input type="tel" id="pet-contact-whatsapp" placeholder="WhatsApp de contacto (ej. 0412 000 0000)" autocomplete="tel" inputmode="tel" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple mb-3">
+                    <p class="text-[10px] text-purple/50 dark:text-gray-500 font-semibold leading-tight -mt-2 mb-3 text-center">Así podremos enviarte confirmaciones y notas de entrega.</p>
+
                     <div class="flex gap-2 mb-2">
                         <button id="btn-tipo-perro" onclick="window.selectPetType('perro')" class="flex-1 bg-purple text-white py-2.5 rounded-xl text-xs font-bold transition-colors">🐶 Perro</button>
                         <button id="btn-tipo-gato" onclick="window.selectPetType('gato')" class="flex-1 bg-white dark:bg-[#0d0718] text-purple dark:text-white border border-purple-border/50 dark:border-purple/30 py-2.5 rounded-xl text-xs font-bold transition-colors">🐱 Gato</button>
@@ -1802,6 +1944,204 @@
                 .replace(/'/g, '&#039;');
         };
 
+        window.normalizePhone = function(value = '') {
+            let digits = String(value || '').replace(/\D/g, '');
+            if(!digits) return '';
+            if(digits.startsWith('00')) digits = digits.slice(2);
+            if(digits.startsWith('0')) digits = '58' + digits.slice(1);
+            if(digits.length === 10 && digits.startsWith('4')) digits = '58' + digits;
+            if(digits.length === 11 && digits.startsWith('04')) digits = '58' + digits.slice(1);
+            return digits;
+        };
+
+        window.formatPhoneForDisplay = function(value = '') {
+            const digits = window.normalizePhone(value);
+            if(!digits) return '';
+            if(digits.startsWith('58') && digits.length >= 12) {
+                return '+58 ' + digits.slice(2, 5) + ' ' + digits.slice(5, 8) + ' ' + digits.slice(8);
+            }
+            return '+' + digits;
+        };
+
+
+        window.sanitizeWhatsAppMessage = function(text = '') {
+            return String(text)
+                .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '')
+                .replace(/[ \t]+\n/g, '\n')
+                .replace(/\n{3,}/g, '\n\n')
+                .trim();
+        };
+
+        window.buildWhatsAppUrl = function(message, phone = window.WA_NUMBER) {
+            const cleanPhone = window.normalizePhone ? window.normalizePhone(phone || window.WA_NUMBER) : String(phone || window.WA_NUMBER || '').replace(/\D/g, '');
+            return 'https://wa.me/' + cleanPhone + '?text=' + encodeURIComponent(window.sanitizeWhatsAppMessage(message));
+        };
+
+        window.openWhatsAppMessage = function(message, phone = window.WA_NUMBER) {
+            const url = window.buildWhatsAppUrl(message, phone);
+            const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+            try {
+                if(isMobile) {
+                    // En móviles es más confiable navegar directamente en el mismo gesto del usuario.
+                    window.location.href = url;
+                    return;
+                }
+                const a = document.createElement('a');
+                a.href = url;
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => a.remove(), 600);
+            } catch(error) {
+                const opened = window.open(url, '_blank', 'noopener,noreferrer');
+                if(!opened) window.location.href = url;
+            }
+        };
+
+        window.getWhatsAppTemplate = function(type = 'general', data = {}) {
+            const currency = (value) => '$' + Number(value || 0).toFixed(2);
+            const userName = data.userName || data.email || 'Cliente Milkarf';
+
+            switch(type) {
+                case 'general':
+                    return `Hola, equipo Milkarf.
+
+Me gustaría recibir información sobre la alimentación natural para mi mascota.
+
+Quisiera conocer las opciones disponibles, presentaciones, disponibilidad y la forma recomendada para iniciar una transición adecuada.`;
+
+                case 'quickHelp':
+                    return `Hola, equipo Milkarf.
+
+Estoy revisando la web y necesito ayuda antes de completar mi pedido.
+
+Quisiera confirmar recomendaciones, disponibilidad, costo de delivery y próximos pasos.`;
+
+                case 'newOrder': {
+                    const items = Array.isArray(data.items) ? data.items.map((i, index) => {
+                        const pet = i.forPet ? ` - Para ${i.forPet}` : '';
+                        return `${index + 1}. ${Number(i.qty || 0)} x ${i.name || 'Producto'} (${i.weight || 'presentación'})${pet}`;
+                    }).join('\n') : 'Pedido Milkarf';
+                    let msg = `Hola, equipo Milkarf.
+
+Quiero realizar el siguiente pedido:
+
+Productos:
+${items}
+
+Resumen del pedido:
+Subtotal: ${currency(data.subtotal)}`;
+                    if(data.discountApplied) {
+                        msg += `\nDescuento de bienvenida: -${currency(data.discountAmount)}\nTotal de productos: ${currency(data.finalTotal)}\n\nEl descuento de primera compra fue aplicado desde la web.`;
+                    } else {
+                        msg += `\nTotal de productos: ${currency(data.finalTotal)}`;
+                    }
+                    if(data.location) {
+                        msg += `\n\nUbicación para delivery:\n${data.location}`;
+                    }
+                    msg += `\n\nPor favor, confirmen disponibilidad, costo de delivery y forma de pago para completar el pedido.`;
+                    return msg;
+                }
+
+                case 'userRedeem':
+                    return `Hola, equipo Milkarf.
+
+Quiero solicitar el canje de mis puntos.
+
+Beneficio: ${data.itemName || 'Beneficio Milkarf'}
+Detalle: ${data.benefit || 'Beneficio disponible'}
+Puntos descontados: ${Number(data.points || 0)} ptos
+Usuario: ${userName}
+
+Por favor, confirmen disponibilidad y próximos pasos para coordinar la entrega.`;
+
+                case 'adminOrderContact':
+                    return `Hola, te escribimos de Milkarf para confirmar tu pedido.
+
+Ya recibimos tu solicitud y estamos revisando disponibilidad, total final con delivery y forma de pago.
+
+Por favor, indícanos si deseas continuar con la confirmación del pedido.`;
+
+                case 'adminOrderContactFallback':
+                    return `Hola, equipo Milkarf.
+
+Este pedido no tiene un número de WhatsApp válido registrado para contactar directamente al cliente.
+
+Cliente: ${data.userName || data.email || 'Usuario'}
+Pedido: ${data.orderId || 'sin referencia visible'}
+
+Revisar el pedido desde el panel administrador para continuar la atención.`;
+
+                case 'deliveryNote': {
+                    const order = data.order || {};
+                    const noteItems = Array.isArray(data.items) ? data.items : (Array.isArray(order.items) ? order.items : []);
+                    const items = noteItems.length ? noteItems.map((i, index) => {
+                        const qty = Number(i.qty || 0);
+                        const lineTotal = Number(i.price || 0) * qty;
+                        const weight = i.weight || i.tam || i.presentation || '';
+                        const pet = i.forPet ? ` - Para ${i.forPet}` : '';
+                        const custom = i.personalizado ? ' personalizado' : '';
+                        return `${index + 1}. ${qty} x ${i.name || 'Producto'}${weight ? ` (${weight})` : ''}${custom}${pet} - ${currency(lineTotal)}`;
+                    }).join('\n') : 'Pedido Milkarf';
+                    const productTotal = Number(data.productTotal ?? order.total ?? 0);
+                    const deliveryCost = Number(data.deliveryCost || 0);
+                    const finalTotal = productTotal + deliveryCost;
+                    const clientName = data.clientName || order.userName || order.nombre || order.email || 'cliente Milkarf';
+                    const petName = data.petName || order.selectedPet || (noteItems.find(i => i.forPet)?.forPet) || 'tu mascota';
+                    const deliveryDate = data.deliveryDateLabel || 'Por confirmar';
+
+                    return `Hola, ${clientName}.
+
+Te compartimos tu nota de entrega Milkarf.
+
+Cliente: ${clientName}
+Mascota asociada: ${petName}
+Fecha de entrega: ${deliveryDate}
+
+Detalle del pedido:
+${items}
+
+Total de productos: ${currency(productTotal)}
+Delivery: ${currency(deliveryCost)}
+Total a pagar: ${currency(finalTotal)}
+
+Datos de pago:
+Banco de Venezuela
+Cuenta: 0102 0443 7700 0093 1771
+C.I: 20.530.321
+Pago movil: 0414-179-1136
+
+Pago en Bs. a tasa BCV del dia. Si pagas en divisas, puedes consultarnos por el descuento disponible.
+
+Cuando realices el pago, por favor envia el comprobante por este mismo chat para confirmar tu pedido.`;
+                }
+
+                case 'birthday':
+                    return `Hola, te escribimos de Milkarf.
+
+Vimos que se acerca el cumpleaños de ${data.petName || 'tu mascota'} y queremos ayudarte a consentirlo con una opción especial de nuestra alimentación natural.
+
+Si deseas, podemos orientarte con recomendaciones según su perfil.`;
+
+                case 'adminRedeemContact':
+                    return `Hola, te escribimos de Milkarf sobre tu solicitud de canje.
+
+Beneficio solicitado: ${data.itemName || data.benefit || 'Beneficio Milkarf'}
+Puntos utilizados: ${Number(data.points || 0)} ptos
+
+Queremos confirmar disponibilidad y coordinar la entrega.`;
+
+                default:
+                    return window.getWhatsAppTemplate('general', data);
+            }
+        };
+
+        window.openWhatsApp = function(type = 'general', data = {}) {
+            window.openWhatsAppMessage(window.getWhatsAppTemplate(type, data), data.phone || window.WA_NUMBER);
+        };
+
         window.getClientToken = function() {
             try {
                 let token = localStorage.getItem('milkarf_client_token');
@@ -1830,7 +2170,7 @@
             window.currentWeightRes = '250gr';
             if(unsubUserOrders) { unsubUserOrders(); unsubUserOrders = null; }
             if(typeof unsubUserRedeems !== 'undefined' && unsubUserRedeems) { unsubUserRedeems(); unsubUserRedeems = null; }
-            ['calc-nombre','pesoInput','auth-email-login','auth-pass-login','auth-email-reg','auth-pass-reg','auth-name-reg','reg-pet-nombre','reg-pet-edad','reg-pet-peso','reg-pet-raza','reg-pet-cumple','pet-nombre','pet-edad','pet-peso','pet-raza','pet-cumple','desc-nombre','desc-telefono','desc-mascota'].forEach(id => {
+            ['calc-nombre','pesoInput','auth-email-login','auth-pass-login','auth-email-reg','auth-phone-reg','auth-pass-reg','auth-name-reg','pet-contact-whatsapp','reg-pet-nombre','reg-pet-edad','reg-pet-peso','reg-pet-raza','reg-pet-cumple','pet-nombre','pet-edad','pet-peso','pet-raza','pet-cumple','desc-nombre','desc-telefono','desc-mascota'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el) el.value = '';
             });
@@ -1927,49 +2267,70 @@
         };
 
 
+        window.repairViewState = function(preferredId = 'view-home') {
+            const views = Array.from(document.querySelectorAll('.view'));
+            if(!views.length) return;
+            let active = document.querySelector('.view.active');
+            if(!active || !document.body.contains(active)) {
+                const preferred = document.getElementById(preferredId) || document.getElementById('view-home') || views[0];
+                views.forEach(view => {
+                    view.classList.remove('active', 'prev', 'next');
+                    view.classList.add(view === preferred ? 'active' : 'next');
+                });
+                active = preferred;
+            }
+            const activeViews = views.filter(view => view.classList.contains('active'));
+            if(activeViews.length > 1) {
+                activeViews.slice(1).forEach(view => { view.classList.remove('active'); view.classList.add('next'); });
+            }
+        };
+
         window.navigateTo = function(targetId) {
             if (!targetId) return;
-            const currentActive = document.querySelector('.view.active');
+            const target = document.getElementById(targetId);
+            const views = Array.from(document.querySelectorAll('.view'));
+            if(!target || !target.classList.contains('view')) {
+                console.warn('Vista no encontrada:', targetId);
+                window.repairViewState?.('view-home');
+                window.isNavigating = false;
+                if (window.menuOpen) window.forceCloseMenu?.();
+                window.showToast?.('No pudimos abrir esa sección. Volvimos al inicio.');
+                return;
+            }
+
+            let currentActive = document.querySelector('.view.active');
+            if(!currentActive) {
+                window.repairViewState?.('view-home');
+                currentActive = document.querySelector('.view.active');
+            }
             if (window.isNavigating && currentActive?.id !== targetId) return;
 
             if (currentActive?.id === targetId) {
-                if (window.menuOpen) {
-                    if (typeof window.forceCloseMenu === 'function') window.forceCloseMenu();
-                    else window.toggleMenu();
-                }
+                try { currentActive.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) { currentActive.scrollTop = 0; }
+                if (window.menuOpen) window.forceCloseMenu?.();
                 return;
             }
 
             window.isNavigating = true;
-            vibrate(18);
+            try { vibrate(18); } catch(e) {}
             const authWrap = document.getElementById('top-auth-btn-wrap');
-            if(authWrap) {
-                if (targetId === 'view-admin') {
-                    authWrap.style.display = 'none';
-                } else {
-                    authWrap.style.display = 'block';
-                }
-            }
+            if(authWrap) authWrap.style.display = targetId === 'view-admin' ? 'none' : 'block';
 
-            document.querySelectorAll('.view').forEach(view => {
+            views.forEach(view => {
                 view.classList.remove('active', 'prev', 'next');
-                if (view.id === targetId) {
-                    view.classList.add('active');
-                } else if (targetId === 'view-home') {
-                    view.classList.add('next');
-                } else {
-                    view.classList.add(view.id === 'view-home' ? 'prev' : 'next');
-                }
+                if (view.id === targetId) view.classList.add('active');
+                else if (targetId === 'view-home') view.classList.add('next');
+                else view.classList.add(view.id === 'view-home' ? 'prev' : 'next');
+                try { view.scrollTop = 0; } catch(e) {}
             });
             window.lastScrollY = 0;
-            if (targetId === 'view-calc') {
-                window.prepareCalculatorInputs(true);
+            if (targetId === 'view-calc') window.prepareCalculatorInputs?.(true);
+            if (targetId === 'view-redeems') {
+                window.renderRedeemItems?.();
+                window.startUserRedeemsListener?.(true);
             }
-            window.setMaxBirthdayDates();
-            if (window.menuOpen) {
-                if (typeof window.forceCloseMenu === 'function') window.forceCloseMenu();
-                else window.toggleMenu();
-            }
+            window.setMaxBirthdayDates?.();
+            if (window.menuOpen) window.forceCloseMenu?.();
             
             const authMenu = document.getElementById('auth-dropdown-menu');
             if (authMenu && !authMenu.classList.contains('hidden')) {
@@ -1977,7 +2338,10 @@
                 authMenu.classList.add('opacity-0', 'scale-95');
                 setTimeout(() => authMenu.classList.add('hidden'), 160);
             }
-            setTimeout(() => { window.isNavigating = false; }, 560);
+            setTimeout(() => {
+                window.isNavigating = false;
+                window.repairViewState?.(targetId);
+            }, 420);
         };
 
         window.forceCloseMenu = function() {
@@ -2181,6 +2545,9 @@
             const safeEdad = window.escapeHTML(p.edad || p.etapa || 'Sin etapa registrada');
             const calc = window.getPetCalcData(p);
             const selected = idx === window.selectedDashboardPetIndex;
+            const fotoUrlRaw = String(p.fotoUrl || '').trim();
+            const fotoUrl = /^https?:\/\//i.test(fotoUrlRaw) ? window.escapeHTML(fotoUrlRaw) : '';
+            const avatarContent = fotoUrl ? `<img src="${fotoUrl}" alt="Foto de ${safeName}" class="w-full h-full object-cover rounded-full" loading="lazy" decoding="async" onerror="this.outerHTML='${p.tipo === 'gato' ? '🐱' : '🐶'}'">` : (p.tipo === 'gato' ? '🐱' : '🐶');
             const calcSummary = calc ? `
                 <div class="mt-3 grid grid-cols-3 gap-2">
                     <div class="bg-white dark:bg-darkcard rounded-xl p-3 border border-purple-border/30 text-center"><p class="text-[9px] font-black text-gray-400 uppercase">Diario</p><p class="text-base font-black text-purple-dark dark:text-white">${Number(calc.gramos || 0)}g</p></div>
@@ -2194,7 +2561,7 @@
             return `
                 <div class="rounded-2xl border ${selected ? 'border-green shadow-md shadow-green/10 bg-green/5 dark:bg-green/10' : 'border-purple-border/30 dark:border-purple/20 bg-white dark:bg-darkcard'} p-4 relative overflow-hidden">
                     <div class="flex items-start gap-4">
-                        <button type="button" onclick="window.selectDashboardPet(${idx})" class="w-12 h-12 rounded-full ${selected ? 'bg-green text-purple-dark' : 'bg-purple-light dark:bg-[#0d0718] text-purple dark:text-white'} flex items-center justify-center text-2xl shadow-sm border border-purple/10 shrink-0 active:scale-95" aria-label="Seleccionar mascota">${p.tipo === 'gato' ? '🐱' : '🐶'}</button>
+                        <button type="button" onclick="window.selectDashboardPet(${idx})" class="w-12 h-12 rounded-full ${selected ? 'bg-green text-purple-dark' : 'bg-purple-light dark:bg-[#0d0718] text-purple dark:text-white'} flex items-center justify-center text-2xl shadow-sm border border-purple/10 shrink-0 active:scale-95 overflow-hidden" aria-label="Seleccionar mascota">${avatarContent}</button>
                         <div class="min-w-0 flex-1 pr-9">
                             <div class="flex flex-wrap items-center gap-2">
                                 <h5 class="font-black text-purple-dark dark:text-white text-base truncate">${safeName}</h5>
@@ -2202,14 +2569,51 @@
                             </div>
                             <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-0.5 truncate">${safePeso}kg · ${safeEdad}${p.cumple ? ` · Nac: ${window.escapeHTML(p.cumple)}` : ''}</p>
                             ${calcSummary}
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
-                                <button type="button" onclick="window.cargarMascotaEnCalculadora(${idx})" class="bg-purple hover:bg-pink text-white text-[10px] font-black uppercase tracking-widest rounded-xl py-3 px-3 flex items-center justify-center gap-2 transition-all active:scale-95"><i data-lucide="calculator" class="w-4 h-4"></i> Calcular porción</button>
-                                <button type="button" onclick="window.selectDashboardPet(${idx})" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white text-[10px] font-black uppercase tracking-widest rounded-xl py-3 px-3 flex items-center justify-center gap-2 transition-all active:scale-95"><i data-lucide="check-circle" class="w-4 h-4"></i> Usar para pedido</button>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4">
+                                <button type="button" onclick="window.cargarMascotaEnCalculadora(${idx})" class="bg-purple hover:bg-pink text-white text-[10px] font-black uppercase tracking-widest rounded-xl py-3 px-3 flex items-center justify-center gap-2 transition-all active:scale-95"><i data-lucide="calculator" class="w-4 h-4"></i> Calcular</button>
+                                <button type="button" onclick="window.selectDashboardPet(${idx})" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white text-[10px] font-black uppercase tracking-widest rounded-xl py-3 px-3 flex items-center justify-center gap-2 transition-all active:scale-95"><i data-lucide="check-circle" class="w-4 h-4"></i> Usar</button>
+                                <button type="button" onclick="window.actualizarFotoMascota(${idx})" class="bg-white dark:bg-darkbg border border-purple-border/40 dark:border-purple/20 text-purple dark:text-white text-[10px] font-black uppercase tracking-widest rounded-xl py-3 px-3 flex items-center justify-center gap-2 transition-all active:scale-95"><i data-lucide="camera" class="w-4 h-4"></i> Foto</button>
                             </div>
                         </div>
                     </div>
                     <button type="button" onclick="window.eliminarMascota(${idx})" aria-label="Eliminar mascota" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white dark:bg-darkcard border border-pink/20 text-pink hover:bg-pink hover:text-white flex items-center justify-center transition-all shadow-sm active:scale-95"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                 </div>`;
+        };
+
+
+        window.actualizarFotoMascota = async function(index) {
+            window.vibrate?.(20);
+            if(!window.currentUser || !window.currentUser.data || !db) {
+                window.showToast('Inicia sesión para editar la foto de tu mascota.');
+                return;
+            }
+            const mascotas = Array.isArray(window.currentUser.data.mascotas) ? [...window.currentUser.data.mascotas] : [];
+            const pet = mascotas[index];
+            if(!pet) return;
+            const current = pet.fotoUrl || '';
+            const url = prompt(`Pega el enlace de la foto de ${pet.nombre || 'tu mascota'}.
+
+Debe ser una URL que comience con https://.
+Deja el campo vacío para quitar la foto.`, current);
+            if(url === null) return;
+            const clean = String(url || '').trim();
+            if(clean && !/^https:\/\//i.test(clean)) {
+                window.showToast('La foto debe ser un enlace seguro que comience con https://');
+                return;
+            }
+            try {
+                mascotas[index] = { ...pet, fotoUrl: clean };
+                await setDoc(window.getUserPath(window.currentUser.uid), {
+                    mascotas,
+                    fecha_actualizacion: serverTimestamp()
+                }, { merge: true });
+                window.currentUser.data.mascotas = mascotas;
+                window.actualizarUIAuth?.();
+                window.showToast(clean ? 'Foto de mascota actualizada.' : 'Foto de mascota eliminada.', 'success');
+            } catch(error) {
+                console.error('Error actualizando foto de mascota:', error);
+                window.showToast('No se pudo guardar la foto. Inténtalo de nuevo.');
+            }
         };
 
         window.abrirModalAgregarMascota = function() {
@@ -2360,7 +2764,7 @@
                 if(topText) topText.textContent = primerNombre;
                 
                 if(topPts) {
-                    topPts.textContent = puntosDisp + ' pts';
+                    topPts.textContent = puntosDisp + ' ptos';
                     topPts.classList.remove('hidden');
                 }
 
@@ -2470,7 +2874,7 @@
             const pet = mascotas[index];
             if(!pet) return;
 
-            const ok = confirm(`¿Seguro que deseas eliminar a ${pet.nombre || 'esta mascota'} de tu núcleo?`);
+            const ok = confirm(`¿Seguro que deseas eliminar a ${pet.nombre || 'esta mascota'} de tu familia?`);
             if(!ok) return;
 
             try {
@@ -2720,6 +3124,7 @@
         };
 
         window.guardarPerfilMascota = async function() {
+            const phoneEl = document.getElementById('pet-contact-whatsapp');
             const tipoEl = document.getElementById('pet-tipo');
             const nombreEl = document.getElementById('pet-nombre');
             const edadEl = document.getElementById('pet-edad');
@@ -2730,12 +3135,20 @@
 
             if(!tipoEl || !nombreEl || !edadEl || !pesoEl || !err) return;
 
+            const rawPhone = phoneEl ? phoneEl.value.trim() : '';
+            const phone = window.normalizePhone(rawPhone);
             const tipo = tipoEl.value;
             const nombre = nombreEl.value.trim();
             const edad = edadEl.value.trim();
             const peso = pesoEl.value.trim();
             const raza = razaEl ? razaEl.value.trim() : '';
             const cumple = cumpleEl ? cumpleEl.value : '';
+
+            if(!phone || phone.length < 10) {
+                err.textContent = "Agrega un número de WhatsApp válido para poder confirmar pedidos y notas de entrega.";
+                err.classList.remove('hidden');
+                return;
+            }
 
             if(!nombre || !edad || !peso) {
                 err.textContent = "Por favor completa el nombre, edad y peso para finalizar.";
@@ -2763,41 +3176,37 @@
                     raza: raza || 'Mestizo',
                     cumple: cumple
                 };
-                
+
                 const data = window.currentUser.data || { puntos: 0, puntos_historicos: 0, descuento_usado: false };
                 if (!data.mascotas) data.mascotas = [];
                 data.mascotas.push(nuevaMascota);
-                
+
                 await setDoc(window.getUserPath(window.currentUser.uid), {
                     mascotas: data.mascotas,
                     puntos: data.puntos || 0,
                     puntos_historicos: data.puntos_historicos || data.puntos || 0,
                     descuento_usado: data.descuento_usado || false,
                     email: window.currentUser.email || '',
+                    telefono: phone,
+                    phone: phone,
+                    whatsapp: phone,
                     fecha_actualizacion: serverTimestamp()
                 }, { merge: true });
-                
-                window.currentUser.data = data;
-                window.state.nombreMascota = nombre; 
-                window.isRegisteringPet = false;
-                
-                if (nombreEl) nombreEl.value = '';
-                if (edadEl) edadEl.value = '';
-                if (pesoEl) pesoEl.value = '';
-                if (razaEl) razaEl.value = '';
-                if (cumpleEl) cumpleEl.value = '';
-                
-                window.showToast("¡Mascota guardada exitosamente!", 'success');
+
+                try { localStorage.setItem('milkarf_contact_phone', phone); } catch(e) {}
+                window.currentUser.data = { ...data, mascotas: data.mascotas, telefono: phone, phone: phone, whatsapp: phone };
+                window.state.nombreMascota = nombre;
+
+                window.actualizarUIAuth();
                 window.cerrarModalAuth();
-                window.actualizarUIAuth(); 
-                
+                window.showToast("WhatsApp y mascota guardados con éxito.", 'success');
+
                 if (btn) { btn.textContent = "Guardar y Finalizar"; btn.disabled = false; }
-            } catch(error) {
-                err.textContent = "Error al guardar perfil. Verifica tu conexión.";
+            } catch(e) {
+                err.textContent = "Error al guardar perfil. Intenta de nuevo.";
                 err.classList.remove('hidden');
                 const btn = document.getElementById('btn-guardar-perfil');
                 if (btn) { btn.textContent = "Guardar y Finalizar"; btn.disabled = false; }
-                console.error(error);
             }
         };
 
@@ -3031,6 +3440,7 @@
 
             const nombre = inputNombre.value.trim().toLowerCase();
             const telefono = inputTelefono.value.trim();
+            try { localStorage.setItem('milkarf_contact_phone', telefono); } catch(e) {}
             const mascota = inputMascota.value.trim().toLowerCase();
 
             inputNombre.classList.remove('border-pink', 'border-2');
@@ -3080,6 +3490,16 @@
             }
 
             window.descuentoAplicado = true;
+            if (db && window.currentUser?.uid) {
+                try {
+                    await setDoc(window.getUserPath(window.currentUser.uid), {
+                        telefono: telefono.replace(/\D/g, ''),
+                        nombre_contacto: nombre,
+                        mascota_descuento: mascota
+                    }, { merge: true });
+                    window.currentUser.data = { ...(window.currentUser.data || {}), telefono: telefono.replace(/\D/g, ''), nombre_contacto: nombre, mascota_descuento: mascota };
+                } catch(e) { console.warn('No se pudo guardar el teléfono de contacto:', e); }
+            }
             window.cerrarModalDescuento();
             const banner = document.getElementById('descuento-banner');
             if(banner) banner.innerHTML = `<div class="bg-green/20 text-green-dark p-3 rounded-lg text-center text-xs font-black flex items-center justify-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> ¡Descuento aplicado con éxito!</div>`;
@@ -3348,7 +3768,7 @@
                 });
             } catch(error) {
                 console.error('Error iniciando listener de pedidos:', error);
-                container.innerHTML = '<p class="text-xs text-pink font-bold bg-pink/10 border border-pink/20 rounded-xl p-3">No se pudo iniciar el seguimiento de pedidos.</p>';
+                container.innerHTML = '<p class="text-xs text-pink font-bold bg-pink/10 border border-pink/20 rounded-xl p-3">No se pudo cargar el estado de tus pedidos.</p>';
             }
             if(forceNavigate) window.navigateTo?.('view-dashboard');
         };
@@ -3366,10 +3786,9 @@
                 const date = o.createdAt ? new Date(o.createdAt).toLocaleString('es-VE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : 'Pedido reciente';
                 const items = Array.isArray(o.items) ? o.items.map(i => `${Number(i.qty || 0)}x ${i.name || 'Producto'} ${i.weight ? '(' + i.weight + ')' : ''}${i.forPet ? ' · ' + i.forPet : ''}`).join(' · ') : 'Pedido Milkarf';
                 const total = typeof o.total === 'number' ? '$' + o.total.toFixed(2) : '';
-                const orderCode = o.id ? `#${String(o.id).slice(0, 8).toUpperCase()}` : '';
                 const points = Number(o.pointsAwarded || o.pointsGranted || 0);
                 let helper = 'Pedido recibido. Está pendiente por confirmación del administrador.';
-                if(['confirmado','verificado'].includes(status)) helper = points > 0 ? `Pedido confirmado. Puntos estimados: +${points} pts.` : 'Pedido confirmado por administración.';
+                if(['confirmado','verificado'].includes(status)) helper = points > 0 ? `Pedido confirmado. Puntos estimados: +${points} puntos.` : 'Pedido confirmado por administración.';
                 if(status === 'completado') helper = points > 0 ? `Pedido completado. Sumaste +${points} puntos con esta compra.` : 'Pedido completado por administración.';
                 if(status === 'cancelado') helper = 'Pedido cancelado. Escríbenos si necesitas revisar este pedido.';
                 return `
@@ -3379,7 +3798,6 @@
                             <div class="min-w-0">
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">${date}</p>
-                                    <span class="text-[9px] text-purple/50 dark:text-gray-500 font-black uppercase tracking-widest">${window.escapeHTML(orderCode)}</span>
                                 </div>
                                 <h5 class="text-sm font-black text-purple-dark dark:text-white mt-1 leading-snug">${window.escapeHTML(items)}</h5>
                                 <p class="text-xs text-gray-500 dark:text-gray-400 font-bold mt-1">${total}</p>
@@ -3388,7 +3806,7 @@
                         </div>
                         <div class="mt-3 ml-1 bg-purple-light/70 dark:bg-[#0d0718] border border-purple-border/30 dark:border-purple/20 rounded-xl p-3">
                             <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">${window.escapeHTML(helper)}</p>
-                            ${points > 0 ? `<div class="mt-2 inline-flex items-center gap-1 bg-green/15 text-green-dark dark:text-green border border-green/20 rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest"><i data-lucide="sparkles" class="w-3 h-3"></i> +${points} pts</div>` : ''}
+                            ${points > 0 ? `<div class="mt-2 inline-flex items-center gap-1 bg-green/15 text-green-dark dark:text-green border border-green/20 rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest"><i data-lucide="sparkles" class="w-3 h-3"></i> +${points} ptos</div>` : ''}
                         </div>
                     </div>`;
             }).join('');
@@ -3542,10 +3960,10 @@
                         <div class="flex justify-between items-start mb-2">
                             <div class="pr-2 min-w-0">
                                 <p class="font-black text-purple-dark dark:text-white text-sm truncate leading-tight">${email}</p>
-                                <p class="text-[10px] font-bold text-gray-500 mt-1">${levelObj.nombre} (Histórico: ${ptsHist} pts)</p>
+                                <p class="text-[10px] font-bold text-gray-500 mt-1">${levelObj.nombre} (Histórico: ${ptsHist} puntos)</p>
                             </div>
                             <div class="flex flex-col items-end shrink-0 gap-2">
-                                <span class="text-xs font-black text-purple dark:text-white bg-purple-light dark:bg-purple/20 px-3 py-1.5 rounded-xl border border-purple/20 shadow-sm">${ptsDisp} pts</span>
+                                <span class="text-xs font-black text-purple dark:text-white bg-purple-light dark:bg-purple/20 px-3 py-1.5 rounded-xl border border-purple/20 shadow-sm">${ptsDisp} ptos</span>
                             </div>
                         </div>
                         <div class="flex items-center justify-between mb-4 mt-3">
@@ -3704,7 +4122,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             }
         };
 
-        window.abrirModalCanje = function(uid, email, pts) {
+        window.abrirModalCanje = function(uid, email, puntos) {
             if(!window.isAdmin) {
                 window.showToast('Debes iniciar sesión como administrador.');
                 return;
@@ -3788,7 +4206,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 const userRef = window.getUserPath(uid);
                 await setDoc(userRef, { puntos: currentPts - cost }, { merge: true });
                 
-                window.showToast(`¡Éxito! Se descontaron ${cost} pts.`, 'success');
+                window.showToast(`¡Éxito! Se descontaron ${cost} puntos.`, 'success');
                 window.cerrarModalCanje();
                 window.loadAdminUsers(); 
             } catch(e) {
@@ -3815,7 +4233,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                         <div class="text-left min-w-0">
                             <h5 class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(item.name)}</h5>
                             <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-1">${window.escapeHTML(item.benefit)}</p>
-                            <p class="text-[10px] font-black text-pink uppercase tracking-widest mt-2">${item.points} pts</p>
+                            <p class="text-[10px] font-black text-pink uppercase tracking-widest mt-2">${item.points} ptos</p>
                         </div>
                         <button type="button" onclick="window.canjearPuntosUsuario('${item.id}')" class="shrink-0 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 ${canUse ? 'bg-green text-purple-dark hover:bg-[#a6b621]' : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'}" ${canUse ? '' : 'disabled'}>
                             Canjear
@@ -3861,16 +4279,13 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 window.currentUser.data = { ...(window.currentUser.data || {}), puntos: newPts };
                 window.actualizarUIAuth();
                 window.showToast('Canje registrado. Te llevaremos a WhatsApp.', 'success');
-                let msg = `*¡Hola Milkarf!* 🐾
-Quiero canjear mis puntos.
-
-*Canje:* ${item.name}
-*Beneficio:* ${item.benefit}
-*Puntos a descontar:* ${item.points} pts
-*Usuario:* ${window.currentUser.displayName || window.currentUser.email || 'Cliente Milkarf'}
-
-Por favor confírmenme la disponibilidad.`;
-                setTimeout(() => window.open('https://wa.me/' + window.WA_NUMBER + '?text=' + encodeURIComponent(msg), '_blank'), 250);
+                const msg = window.getWhatsAppTemplate('userRedeem', {
+                    itemName: item.name,
+                    benefit: item.benefit,
+                    points: item.points,
+                    userName: window.currentUser.displayName || window.currentUser.email || 'Cliente Milkarf'
+                });
+                setTimeout(() => window.openWhatsAppMessage(msg), 250);
             } catch(error) {
                 console.error(error);
                 window.showToast('No se pudo procesar el canje. Intenta nuevamente.');
@@ -3911,7 +4326,7 @@ Por favor confírmenme la disponibilidad.`;
                     pointsGranted: pointsToGive
                 }, { merge: true });
 
-                window.showToast(`Pedido completado. +${pointsToGive} pts ${isVIP ? '(VIP 1.5x)' : ''}`, 'success');
+                window.showToast(`Pedido completado. +${pointsToGive} ptos ${isVIP ? '(VIP 1.5x)' : ''}`, 'success');
                 if(window.adminCurrentTab === 'resumen') window.loadAdminSummary?.();
             } catch(e) {
                 window.showToast('Error al completar pedido y otorgar puntos.');
@@ -3988,9 +4403,223 @@ Por favor confírmenme la disponibilidad.`;
 
         window.getAdminContactLink = function(order) {
             const phone = String(order?.phone || order?.telefono || order?.whatsapp || '').replace(/\D/g, '');
-            const baseMsg = `Hola, te escribimos de Milkarf para confirmar tu pedido${order?.id ? ' #' + order.id.slice(0,8) : ''}.`;
-            if(phone.length >= 8) return `https://wa.me/${phone}?text=${encodeURIComponent(baseMsg)}`;
-            return `https://wa.me/${window.WA_NUMBER}?text=${encodeURIComponent(baseMsg + ' Cliente: ' + (order?.userName || order?.email || 'Usuario'))}`;
+            if(phone.length >= 8) {
+                return window.buildWhatsAppUrl(window.getWhatsAppTemplate('adminOrderContact', { order }), phone);
+            }
+            return window.buildWhatsAppUrl(window.getWhatsAppTemplate('adminOrderContactFallback', {
+                userName: order?.userName || '',
+                email: order?.email || '',
+                orderId: order?.id || ''
+            }), window.WA_NUMBER);
+        };
+
+        window.getAdminOrderById = function(orderId) {
+            return (window.adminCache?.orders || []).find(order => String(order.id) === String(orderId)) || null;
+        };
+
+        window.getOrderClientPhone = function(order = {}) {
+            return window.normalizePhone(order.phone || order.telefono || order.whatsapp || order.contactPhone || order.userPhone || '');
+        };
+
+        window.getDeliveryNoteItems = function(order = {}) {
+            return Array.isArray(order.items) ? order.items.map(item => ({
+                name: item.name || 'Producto Milkarf',
+                weight: item.weight || item.tam || item.presentation || '',
+                qty: Number(item.qty || 0),
+                price: Number(item.price || item.precio || 0),
+                forPet: item.forPet || item.petName || '',
+                personalizado: !!item.personalizado
+            })) : [];
+        };
+
+        window.getDeliveryDateLabel = function(dateValue = '') {
+            if(!dateValue) return 'Por confirmar';
+            try {
+                return new Date(dateValue + 'T12:00:00').toLocaleDateString('es-VE', { day: 'numeric', month: 'long', year: 'numeric' });
+            } catch(e) {
+                return dateValue;
+            }
+        };
+
+        window.getDeliveryNotePayload = function(order = {}) {
+            const deliveryCost = Math.max(0, Number(document.getElementById('delivery-note-cost')?.value || order.deliveryCost || 0));
+            const deliveryDate = document.getElementById('delivery-note-date')?.value || order.deliveryDate || '';
+            const items = window.getDeliveryNoteItems(order);
+            const productTotal = Number(order.total || items.reduce((sum, i) => sum + (Number(i.price || 0) * Number(i.qty || 0)), 0));
+            const clientName = order.userName || order.nombre || order.email || 'Cliente Milkarf';
+            const petName = order.selectedPet || items.find(i => i.forPet)?.forPet || 'tu mascota';
+            return {
+                order,
+                items,
+                productTotal,
+                deliveryCost,
+                finalTotal: productTotal + deliveryCost,
+                deliveryDate,
+                deliveryDateLabel: window.getDeliveryDateLabel(deliveryDate),
+                clientName,
+                petName
+            };
+        };
+
+        window.buildDeliveryNoteMessage = function(order = {}, deliveryCost = 0, deliveryDate = '') {
+            const payload = window.getDeliveryNotePayload(order);
+            if(deliveryCost !== undefined && deliveryCost !== null) {
+                payload.deliveryCost = Math.max(0, Number(deliveryCost || 0));
+                payload.finalTotal = payload.productTotal + payload.deliveryCost;
+            }
+            if(deliveryDate !== undefined && deliveryDate !== null && deliveryDate !== '') {
+                payload.deliveryDate = deliveryDate;
+                payload.deliveryDateLabel = window.getDeliveryDateLabel(deliveryDate);
+            }
+            return window.getWhatsAppTemplate('deliveryNote', payload);
+        };
+
+        window.updateDeliveryNotePreview = function() {
+            const orderId = document.getElementById('delivery-note-order-id')?.value || '';
+            const order = window.getAdminOrderById(orderId);
+            const messagePreview = document.getElementById('delivery-note-message-preview');
+            if(!order) return;
+
+            const payload = window.getDeliveryNotePayload(order);
+            const message = window.getWhatsAppTemplate('deliveryNote', payload);
+
+            const clientEl = document.getElementById('delivery-note-client');
+            const petEl = document.getElementById('delivery-note-pet');
+            const dateEl = document.getElementById('delivery-note-preview-date');
+            const itemsEl = document.getElementById('delivery-note-items-preview');
+            const productsTotalEl = document.getElementById('delivery-note-products-total');
+            const deliveryTotalEl = document.getElementById('delivery-note-delivery-total');
+            const finalTotalEl = document.getElementById('delivery-note-final-total');
+
+            if(clientEl) clientEl.textContent = payload.clientName;
+            if(petEl) petEl.textContent = 'Mascota asociada: ' + payload.petName;
+            if(dateEl) dateEl.textContent = 'Entrega: ' + payload.deliveryDateLabel;
+            if(itemsEl) {
+                itemsEl.innerHTML = payload.items.length ? payload.items.map(item => {
+                    const lineTotal = Number(item.price || 0) * Number(item.qty || 0);
+                    return `<div class="flex items-start justify-between gap-3 bg-purple-light/70 dark:bg-darkcard rounded-xl p-3 border border-purple-border/30 dark:border-purple/20">
+                        <div class="min-w-0">
+                            <p class="text-xs font-black text-purple-dark dark:text-white">${window.escapeHTML(item.name)} ${item.weight ? `<span class="font-bold text-purple/55 dark:text-gray-500">(${window.escapeHTML(item.weight)})</span>` : ''}</p>
+                            <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mt-0.5">${Number(item.qty || 0)} unidad(es)${item.forPet ? ` · Para ${window.escapeHTML(item.forPet)}` : ''}</p>
+                        </div>
+                        <p class="text-xs font-black text-purple-dark dark:text-white shrink-0">$${lineTotal.toFixed(2)}</p>
+                    </div>`;
+                }).join('') : '<p class="text-xs text-gray-500 font-semibold">Este pedido no tiene productos registrados.</p>';
+            }
+            if(productsTotalEl) productsTotalEl.textContent = '$' + payload.productTotal.toFixed(2);
+            if(deliveryTotalEl) deliveryTotalEl.textContent = '$' + payload.deliveryCost.toFixed(2);
+            if(finalTotalEl) finalTotalEl.textContent = '$' + payload.finalTotal.toFixed(2);
+            if(messagePreview) messagePreview.textContent = message;
+        };
+
+        window.openDeliveryNoteModal = function(orderId) {
+            const order = window.getAdminOrderById(orderId);
+            if(!order) { window.showToast?.('No se encontró el pedido. Actualiza el panel.'); return; }
+            const modal = document.getElementById('modal-delivery-note');
+            const box = document.getElementById('modal-delivery-note-box');
+            if(!modal || !box) return;
+            const phoneInput = document.getElementById('delivery-note-phone');
+            const costInput = document.getElementById('delivery-note-cost');
+            const dateInput = document.getElementById('delivery-note-date');
+            const idInput = document.getElementById('delivery-note-order-id');
+            const subtitle = document.getElementById('delivery-note-subtitle');
+            const err = document.getElementById('delivery-note-error');
+
+            if(idInput) idInput.value = order.id;
+            if(phoneInput) phoneInput.value = window.getOrderClientPhone(order) || '';
+            if(costInput) costInput.value = Number(order.deliveryCost || 0) ? Number(order.deliveryCost || 0).toFixed(2) : '';
+            if(dateInput) dateInput.value = order.deliveryDate || '';
+            if(subtitle) subtitle.textContent = `Pedido de ${order.userName || order.email || 'cliente'} · Total productos $${Number(order.total || 0).toFixed(2)}`;
+            if(err) { err.classList.add('hidden'); err.textContent = ''; }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                box.classList.remove('scale-95');
+            }, 10);
+
+            [phoneInput, costInput, dateInput].forEach(input => {
+                if(input && input.dataset.deliveryListener !== '1') {
+                    input.dataset.deliveryListener = '1';
+                    input.addEventListener('input', window.updateDeliveryNotePreview);
+                    input.addEventListener('change', window.updateDeliveryNotePreview);
+                }
+            });
+
+            window.updateDeliveryNotePreview();
+            window.refreshIcons?.(modal);
+        };
+
+        window.closeDeliveryNoteModal = function() {
+            const modal = document.getElementById('modal-delivery-note');
+            const box = document.getElementById('modal-delivery-note-box');
+            if(!modal) return;
+            modal.classList.add('opacity-0');
+            if(box) box.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 220);
+        };
+
+        window.sendDeliveryNoteToClient = async function() {
+            const orderId = document.getElementById('delivery-note-order-id')?.value || '';
+            const order = window.getAdminOrderById(orderId);
+            const rawPhone = document.getElementById('delivery-note-phone')?.value || '';
+            const phone = window.normalizePhone(rawPhone);
+            const deliveryCost = Math.max(0, Number(document.getElementById('delivery-note-cost')?.value || 0));
+            const deliveryDate = document.getElementById('delivery-note-date')?.value || '';
+            const err = document.getElementById('delivery-note-error');
+            if(err) { err.classList.add('hidden'); err.textContent = ''; }
+            if(!order) {
+                if(err) { err.textContent = 'No se encontró el pedido. Actualiza el panel e intenta nuevamente.'; err.classList.remove('hidden'); }
+                return;
+            }
+            if(!phone || phone.length < 10) {
+                if(err) { err.textContent = 'Agrega un número de WhatsApp válido para enviar la nota de entrega.'; err.classList.remove('hidden'); }
+                return;
+            }
+            if(deliveryCost < 0 || Number.isNaN(deliveryCost)) {
+                if(err) { err.textContent = 'Coloca un costo de delivery válido.'; err.classList.remove('hidden'); }
+                return;
+            }
+
+            const payload = window.getDeliveryNotePayload(order);
+            payload.deliveryCost = deliveryCost;
+            payload.finalTotal = payload.productTotal + deliveryCost;
+            payload.deliveryDate = deliveryDate;
+            payload.deliveryDateLabel = window.getDeliveryDateLabel(deliveryDate);
+            const message = window.getWhatsAppTemplate('deliveryNote', payload);
+            const totalWithDelivery = payload.finalTotal;
+
+            if(db && order.id && !String(order.id).startsWith('local_')) {
+                try {
+                    await setDoc(window.getOrderDocRef(order.id), {
+                        deliveryCost,
+                        totalWithDelivery,
+                        deliveryDate,
+                        phone,
+                        telefono: phone,
+                        deliveryNoteMessage: message,
+                        deliveryNoteSentAt: new Date().toISOString()
+                    }, { merge: true });
+                    if(order.uid && order.uid !== 'anonimo') {
+                        await setDoc(window.getUserPath(order.uid), {
+                            phone,
+                            telefono: phone,
+                            whatsapp: phone,
+                            fecha_actualizacion: serverTimestamp()
+                        }, { merge: true });
+                    }
+                } catch(error) {
+                    console.warn('No se pudo guardar la nota de entrega en Firebase:', error);
+                }
+            }
+
+            window.openWhatsAppMessage(message, phone);
+            window.showToast?.('Nota de entrega lista para WhatsApp.', 'success');
+            window.closeDeliveryNoteModal();
         };
 
         window.renderStatusBadge = function(status) {
@@ -4110,7 +4739,7 @@ Por favor confírmenme la disponibilidad.`;
 
         window.buildAdminRedeemMini = function(r) {
             return `<div class="rounded-2xl border border-purple-border/30 dark:border-purple/20 bg-purple-light/40 dark:bg-[#0d0718] p-4 text-left">
-                <div class="flex justify-between gap-3"><div><p class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</p><p class="text-[10px] text-gray-500 font-bold mt-1">${window.escapeHTML(r.email || r.userName || 'Cliente')} · ${Number(r.points || 0)} pts</p></div><span class="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg bg-pink/10 text-pink border border-pink/20 h-fit">${window.escapeHTML(r.status || 'solicitado')}</span></div>
+                <div class="flex justify-between gap-3"><div><p class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</p><p class="text-[10px] text-gray-500 font-bold mt-1">${window.escapeHTML(r.email || r.userName || 'Cliente')} · ${Number(r.points || 0)} ptos</p></div><span class="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg bg-pink/10 text-pink border border-pink/20 h-fit">${window.escapeHTML(r.status || 'solicitado')}</span></div>
             </div>`;
         };
 
@@ -4212,13 +4841,13 @@ Por favor confírmenme la disponibilidad.`;
                 <div class="absolute top-0 left-0 w-1 h-full ${window.getOrderStatusInfo(status).bar}"></div>
                 <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 pl-2">
                     <div class="min-w-0"><div class="flex items-center gap-2 flex-wrap mb-2">${window.renderStatusBadge(status)}<span class="text-[9px] font-black uppercase tracking-widest text-gray-400">#${window.escapeHTML(o.id.slice(0,8))}</span></div><h4 class="font-black text-purple-dark dark:text-white text-base leading-tight truncate">${window.escapeHTML(o.userName || o.email || 'Usuario Invitado')}</h4><p class="text-[10px] text-gray-500 font-bold mt-1">${window.formatAdminDate(o.createdAt)}</p></div>
-                    <div class="text-left md:text-right shrink-0"><span class="text-[10px] text-gray-400 font-black uppercase tracking-widest block">Total</span><span class="font-black text-purple dark:text-white text-2xl">$${totalNumber.toFixed(2)}</span>${o.descuentoAplicado ? '<p class="text-[9px] font-black text-pink uppercase tracking-widest">20% aplicado</p>' : ''}${Number(o.pointsAwarded || o.pointsGranted || 0) > 0 ? `<p class="text-[9px] font-black text-green-dark dark:text-green uppercase tracking-widest mt-1">+${Number(o.pointsAwarded || o.pointsGranted || 0)} pts</p>` : ''}</div>
+                    <div class="text-left md:text-right shrink-0"><span class="text-[10px] text-gray-400 font-black uppercase tracking-widest block">Total</span><span class="font-black text-purple dark:text-white text-2xl">$${totalNumber.toFixed(2)}</span>${o.descuentoAplicado ? '<p class="text-[9px] font-black text-pink uppercase tracking-widest">20% aplicado</p>' : ''}${Number(o.pointsAwarded || o.pointsGranted || 0) > 0 ? `<p class="text-[9px] font-black text-green-dark dark:text-green uppercase tracking-widest mt-1">+${Number(o.pointsAwarded || o.pointsGranted || 0)} ptos</p>` : ''}</div>
                 </div>
                 <div class="bg-purple-light/70 dark:bg-[#0d0718] rounded-2xl p-4 my-4 border border-purple-border/30 dark:border-purple/20 ml-2"><ul class="space-y-2">${items}</ul></div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 ml-2">
                     ${primary}
                     <a href="${window.getAdminContactLink(o)}" target="_blank" class="bg-[#25D366]/15 border border-[#25D366]/30 text-[#168d43] dark:text-green text-[10px] font-black px-4 py-3 rounded-xl transition-all flex items-center gap-2 justify-center"><i data-lucide="message-circle" class="w-4 h-4"></i> WhatsApp</a>
-                    <button onclick="window.showToast('Código: ${o.id}', 'success')" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white text-[10px] font-black px-4 py-3 rounded-xl transition-all flex items-center gap-2 justify-center"><i data-lucide="copy" class="w-4 h-4"></i> Código</button>
+                    <button onclick="window.openDeliveryNoteModal('${o.id}')" class="bg-green/15 border border-green/25 text-green-dark dark:text-green text-[10px] font-black px-4 py-3 rounded-xl transition-all flex items-center gap-2 justify-center"><i data-lucide="truck" class="w-4 h-4"></i> Nota entrega</button>
                     ${canCancel ? `<button onclick="window.cancelarPedidoAdmin('${o.id}')" class="bg-pink/10 border border-pink/20 text-pink text-[10px] font-black px-4 py-3 rounded-xl transition-all flex items-center gap-2 justify-center"><i data-lucide="x-circle" class="w-4 h-4"></i> Cancelar</button>` : ''}
                 </div>
             </div>`;
@@ -4285,7 +4914,7 @@ Por favor confírmenme la disponibilidad.`;
             }).join('');
             return `<div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left">
                 <div class="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
-                    <div class="min-w-0"><div class="flex items-center gap-2 flex-wrap"><h4 class="font-black text-purple-dark dark:text-white text-base truncate">${window.escapeHTML(email)}</h4><span class="text-[9px] font-black uppercase tracking-widest bg-purple-light dark:bg-purple/20 text-purple dark:text-white px-2 py-1 rounded-lg border border-purple/20">${window.escapeHTML(levelObj.nombre)}</span></div><p class="text-[10px] text-gray-500 font-bold mt-1">Histórico: ${ptsHist} pts · Disponibles: ${ptsDisp} pts</p></div>
+                    <div class="min-w-0"><div class="flex items-center gap-2 flex-wrap"><h4 class="font-black text-purple-dark dark:text-white text-base truncate">${window.escapeHTML(email)}</h4><span class="text-[9px] font-black uppercase tracking-widest bg-purple-light dark:bg-purple/20 text-purple dark:text-white px-2 py-1 rounded-lg border border-purple/20">${window.escapeHTML(levelObj.nombre)}</span></div><p class="text-[10px] text-gray-500 font-bold mt-1">Histórico: ${ptsHist} ptos · Disponibles: ${ptsDisp} ptos</p></div>
                     <div class="grid grid-cols-2 sm:flex gap-2"><button onclick="window.abrirModalCanje('${u.id}', '${window.escapeHTML(email)}', ${ptsDisp})" class="text-[10px] bg-green hover:bg-[#a6b621] text-purple-dark px-3 py-2.5 rounded-xl font-black uppercase tracking-widest shadow-sm transition-all flex items-center gap-1 justify-center"><i data-lucide="gift" class="w-3.5 h-3.5"></i> Canjear</button><button onclick="window.eliminarUsuarioAdmin('${u.id}', '${window.escapeHTML(email)}')" class="text-[10px] bg-pink/10 hover:bg-pink text-pink hover:text-white px-3 py-2.5 rounded-xl font-black uppercase tracking-widest shadow-sm transition-all flex items-center gap-1 border border-pink/20 justify-center"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Eliminar</button></div>
                 </div><div class="mt-4 border-t border-purple/10 pt-4"><p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Mascotas (${pets.length})</p><div class="grid grid-cols-1 md:grid-cols-2 gap-2">${mascotas || '<p class="text-xs text-gray-400 italic font-medium">Sin mascotas registradas</p>'}</div></div>
             </div>`;
@@ -4329,8 +4958,8 @@ Por favor confírmenme la disponibilidad.`;
         };
 
         window.buildAdminBirthdayCard = function(p) {
-            const msg = `Hola, te escribimos de Milkarf para celebrar a ${p.petName}. Queremos recordarte que tenemos beneficios y opciones especiales para consentirlo en su día.`;
-            const link = `https://wa.me/${window.WA_NUMBER}?text=${encodeURIComponent(msg)}`;
+            const msg = window.getWhatsAppTemplate('birthday', { petName: p.petName });
+            const link = window.buildWhatsAppUrl(msg);
             const isNear = p.daysLeft <= 7;
             return `<div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border ${isNear ? 'border-pink/40' : 'border-purple-border/40 dark:border-purple/20'} text-left">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3"><div><h4 class="font-black ${isNear ? 'text-pink' : 'text-purple-dark dark:text-white'} text-base">${p.petType === 'gato' ? '🐱' : '🐶'} ${window.escapeHTML(p.petName)}</h4><p class="text-[10px] text-gray-500 font-bold mt-1">Tutor: ${window.escapeHTML(p.ownerEmail)} · ${window.escapeHTML(p.level || '')}</p><p class="text-[10px] text-gray-400 font-bold mt-1">Nacimiento: ${window.escapeHTML(p.bdayString)}</p></div><div class="flex gap-2"><span class="px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${isNear ? 'bg-pink text-white' : 'bg-purple/5 text-purple'}">${p.daysLeft === 0 ? '¡Hoy!' : (p.daysLeft === 1 ? 'Mañana' : `En ${p.daysLeft} días`)}</span><a href="${link}" target="_blank" class="px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-[#25D366]/15 text-[#168d43] dark:text-green border border-[#25D366]/30">WhatsApp</a></div></div>
@@ -4355,7 +4984,7 @@ Por favor confírmenme la disponibilidad.`;
         window.renderAdminRedeemsPanel = function() {
             const container = document.getElementById('admin-redeems-container');
             if(!container) return;
-            container.innerHTML = `<div class="grid grid-cols-1 lg:grid-cols-[1.4fr_.8fr] gap-5"><div class="space-y-4"><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-5 shadow-sm"><div class="flex justify-between items-center gap-3"><div><h3 class="text-xl font-black text-purple-dark dark:text-white">Solicitudes de canje</h3><p class="text-xs text-gray-500 font-semibold mt-1">Aprueba, marca entregado o contacta al cliente.</p></div><button onclick="window.loadAdminRedeems()" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest">Actualizar</button></div></div><div id="admin-redeems-list" class="space-y-4"></div></div><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-5 shadow-sm h-fit"><h3 class="text-lg font-black text-purple-dark dark:text-white mb-3">Catálogo de beneficios</h3><div class="space-y-3">${window.REDEEM_ITEMS.map(i => `<div class="bg-purple-light/70 dark:bg-[#0d0718] rounded-2xl p-4 border border-purple-border/30"><p class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(i.name)}</p><p class="text-xs text-gray-500 font-semibold mt-1">${window.escapeHTML(i.benefit)}</p><p class="text-[10px] font-black text-pink uppercase tracking-widest mt-2">${i.points} pts</p></div>`).join('')}</div></div></div>`;
+            container.innerHTML = `<div class="grid grid-cols-1 lg:grid-cols-[1.4fr_.8fr] gap-5"><div class="space-y-4"><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-5 shadow-sm"><div class="flex justify-between items-center gap-3"><div><h3 class="text-xl font-black text-purple-dark dark:text-white">Solicitudes de canje</h3><p class="text-xs text-gray-500 font-semibold mt-1">Aprueba, marca entregado o contacta al cliente.</p></div><button onclick="window.loadAdminRedeems()" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest">Actualizar</button></div></div><div id="admin-redeems-list" class="space-y-4"></div></div><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-5 shadow-sm h-fit"><h3 class="text-lg font-black text-purple-dark dark:text-white mb-3">Catálogo de beneficios</h3><div class="space-y-3">${window.REDEEM_ITEMS.map(i => `<div class="bg-purple-light/70 dark:bg-[#0d0718] rounded-2xl p-4 border border-purple-border/30"><p class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(i.name)}</p><p class="text-xs text-gray-500 font-semibold mt-1">${window.escapeHTML(i.benefit)}</p><p class="text-[10px] font-black text-pink uppercase tracking-widest mt-2">${i.points} ptos</p></div>`).join('')}</div></div></div>`;
             window.filterAdminRedeems();
             window.refreshIcons?.(container);
         };
@@ -4372,9 +5001,13 @@ Por favor confírmenme la disponibilidad.`;
         window.buildAdminRedeemCard = function(r) {
             const status = String(r.status || 'solicitado').toLowerCase();
             const statusClass = status === 'entregado' ? 'bg-purple/10 text-purple border-purple/20' : status === 'aprobado' ? 'bg-green/20 text-green-dark dark:text-green border-green/30' : status === 'rechazado' ? 'bg-gray-200 text-gray-500 border-gray-300' : 'bg-pink/10 text-pink border-pink/20';
-            const msg = `Hola, te escribimos de Milkarf por tu canje: ${r.itemName || r.benefit || 'Beneficio Milkarf'}. Queremos confirmar disponibilidad y coordinar la entrega.`;
-            const w = `https://wa.me/${window.WA_NUMBER}?text=${encodeURIComponent(msg)}`;
-            return `<div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left"><div class="flex flex-col md:flex-row md:items-start justify-between gap-4"><div><span class="inline-flex px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${statusClass}">${window.escapeHTML(status)}</span><h4 class="font-black text-purple-dark dark:text-white text-base mt-3">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</h4><p class="text-xs text-gray-500 font-bold mt-1">${window.escapeHTML(r.email || r.userName || 'Cliente')} · ${Number(r.points || 0)} pts</p><p class="text-[10px] text-gray-400 font-bold mt-1">${window.formatAdminDate(r.createdAt)}</p></div><div class="grid grid-cols-1 sm:grid-cols-3 gap-2"><button onclick="window.actualizarCanjeAdmin('${r.id}', 'aprobado')" class="bg-green text-purple-dark text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest">Aprobar</button><button onclick="window.actualizarCanjeAdmin('${r.id}', 'entregado')" class="bg-purple text-white text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest">Entregado</button><a href="${w}" target="_blank" class="bg-[#25D366]/15 text-[#168d43] dark:text-green border border-[#25D366]/30 text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest text-center">WhatsApp</a></div></div></div>`;
+            const msg = window.getWhatsAppTemplate('adminRedeemContact', {
+                itemName: r.itemName || '',
+                benefit: r.benefit || '',
+                points: r.points || 0
+            });
+            const w = window.buildWhatsAppUrl(msg);
+            return `<div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left"><div class="flex flex-col md:flex-row md:items-start justify-between gap-4"><div><span class="inline-flex px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${statusClass}">${window.escapeHTML(status)}</span><h4 class="font-black text-purple-dark dark:text-white text-base mt-3">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</h4><p class="text-xs text-gray-500 font-bold mt-1">${window.escapeHTML(r.email || r.userName || 'Cliente')} · ${Number(r.points || 0)} ptos</p><p class="text-[10px] text-gray-400 font-bold mt-1">${window.formatAdminDate(r.createdAt)}</p></div><div class="grid grid-cols-1 sm:grid-cols-3 gap-2"><button onclick="window.actualizarCanjeAdmin('${r.id}', 'aprobado')" class="bg-green text-purple-dark text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest">Aprobar</button><button onclick="window.actualizarCanjeAdmin('${r.id}', 'entregado')" class="bg-purple text-white text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest">Entregado</button><a href="${w}" target="_blank" class="bg-[#25D366]/15 text-[#168d43] dark:text-green border border-[#25D366]/30 text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest text-center">WhatsApp</a></div></div></div>`;
         };
 
         window.actualizarCanjeAdmin = async function(redeemId, status) {
@@ -4439,6 +5072,14 @@ Por favor confírmenme la disponibilidad.`;
             
             const eMsg = document.getElementById('errorMsg');
             if (eMsg) eMsg.classList.remove('visible');
+        };
+
+
+        window.getBagRecommendation = function(grams = 0) {
+            const g = Number(grams) || 0;
+            if(g <= 250) return { size: '250g', label: '250g', text: 'Presentación sugerida: 250g para prueba inicial, razas pequeñas o porciones bajas.' };
+            if(g <= 550) return { size: '550g', label: '550g', text: 'Presentación sugerida: 550g para razas medianas o consumo moderado.' };
+            return { size: '850g', label: '850g', text: 'Presentación sugerida: 850g para razas grandes, hogares con varias mascotas o pedidos mensuales.' };
         };
 
         window.calcularRacion = function() {
@@ -4559,6 +5200,11 @@ Por favor confírmenme la disponibilidad.`;
                 }
             }
             
+            const bagReco = window.getBagRecommendation?.(gramos);
+            if(noteEl && bagReco) {
+                noteEl.innerHTML += '<br><br><b>' + bagReco.text + '</b>';
+            }
+
             window.lastCalcResult = {
                 nombre: window.state.nombreMascota,
                 tipo: 'perro',
@@ -4865,7 +5511,6 @@ Por favor confírmenme la disponibilidad.`;
             const cont = document.getElementById('cart-items-container');
             const sum = document.getElementById('cart-summary');
             const post = document.getElementById('cart-post-order');
-            const code = document.getElementById('post-order-code');
             const fab = document.getElementById('cart-fab');
             const badge = document.getElementById('cart-badge');
             const title = document.getElementById('cart-title');
@@ -4880,15 +5525,6 @@ Por favor confírmenme la disponibilidad.`;
             if(fab) fab.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
             if(badge) badge.textContent = '0';
 
-            const id = orderId || window.lastOrderId || '';
-            if(code) {
-                if(id) {
-                    code.textContent = `Código de seguimiento: ${String(id).slice(0, 8).toUpperCase()}`;
-                    code.classList.remove('hidden');
-                } else {
-                    code.classList.add('hidden');
-                }
-            }
             window.refreshIcons?.();
         };
         
@@ -4951,82 +5587,112 @@ Por favor confírmenme la disponibilidad.`;
             );
         };
 
-        window.finalizarPedido = async function() {
+        window.finalizarPedido = function() {
             if (!window.cart.length) return;
 
             const tot = window.cart.reduce((s,i) => s + (i.price*i.qty), 0);
-            const finalTot = window.descuentoAplicado ? tot * 0.8 : tot;
+            const discountApplied = !!window.descuentoAplicado;
+            const finalTot = discountApplied ? tot * 0.8 : tot;
             const clientToken = window.getClientToken();
-            let createdOrderId = null;
+            const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
+            const contactPhone = window.normalizePhone(window.currentUser?.data?.telefono || window.currentUser?.data?.phone || window.currentUser?.data?.whatsapp || (() => { try { return localStorage.getItem('milkarf_contact_phone') || ''; } catch(e) { return ''; } })());
+            const sessionUid = auth?.currentUser?.uid || window.currentUser?.uid || 'anonimo';
+            const orderItems = window.cart.map(i => ({name: i.name, weight: i.weight, qty: i.qty, price: i.price, forPet: i.forPet || ''}));
+            const createdAt = new Date().toISOString();
+            const localOrderId = 'local_' + Date.now();
 
-            if (window.descuentoAplicado && window.currentUser && !window.currentUser.isAnonymous && window.currentUser.email) {
+            const msg = window.getWhatsAppTemplate('newOrder', {
+                items: orderItems.map(i => ({ name: i.name, weight: i.weight, qty: i.qty, forPet: i.forPet || '' })),
+                subtotal: tot,
+                discountApplied: discountApplied,
+                discountAmount: discountApplied ? (tot * 0.2) : 0,
+                finalTotal: finalTot,
+                location: window.userLocation || ''
+            });
+
+            const pendingOrderForCache = {
+                id: localOrderId,
+                uid: isLogged ? window.currentUser.uid : sessionUid,
+                clientToken,
+                registeredUser: !!isLogged,
+                userName: isLogged ? (window.currentUser.displayName || window.currentUser.email) : 'Usuario Invitado',
+                email: isLogged ? (window.currentUser.email || '') : '',
+                phone: contactPhone,
+                telefono: contactPhone,
+                items: orderItems,
+                total: finalTot,
+                descuentoAplicado: discountApplied,
+                status: 'en_proceso',
+                pointsBase: Math.floor(finalTot),
+                pointsAwarded: 0,
+                pointsGranted: 0,
+                selectedPet: window.state.nombreMascota || '',
+                createdAt,
+                localOnly: true
+            };
+
+            // Registrar visualmente el pedido antes de salir a WhatsApp para que el usuario vea estado al volver.
+            window.cacheUserOrderLocal?.(pendingOrderForCache);
+            window.renderUserOrders?.(window.getLocalUserOrders?.() || [pendingOrderForCache]);
+            window.actualizarUIAuth?.();
+            window.showCartPostOrderState?.(null);
+            window.showToast('Tu pedido quedó en proceso. Continúa la atención por WhatsApp.', 'success');
+
+            // Apertura inmediata y directa para evitar bloqueos de navegadores móviles.
+            window.openWhatsAppMessage(msg);
+
+            // Guardado no bloqueante: no debe retrasar la apertura de WhatsApp.
+            void (async () => {
+                let createdOrderId = null;
                 try {
-                    if (db) {
-                        await setDoc(window.getUserPath(window.currentUser.uid), { descuento_usado: true }, { merge: true });
-                    } else {
-                        let reclamados = [];
-                        try { reclamados = JSON.parse(localStorage.getItem('milkarf_descuentos_uids') || '[]'); } catch(e){}
-                        if (!reclamados.includes(window.currentUser.uid)) {
-                            reclamados.push(window.currentUser.uid);
-                            try { localStorage.setItem('milkarf_descuentos_uids', JSON.stringify(reclamados)); } catch(e){}
+                    if (discountApplied && isLogged) {
+                        if (db) {
+                            await setDoc(window.getUserPath(window.currentUser.uid), { descuento_usado: true }, { merge: true });
+                        } else {
+                            let reclamados = [];
+                            try { reclamados = JSON.parse(localStorage.getItem('milkarf_descuentos_uids') || '[]'); } catch(e){}
+                            if (!reclamados.includes(window.currentUser.uid)) {
+                                reclamados.push(window.currentUser.uid);
+                                try { localStorage.setItem('milkarf_descuentos_uids', JSON.stringify(reclamados)); } catch(e){}
+                            }
                         }
+                        if(window.currentUser.data) window.currentUser.data.descuento_usado = true;
                     }
-                    if(window.currentUser.data) window.currentUser.data.descuento_usado = true;
-                } catch (e) { console.error("Error marcando descuento como usado:", e); }
-            }
+                } catch (e) { console.error('Error marcando descuento como usado:', e); }
 
-            if (db) {
-                try {
-                    const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
-                    const sessionUid = auth?.currentUser?.uid || window.currentUser?.uid || 'anonimo';
-                    const orderData = {
-                        uid: isLogged ? window.currentUser.uid : sessionUid,
-                        registeredUser: !!isLogged,
-                        clientToken,
-                        userName: isLogged ? (window.currentUser.displayName || window.currentUser.email) : 'Usuario Invitado',
-                        email: isLogged ? (window.currentUser.email || '') : '',
-                        items: window.cart.map(i => ({name: i.name, weight: i.weight, qty: i.qty, price: i.price, forPet: i.forPet||''})),
-                        total: finalTot,
-                        descuentoAplicado: window.descuentoAplicado,
-                        status: 'en_proceso',
-                        pointsBase: Math.floor(finalTot),
-                        pointsAwarded: 0,
-                        selectedPet: window.state.nombreMascota || '',
-                        createdAt: new Date().toISOString()
-                    };
-                    const orderDoc = await addDoc(window.getOrdersCollectionRef(), orderData);
-                    createdOrderId = orderDoc.id;
-                    window.lastOrderId = createdOrderId;
-                    try { localStorage.setItem('milkarf_last_order_id', createdOrderId); } catch(e){}
-                } catch (error) {
-                    console.error("No se pudo guardar el pedido en el registro: ", error);
-                    window.showToast('No se pudo registrar el pedido para seguimiento, pero puedes enviarlo por WhatsApp.');
+                if (db) {
+                    try {
+                        const orderData = {
+                            uid: isLogged ? window.currentUser.uid : sessionUid,
+                            registeredUser: !!isLogged,
+                            clientToken,
+                            userName: isLogged ? (window.currentUser.displayName || window.currentUser.email) : 'Usuario Invitado',
+                            email: isLogged ? (window.currentUser.email || '') : '',
+                            phone: contactPhone,
+                            telefono: contactPhone,
+                            items: orderItems,
+                            total: finalTot,
+                            descuentoAplicado: discountApplied,
+                            status: 'en_proceso',
+                            pointsBase: Math.floor(finalTot),
+                            pointsAwarded: 0,
+                            selectedPet: window.state.nombreMascota || '',
+                            createdAt
+                        };
+                        const orderDoc = await addDoc(window.getOrdersCollectionRef(), orderData);
+                        createdOrderId = orderDoc.id;
+                        window.lastOrderId = createdOrderId;
+                        try { localStorage.setItem('milkarf_last_order_id', createdOrderId); } catch(e){}
+                        pendingOrderForCache.id = createdOrderId;
+                        pendingOrderForCache.localOnly = false;
+                        window.cacheUserOrderLocal?.(pendingOrderForCache);
+                        window.startUserOrdersListener?.();
+                    } catch (error) {
+                        console.error('No se pudo guardar el pedido en el registro:', error);
+                        window.showToast('Tu pedido abrió en WhatsApp. Si no aparece en el perfil, actualiza en unos segundos.');
+                    }
                 }
-            }
-
-            const items = window.cart.map(i => `- ${i.qty}x ${i.name} (${i.weight}) ${i.forPet ? `_para ${i.forPet}_` : ''}`).join('\n');
-            let msg = `*¡Hola Milkarf!* 🐾\nQuiero hacer este pedido:\n\n${items}\n\n`;
-            if(createdOrderId) msg += `*Código de seguimiento:* ${createdOrderId}\n\n`;
-            
-            if (window.descuentoAplicado) {
-                msg += `*Subtotal:* $${tot.toFixed(2)}\n*Descuento (20%):* -$${(tot * 0.2).toFixed(2)}\n*Total a pagar: $${finalTot.toFixed(2)}*\n\n_(Descuento de primera compra aplicado)_`;
-            } else {
-                msg += `*Total: $${finalTot.toFixed(2)}*`;
-            }
-            
-            if (window.userLocation) {
-                msg += `\n\n*Ubicación para el delivery:*\n${window.userLocation}`;
-            }
-            
-            msg += `\n\nPor favor confírmame el total con envío. ¡Gracias!`;
-            
-            const whatsappUrl = 'https://wa.me/' + window.WA_NUMBER + '?text=' + encodeURIComponent(msg);
-            window.open(whatsappUrl, '_blank');
-
-            window.actualizarUIAuth();
-            window.startUserOrdersListener?.();
-            window.showCartPostOrderState?.(createdOrderId);
-            window.showToast('Pedido registrado. Ahora puedes ver su estado o volver al menú.', 'success');
+            })();
         };
 
         function initApp() {
@@ -5076,7 +5742,7 @@ Por favor confírmenme la disponibilidad.`;
             // Iniciar Paws
             const frag = document.createDocumentFragment();
             const colors = ['#421d8e', '#b9cb25', '#d72b8f', '#2e1060'];
-            const count = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : (window.innerWidth < 768 ? 4 : 9);
+            const count = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : (window.innerWidth < 768 ? 8 : 18);
             
             for(let i=0; i<count; i++) {
                 const size = 30 + Math.random()*20;
@@ -5360,7 +6026,7 @@ Por favor confírmenme la disponibilidad.`;
             box.innerHTML = stages.map(st => `<div class="rounded-2xl px-2 py-3 border ${ptsHist >= st.min ? 'bg-white/20 border-white/30 text-white' : 'bg-white/10 border-white/10 text-white/60'}">
                 <div class="text-base leading-none">${st.icon}</div>
                 <p class="text-[8px] font-black uppercase tracking-widest mt-1">${st.label}</p>
-                <p class="text-[8px] font-bold opacity-80">${st.min}+ pts</p>
+                <p class="text-[8px] font-bold opacity-80">${st.min}+ ptos</p>
             </div>`).join('');
         };
 
@@ -5380,16 +6046,92 @@ Por favor confírmenme la disponibilidad.`;
 
         const __originalRegistrarUX = window.registrarYGuardarMascota;
         window.registrarYGuardarMascota = async function() {
-            const beforeUser = auth?.currentUser?.uid || null;
-            const result = await __originalRegistrarUX?.();
-            try { localStorage.setItem('milkarf_show_onboarding', '1'); } catch(e) {}
-            setTimeout(() => {
-                if(auth?.currentUser?.uid && auth.currentUser.uid !== beforeUser) {
-                    window.navigateTo?.('view-dashboard');
-                    window.actualizarUIAuth?.();
+            window.vibrate(20);
+            if(!auth || !db) { window.showToast("Base de datos no configurada."); return; }
+
+            const emailEl = document.getElementById('auth-email-reg');
+            const phoneEl = document.getElementById('auth-phone-reg');
+            const passEl = document.getElementById('auth-pass-reg');
+            const tipoEl = document.getElementById('reg-pet-tipo');
+            const nombreEl = document.getElementById('reg-pet-nombre');
+            const edadEl = document.getElementById('reg-pet-edad');
+            const pesoEl = document.getElementById('reg-pet-peso');
+            const razaEl = document.getElementById('reg-pet-raza');
+            const cumpleEl = document.getElementById('reg-pet-cumple');
+            const err = document.getElementById('auth-error');
+
+            const email = emailEl ? emailEl.value.trim() : '';
+            const rawPhone = phoneEl ? phoneEl.value.trim() : '';
+            const phone = window.normalizePhone(rawPhone);
+            const pass = passEl ? passEl.value : '';
+            const tipo = tipoEl ? tipoEl.value : 'perro';
+            const nombre = nombreEl ? nombreEl.value.trim() : '';
+            const edad = edadEl ? edadEl.value.trim() : '';
+            const peso = pesoEl ? pesoEl.value.trim() : '';
+            const raza = razaEl ? razaEl.value.trim() : '';
+            const cumple = cumpleEl ? cumpleEl.value : '';
+
+            if(!email || pass.length < 6 || !phone || phone.length < 10 || !nombre || !edad || !peso) {
+                if (err) {
+                    err.textContent = "Completa correo, WhatsApp, contraseña y los datos requeridos de tu mascota.";
+                    err.classList.remove('hidden');
                 }
-            }, 900);
-            return result;
+                return;
+            }
+
+            if(cumple && window.isFutureBirthday(cumple)) {
+                if (err) {
+                    err.textContent = "La fecha de nacimiento no puede ser futura.";
+                    err.classList.remove('hidden');
+                }
+                return;
+            }
+
+            try {
+                if (err) err.classList.add('hidden');
+                const btn = document.getElementById('btn-reg-email');
+                if (btn) { btn.textContent = "Registrando..."; btn.disabled = true; }
+
+                const cred = await createUserWithEmailAndPassword(auth, email, pass);
+
+                const nuevaMascota = { 
+                    id: Date.now().toString(), 
+                    tipo: tipo, 
+                    nombre: nombre, 
+                    edad: edad, 
+                    peso: peso, 
+                    raza: raza || 'Mestizo',
+                    cumple: cumple
+                };
+
+                await setDoc(window.getUserPath(cred.user.uid), {
+                    mascotas: [nuevaMascota],
+                    puntos: 0,
+                    puntos_historicos: 0,
+                    descuento_usado: false,
+                    email: cred.user.email || '',
+                    telefono: phone,
+                    phone: phone,
+                    whatsapp: phone,
+                    fecha_actualizacion: serverTimestamp()
+                }, { merge: true });
+
+                try { localStorage.setItem('milkarf_contact_phone', phone); } catch(e) {}
+                window.state.nombreMascota = nombre;
+
+                [emailEl, phoneEl, passEl, nombreEl, edadEl, pesoEl, razaEl, cumpleEl].forEach(el => { if(el) el.value = ''; });
+
+                window.showToast("Cuenta, WhatsApp y mascota guardados con éxito.", 'success');
+                window.cerrarModalAuth();
+                if (btn) { btn.textContent = "Crear Cuenta y Entrar"; btn.disabled = false; }
+            } catch(error) {
+                if (err) {
+                    err.textContent = window.traductorErrores(error.code);
+                    err.classList.remove('hidden');
+                }
+                const btn = document.getElementById('btn-reg-email');
+                if (btn) { btn.textContent = "Crear Cuenta y Entrar"; btn.disabled = false; }
+            }
         };
 
         const __originalAddToCartUX = window.addToCart;
@@ -5410,7 +6152,7 @@ Por favor confírmenme la disponibilidad.`;
             const steps = [
                 {label:'Recibido', desc:'Solicitud enviada'},
                 {label:'Confirmación', desc:'Revisión admin'},
-                {label:'Completado', desc: points > 0 ? `+${points} pts` : 'Pedido cerrado'}
+                {label:'Completado', desc: points > 0 ? `+${points} ptos` : 'Pedido cerrado'}
             ];
             if(stepIndex === -1) return `<div class="mt-3 rounded-2xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3 text-[10px] font-bold text-gray-500">Pedido cancelado. Escríbenos si necesitas revisarlo.</div>`;
             return `<div class="mt-4 grid grid-cols-3 gap-2">${steps.map((s, idx) => {
@@ -5437,7 +6179,6 @@ Por favor confírmenme la disponibilidad.`;
                 const date = o.createdAt ? new Date(o.createdAt).toLocaleString('es-VE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : 'Pedido reciente';
                 const items = Array.isArray(o.items) ? o.items.map(i => `${Number(i.qty || 0)}x ${i.name || 'Producto'} ${i.weight ? '(' + i.weight + ')' : ''}${i.forPet ? ' · ' + i.forPet : ''}`).join(' · ') : 'Pedido Milkarf';
                 const total = typeof o.total === 'number' ? '$' + o.total.toFixed(2) : '';
-                const orderCode = o.id ? `#${String(o.id).slice(0, 8).toUpperCase()}` : '';
                 const points = Number(o.pointsAwarded || o.pointsGranted || 0);
                 let helper = 'Tu pedido fue recibido por WhatsApp y está pendiente de confirmación por el equipo Milkarf.';
                 if(['confirmado','verificado'].includes(status)) helper = 'El equipo Milkarf ya revisó tu pedido. Está en camino a completarse.';
@@ -5447,7 +6188,7 @@ Por favor confírmenme la disponibilidad.`;
                     <div class="absolute top-0 left-0 w-1 h-full ${info.bar}"></div>
                     <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pl-1">
                         <div class="min-w-0">
-                            <div class="flex items-center gap-2 flex-wrap"><p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">${date}</p><span class="text-[9px] text-purple/50 dark:text-gray-500 font-black uppercase tracking-widest">${window.escapeHTML(orderCode)}</span></div>
+                            <div class="flex items-center gap-2 flex-wrap"><p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">${date}</p></div>
                             <h5 class="text-sm font-black text-purple-dark dark:text-white mt-1 leading-snug">${window.escapeHTML(items)}</h5>
                             <p class="text-xs text-gray-500 dark:text-gray-400 font-bold mt-1">${total}</p>
                         </div>
@@ -5456,7 +6197,7 @@ Por favor confírmenme la disponibilidad.`;
                     ${window.renderUserOrderSteps(status, points)}
                     <div class="mt-3 ml-1 bg-purple-light/70 dark:bg-[#0d0718] border border-purple-border/30 dark:border-purple/20 rounded-xl p-3">
                         <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">${window.escapeHTML(helper)}</p>
-                        ${points > 0 ? `<div class="mt-2 inline-flex items-center gap-1 bg-green/15 text-green-dark dark:text-green border border-green/20 rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest"><i data-lucide="sparkles" class="w-3 h-3"></i> +${points} pts ganados</div>` : ''}
+                        ${points > 0 ? `<div class="mt-2 inline-flex items-center gap-1 bg-green/15 text-green-dark dark:text-green border border-green/20 rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest"><i data-lucide="sparkles" class="w-3 h-3"></i> +${points} ptos ganados</div>` : ''}
                     </div>
                 </div>`;
             }).join('');
@@ -5498,7 +6239,7 @@ Por favor confírmenme la disponibilidad.`;
                 const status = String(r.status || 'solicitado').toLowerCase();
                 const cls = status === 'entregado' ? 'bg-purple/10 text-purple border-purple/20' : status === 'aprobado' ? 'bg-green/15 text-green-dark dark:text-green border-green/20' : 'bg-pink/10 text-pink border-pink/20';
                 return `<div class="bg-white dark:bg-darkcard rounded-xl border border-purple-border/30 dark:border-purple/20 p-3 flex items-start justify-between gap-3">
-                    <div><p class="text-xs font-black text-purple-dark dark:text-white">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</p><p class="text-[10px] text-gray-500 font-semibold mt-1">${Number(r.points || 0)} pts · ${r.createdAt ? new Date(r.createdAt).toLocaleDateString('es-VE') : 'reciente'}</p></div>
+                    <div><p class="text-xs font-black text-purple-dark dark:text-white">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</p><p class="text-[10px] text-gray-500 font-semibold mt-1">${Number(r.points || 0)} ptos · ${r.createdAt ? new Date(r.createdAt).toLocaleDateString('es-VE') : 'reciente'}</p></div>
                     <span class="text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border ${cls}">${window.escapeHTML(status)}</span>
                 </div>`;
             }).join('');
@@ -5515,11 +6256,11 @@ Por favor confírmenme la disponibilidad.`;
             const pts = Number(window.currentUser.data?.puntos || 0);
             container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">${window.REDEEM_ITEMS.map(item => {
                 const canUse = pts >= item.points;
-                const missing = Math.max(0, item.points - pts);
+                const missing = Math.max(0, item.points - puntos);
                 return `<div class="bg-white dark:bg-darkcard rounded-3xl border ${canUse ? 'border-green/30' : 'border-purple-border/30 dark:border-purple/20'} p-4 shadow-sm text-left flex flex-col justify-between gap-4">
-                    <div><div class="flex items-start justify-between gap-3"><div><h5 class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(item.name)}</h5><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-1">${window.escapeHTML(item.benefit)}</p></div><div class="shrink-0 bg-pink/10 text-pink border border-pink/20 px-3 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest">${item.points} pts</div></div>
+                    <div><div class="flex items-start justify-between gap-3"><div><h5 class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(item.name)}</h5><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-1">${window.escapeHTML(item.benefit)}</p></div><div class="shrink-0 bg-pink/10 text-pink border border-pink/20 px-3 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest">${item.points} ptos</div></div>
                     <div class="mt-3 w-full bg-purple-light dark:bg-[#0d0718] rounded-full h-2 overflow-hidden"><div class="bg-green h-2 rounded-full" style="width:${Math.min(100, (pts / item.points) * 100)}%"></div></div>
-                    <p class="text-[10px] font-bold ${canUse ? 'text-green-dark dark:text-green' : 'text-gray-400'} mt-2">${canUse ? 'Disponible para canjear' : `Te faltan ${missing} pts`}</p></div>
+                    <p class="text-[10px] font-bold ${canUse ? 'text-green-dark dark:text-green' : 'text-gray-400'} mt-2">${canUse ? 'Disponible para canjear' : `Te faltan ${missing} ptos`}</p></div>
                     <button type="button" onclick="window.canjearPuntosUsuario('${item.id}')" class="w-full px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 ${canUse ? 'bg-green text-purple-dark hover:bg-[#a6b621]' : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'}" ${canUse ? '' : 'disabled'}>Canjear beneficio</button>
                 </div>`;
             }).join('')}</div>`;
@@ -5585,11 +6326,217 @@ Por favor confírmenme la disponibilidad.`;
             }
         };
 
+
+        /* =========================
+           UX PEDIDOS / PERFIL / MÓVIL
+           ========================= */
+        window.userOrdersHistoryOpen = false;
+        window.userOrdersCache = [];
+
+        window.getLocalOrdersKey = function() {
+            const uid = auth?.currentUser?.uid || window.currentUser?.uid || 'guest';
+            return 'milkarf_user_orders_cache_' + uid + '_' + window.getClientToken();
+        };
+
+        window.getLocalUserOrders = function() {
+            try {
+                const raw = localStorage.getItem(window.getLocalOrdersKey());
+                const arr = raw ? JSON.parse(raw) : [];
+                return Array.isArray(arr) ? arr : [];
+            } catch(e) { return []; }
+        };
+
+        window.setLocalUserOrders = function(orders = []) {
+            try {
+                const unique = Array.from(new Map((orders || []).filter(Boolean).map(o => [String(o.id || o.localId || Math.random()), o])).values())
+                    .sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+                    .slice(0, 20);
+                localStorage.setItem(window.getLocalOrdersKey(), JSON.stringify(unique));
+            } catch(e) {}
+        };
+
+        window.cacheUserOrderLocal = function(order) {
+            if(!order) return;
+            const current = window.getLocalUserOrders();
+            const id = String(order.id || order.localId || ('local_' + Date.now()));
+            const filtered = current.filter(o => String(o.id || o.localId) !== id);
+            filtered.unshift({ ...order, id });
+            window.setLocalUserOrders(filtered);
+        };
+
+        window.mergeOrdersById = function(...lists) {
+            const map = new Map();
+            lists.flat().filter(Boolean).forEach(o => {
+                const id = String(o.id || o.localId || JSON.stringify(o.items || []) + (o.createdAt || ''));
+                const prev = map.get(id) || {};
+                map.set(id, { ...prev, ...o, id });
+            });
+            return Array.from(map.values()).sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        };
+
+        window.toggleUserOrdersHistory = function(force) {
+            if(typeof force === 'boolean') window.userOrdersHistoryOpen = force;
+            else window.userOrdersHistoryOpen = !window.userOrdersHistoryOpen;
+            const wrap = document.getElementById('user-orders-history-wrap');
+            const btn = document.getElementById('btn-toggle-orders-history');
+            if(wrap) wrap.classList.toggle('hidden', !window.userOrdersHistoryOpen);
+            if(btn) {
+                btn.innerHTML = window.userOrdersHistoryOpen
+                    ? '<i data-lucide="chevron-up" class="w-4 h-4"></i> Ocultar historial de pedidos'
+                    : '<i data-lucide="history" class="w-4 h-4"></i> Ver historial de pedidos';
+            }
+            window.refreshIcons?.();
+        };
+
+        window.buildUserOrderCard = function(o, {compact = false} = {}) {
+            const status = String(o.status || 'en_proceso').toLowerCase();
+            const info = window.getOrderStatusInfo(status);
+            const date = o.createdAt ? new Date(o.createdAt).toLocaleString('es-VE', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : 'Pedido reciente';
+            const itemsArr = Array.isArray(o.items) ? o.items : [];
+            const items = itemsArr.length ? itemsArr.map(i => `${Number(i.qty || 0)}x ${i.name || 'Producto'} ${i.weight ? '(' + i.weight + ')' : ''}${i.forPet ? ' · ' + i.forPet : ''}`).join(' · ') : 'Pedido Milkarf';
+            const total = typeof o.total === 'number' ? '$' + o.total.toFixed(2) : '';
+            const points = Number(o.pointsAwarded || o.pointsGranted || 0);
+            let helper = 'Pedido pendiente por confirmar. El equipo Milkarf validará disponibilidad y continuará la atención por WhatsApp.';
+            if(['confirmado','verificado'].includes(status)) helper = 'Pedido revisado por administración. Está en proceso interno de cierre.';
+            if(status === 'completado') helper = points > 0 ? `Pedido completado. Este pedido sumó ${points} puntos a tu cuenta.` : 'Pedido completado por administración.';
+            if(status === 'cancelado') helper = 'Pedido cancelado. Escríbenos si necesitas revisarlo.';
+            return `<div class="relative bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-${compact ? '4' : '5'} text-left overflow-hidden shadow-sm">
+                <div class="absolute top-0 left-0 w-1 h-full ${info.bar}"></div>
+                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pl-1">
+                    <div class="min-w-0">
+                        <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">${date}</p>
+                        <h5 class="text-sm font-black text-purple-dark dark:text-white mt-1 leading-snug">${window.escapeHTML(items)}</h5>
+                        ${total ? `<p class="text-xs text-gray-500 dark:text-gray-400 font-bold mt-1">${total}</p>` : ''}
+                    </div>
+                    <span class="shrink-0 px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${info.classes}">${info.label}</span>
+                </div>
+                ${!compact && typeof window.renderUserOrderSteps === 'function' ? window.renderUserOrderSteps(status, points) : ''}
+                <div class="mt-3 ml-1 bg-purple-light/70 dark:bg-[#0d0718] border border-purple-border/30 dark:border-purple/20 rounded-xl p-3">
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">${window.escapeHTML(helper)}</p>
+                    ${points > 0 ? `<div class="mt-2 inline-flex items-center gap-1 bg-green/15 text-green-dark dark:text-green border border-green/20 rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest"><i data-lucide="sparkles" class="w-3 h-3"></i> +${points} ptos ganados</div>` : ''}
+                </div>
+            </div>`;
+        };
+
+        window.renderUserOrders = function(orders = []) {
+            const activeContainer = document.getElementById('user-active-order') || document.getElementById('user-orders-list');
+            const historyContainer = document.getElementById('user-orders-history');
+            if(!activeContainer) return;
+            const merged = window.mergeOrdersById(orders, window.getLocalUserOrders()).sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+            window.userOrdersCache = merged;
+            window.setLocalUserOrders(merged);
+
+            const pendingStatuses = ['pendiente', 'en_proceso', 'solicitado'];
+            const pending = merged.filter(o => pendingStatuses.includes(String(o.status || 'en_proceso').toLowerCase()));
+            const history = merged.filter(o => !pendingStatuses.includes(String(o.status || 'en_proceso').toLowerCase()));
+
+            if(pending.length) {
+                activeContainer.innerHTML = window.buildUserOrderCard(pending[0], {compact:false});
+            } else {
+                activeContainer.innerHTML = '<p class="text-xs text-gray-500 font-medium bg-white dark:bg-darkcard border border-purple-border/30 rounded-2xl p-4">No tienes pedidos pendientes por confirmar. Cuando realices uno nuevo, aparecerá aquí como <b>En proceso</b>.</p>';
+            }
+
+            if(historyContainer) {
+                historyContainer.innerHTML = history.length
+                    ? history.slice(0, 12).map(o => window.buildUserOrderCard(o, {compact:true})).join('')
+                    : '<p class="text-xs text-gray-500 font-medium bg-white dark:bg-darkcard border border-purple-border/30 rounded-2xl p-4">Aún no tienes pedidos completados o cancelados en el historial.</p>';
+            }
+            const hiddenLegacy = document.getElementById('user-orders-list');
+            if(hiddenLegacy && hiddenLegacy !== activeContainer) hiddenLegacy.innerHTML = '';
+            window.refreshIcons?.();
+        };
+
+        window.startUserOrdersListener = function(forceNavigate = false) {
+            const activeContainer = document.getElementById('user-active-order') || document.getElementById('user-orders-list');
+            if(!activeContainer) return;
+            const localOrders = window.getLocalUserOrders();
+            if(localOrders.length) window.renderUserOrders(localOrders);
+            if(!db) {
+                if(!localOrders.length) activeContainer.innerHTML = '<p class="text-xs text-pink font-bold bg-pink/10 border border-pink/20 rounded-xl p-3">Firebase no está disponible para consultar pedidos.</p>';
+                return;
+            }
+            const authUser = auth?.currentUser || null;
+            const uid = (window.currentUser && window.currentUser.uid) || authUser?.uid || null;
+            const hasRealSession = !!(window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email));
+            const token = window.getClientToken();
+            if(!uid && !token) {
+                activeContainer.innerHTML = '<p class="text-xs text-gray-500 font-medium bg-white dark:bg-darkcard border border-purple-border/30 rounded-2xl p-4">Realiza un pedido para ver su estado aquí.</p>';
+                return;
+            }
+            if(unsubUserOrders) { try { unsubUserOrders(); } catch(e) {} unsubUserOrders = null; }
+            if(!localOrders.length) activeContainer.innerHTML = '<p class="text-xs text-gray-500 font-semibold bg-white dark:bg-darkcard rounded-xl p-3 border border-purple-border/30">Consultando tus pedidos...</p>';
+
+            const ordersRef = window.getOrdersCollectionRef();
+            const snapshots = { uid: [], token: [] };
+            const unsubs = [];
+            const renderMerged = () => window.renderUserOrders(window.mergeOrdersById(snapshots.uid, snapshots.token, window.getLocalUserOrders()));
+            const listen = (key, qRef) => {
+                try {
+                    const unsub = onSnapshot(qRef, (snapshot) => {
+                        const arr = [];
+                        snapshot.forEach(d => arr.push({ id: d.id, ...d.data() }));
+                        snapshots[key] = arr;
+                        renderMerged();
+                    }, (error) => {
+                        console.warn('No se pudo escuchar pedidos por ' + key + ':', error);
+                        renderMerged();
+                    });
+                    unsubs.push(unsub);
+                } catch(error) {
+                    console.warn('Error creando listener de pedidos por ' + key + ':', error);
+                }
+            };
+            if(uid) listen('uid', query(ordersRef, where('uid', '==', uid)));
+            if(token) listen('token', query(ordersRef, where('clientToken', '==', token)));
+            unsubUserOrders = () => unsubs.forEach(fn => { try { fn(); } catch(e) {} });
+            if(forceNavigate) window.navigateTo?.('view-dashboard');
+        };
+
+        window.refreshMobileBottomNav = function(targetId) {
+            document.querySelectorAll('#mobile-bottom-nav button').forEach(btn => {
+                btn.classList.toggle('active-mobile-nav', btn.getAttribute('data-target') === targetId);
+            });
+        };
+
+        const __originalNavigateToFastUX = window.navigateTo;
+        window.navigateTo = function(targetId) {
+            const result = __originalNavigateToFastUX?.(targetId);
+            window.refreshMobileBottomNav?.(targetId);
+            return result;
+        };
+
+        window.initFastMobileNav = function() {
+            const nav = document.getElementById('mobile-bottom-nav');
+            if(!nav || nav.dataset.fastReady === '1') return;
+            nav.dataset.fastReady = '1';
+            let lastTarget = '';
+            let lastAt = 0;
+            const go = (event) => {
+                const btn = event.target.closest('button[data-target]');
+                if(!btn) return;
+                const target = btn.getAttribute('data-target');
+                const now = Date.now();
+                if(lastTarget === target && now - lastAt < 250) { event.preventDefault(); return; }
+                lastTarget = target; lastAt = now;
+                event.preventDefault();
+                window.navigateTo(target);
+            };
+            nav.addEventListener('pointerdown', go, { passive:false });
+            nav.addEventListener('click', (event) => {
+                const btn = event.target.closest('button[data-target]');
+                if(!btn) return;
+                if(Date.now() - lastAt < 380) event.preventDefault();
+            }, true);
+        };
+
         window.addEventListener('DOMContentLoaded', () => {
             if (typeof window.refreshIcons === 'function') window.refreshIcons();
             window.setMaxBirthdayDates();
             initApp();
+            window.repairViewState?.('view-home');
+            window.initFastMobileNav?.();
             window.initPreloader();
+            setTimeout(() => window.repairViewState?.('view-home'), 1200);
         });
     </script>
 

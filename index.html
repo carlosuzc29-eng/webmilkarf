@@ -19,6 +19,8 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Exportar nota de entrega como imagen -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
 
     <script>
         tailwind.config = {
@@ -147,6 +149,135 @@
         #cart-fab.pop { animation: fabPop 0.45s cubic-bezier(0.34,1.56,0.64,1); }
         #cart-badge { transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); }
         #cart-fab.pop #cart-badge { transform: scale(1.3) translateZ(0); }
+
+        .milkarf-input-focus:focus {
+            border-color: #421d8e !important;
+            box-shadow: 0 0 0 4px rgba(66, 29, 142, 0.08);
+        }
+
+        #delivery-note-capture-wrap {
+            position: fixed;
+            left: -99999px;
+            top: 0;
+            width: 1080px;
+            background: #f5f0e8;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .delivery-capture-card {
+            width: 1080px;
+            min-height: 1350px;
+            background: #f5f0e8;
+            font-family: 'Montserrat', sans-serif;
+            color: #421d8e;
+            padding: 64px;
+            box-sizing: border-box;
+        }
+        .delivery-capture-inner {
+            background: #ffffff;
+            border-radius: 48px;
+            overflow: hidden;
+            box-shadow: 0 24px 70px rgba(66,29,142,0.16);
+            border: 1px solid rgba(66,29,142,0.10);
+        }
+        .delivery-capture-head {
+            background: linear-gradient(135deg,#2e1060,#421d8e);
+            padding: 52px 58px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 32px;
+        }
+        .delivery-capture-logo {
+            width: 130px;
+            height: 130px;
+            object-fit: contain;
+            background: rgba(255,255,255,0.12);
+            border-radius: 34px;
+            padding: 12px;
+        }
+        .delivery-capture-kicker {
+            font-size: 22px;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            color: #b9cb25;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+        .delivery-capture-title {
+            font-size: 54px;
+            line-height: 1;
+            font-weight: 900;
+            margin: 0;
+        }
+        .delivery-capture-date {
+            margin-top: 14px;
+            font-size: 24px;
+            color: rgba(255,255,255,0.72);
+            font-weight: 700;
+        }
+        .delivery-capture-body { padding: 54px 58px 44px; }
+        .delivery-capture-section {
+            background: #faf8ff;
+            border: 1px solid #e8e0f0;
+            border-radius: 30px;
+            padding: 30px;
+            margin-bottom: 28px;
+        }
+        .delivery-capture-label {
+            font-size: 18px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(66,29,142,0.48);
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+        .delivery-capture-client { font-size: 32px; font-weight: 900; color: #2e1060; margin: 0; }
+        .delivery-capture-pet { font-size: 22px; font-weight: 700; color: rgba(66,29,142,0.62); margin-top: 8px; }
+        .delivery-capture-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 24px;
+            align-items: start;
+            border-bottom: 1px solid rgba(66,29,142,0.10);
+            padding: 24px 0;
+        }
+        .delivery-capture-item:last-child { border-bottom: 0; }
+        .delivery-capture-item-name { font-size: 25px; font-weight: 900; color: #2e1060; }
+        .delivery-capture-item-sub { font-size: 19px; font-weight: 700; color: rgba(66,29,142,0.58); margin-top: 7px; }
+        .delivery-capture-item-price { font-size: 26px; font-weight: 900; color: #421d8e; white-space: nowrap; }
+        .delivery-capture-totals {
+            background: linear-gradient(135deg,#2e1060,#421d8e);
+            border-radius: 32px;
+            padding: 34px;
+            color: #ffffff;
+            margin-bottom: 28px;
+        }
+        .delivery-capture-total-row { display:flex; justify-content:space-between; align-items:center; font-size: 22px; font-weight: 800; padding: 11px 0; color: rgba(255,255,255,0.80); }
+        .delivery-capture-final { border-top: 1px solid rgba(255,255,255,0.22); margin-top: 10px; padding-top: 24px; }
+        .delivery-capture-final span:first-child { font-size: 20px; letter-spacing: 0.18em; text-transform: uppercase; color: #b9cb25; font-weight: 900; }
+        .delivery-capture-final span:last-child { font-size: 48px; color: #b9cb25; font-weight: 900; }
+        .delivery-capture-payment {
+            background: #fff0f5;
+            border-left: 10px solid #d72b8f;
+            border-radius: 0 28px 28px 0;
+            padding: 30px 34px;
+            color: #421d8e;
+            font-size: 22px;
+            line-height: 1.65;
+            font-weight: 700;
+        }
+        .delivery-capture-payment strong { font-weight: 900; color: #2e1060; }
+        .delivery-capture-footer {
+            text-align: center;
+            padding: 28px 58px 44px;
+            color: rgba(66,29,142,0.48);
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 1.6;
+        }
 
         /* UX refinada: navegación móvil más inmediata */
         #mobile-bottom-nav button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: transform 0.08s ease, background-color 0.12s ease; }
@@ -1484,6 +1615,95 @@
         </div>
     </div>
 
+    <!-- MODAL NOTA DE ENTREGA ADMIN -->
+    <div id="modal-delivery-note" class="fixed inset-0 z-[1004] bg-black/80 backdrop-blur-md hidden items-center justify-center opacity-0 transition-opacity duration-300 p-4">
+        <div id="modal-delivery-note-box" class="bg-white dark:bg-darkcard w-full max-w-3xl rounded-[2rem] shadow-2xl transform scale-95 transition-transform duration-300 relative pointer-events-auto flex flex-col text-left border border-green/50 max-h-[92vh] overflow-hidden">
+            <div class="sticky top-0 z-20 bg-white dark:bg-darkcard border-b border-purple-border/40 dark:border-purple/20 px-6 py-5 flex items-start gap-3">
+                <button onclick="window.closeDeliveryNoteModal()" class="absolute top-5 right-5 text-gray-400 hover:text-pink transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <div class="w-11 h-11 bg-green/20 rounded-full flex items-center justify-center text-green-dark shrink-0"><i data-lucide="truck" class="w-5 h-5"></i></div>
+                <div class="pr-8">
+                    <h3 class="text-xl font-black text-purple-dark dark:text-white leading-tight">Nota de entrega</h3>
+                    <p id="delivery-note-subtitle" class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Revisa el pedido, agrega el delivery y envía la nota al WhatsApp del cliente.</p>
+                </div>
+            </div>
+
+            <div class="p-6 overflow-y-auto custom-scroll">
+                <input type="hidden" id="delivery-note-order-id">
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+                    <div>
+                        <label class="text-[10px] font-black text-purple/50 dark:text-gray-500 uppercase tracking-widest block mb-1.5">WhatsApp del cliente</label>
+                        <input type="tel" id="delivery-note-phone" placeholder="Ej. 0412 000 0000" autocomplete="tel" inputmode="tel" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple">
+                        <p class="text-[9px] text-purple/40 dark:text-gray-500 font-bold mt-1">Se normaliza automáticamente al enviar.</p>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-purple/50 dark:text-gray-500 uppercase tracking-widest block mb-1.5">Fecha de entrega</label>
+                        <input type="date" id="delivery-note-date" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-purple/50 dark:text-gray-500 uppercase tracking-widest block mb-1.5">Costo de delivery</label>
+                        <input type="number" id="delivery-note-cost" placeholder="0.00" min="0" step="0.01" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple">
+                        <p class="text-[9px] text-purple/40 dark:text-gray-500 font-bold mt-1">Este costo se coloca manualmente.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-[1.05fr_.95fr] gap-5">
+                    <div class="bg-white dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/20 rounded-[1.5rem] overflow-hidden shadow-sm">
+                        <div class="bg-gradient-to-br from-[#2e1060] to-[#421d8e] px-5 py-4">
+                            <p class="text-[10px] font-black tracking-[0.2em] uppercase text-green">Milkarf</p>
+                            <h4 class="text-lg font-black text-white mt-1">Nota de entrega</h4>
+                            <p id="delivery-note-preview-date" class="text-[11px] text-white/60 font-semibold mt-1">Entrega por confirmar</p>
+                        </div>
+                        <div class="p-5 space-y-4">
+                            <div class="bg-purple-light/70 dark:bg-darkcard rounded-2xl p-4 border border-purple-border/40 dark:border-purple/20">
+                                <p class="text-[9px] font-black text-purple/45 dark:text-gray-500 uppercase tracking-widest">Cliente</p>
+                                <p id="delivery-note-client" class="text-sm font-black text-purple-dark dark:text-white mt-1">Cliente Milkarf</p>
+                                <p id="delivery-note-pet" class="text-xs font-bold text-gray-500 dark:text-gray-400 mt-1">Mascota asociada: por confirmar</p>
+                            </div>
+
+                            <div>
+                                <p class="text-[9px] font-black text-purple/45 dark:text-gray-500 uppercase tracking-widest mb-2">Detalle del pedido</p>
+                                <div id="delivery-note-items-preview" class="space-y-2"></div>
+                            </div>
+
+                            <div class="bg-green/10 border border-green/25 rounded-2xl p-4 space-y-2">
+                                <div class="flex items-center justify-between text-xs font-bold text-purple-dark dark:text-white"><span>Total productos</span><span id="delivery-note-products-total">$0.00</span></div>
+                                <div class="flex items-center justify-between text-xs font-bold text-purple-dark dark:text-white"><span>Delivery</span><span id="delivery-note-delivery-total">$0.00</span></div>
+                                <div class="border-t border-green/30 pt-2 flex items-center justify-between"><span class="text-[10px] font-black uppercase tracking-widest text-green-dark dark:text-green">Total a pagar</span><span id="delivery-note-final-total" class="text-2xl font-black text-purple-dark dark:text-white">$0.00</span></div>
+                            </div>
+
+                            <div class="bg-pink/10 border-l-4 border-pink rounded-r-2xl p-4 text-xs text-purple-dark dark:text-gray-300 font-semibold leading-relaxed">
+                                <strong>Pago:</strong> Banco de Venezuela<br>
+                                Cuenta: 0102 0443 7700 0093 1771<br>
+                                C.I: 20.530.321<br>
+                                Pago móvil: 0414-179-1136
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-purple-light/70 dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 rounded-2xl p-4">
+                            <div class="flex items-center justify-between gap-3 mb-3">
+                                <p class="text-[10px] font-black text-purple/50 dark:text-gray-500 uppercase tracking-widest">Mensaje para WhatsApp</p>
+                                <button type="button" onclick="window.copyDeliveryNoteMessage()" class="text-[9px] font-black uppercase tracking-widest text-purple dark:text-green hover:text-pink">Copiar</button>
+                            </div>
+                            <div id="delivery-note-message-preview" class="text-xs text-gray-600 dark:text-gray-300 font-semibold leading-relaxed whitespace-pre-line max-h-[360px] overflow-y-auto custom-scroll pr-1"></div>
+                        </div>
+
+                        <div id="delivery-note-error" class="hidden bg-pink/10 border border-pink/20 text-pink text-xs font-bold rounded-xl p-3"></div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <button type="button" onclick="window.closeDeliveryNoteModal()" class="w-full bg-white dark:bg-[#0d0718] border border-purple-border/60 dark:border-purple/30 text-purple dark:text-white font-black text-[10px] uppercase tracking-widest py-3.5 rounded-xl">Cancelar</button>
+                            <button type="button" onclick="window.downloadDeliveryNoteImage()" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/60 dark:border-purple/30 text-purple dark:text-green font-black text-[10px] uppercase tracking-widest py-3.5 rounded-xl">Descargar imagen</button>
+                            <button type="button" onclick="window.sendDeliveryNoteToClient()" class="w-full bg-green hover:bg-[#a6b621] text-purple-dark font-black text-[10px] uppercase tracking-widest py-3.5 rounded-xl shadow-md">Enviar nota visual</button>
+                        </div>
+                        <p class="text-[10px] text-purple/45 dark:text-gray-500 font-semibold leading-relaxed text-center mt-2">En celulares compatibles se abrirá el menú para compartir la imagen. Si no está disponible, la nota se descargará y se abrirá WhatsApp con el texto de respaldo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL INICIO SESION / REGISTRO UNIFICADO -->
     <div id="modal-auth" class="fixed inset-0 z-[1002] bg-black/60 backdrop-blur-sm hidden items-center justify-center opacity-0 transition-opacity duration-300 p-4">
         <div id="modal-auth-box" class="bg-white dark:bg-darkcard w-full max-w-sm rounded-[2rem] shadow-2xl p-6 relative text-center border border-purple-border/30 dark:border-purple/20 pointer-events-auto flex flex-col max-h-[90vh] transform scale-95 transition-transform duration-300">
@@ -1536,9 +1756,12 @@
                         </div>
 
                         <div class="pt-2 space-y-3">
-                            <p class="text-[11px] text-purple font-black uppercase tracking-widest text-center">Tu Cuenta</p>
-                            <input type="email" id="auth-email-reg" placeholder="Tu mejor correo" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
-                            <input type="password" id="auth-pass-reg" placeholder="Crea contraseña (min. 6)" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
+                            <p class="text-[11px] text-purple font-black uppercase tracking-widest text-center">Tus datos de contacto</p>
+                            <input type="text" id="auth-name-reg" placeholder="Tu nombre y apellido" autocomplete="name" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left milkarf-input-focus">
+                            <input type="email" id="auth-email-reg" placeholder="Tu mejor correo" autocomplete="email" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left milkarf-input-focus">
+                            <input type="tel" id="auth-phone-reg" placeholder="WhatsApp de contacto (ej. 0412 000 0000)" autocomplete="tel" inputmode="tel" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
+                            <p class="text-[10px] text-purple/50 dark:text-gray-500 font-semibold leading-tight -mt-1">Usaremos este número para confirmar pedidos y enviar notas de entrega.</p>
+                            <input type="password" id="auth-pass-reg" placeholder="Crea contraseña (min. 6)" autocomplete="new-password" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
                             <button id="btn-reg-email" onclick="window.registrarYGuardarMascota()" type="button" class="w-full bg-green text-purple-dark hover:bg-[#a6b621] font-extrabold text-sm py-3.5 rounded-xl transition-all active:scale-95 shadow-md">Crear Cuenta y Entrar</button>
                         </div>
                     </form>
@@ -1562,6 +1785,10 @@
                     <h4 class="text-sm font-black text-purple-dark dark:text-white text-center mb-2">¡Último paso!</h4>
                     <p class="text-[10px] text-gray-500 text-center mb-4 font-medium leading-relaxed">Completa los datos de tu peludo para brindarle atención personalizada y finalizar tu registro.</p>
                     
+                    <input type="text" id="pet-contact-name" placeholder="Tu nombre y apellido" autocomplete="name" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple mb-3 milkarf-input-focus">
+                    <input type="tel" id="pet-contact-whatsapp" placeholder="WhatsApp de contacto (ej. 0412 000 0000)" autocomplete="tel" inputmode="tel" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple mb-3 milkarf-input-focus">
+                    <p class="text-[10px] text-purple/50 dark:text-gray-500 font-semibold leading-tight -mt-2 mb-3 text-center">Así podremos enviarte confirmaciones y notas de entrega.</p>
+
                     <div class="flex gap-2 mb-2">
                         <button id="btn-tipo-perro" onclick="window.selectPetType('perro')" class="flex-1 bg-purple text-white py-2.5 rounded-xl text-xs font-bold transition-colors">🐶 Perro</button>
                         <button id="btn-tipo-gato" onclick="window.selectPetType('gato')" class="flex-1 bg-white dark:bg-[#0d0718] text-purple dark:text-white border border-purple-border/50 dark:border-purple/30 py-2.5 rounded-xl text-xs font-bold transition-colors">🐱 Gato</button>
@@ -1636,7 +1863,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithCustomToken, signInAnonymously, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithCustomToken, signInAnonymously, setPersistence, browserLocalPersistence, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, addDoc, getDocs, serverTimestamp, onSnapshot, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // =========================================================================================
@@ -1852,6 +2079,25 @@
                 .replace(/'/g, '&#039;');
         };
 
+        window.normalizePhone = function(value = '') {
+            let digits = String(value || '').replace(/\D/g, '');
+            if(!digits) return '';
+            if(digits.startsWith('00')) digits = digits.slice(2);
+            if(digits.startsWith('0')) digits = '58' + digits.slice(1);
+            if(digits.length === 10 && digits.startsWith('4')) digits = '58' + digits;
+            if(digits.length === 11 && digits.startsWith('04')) digits = '58' + digits.slice(1);
+            return digits;
+        };
+
+        window.formatPhoneForDisplay = function(value = '') {
+            const digits = window.normalizePhone(value);
+            if(!digits) return '';
+            if(digits.startsWith('58') && digits.length >= 12) {
+                return '+58 ' + digits.slice(2, 5) + ' ' + digits.slice(5, 8) + ' ' + digits.slice(8);
+            }
+            return '+' + digits;
+        };
+
 
         window.sanitizeWhatsAppMessage = function(text = '') {
             return String(text)
@@ -1862,13 +2108,19 @@
         };
 
         window.buildWhatsAppUrl = function(message, phone = window.WA_NUMBER) {
-            const cleanPhone = String(phone || window.WA_NUMBER || '').replace(/\D/g, '');
+            const cleanPhone = window.normalizePhone ? window.normalizePhone(phone || window.WA_NUMBER) : String(phone || window.WA_NUMBER || '').replace(/\D/g, '');
             return 'https://wa.me/' + cleanPhone + '?text=' + encodeURIComponent(window.sanitizeWhatsAppMessage(message));
         };
 
         window.openWhatsAppMessage = function(message, phone = window.WA_NUMBER) {
             const url = window.buildWhatsAppUrl(message, phone);
+            const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
             try {
+                if(isMobile) {
+                    // En móviles es más confiable navegar directamente en el mismo gesto del usuario.
+                    window.location.href = url;
+                    return;
+                }
                 const a = document.createElement('a');
                 a.href = url;
                 a.target = '_blank';
@@ -1957,6 +2209,50 @@ Pedido: ${data.orderId || 'sin referencia visible'}
 
 Revisar el pedido desde el panel administrador para continuar la atención.`;
 
+                case 'deliveryNote': {
+                    const order = data.order || {};
+                    const noteItems = Array.isArray(data.items) ? data.items : (Array.isArray(order.items) ? order.items : []);
+                    const items = noteItems.length ? noteItems.map((i, index) => {
+                        const qty = Number(i.qty || 0);
+                        const lineTotal = Number(i.price || 0) * qty;
+                        const weight = i.weight || i.tam || i.presentation || '';
+                        const pet = i.forPet ? ` - Para ${i.forPet}` : '';
+                        const custom = i.personalizado ? ' personalizado' : '';
+                        return `${index + 1}. ${qty} x ${i.name || 'Producto'}${weight ? ` (${weight})` : ''}${custom}${pet} - ${currency(lineTotal)}`;
+                    }).join('\n') : 'Pedido Milkarf';
+                    const productTotal = Number(data.productTotal ?? order.total ?? 0);
+                    const deliveryCost = Number(data.deliveryCost || 0);
+                    const finalTotal = productTotal + deliveryCost;
+                    const clientName = data.clientName || order.userName || order.nombre || order.email || 'cliente Milkarf';
+                    const petName = data.petName || order.selectedPet || (noteItems.find(i => i.forPet)?.forPet) || 'tu mascota';
+                    const deliveryDate = data.deliveryDateLabel || 'Por confirmar';
+
+                    return `Hola, ${clientName}.
+
+Te compartimos tu nota de entrega Milkarf.
+
+Cliente: ${clientName}
+Mascota asociada: ${petName}
+Fecha de entrega: ${deliveryDate}
+
+Detalle del pedido:
+${items}
+
+Total de productos: ${currency(productTotal)}
+Delivery: ${currency(deliveryCost)}
+Total a pagar: ${currency(finalTotal)}
+
+Datos de pago:
+Banco de Venezuela
+Cuenta: 0102 0443 7700 0093 1771
+C.I: 20.530.321
+Pago movil: 0414-179-1136
+
+Pago en Bs. a tasa BCV del dia. Si pagas en divisas, puedes consultarnos por el descuento disponible.
+
+Cuando realices el pago, por favor envia el comprobante por este mismo chat para confirmar tu pedido.`;
+                }
+
                 case 'birthday':
                     return `Hola, te escribimos de Milkarf.
 
@@ -2009,7 +2305,7 @@ Queremos confirmar disponibilidad y coordinar la entrega.`;
             window.currentWeightRes = '250gr';
             if(unsubUserOrders) { unsubUserOrders(); unsubUserOrders = null; }
             if(typeof unsubUserRedeems !== 'undefined' && unsubUserRedeems) { unsubUserRedeems(); unsubUserRedeems = null; }
-            ['calc-nombre','pesoInput','auth-email-login','auth-pass-login','auth-email-reg','auth-pass-reg','auth-name-reg','reg-pet-nombre','reg-pet-edad','reg-pet-peso','reg-pet-raza','reg-pet-cumple','pet-nombre','pet-edad','pet-peso','pet-raza','pet-cumple','desc-nombre','desc-telefono','desc-mascota'].forEach(id => {
+            ['calc-nombre','pesoInput','auth-email-login','auth-pass-login','auth-email-reg','auth-phone-reg','auth-pass-reg','auth-name-reg','pet-contact-name','pet-contact-whatsapp','reg-pet-nombre','reg-pet-edad','reg-pet-peso','reg-pet-raza','reg-pet-cumple','pet-nombre','pet-edad','pet-peso','pet-raza','pet-cumple','desc-nombre','desc-telefono','desc-mascota'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el) el.value = '';
             });
@@ -2106,53 +2402,70 @@ Queremos confirmar disponibilidad y coordinar la entrega.`;
         };
 
 
+        window.repairViewState = function(preferredId = 'view-home') {
+            const views = Array.from(document.querySelectorAll('.view'));
+            if(!views.length) return;
+            let active = document.querySelector('.view.active');
+            if(!active || !document.body.contains(active)) {
+                const preferred = document.getElementById(preferredId) || document.getElementById('view-home') || views[0];
+                views.forEach(view => {
+                    view.classList.remove('active', 'prev', 'next');
+                    view.classList.add(view === preferred ? 'active' : 'next');
+                });
+                active = preferred;
+            }
+            const activeViews = views.filter(view => view.classList.contains('active'));
+            if(activeViews.length > 1) {
+                activeViews.slice(1).forEach(view => { view.classList.remove('active'); view.classList.add('next'); });
+            }
+        };
+
         window.navigateTo = function(targetId) {
             if (!targetId) return;
-            const currentActive = document.querySelector('.view.active');
+            const target = document.getElementById(targetId);
+            const views = Array.from(document.querySelectorAll('.view'));
+            if(!target || !target.classList.contains('view')) {
+                console.warn('Vista no encontrada:', targetId);
+                window.repairViewState?.('view-home');
+                window.isNavigating = false;
+                if (window.menuOpen) window.forceCloseMenu?.();
+                window.showToast?.('No pudimos abrir esa sección. Volvimos al inicio.');
+                return;
+            }
+
+            let currentActive = document.querySelector('.view.active');
+            if(!currentActive) {
+                window.repairViewState?.('view-home');
+                currentActive = document.querySelector('.view.active');
+            }
             if (window.isNavigating && currentActive?.id !== targetId) return;
 
             if (currentActive?.id === targetId) {
-                if (window.menuOpen) {
-                    if (typeof window.forceCloseMenu === 'function') window.forceCloseMenu();
-                    else window.toggleMenu();
-                }
+                try { currentActive.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) { currentActive.scrollTop = 0; }
+                if (window.menuOpen) window.forceCloseMenu?.();
                 return;
             }
 
             window.isNavigating = true;
-            vibrate(18);
+            try { vibrate(18); } catch(e) {}
             const authWrap = document.getElementById('top-auth-btn-wrap');
-            if(authWrap) {
-                if (targetId === 'view-admin') {
-                    authWrap.style.display = 'none';
-                } else {
-                    authWrap.style.display = 'block';
-                }
-            }
+            if(authWrap) authWrap.style.display = targetId === 'view-admin' ? 'none' : 'block';
 
-            document.querySelectorAll('.view').forEach(view => {
+            views.forEach(view => {
                 view.classList.remove('active', 'prev', 'next');
-                if (view.id === targetId) {
-                    view.classList.add('active');
-                } else if (targetId === 'view-home') {
-                    view.classList.add('next');
-                } else {
-                    view.classList.add(view.id === 'view-home' ? 'prev' : 'next');
-                }
+                if (view.id === targetId) view.classList.add('active');
+                else if (targetId === 'view-home') view.classList.add('next');
+                else view.classList.add(view.id === 'view-home' ? 'prev' : 'next');
+                try { view.scrollTop = 0; } catch(e) {}
             });
             window.lastScrollY = 0;
-            if (targetId === 'view-calc') {
-                window.prepareCalculatorInputs(true);
-            }
+            if (targetId === 'view-calc') window.prepareCalculatorInputs?.(true);
             if (targetId === 'view-redeems') {
                 window.renderRedeemItems?.();
                 window.startUserRedeemsListener?.(true);
             }
-            window.setMaxBirthdayDates();
-            if (window.menuOpen) {
-                if (typeof window.forceCloseMenu === 'function') window.forceCloseMenu();
-                else window.toggleMenu();
-            }
+            window.setMaxBirthdayDates?.();
+            if (window.menuOpen) window.forceCloseMenu?.();
             
             const authMenu = document.getElementById('auth-dropdown-menu');
             if (authMenu && !authMenu.classList.contains('hidden')) {
@@ -2160,7 +2473,10 @@ Queremos confirmar disponibilidad y coordinar la entrega.`;
                 authMenu.classList.add('opacity-0', 'scale-95');
                 setTimeout(() => authMenu.classList.add('hidden'), 160);
             }
-            setTimeout(() => { window.isNavigating = false; }, 560);
+            setTimeout(() => {
+                window.isNavigating = false;
+                window.repairViewState?.(targetId);
+            }, 420);
         };
 
         window.forceCloseMenu = function() {
@@ -2938,11 +3254,16 @@ Deja el campo vacío para quitar la foto.`, current);
             const authSeparator = document.getElementById('auth-separator');
             if (authSeparator) authSeparator.classList.add('hidden');
 
+            const contactNameEl = document.getElementById('pet-contact-name');
+            if(contactNameEl && !contactNameEl.value) contactNameEl.value = window.currentUser?.displayName || window.currentUser?.data?.nombre || '';
+
             const formPetProfile = document.getElementById('form-pet-profile');
             if (formPetProfile) formPetProfile.classList.remove('hidden');
         };
 
         window.guardarPerfilMascota = async function() {
+            const contactNameEl = document.getElementById('pet-contact-name');
+            const phoneEl = document.getElementById('pet-contact-whatsapp');
             const tipoEl = document.getElementById('pet-tipo');
             const nombreEl = document.getElementById('pet-nombre');
             const edadEl = document.getElementById('pet-edad');
@@ -2953,12 +3274,27 @@ Deja el campo vacío para quitar la foto.`, current);
 
             if(!tipoEl || !nombreEl || !edadEl || !pesoEl || !err) return;
 
+            const contactName = contactNameEl ? contactNameEl.value.trim() : (window.currentUser?.displayName || '');
+            const rawPhone = phoneEl ? phoneEl.value.trim() : '';
+            const phone = window.normalizePhone(rawPhone);
             const tipo = tipoEl.value;
             const nombre = nombreEl.value.trim();
             const edad = edadEl.value.trim();
             const peso = pesoEl.value.trim();
             const raza = razaEl ? razaEl.value.trim() : '';
             const cumple = cumpleEl ? cumpleEl.value : '';
+
+            if(!contactName) {
+                err.textContent = "Agrega tu nombre para personalizar pedidos y notas de entrega.";
+                err.classList.remove('hidden');
+                return;
+            }
+
+            if(!phone || phone.length < 10) {
+                err.textContent = "Agrega un número de WhatsApp válido para poder confirmar pedidos y notas de entrega.";
+                err.classList.remove('hidden');
+                return;
+            }
 
             if(!nombre || !edad || !peso) {
                 err.textContent = "Por favor completa el nombre, edad y peso para finalizar.";
@@ -2986,41 +3322,41 @@ Deja el campo vacío para quitar la foto.`, current);
                     raza: raza || 'Mestizo',
                     cumple: cumple
                 };
-                
+
                 const data = window.currentUser.data || { puntos: 0, puntos_historicos: 0, descuento_usado: false };
                 if (!data.mascotas) data.mascotas = [];
                 data.mascotas.push(nuevaMascota);
-                
+
                 await setDoc(window.getUserPath(window.currentUser.uid), {
                     mascotas: data.mascotas,
                     puntos: data.puntos || 0,
                     puntos_historicos: data.puntos_historicos || data.puntos || 0,
                     descuento_usado: data.descuento_usado || false,
                     email: window.currentUser.email || '',
+                    nombre: contactName,
+                    nombre_persona: contactName,
+                    userName: contactName,
+                    displayName: contactName,
+                    telefono: phone,
+                    phone: phone,
+                    whatsapp: phone,
                     fecha_actualizacion: serverTimestamp()
                 }, { merge: true });
-                
-                window.currentUser.data = data;
-                window.state.nombreMascota = nombre; 
-                window.isRegisteringPet = false;
-                
-                if (nombreEl) nombreEl.value = '';
-                if (edadEl) edadEl.value = '';
-                if (pesoEl) pesoEl.value = '';
-                if (razaEl) razaEl.value = '';
-                if (cumpleEl) cumpleEl.value = '';
-                
-                window.showToast("¡Mascota guardada exitosamente!", 'success');
+
+                try { localStorage.setItem('milkarf_contact_phone', phone); } catch(e) {}
+                window.currentUser.data = { ...data, mascotas: data.mascotas, nombre: contactName, nombre_persona: contactName, userName: contactName, displayName: contactName, telefono: phone, phone: phone, whatsapp: phone };
+                window.state.nombreMascota = nombre;
+
+                window.actualizarUIAuth();
                 window.cerrarModalAuth();
-                window.actualizarUIAuth(); 
-                
+                window.showToast("Datos de contacto y mascota guardados con éxito.", 'success');
+
                 if (btn) { btn.textContent = "Guardar y Finalizar"; btn.disabled = false; }
-            } catch(error) {
-                err.textContent = "Error al guardar perfil. Verifica tu conexión.";
+            } catch(e) {
+                err.textContent = "Error al guardar perfil. Intenta de nuevo.";
                 err.classList.remove('hidden');
                 const btn = document.getElementById('btn-guardar-perfil');
                 if (btn) { btn.textContent = "Guardar y Finalizar"; btn.disabled = false; }
-                console.error(error);
             }
         };
 
@@ -3254,6 +3590,7 @@ Deja el campo vacío para quitar la foto.`, current);
 
             const nombre = inputNombre.value.trim().toLowerCase();
             const telefono = inputTelefono.value.trim();
+            try { localStorage.setItem('milkarf_contact_phone', telefono); } catch(e) {}
             const mascota = inputMascota.value.trim().toLowerCase();
 
             inputNombre.classList.remove('border-pink', 'border-2');
@@ -3303,6 +3640,16 @@ Deja el campo vacío para quitar la foto.`, current);
             }
 
             window.descuentoAplicado = true;
+            if (db && window.currentUser?.uid) {
+                try {
+                    await setDoc(window.getUserPath(window.currentUser.uid), {
+                        telefono: telefono.replace(/\D/g, ''),
+                        nombre_contacto: nombre,
+                        mascota_descuento: mascota
+                    }, { merge: true });
+                    window.currentUser.data = { ...(window.currentUser.data || {}), telefono: telefono.replace(/\D/g, ''), nombre_contacto: nombre, mascota_descuento: mascota };
+                } catch(e) { console.warn('No se pudo guardar el teléfono de contacto:', e); }
+            }
             window.cerrarModalDescuento();
             const banner = document.getElementById('descuento-banner');
             if(banner) banner.innerHTML = `<div class="bg-green/20 text-green-dark p-3 rounded-lg text-center text-xs font-black flex items-center justify-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> ¡Descuento aplicado con éxito!</div>`;
@@ -4216,6 +4563,359 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             }), window.WA_NUMBER);
         };
 
+        window.getAdminOrderById = function(orderId) {
+            return (window.adminCache?.orders || []).find(order => String(order.id) === String(orderId)) || null;
+        };
+
+        window.getOrderClientPhone = function(order = {}) {
+            return window.normalizePhone(order.phone || order.telefono || order.whatsapp || order.contactPhone || order.userPhone || '');
+        };
+
+        window.getDeliveryNoteItems = function(order = {}) {
+            return Array.isArray(order.items) ? order.items.map(item => ({
+                name: item.name || 'Producto Milkarf',
+                weight: item.weight || item.tam || item.presentation || '',
+                qty: Number(item.qty || 0),
+                price: Number(item.price || item.precio || 0),
+                forPet: item.forPet || item.petName || '',
+                personalizado: !!item.personalizado
+            })) : [];
+        };
+
+        window.getDeliveryDateLabel = function(dateValue = '') {
+            if(!dateValue) return 'Por confirmar';
+            try {
+                return new Date(dateValue + 'T12:00:00').toLocaleDateString('es-VE', { day: 'numeric', month: 'long', year: 'numeric' });
+            } catch(e) {
+                return dateValue;
+            }
+        };
+
+        window.getDeliveryNotePayload = function(order = {}) {
+            const deliveryCost = Math.max(0, Number(document.getElementById('delivery-note-cost')?.value || order.deliveryCost || 0));
+            const deliveryDate = document.getElementById('delivery-note-date')?.value || order.deliveryDate || '';
+            const items = window.getDeliveryNoteItems(order);
+            const productTotal = Number(order.total || items.reduce((sum, i) => sum + (Number(i.price || 0) * Number(i.qty || 0)), 0));
+            const clientName = order.userName || order.nombre_persona || order.nombre || order.displayName || order.email || 'Cliente Milkarf';
+            const petName = order.selectedPet || items.find(i => i.forPet)?.forPet || 'tu mascota';
+            return {
+                order,
+                items,
+                productTotal,
+                deliveryCost,
+                finalTotal: productTotal + deliveryCost,
+                deliveryDate,
+                deliveryDateLabel: window.getDeliveryDateLabel(deliveryDate),
+                clientName,
+                petName
+            };
+        };
+
+        window.buildDeliveryNoteMessage = function(order = {}, deliveryCost = 0, deliveryDate = '') {
+            const payload = window.getDeliveryNotePayload(order);
+            if(deliveryCost !== undefined && deliveryCost !== null) {
+                payload.deliveryCost = Math.max(0, Number(deliveryCost || 0));
+                payload.finalTotal = payload.productTotal + payload.deliveryCost;
+            }
+            if(deliveryDate !== undefined && deliveryDate !== null && deliveryDate !== '') {
+                payload.deliveryDate = deliveryDate;
+                payload.deliveryDateLabel = window.getDeliveryDateLabel(deliveryDate);
+            }
+            return window.getWhatsAppTemplate('deliveryNote', payload);
+        };
+
+        window.updateDeliveryNotePreview = function() {
+            const orderId = document.getElementById('delivery-note-order-id')?.value || '';
+            const order = window.getAdminOrderById(orderId);
+            const messagePreview = document.getElementById('delivery-note-message-preview');
+            if(!order) return;
+
+            const payload = window.getDeliveryNotePayload(order);
+            const message = window.getWhatsAppTemplate('deliveryNote', payload);
+
+            const clientEl = document.getElementById('delivery-note-client');
+            const petEl = document.getElementById('delivery-note-pet');
+            const dateEl = document.getElementById('delivery-note-preview-date');
+            const itemsEl = document.getElementById('delivery-note-items-preview');
+            const productsTotalEl = document.getElementById('delivery-note-products-total');
+            const deliveryTotalEl = document.getElementById('delivery-note-delivery-total');
+            const finalTotalEl = document.getElementById('delivery-note-final-total');
+
+            if(clientEl) clientEl.textContent = payload.clientName;
+            if(petEl) petEl.textContent = 'Mascota asociada: ' + payload.petName;
+            if(dateEl) dateEl.textContent = 'Entrega: ' + payload.deliveryDateLabel;
+            if(itemsEl) {
+                itemsEl.innerHTML = payload.items.length ? payload.items.map(item => {
+                    const lineTotal = Number(item.price || 0) * Number(item.qty || 0);
+                    return `<div class="flex items-start justify-between gap-3 bg-purple-light/70 dark:bg-darkcard rounded-xl p-3 border border-purple-border/30 dark:border-purple/20">
+                        <div class="min-w-0">
+                            <p class="text-xs font-black text-purple-dark dark:text-white">${window.escapeHTML(item.name)} ${item.weight ? `<span class="font-bold text-purple/55 dark:text-gray-500">(${window.escapeHTML(item.weight)})</span>` : ''}</p>
+                            <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mt-0.5">${Number(item.qty || 0)} unidad(es)${item.forPet ? ` · Para ${window.escapeHTML(item.forPet)}` : ''}</p>
+                        </div>
+                        <p class="text-xs font-black text-purple-dark dark:text-white shrink-0">$${lineTotal.toFixed(2)}</p>
+                    </div>`;
+                }).join('') : '<p class="text-xs text-gray-500 font-semibold">Este pedido no tiene productos registrados.</p>';
+            }
+            if(productsTotalEl) productsTotalEl.textContent = '$' + payload.productTotal.toFixed(2);
+            if(deliveryTotalEl) deliveryTotalEl.textContent = '$' + payload.deliveryCost.toFixed(2);
+            if(finalTotalEl) finalTotalEl.textContent = '$' + payload.finalTotal.toFixed(2);
+            if(messagePreview) messagePreview.textContent = message;
+            window.renderDeliveryNoteCapture?.(payload);
+        };
+
+        window.renderDeliveryNoteCapture = function(payload = {}) {
+            const target = document.getElementById('delivery-note-capture');
+            if(!target) return;
+            const safe = window.escapeHTML || ((v) => String(v ?? ''));
+            const items = Array.isArray(payload.items) ? payload.items : [];
+            const itemsHtml = items.length ? items.map(item => {
+                const lineTotal = Number(item.price || 0) * Number(item.qty || 0);
+                const weight = item.weight ? ` (${safe(item.weight)})` : '';
+                const pet = item.forPet ? `Para ${safe(item.forPet)}` : 'Para la mascota registrada';
+                return `<div class="delivery-capture-item">
+                    <div>
+                        <div class="delivery-capture-item-name">${safe(item.name || 'Producto Milkarf')}${weight}</div>
+                        <div class="delivery-capture-item-sub">${Number(item.qty || 0)} unidad(es) · ${pet}</div>
+                    </div>
+                    <div class="delivery-capture-item-price">$${lineTotal.toFixed(2)}</div>
+                </div>`;
+            }).join('') : '<div class="delivery-capture-item"><div class="delivery-capture-item-name">Pedido Milkarf</div><div class="delivery-capture-item-price">$0.00</div></div>';
+
+            target.innerHTML = `<div class="delivery-capture-card">
+                <div class="delivery-capture-inner">
+                    <div class="delivery-capture-head">
+                        <div>
+                            <div class="delivery-capture-kicker">Milkarf</div>
+                            <h1 class="delivery-capture-title">Nota de entrega</h1>
+                            <div class="delivery-capture-date">Entrega: ${safe(payload.deliveryDateLabel || 'Por confirmar')}</div>
+                        </div>
+                        <img class="delivery-capture-logo" src="logo.png" alt="Milkarf" onerror="this.style.display='none'">
+                    </div>
+                    <div class="delivery-capture-body">
+                        <div class="delivery-capture-section">
+                            <div class="delivery-capture-label">Cliente</div>
+                            <p class="delivery-capture-client">${safe(payload.clientName || 'Cliente Milkarf')}</p>
+                            <div class="delivery-capture-pet">Mascota asociada: ${safe(payload.petName || 'tu mascota')}</div>
+                        </div>
+                        <div class="delivery-capture-section">
+                            <div class="delivery-capture-label">Detalle del pedido</div>
+                            ${itemsHtml}
+                        </div>
+                        <div class="delivery-capture-totals">
+                            <div class="delivery-capture-total-row"><span>Total productos</span><span>$${Number(payload.productTotal || 0).toFixed(2)}</span></div>
+                            <div class="delivery-capture-total-row"><span>Delivery</span><span>$${Number(payload.deliveryCost || 0).toFixed(2)}</span></div>
+                            <div class="delivery-capture-total-row delivery-capture-final"><span>Total a pagar</span><span>$${Number(payload.finalTotal || 0).toFixed(2)}</span></div>
+                        </div>
+                        <div class="delivery-capture-payment">
+                            <strong>Datos de pago</strong><br>
+                            Banco de Venezuela<br>
+                            Cuenta: 0102 0443 7700 0093 1771<br>
+                            C.I: 20.530.321<br>
+                            Pago móvil: 0414-179-1136<br><br>
+                            Pago en Bs. a tasa BCV del día. Si pagas en divisas, puedes consultarnos por el descuento disponible.
+                        </div>
+                    </div>
+                    <div class="delivery-capture-footer">
+                        Cuando realices el pago, envía el comprobante por WhatsApp para confirmar tu pedido.
+                        <br>Milkarf · Nutrición natural para mascotas
+                    </div>
+                </div>
+            </div>`;
+        };
+
+        window.getDeliveryNoteCanvas = async function() {
+            const orderId = document.getElementById('delivery-note-order-id')?.value || '';
+            const order = window.getAdminOrderById(orderId);
+            if(!order) throw new Error('No se encontró el pedido para generar la nota.');
+            const payload = window.getDeliveryNotePayload(order);
+            window.renderDeliveryNoteCapture?.(payload);
+            const target = document.getElementById('delivery-note-capture');
+            if(!target) throw new Error('No se encontró el contenedor de la nota visual.');
+            if(!window.html2canvas) throw new Error('La librería para generar imagen aún no ha cargado. Intenta nuevamente en unos segundos.');
+            await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            return await window.html2canvas(target.firstElementChild || target, {
+                scale: 2,
+                backgroundColor: '#f5f0e8',
+                useCORS: true,
+                allowTaint: true,
+                logging: false,
+                windowWidth: 1200
+            });
+        };
+
+        window.canvasToBlob = function(canvas) {
+            return new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 1));
+        };
+
+        window.getDeliveryNoteFileName = function(order = {}) {
+            const base = `nota-entrega-milkarf-${order.userName || order.nombre || order.id || Date.now()}`;
+            return String(base).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '.png';
+        };
+
+        window.downloadDeliveryNoteImage = async function() {
+            const err = document.getElementById('delivery-note-error');
+            if(err) { err.classList.add('hidden'); err.textContent = ''; }
+            try {
+                const orderId = document.getElementById('delivery-note-order-id')?.value || '';
+                const order = window.getAdminOrderById(orderId) || {};
+                window.updateDeliveryNotePreview?.();
+                const canvas = await window.getDeliveryNoteCanvas();
+                const link = document.createElement('a');
+                link.download = window.getDeliveryNoteFileName(order);
+                link.href = canvas.toDataURL('image/png', 1);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.showToast?.('Nota visual descargada en alta calidad.', 'success');
+            } catch(error) {
+                console.error('Error generando nota visual:', error);
+                if(err) { err.textContent = error.message || 'No se pudo generar la imagen de la nota.'; err.classList.remove('hidden'); }
+                else window.showToast?.('No se pudo generar la imagen de la nota.');
+            }
+        };
+
+        window.openDeliveryNoteModal = function(orderId) {
+            const order = window.getAdminOrderById(orderId);
+            if(!order) { window.showToast?.('No se encontró el pedido. Actualiza el panel.'); return; }
+            const modal = document.getElementById('modal-delivery-note');
+            const box = document.getElementById('modal-delivery-note-box');
+            if(!modal || !box) return;
+            const phoneInput = document.getElementById('delivery-note-phone');
+            const costInput = document.getElementById('delivery-note-cost');
+            const dateInput = document.getElementById('delivery-note-date');
+            const idInput = document.getElementById('delivery-note-order-id');
+            const subtitle = document.getElementById('delivery-note-subtitle');
+            const err = document.getElementById('delivery-note-error');
+
+            if(idInput) idInput.value = order.id;
+            if(phoneInput) phoneInput.value = window.getOrderClientPhone(order) || '';
+            if(costInput) costInput.value = Number(order.deliveryCost || 0) ? Number(order.deliveryCost || 0).toFixed(2) : '';
+            if(dateInput) dateInput.value = order.deliveryDate || '';
+            if(subtitle) subtitle.textContent = `Pedido de ${order.userName || order.email || 'cliente'} · Total productos $${Number(order.total || 0).toFixed(2)}`;
+            if(err) { err.classList.add('hidden'); err.textContent = ''; }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                box.classList.remove('scale-95');
+            }, 10);
+
+            [phoneInput, costInput, dateInput].forEach(input => {
+                if(input && input.dataset.deliveryListener !== '1') {
+                    input.dataset.deliveryListener = '1';
+                    input.addEventListener('input', window.updateDeliveryNotePreview);
+                    input.addEventListener('change', window.updateDeliveryNotePreview);
+                }
+            });
+
+            window.updateDeliveryNotePreview();
+            window.refreshIcons?.(modal);
+        };
+
+        window.closeDeliveryNoteModal = function() {
+            const modal = document.getElementById('modal-delivery-note');
+            const box = document.getElementById('modal-delivery-note-box');
+            if(!modal) return;
+            modal.classList.add('opacity-0');
+            if(box) box.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 220);
+        };
+
+        window.sendDeliveryNoteToClient = async function() {
+            const orderId = document.getElementById('delivery-note-order-id')?.value || '';
+            const order = window.getAdminOrderById(orderId);
+            const rawPhone = document.getElementById('delivery-note-phone')?.value || '';
+            const phone = window.normalizePhone(rawPhone);
+            const deliveryCost = Math.max(0, Number(document.getElementById('delivery-note-cost')?.value || 0));
+            const deliveryDate = document.getElementById('delivery-note-date')?.value || '';
+            const err = document.getElementById('delivery-note-error');
+            if(err) { err.classList.add('hidden'); err.textContent = ''; }
+            if(!order) {
+                if(err) { err.textContent = 'No se encontró el pedido. Actualiza el panel e intenta nuevamente.'; err.classList.remove('hidden'); }
+                return;
+            }
+            if(!phone || phone.length < 10) {
+                if(err) { err.textContent = 'Agrega un número de WhatsApp válido para enviar la nota de entrega.'; err.classList.remove('hidden'); }
+                return;
+            }
+            if(deliveryCost < 0 || Number.isNaN(deliveryCost)) {
+                if(err) { err.textContent = 'Coloca un costo de delivery válido.'; err.classList.remove('hidden'); }
+                return;
+            }
+
+            const payload = window.getDeliveryNotePayload(order);
+            payload.deliveryCost = deliveryCost;
+            payload.finalTotal = payload.productTotal + deliveryCost;
+            payload.deliveryDate = deliveryDate;
+            payload.deliveryDateLabel = window.getDeliveryDateLabel(deliveryDate);
+            const message = window.getWhatsAppTemplate('deliveryNote', payload);
+            const totalWithDelivery = payload.finalTotal;
+
+            if(db && order.id && !String(order.id).startsWith('local_')) {
+                try {
+                    await setDoc(window.getOrderDocRef(order.id), {
+                        deliveryCost,
+                        totalWithDelivery,
+                        deliveryDate,
+                        phone,
+                        telefono: phone,
+                        deliveryNoteMessage: message,
+                        deliveryNoteSentAt: new Date().toISOString()
+                    }, { merge: true });
+                    if(order.uid && order.uid !== 'anonimo') {
+                        await setDoc(window.getUserPath(order.uid), {
+                            phone,
+                            telefono: phone,
+                            whatsapp: phone,
+                            fecha_actualizacion: serverTimestamp()
+                        }, { merge: true });
+                    }
+                } catch(error) {
+                    console.warn('No se pudo guardar la nota de entrega en Firebase:', error);
+                }
+            }
+
+            try {
+                window.updateDeliveryNotePreview?.();
+                const canvas = await window.getDeliveryNoteCanvas();
+                const blob = await window.canvasToBlob(canvas);
+                const fileName = window.getDeliveryNoteFileName(order);
+                const file = blob ? new File([blob], fileName, { type: 'image/png' }) : null;
+                const shareText = `Nota de entrega Milkarf para ${payload.clientName}. Total a pagar: $${payload.finalTotal.toFixed(2)}.`;
+
+                if(file && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+                    await navigator.share({
+                        title: 'Nota de entrega Milkarf',
+                        text: shareText,
+                        files: [file]
+                    });
+                    window.showToast?.('Nota visual lista para compartir por WhatsApp.', 'success');
+                } else {
+                    if(blob) {
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                        setTimeout(() => URL.revokeObjectURL(url), 5000);
+                    }
+                    window.openWhatsAppMessage(message, phone);
+                    window.showToast?.('La imagen se descargó. Adjunta la nota en el chat de WhatsApp que se abrirá.', 'success');
+                }
+            } catch(imageError) {
+                console.warn('No se pudo generar o compartir la nota visual. Se enviará texto de respaldo:', imageError);
+                window.openWhatsAppMessage(message, phone);
+                window.showToast?.('No se pudo generar la imagen. Se abrió WhatsApp con el texto de la nota.', 'success');
+            }
+            window.closeDeliveryNoteModal();
+        };
+
         window.renderStatusBadge = function(status) {
             const info = window.getOrderStatusInfo(status);
             return `<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${info.classes}"><span class="w-2 h-2 rounded-full ${info.bar}"></span>${info.label}</span>`;
@@ -4441,7 +5141,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 ml-2">
                     ${primary}
                     <a href="${window.getAdminContactLink(o)}" target="_blank" class="bg-[#25D366]/15 border border-[#25D366]/30 text-[#168d43] dark:text-green text-[10px] font-black px-4 py-3 rounded-xl transition-all flex items-center gap-2 justify-center"><i data-lucide="message-circle" class="w-4 h-4"></i> WhatsApp</a>
-                    <button onclick="window.showToast('Código: ${o.id}', 'success')" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white text-[10px] font-black px-4 py-3 rounded-xl transition-all flex items-center gap-2 justify-center"><i data-lucide="copy" class="w-4 h-4"></i> Código</button>
+                    <button onclick="window.openDeliveryNoteModal('${o.id}')" class="bg-green/15 border border-green/25 text-green-dark dark:text-green text-[10px] font-black px-4 py-3 rounded-xl transition-all flex items-center gap-2 justify-center"><i data-lucide="truck" class="w-4 h-4"></i> Nota entrega</button>
                     ${canCancel ? `<button onclick="window.cancelarPedidoAdmin('${o.id}')" class="bg-pink/10 border border-pink/20 text-pink text-[10px] font-black px-4 py-3 rounded-xl transition-all flex items-center gap-2 justify-center"><i data-lucide="x-circle" class="w-4 h-4"></i> Cancelar</button>` : ''}
                 </div>
             </div>`;
@@ -5189,6 +5889,8 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const finalTot = discountApplied ? tot * 0.8 : tot;
             const clientToken = window.getClientToken();
             const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
+            const contactPhone = window.normalizePhone(window.currentUser?.data?.telefono || window.currentUser?.data?.phone || window.currentUser?.data?.whatsapp || (() => { try { return localStorage.getItem('milkarf_contact_phone') || ''; } catch(e) { return ''; } })());
+            const clientNameForOrder = (window.currentUser?.data?.nombre || window.currentUser?.data?.nombre_persona || window.currentUser?.data?.userName || window.currentUser?.displayName || window.currentUser?.email || '').trim();
             const sessionUid = auth?.currentUser?.uid || window.currentUser?.uid || 'anonimo';
             const orderItems = window.cart.map(i => ({name: i.name, weight: i.weight, qty: i.qty, price: i.price, forPet: i.forPet || ''}));
             const createdAt = new Date().toISOString();
@@ -5208,8 +5910,12 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 uid: isLogged ? window.currentUser.uid : sessionUid,
                 clientToken,
                 registeredUser: !!isLogged,
-                userName: isLogged ? (window.currentUser.displayName || window.currentUser.email) : 'Usuario Invitado',
+                userName: isLogged ? (clientNameForOrder || window.currentUser.email) : 'Usuario Invitado',
+                nombre: isLogged ? clientNameForOrder : '',
+                nombre_persona: isLogged ? clientNameForOrder : '',
                 email: isLogged ? (window.currentUser.email || '') : '',
+                phone: contactPhone,
+                telefono: contactPhone,
                 items: orderItems,
                 total: finalTot,
                 descuentoAplicado: discountApplied,
@@ -5257,8 +5963,13 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                             uid: isLogged ? window.currentUser.uid : sessionUid,
                             registeredUser: !!isLogged,
                             clientToken,
-                            userName: isLogged ? (window.currentUser.displayName || window.currentUser.email) : 'Usuario Invitado',
+                            userName: isLogged ? (clientNameForOrder || window.currentUser.email) : 'Usuario Invitado',
+                            nombre: isLogged ? clientNameForOrder : '',
+                            nombre_persona: isLogged ? clientNameForOrder : '',
                             email: isLogged ? (window.currentUser.email || '') : '',
+                            phone: contactPhone,
+                            telefono: contactPhone,
+                            whatsapp: contactPhone,
                             items: orderItems,
                             total: finalTot,
                             descuentoAplicado: discountApplied,
@@ -5635,16 +6346,99 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
 
         const __originalRegistrarUX = window.registrarYGuardarMascota;
         window.registrarYGuardarMascota = async function() {
-            const beforeUser = auth?.currentUser?.uid || null;
-            const result = await __originalRegistrarUX?.();
-            try { localStorage.setItem('milkarf_show_onboarding', '1'); } catch(e) {}
-            setTimeout(() => {
-                if(auth?.currentUser?.uid && auth.currentUser.uid !== beforeUser) {
-                    window.navigateTo?.('view-dashboard');
-                    window.actualizarUIAuth?.();
+            window.vibrate(20);
+            if(!auth || !db) { window.showToast("Base de datos no configurada."); return; }
+
+            const emailEl = document.getElementById('auth-email-reg');
+            const nameEl = document.getElementById('auth-name-reg');
+            const phoneEl = document.getElementById('auth-phone-reg');
+            const passEl = document.getElementById('auth-pass-reg');
+            const tipoEl = document.getElementById('reg-pet-tipo');
+            const nombreEl = document.getElementById('reg-pet-nombre');
+            const edadEl = document.getElementById('reg-pet-edad');
+            const pesoEl = document.getElementById('reg-pet-peso');
+            const razaEl = document.getElementById('reg-pet-raza');
+            const cumpleEl = document.getElementById('reg-pet-cumple');
+            const err = document.getElementById('auth-error');
+
+            const email = emailEl ? emailEl.value.trim() : '';
+            const clientName = nameEl ? nameEl.value.trim() : '';
+            const rawPhone = phoneEl ? phoneEl.value.trim() : '';
+            const phone = window.normalizePhone(rawPhone);
+            const pass = passEl ? passEl.value : '';
+            const tipo = tipoEl ? tipoEl.value : 'perro';
+            const nombre = nombreEl ? nombreEl.value.trim() : '';
+            const edad = edadEl ? edadEl.value.trim() : '';
+            const peso = pesoEl ? pesoEl.value.trim() : '';
+            const raza = razaEl ? razaEl.value.trim() : '';
+            const cumple = cumpleEl ? cumpleEl.value : '';
+
+            if(!clientName || !email || pass.length < 6 || !phone || phone.length < 10 || !nombre || !edad || !peso) {
+                if (err) {
+                    err.textContent = "Completa tu nombre, correo, WhatsApp, contraseña y los datos requeridos de tu mascota.";
+                    err.classList.remove('hidden');
                 }
-            }, 900);
-            return result;
+                return;
+            }
+
+            if(cumple && window.isFutureBirthday(cumple)) {
+                if (err) {
+                    err.textContent = "La fecha de nacimiento no puede ser futura.";
+                    err.classList.remove('hidden');
+                }
+                return;
+            }
+
+            try {
+                if (err) err.classList.add('hidden');
+                const btn = document.getElementById('btn-reg-email');
+                if (btn) { btn.textContent = "Registrando..."; btn.disabled = true; }
+
+                const cred = await createUserWithEmailAndPassword(auth, email, pass);
+                try { await updateProfile(cred.user, { displayName: clientName }); } catch(profileErr) { console.warn('No se pudo actualizar displayName:', profileErr); }
+
+                const nuevaMascota = { 
+                    id: Date.now().toString(), 
+                    tipo: tipo, 
+                    nombre: nombre, 
+                    edad: edad, 
+                    peso: peso, 
+                    raza: raza || 'Mestizo',
+                    cumple: cumple
+                };
+
+                await setDoc(window.getUserPath(cred.user.uid), {
+                    mascotas: [nuevaMascota],
+                    puntos: 0,
+                    puntos_historicos: 0,
+                    descuento_usado: false,
+                    email: cred.user.email || '',
+                    nombre: clientName,
+                    nombre_persona: clientName,
+                    userName: clientName,
+                    displayName: clientName,
+                    telefono: phone,
+                    phone: phone,
+                    whatsapp: phone,
+                    fecha_actualizacion: serverTimestamp()
+                }, { merge: true });
+
+                try { localStorage.setItem('milkarf_contact_phone', phone); } catch(e) {}
+                window.state.nombreMascota = nombre;
+
+                [nameEl, emailEl, phoneEl, passEl, nombreEl, edadEl, pesoEl, razaEl, cumpleEl].forEach(el => { if(el) el.value = ''; });
+
+                window.showToast("Cuenta, datos de contacto y mascota guardados con éxito.", 'success');
+                window.cerrarModalAuth();
+                if (btn) { btn.textContent = "Crear Cuenta y Entrar"; btn.disabled = false; }
+            } catch(error) {
+                if (err) {
+                    err.textContent = window.traductorErrores(error.code);
+                    err.classList.remove('hidden');
+                }
+                const btn = document.getElementById('btn-reg-email');
+                if (btn) { btn.textContent = "Crear Cuenta y Entrar"; btn.disabled = false; }
+            }
         };
 
         const __originalAddToCartUX = window.addToCart;
@@ -6046,8 +6840,10 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if (typeof window.refreshIcons === 'function') window.refreshIcons();
             window.setMaxBirthdayDates();
             initApp();
+            window.repairViewState?.('view-home');
             window.initFastMobileNav?.();
             window.initPreloader();
+            setTimeout(() => window.repairViewState?.('view-home'), 1200);
         });
     </script>
 
