@@ -2271,12 +2271,12 @@ Quisiera confirmar recomendaciones, disponibilidad, costo de delivery y próximo
                     }).join('\n') : 'Pedido Milkarf';
                     let msg = `Hola, equipo Milkarf.
 
-Quiero realizar el siguiente pedido:
+Quisiera hacer este pedido para mi mascota. Les comparto el detalle para que me ayuden a confirmar disponibilidad, delivery y forma de pago.
 
-Productos:
+Mi pedido:
 ${items}
 
-Resumen del pedido:
+Resumen:
 Subtotal: ${currency(data.subtotal)}`;
                     if(data.discountApplied) {
                         msg += `\nDescuento de bienvenida: -${currency(data.discountAmount)}\nTotal de productos: ${currency(data.finalTotal)}\n\nEl descuento de primera compra fue aplicado desde la web.`;
@@ -2286,7 +2286,7 @@ Subtotal: ${currency(data.subtotal)}`;
                     if(data.location) {
                         msg += `\n\nUbicación para delivery:\n${data.location}`;
                     }
-                    msg += `\n\nPor favor, confirmen disponibilidad, costo de delivery y forma de pago para completar el pedido.`;
+                    msg += `\n\nQuedo atento/a para continuar por aquí. Gracias.`;
                     return msg;
                 }
 
@@ -3538,6 +3538,7 @@ Deja el campo vacío para quitar la foto.`, current);
                 window.showToast('No se pudo guardar porque Firebase no está disponible.');
                 return;
             }
+
             const r = window.lastCalcResult;
             const data = window.currentUser.data || { puntos: 0, puntos_historicos: 0, mascotas: [] };
             const mascotas = Array.isArray(data.mascotas) ? [...data.mascotas] : [];
@@ -3561,24 +3562,33 @@ Deja el campo vacío para quitar la foto.`, current);
             const existingIndex = mascotas.findIndex(m => String(m.nombre || '').toLowerCase() === String(r.nombre || '').toLowerCase());
             if(existingIndex >= 0) mascotas[existingIndex] = { ...mascotas[existingIndex], ...petPayload, id: mascotas[existingIndex].id || petPayload.id };
             else mascotas.push(petPayload);
+
+            // Primero se guarda en Firebase. Las actualizaciones visuales van fuera del catch para no mostrar
+            // un error falso cuando el guardado sí se completó pero alguna función de UI falla después.
             try {
                 await setDoc(window.getUserPath(window.currentUser.uid), { uid: window.currentUser.uid, mascotas, updatedAt: serverTimestamp() }, { merge: true });
-                window.currentUser.data = { ...data, mascotas };
-                window.selectedDashboardPetIndex = Math.max(0, mascotas.findIndex(m => String(m.nombre || '').toLowerCase() === String(r.nombre || '').toLowerCase()));
-                window.state.nombreMascota = r.nombre;
-                const title = document.getElementById('calc-save-title');
-                const text = document.getElementById('calc-save-text');
-                const btn = document.getElementById('btn-save-calc-pet');
-                if(title) title.textContent = 'Datos guardados con éxito';
-                if(text) text.textContent = `La ración de ${r.nombre} ya está guardada en tu perfil.`;
-                if(btn) btn.textContent = 'Ver en mi perfil';
-                window.showToast('Datos guardados con éxito.', 'success');
-                window.actualizarUIAuth();
-                setTimeout(() => window.navigateTo?.('view-dashboard'), 650);
             } catch(error) {
-                console.error(error);
-                window.showToast('No se pudieron guardar los datos. Intenta nuevamente.');
+                console.error('Error real guardando mascota desde calculadora:', error);
+                window.showToast('No se pudieron guardar los datos. Revisa tu conexión e intenta nuevamente.');
+                return;
             }
+
+            window.currentUser.data = { ...data, mascotas };
+            window.selectedDashboardPetIndex = Math.max(0, mascotas.findIndex(m => String(m.nombre || '').toLowerCase() === String(r.nombre || '').toLowerCase()));
+            window.state.nombreMascota = r.nombre;
+
+            const title = document.getElementById('calc-save-title');
+            const text = document.getElementById('calc-save-text');
+            const btn = document.getElementById('btn-save-calc-pet');
+            if(title) title.textContent = 'Datos guardados con éxito';
+            if(text) text.textContent = `La ración de ${r.nombre} ya está guardada en tu perfil.`;
+            if(btn) btn.textContent = 'Ver en mi perfil';
+
+            try { window.actualizarUIAuth?.(); } catch(uiError) { console.warn('La mascota se guardó, pero hubo un aviso actualizando el perfil:', uiError); }
+            window.showToast('Datos guardados con éxito.', 'success');
+            setTimeout(() => {
+                try { window.navigateTo?.('view-dashboard'); } catch(navError) { console.warn('No se pudo navegar al perfil después de guardar:', navError); }
+            }, 450);
         };
 
         window.abrirModalBienvenida = function() {
@@ -6028,10 +6038,14 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
         };
 
         window.finalizarPedido = function(event) {
-            if(event) event.preventDefault();
-            if (!window.cart.length) { window.showToast?.('Agrega productos antes de pedir por WhatsApp.'); return false; }
+            const btn = event?.currentTarget || document.getElementById('btn-finalizar-pedido');
+            if (!window.cart.length) {
+                if(event) event.preventDefault();
+                window.showToast?.('Agrega productos antes de pedir por WhatsApp.');
+                return false;
+            }
 
-            const tot = window.cart.reduce((s,i) => s + (i.price*i.qty), 0);
+            const tot = window.cart.reduce((s,i) => s + (Number(i.price || 0) * Number(i.qty || 0)), 0);
             const discountApplied = !!window.descuentoAplicado;
             const finalTot = discountApplied ? tot * 0.8 : tot;
             const clientToken = window.getClientToken();
@@ -6039,7 +6053,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const contactPhone = window.normalizePhone(window.currentUser?.data?.telefono || window.currentUser?.data?.phone || window.currentUser?.data?.whatsapp || (() => { try { return localStorage.getItem('milkarf_contact_phone') || ''; } catch(e) { return ''; } })());
             const clientNameForOrder = (window.currentUser?.data?.nombre || window.currentUser?.data?.nombre_persona || window.currentUser?.data?.userName || window.currentUser?.displayName || window.currentUser?.email || '').trim();
             const sessionUid = auth?.currentUser?.uid || window.currentUser?.uid || 'anonimo';
-            const orderItems = window.cart.map(i => ({name: i.name, weight: i.weight, qty: i.qty, price: i.price, forPet: i.forPet || ''}));
+            const orderItems = window.cart.map(i => ({name: i.name, weight: i.weight, qty: Number(i.qty || 1), price: Number(i.price || 0), forPet: i.forPet || ''}));
             const createdAt = new Date().toISOString();
             const localOrderId = 'local_' + Date.now();
 
@@ -6052,6 +6066,13 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 location: window.userLocation || ''
             });
 
+            const links = window.buildWhatsAppLinks(msg, window.WA_NUMBER);
+            if(btn) {
+                btn.setAttribute('href', links.api);
+                btn.setAttribute('target', window.isMobileDevice?.() ? '_self' : '_blank');
+                btn.setAttribute('rel', 'noopener noreferrer');
+            }
+
             const pendingOrderForCache = {
                 id: localOrderId,
                 uid: isLogged ? window.currentUser.uid : sessionUid,
@@ -6063,32 +6084,40 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 email: isLogged ? (window.currentUser.email || '') : '',
                 phone: contactPhone,
                 telefono: contactPhone,
+                whatsapp: contactPhone,
                 items: orderItems,
                 total: finalTot,
                 descuentoAplicado: discountApplied,
                 status: 'en_proceso',
                 pointsBase: Math.floor(finalTot),
-                pointsAwarded: 0,
-                pointsGranted: 0,
                 selectedPet: window.state.nombreMascota || '',
                 createdAt,
                 localOnly: true
             };
 
-            // Guardar copia local antes de abrir WhatsApp para que el estado aparezca al volver a la web.
+            // Se prepara todo antes de que el navegador salga a WhatsApp. Así, al volver,
+            // el carrito ya aparece vacío y el pedido queda visible como en proceso.
             window.cacheUserOrderLocal?.(pendingOrderForCache);
             window.queuePendingOrderForSync?.(pendingOrderForCache);
-
-            // Preparar el estado visual antes de abrir WhatsApp. En móviles, la página puede pasar a segundo plano de inmediato.
+            try { localStorage.setItem('milkarf_last_order_id', localOrderId); } catch(e) {}
             window.renderUserOrders?.(window.getLocalUserOrders?.() || [pendingOrderForCache]);
             window.actualizarUIAuth?.();
             window.showCartPostOrderState?.(localOrderId);
+            // showCartPostOrderState vacía el carrito y refresca el enlace; por eso restauramos aquí el href real
+            // antes de que el navegador ejecute la navegación predeterminada del <a>.
+            if(btn) {
+                btn.setAttribute('href', links.api);
+                btn.setAttribute('target', window.isMobileDevice?.() ? '_self' : '_blank');
+                btn.setAttribute('rel', 'noopener noreferrer');
+            }
             window.showToast('Tu pedido quedó en proceso. Continúa la atención por WhatsApp.', 'success');
 
-            // Apertura inmediata y directa para evitar bloqueos de navegadores móviles.
-            window.openWhatsAppMessage(msg, window.WA_NUMBER, { showFallback: true, directGesture: true });
+            // Fallback visible si el navegador interno no abre WhatsApp automáticamente.
+            setTimeout(() => {
+                if(document.visibilityState === 'visible') window.showWhatsAppManualFallback?.(links.api);
+            }, 1400);
 
-            // Guardado no bloqueante: no debe retrasar la apertura de WhatsApp.
+            // Guardado no bloqueante: no debe retrasar ni bloquear la apertura de WhatsApp.
             void (async () => {
                 let createdOrderId = null;
                 try {
@@ -6132,7 +6161,6 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                             descuentoAplicado: discountApplied,
                             status: 'en_proceso',
                             pointsBase: Math.floor(finalTot),
-                            pointsAwarded: 0,
                             selectedPet: window.state.nombreMascota || '',
                             createdAt
                         };
@@ -6147,10 +6175,14 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                         window.startUserOrdersListener?.();
                     } catch (error) {
                         console.error('No se pudo guardar el pedido en el registro:', error);
-                        window.showToast('Tu pedido abrió en WhatsApp. Si no aparece en el perfil, actualiza en unos segundos.');
+                        // El pedido ya quedó preparado en WhatsApp y guardado localmente; no mostramos error crítico para no confundir al cliente.
+                        window.showToast('Tu pedido está en proceso. Al volver, actualiza el perfil si deseas revisar el estado.');
                     }
                 }
             })();
+
+            // No prevenimos el enlace: el href real abre WhatsApp de forma más confiable en celulares.
+            return true;
         };
 
         function initApp() {
@@ -7108,7 +7140,10 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                     finalTotal: finalTot,
                     location: window.userLocation || ''
                 });
-                btn.setAttribute('href', window.buildWhatsAppUrl(msg, window.WA_NUMBER));
+                const links = window.buildWhatsAppLinks(msg, window.WA_NUMBER);
+                btn.setAttribute('href', links.api);
+                btn.setAttribute('target', window.isMobileDevice?.() ? '_self' : '_blank');
+                btn.setAttribute('rel', 'noopener noreferrer');
             } catch(error) { btn.setAttribute('href', '#'); }
         };
 
@@ -7184,6 +7219,12 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             window.initHistoryNavigation?.();
             window.syncPendingOrders?.();
             window.refreshCheckoutWhatsAppLink?.();
+            const checkoutBtn = document.getElementById('btn-finalizar-pedido');
+            if(checkoutBtn && !checkoutBtn.dataset.fastWaReady) {
+                checkoutBtn.dataset.fastWaReady = '1';
+                checkoutBtn.addEventListener('pointerdown', () => window.refreshCheckoutWhatsAppLink?.(), { passive: true });
+                checkoutBtn.addEventListener('touchstart', () => window.refreshCheckoutWhatsAppLink?.(), { passive: true });
+            }
             if((window.location.hash || '') === '#carrito') window.restoreCartPostOrderStateIfNeeded?.();
             window.initPreloader();
             setTimeout(() => window.repairViewState?.(window.getActiveViewId?.() || 'view-home'), 1200);
