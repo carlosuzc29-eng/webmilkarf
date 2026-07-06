@@ -5720,7 +5720,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 if(post) post.classList.remove('hidden');
                 const cartTitle = document.getElementById('cart-title');
                 const cartBackBtn = document.getElementById('cart-back-shop-btn');
-                if(cartTitle) cartTitle.textContent = 'Pedido enviado';
+                if(cartTitle) cartTitle.textContent = 'Pedido en proceso';
                 if(cartBackBtn) cartBackBtn.classList.add('hidden');
                 if(fab) fab.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
                 if(cartBadge) cartBadge.textContent = '0';
@@ -5839,8 +5839,40 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if(status) { status.classList.add('hidden'); status.innerHTML = ''; status.textContent = ''; }
         };
 
+        window.POST_ORDER_STATE_KEY = 'milkarf_post_order_state';
+
+        window.persistCartPostOrderState = function(orderId = null) {
+            try {
+                sessionStorage.setItem(window.POST_ORDER_STATE_KEY, JSON.stringify({
+                    active: true,
+                    orderId: orderId || window.lastOrderId || null,
+                    savedAt: Date.now()
+                }));
+            } catch(error) {}
+        };
+
+        window.clearCartPostOrderPersistedState = function() {
+            try { sessionStorage.removeItem(window.POST_ORDER_STATE_KEY); } catch(error) {}
+        };
+
+        window.restoreCartPostOrderStateIfNeeded = function() {
+            try {
+                const raw = sessionStorage.getItem(window.POST_ORDER_STATE_KEY);
+                if(!raw) return false;
+                const state = JSON.parse(raw);
+                const recent = state?.savedAt && (Date.now() - Number(state.savedAt) < 1000 * 60 * 30);
+                if(!state?.active || !recent) { window.clearCartPostOrderPersistedState(); return false; }
+                window.showCartPostOrderState(state.orderId || null, { persist: false });
+                return true;
+            } catch(error) {
+                window.clearCartPostOrderPersistedState();
+                return false;
+            }
+        };
+
         window.hideCartPostOrderState = function() {
             window.cartPostOrderActive = false;
+            window.clearCartPostOrderPersistedState?.();
             const post = document.getElementById('cart-post-order');
             const title = document.getElementById('cart-title');
             const backBtn = document.getElementById('cart-back-shop-btn');
@@ -5850,12 +5882,14 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             window.updateCartUI?.();
         };
 
-        window.showCartPostOrderState = function(orderId = null) {
+        window.showCartPostOrderState = function(orderId = null, options = {}) {
+            const opts = { persist: true, ...options };
             window.cartPostOrderActive = true;
             if(orderId) window.lastOrderId = orderId;
             window.cart.length = 0;
             window.descuentoAplicado = false;
             window.resetCartDeliveryUI?.();
+            if(opts.persist) window.persistCartPostOrderState?.(orderId || window.lastOrderId || null);
 
             const empty = document.getElementById('cart-empty');
             const cont = document.getElementById('cart-items-container');
@@ -5870,17 +5904,18 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if(cont) { cont.classList.add('hidden'); cont.innerHTML = ''; }
             if(sum) sum.classList.add('hidden');
             if(post) post.classList.remove('hidden');
-            if(title) title.textContent = 'Pedido enviado';
+            if(title) title.textContent = 'Pedido en proceso';
             if(backBtn) backBtn.classList.add('hidden');
             if(fab) fab.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
             if(badge) badge.textContent = '0';
-
+            window.refreshCheckoutWhatsAppLink?.();
             window.refreshIcons?.();
         };
         
         window.clearCart = function() {
             window.vibrate(20);
             window.cartPostOrderActive = false;
+            window.clearCartPostOrderPersistedState?.();
             window.cart.length = 0;
             window.descuentoAplicado = false;
             window.resetCartDeliveryUI?.();
@@ -5989,16 +6024,14 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             window.cacheUserOrderLocal?.(pendingOrderForCache);
             window.queuePendingOrderForSync?.(pendingOrderForCache);
 
+            // Preparar el estado visual antes de abrir WhatsApp. En móviles, la página puede pasar a segundo plano de inmediato.
+            window.renderUserOrders?.(window.getLocalUserOrders?.() || [pendingOrderForCache]);
+            window.actualizarUIAuth?.();
+            window.showCartPostOrderState?.(localOrderId);
+            window.showToast('Tu pedido quedó en proceso. Continúa la atención por WhatsApp.', 'success');
+
             // Apertura inmediata y directa para evitar bloqueos de navegadores móviles.
             window.openWhatsAppMessage(msg, window.WA_NUMBER, { showFallback: true, directGesture: true });
-
-            // Actualización visual no bloqueante posterior al gesto principal.
-            setTimeout(() => {
-                window.renderUserOrders?.(window.getLocalUserOrders?.() || [pendingOrderForCache]);
-                window.actualizarUIAuth?.();
-                window.showCartPostOrderState?.(null);
-                window.showToast('Tu pedido quedó en proceso. Continúa la atención por WhatsApp.', 'success');
-            }, 80);
 
             // Guardado no bloqueante: no debe retrasar la apertura de WhatsApp.
             void (async () => {
@@ -6048,6 +6081,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                         pendingOrderForCache.id = createdOrderId;
                         pendingOrderForCache.localOnly = false;
                         window.cacheUserOrderLocal?.(pendingOrderForCache);
+                        window.persistCartPostOrderState?.(createdOrderId);
                         window.startUserOrdersListener?.();
                     } catch (error) {
                         console.error('No se pudo guardar el pedido en el registro:', error);
@@ -7059,7 +7093,15 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if(pending.length !== remaining.length) window.startUserOrdersListener?.();
         };
 
-        window.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') window.syncPendingOrders?.(); });
+        window.addEventListener('visibilitychange', () => {
+            if(document.visibilityState === 'visible') {
+                window.syncPendingOrders?.();
+                if(window.getActiveViewId?.() === 'view-cart') window.restoreCartPostOrderStateIfNeeded?.();
+            }
+        });
+        window.addEventListener('pageshow', () => {
+            if(window.getActiveViewId?.() === 'view-cart') window.restoreCartPostOrderStateIfNeeded?.();
+        });
         window.addEventListener('online', () => window.syncPendingOrders?.());
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -7070,6 +7112,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             window.initHistoryNavigation?.();
             window.syncPendingOrders?.();
             window.refreshCheckoutWhatsAppLink?.();
+            if((window.location.hash || '') === '#carrito') window.restoreCartPostOrderStateIfNeeded?.();
             window.initPreloader();
             setTimeout(() => window.repairViewState?.(window.getActiveViewId?.() || 'view-home'), 1200);
         });
