@@ -1425,7 +1425,7 @@
                         </div>
                     </div>
 
-                    <a id="btn-finalizar-pedido" href="#" target="_blank" rel="noopener noreferrer" onclick="return window.finalizarPedido(event)" class="w-full flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20ba59] text-white font-extrabold text-lg py-5 rounded-[1.25rem] shadow-xl shadow-green/20 hover:shadow-glow-green transition-all active:scale-95 group">
+                    <a id="btn-finalizar-pedido" href="#" target="_self" rel="noopener noreferrer" onclick="return window.finalizarPedido(event)" class="w-full flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20ba59] text-white font-extrabold text-lg py-5 rounded-[1.25rem] shadow-xl shadow-green/20 hover:shadow-glow-green transition-all active:scale-95 group">
                         <i data-lucide="send" class="w-6 h-6 shrink-0 group-hover:translate-x-1 transition-transform"></i>
                         Pedir por WhatsApp
                     </a>
@@ -2216,7 +2216,7 @@
             return /Safari/i.test(ua) && !/Chrome|CriOS|FxiOS|EdgiOS|Android/i.test(ua);
         };
 
-        window.openWhatsAppMessage = function(message, phone = window.WA_NUMBER, options = {}) {
+        window.__legacyOpenWhatsAppMessageUnused = function(message, phone = window.WA_NUMBER, options = {}) {
             const links = window.buildWhatsAppLinks(message, phone);
             const isMobile = window.isMobileDevice?.() || false;
             const isIOS = window.isIOSDevice?.() || false;
@@ -6196,163 +6196,9 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             );
         };
 
-        window.finalizarPedido = function(event) {
-            const btn = event?.currentTarget || document.getElementById('btn-finalizar-pedido');
-            if (!window.cart.length) {
-                if(event) event.preventDefault();
-                window.showToast?.('Agrega productos antes de pedir por WhatsApp.');
-                return false;
-            }
-
-            const tot = window.cart.reduce((s,i) => s + (Number(i.price || 0) * Number(i.qty || 0)), 0);
-            const discountApplied = !!window.descuentoAplicado;
-            const finalTot = discountApplied ? tot * 0.8 : tot;
-            const clientToken = window.getClientToken();
-            const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
-            const contactPhone = window.normalizePhone(window.currentUser?.data?.telefono || window.currentUser?.data?.phone || window.currentUser?.data?.whatsapp || (() => { try { return localStorage.getItem('milkarf_contact_phone') || ''; } catch(e) { return ''; } })());
-            const clientNameForOrder = (window.currentUser?.data?.nombre || window.currentUser?.data?.nombre_persona || window.currentUser?.data?.userName || window.currentUser?.displayName || window.currentUser?.email || '').trim();
-            const sessionUid = auth?.currentUser?.uid || window.currentUser?.uid || 'anonimo';
-            const orderItems = window.cart.map(i => ({name: i.name, weight: i.weight, qty: Number(i.qty || 1), price: Number(i.price || 0), forPet: i.forPet || ''}));
-            const createdAt = new Date().toISOString();
-            const localOrderId = 'local_' + Date.now();
-
-            const msg = window.getWhatsAppTemplate('newOrder', {
-                items: orderItems.map(i => ({ name: i.name, weight: i.weight, qty: i.qty, forPet: i.forPet || '' })),
-                subtotal: tot,
-                discountApplied: discountApplied,
-                discountAmount: discountApplied ? (tot * 0.2) : 0,
-                finalTotal: finalTot,
-                location: window.userLocation || ''
-            });
-
-            const links = window.buildWhatsAppLinks(msg, window.WA_NUMBER);
-            const isMobileCheckout = window.isMobileDevice?.() || false;
-            const checkoutUrl = isMobileCheckout ? (links.wa || links.api) : (links.web || links.api);
-            if(btn) {
-                // Safari/iPhone funciona mejor cuando el elemento es un enlace real
-                // y el navegador sigue el href nativo al terminar el gesto del usuario.
-                btn.setAttribute('href', checkoutUrl);
-                btn.setAttribute('target', isMobileCheckout ? '_self' : '_blank');
-                btn.setAttribute('rel', 'noopener noreferrer');
-            }
-
-            const pendingOrderForCache = {
-                id: localOrderId,
-                uid: isLogged ? window.currentUser.uid : sessionUid,
-                clientToken,
-                registeredUser: !!isLogged,
-                userName: isLogged ? (clientNameForOrder || window.currentUser.email) : 'Usuario Invitado',
-                nombre: isLogged ? clientNameForOrder : '',
-                nombre_persona: isLogged ? clientNameForOrder : '',
-                email: isLogged ? (window.currentUser.email || '') : '',
-                phone: contactPhone,
-                telefono: contactPhone,
-                whatsapp: contactPhone,
-                items: orderItems,
-                total: finalTot,
-                descuentoAplicado: discountApplied,
-                status: 'en_proceso',
-                pointsBase: Math.floor(finalTot),
-                selectedPet: window.state.nombreMascota || '',
-                createdAt,
-                localOnly: true
-            };
-
-            // Se prepara todo antes de que el navegador salga a WhatsApp. Así, al volver,
-            // el carrito ya aparece vacío y el pedido queda visible como en proceso.
-            window.cacheUserOrderLocal?.(pendingOrderForCache);
-            window.queuePendingOrderForSync?.(pendingOrderForCache);
-            try { localStorage.setItem('milkarf_last_order_id', localOrderId); } catch(e) {}
-            window.renderUserOrders?.(window.getLocalUserOrders?.() || [pendingOrderForCache]);
-            window.actualizarUIAuth?.();
-            window.showCartPostOrderState?.(localOrderId);
-            window.cart = [];
-            window.cartPostOrderActive = true;
-            window.resetMenuQuantities?.();
-            window.updateCartUI?.();
-            if(btn) {
-                // Se vuelve a fijar después de refrescar el carrito para que updateCartUI no lo cambie a #.
-                btn.setAttribute('href', checkoutUrl);
-                btn.setAttribute('target', isMobileCheckout ? '_self' : '_blank');
-                btn.setAttribute('rel', 'noopener noreferrer');
-            }
-            window.showToast('Tu pedido quedó en proceso. Continúa la atención por WhatsApp.', 'success');
-
-            // Importante para Safari/iPhone: no usamos window.open ni window.location aquí.
-            // Permitimos que el <a> siga su href nativo retornando true al final del onclick.
-            // Si por algún navegador interno no abre, queda un respaldo manual visible.
-            setTimeout(() => {
-                if(document.visibilityState === 'visible') {
-                    window.showWhatsAppManualFallback?.(checkoutUrl);
-                }
-            }, 1600);
-
-            // Guardado no bloqueante: no debe retrasar ni bloquear la apertura de WhatsApp.
-            void (async () => {
-                let createdOrderId = null;
-                try {
-                    if (discountApplied && isLogged) {
-                        let reclamados = [];
-                        try { reclamados = JSON.parse(localStorage.getItem('milkarf_descuentos_uids') || '[]'); } catch(e){}
-                        if (!reclamados.includes(window.currentUser.uid)) {
-                            reclamados.push(window.currentUser.uid);
-                            try { localStorage.setItem('milkarf_descuentos_uids', JSON.stringify(reclamados)); } catch(e){}
-                        }
-                        if(window.currentUser.data) window.currentUser.data.descuento_usado = true;
-                    }
-                } catch (e) { console.error('Error marcando descuento como usado:', e); }
-
-                if (db) {
-                    try {
-                        let writeUid = auth?.currentUser?.uid || window.currentUser?.uid || null;
-                        if(!writeUid && auth) {
-                            try {
-                                const anonCred = await signInAnonymously(auth);
-                                writeUid = anonCred?.user?.uid || null;
-                                window.currentUser = anonCred?.user || window.currentUser;
-                            } catch(authError) {
-                                console.warn('No se pudo crear sesión anónima para registrar el pedido:', authError);
-                            }
-                        }
-                        if(!writeUid) throw new Error('No hay sesión autenticada para registrar el pedido.');
-                        const orderData = {
-                            uid: isLogged ? window.currentUser.uid : writeUid,
-                            registeredUser: !!isLogged,
-                            clientToken,
-                            userName: isLogged ? (clientNameForOrder || window.currentUser.email) : 'Usuario Invitado',
-                            nombre: isLogged ? clientNameForOrder : '',
-                            nombre_persona: isLogged ? clientNameForOrder : '',
-                            email: isLogged ? (window.currentUser.email || '') : '',
-                            phone: contactPhone,
-                            telefono: contactPhone,
-                            whatsapp: contactPhone,
-                            items: orderItems,
-                            total: finalTot,
-                            descuentoAplicado: discountApplied,
-                            status: 'en_proceso',
-                            pointsBase: Math.floor(finalTot),
-                            selectedPet: window.state.nombreMascota || '',
-                            createdAt
-                        };
-                        await setDoc(window.getOrderDocRef(localOrderId), window.sanitizeClientOrderForWrite({ ...orderData, localId: localOrderId }), { merge: true });
-                        createdOrderId = localOrderId;
-                        window.lastOrderId = createdOrderId;
-                        try { localStorage.setItem('milkarf_last_order_id', createdOrderId); } catch(e){}
-                        pendingOrderForCache.id = createdOrderId;
-                        pendingOrderForCache.localOnly = false;
-                        window.cacheUserOrderLocal?.(pendingOrderForCache);
-                        window.persistCartPostOrderState?.(createdOrderId);
-                        window.startUserOrdersListener?.();
-                    } catch (error) {
-                        console.error('No se pudo guardar el pedido en el registro:', error);
-                        // El pedido ya quedó preparado en WhatsApp y guardado localmente; no mostramos error crítico para no confundir al cliente.
-                        window.showToast('Tu pedido está en proceso. Al volver, actualiza el perfil si deseas revisar el estado.');
-                    }
-                }
-            })();
-
-            return true;
-        };
+        /* Checkout WhatsApp: la versión única y activa de finalizarPedido se define en el patch final
+           al cierre del módulo, después de prepareOrderForCheckout. Esto evita funciones duplicadas
+           y comportamientos distintos entre escritorio y móvil. */
 
         function initApp() {
             const iMenos = document.getElementById('btn-menos');
@@ -7295,28 +7141,8 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             });
         };
 
-        window.refreshCheckoutWhatsAppLink = function() {
-            const btn = document.getElementById('btn-finalizar-pedido');
-            if(!btn) return;
-            if(!window.cart || !window.cart.length) { btn.setAttribute('href', '#'); return; }
-            try {
-                const tot = window.cart.reduce((s,i) => s + (Number(i.price || 0) * Number(i.qty || 0)), 0);
-                const discountApplied = !!window.descuentoAplicado;
-                const finalTot = discountApplied ? tot * 0.8 : tot;
-                const msg = window.getWhatsAppTemplate('newOrder', {
-                    items: window.cart.map(i => ({ name: i.name, weight: i.weight, qty: i.qty, forPet: i.forPet || '' })),
-                    subtotal: tot,
-                    discountApplied,
-                    discountAmount: discountApplied ? (tot * 0.2) : 0,
-                    finalTotal: finalTot,
-                    location: window.userLocation || ''
-                });
-                const links = window.buildWhatsAppLinks(msg, window.WA_NUMBER);
-                btn.setAttribute('href', (window.isIOSDevice?.() ? links.wa : links.api));
-                btn.setAttribute('target', window.isMobileDevice?.() ? '_self' : '_blank');
-                btn.setAttribute('rel', 'noopener noreferrer');
-            } catch(error) { btn.setAttribute('href', '#'); }
-        };
+        /* Checkout WhatsApp: refreshCheckoutWhatsAppLink se define una sola vez en el patch final.
+           Los guards instalados abajo llaman a window.refreshCheckoutWhatsAppLink en tiempo de ejecución. */
 
         window.installCheckoutNativeLinkGuards = function() {
             if(window.__milkarf_checkout_native_link_ready) return;
@@ -7772,44 +7598,41 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
 
 
         /* PATCH UX/WHATSAPP CROSS-BROWSER 2026-07: apertura confiable en iPhone Safari/Chrome/Instagram y carrito post-pedido */
+        window.isMobileCheckoutBrowser = function() {
+            const ua = navigator.userAgent || '';
+            return !!(window.isMobileDevice?.() || /Android|iPhone|iPad|iPod|Mobile|CriOS|FxiOS|Instagram|FBAN|FBAV/i.test(ua));
+        };
+
         window.getCheckoutWhatsAppUrl = function(message, phone = window.WA_NUMBER) {
             const links = window.buildWhatsAppLinks(message, phone);
-            const isMobile = window.isMobileDevice?.() || /CriOS|FxiOS|Instagram|FBAN|FBAV/i.test(navigator.userAgent || '');
-            const isIOS = window.isIOSDevice?.() || /iPhone|iPad|iPod|CriOS|FxiOS/i.test(navigator.userAgent || '');
-            if(isMobile) {
-                // wa.me es el flujo más estable en Safari/Chrome iOS y navegadores internos.
-                return (isIOS ? links.wa : links.api) || links.wa || links.api;
-            }
+            const isMobile = window.isMobileCheckoutBrowser?.() || false;
+
+            // En celulares, wa.me es el flujo más estable para Safari, Chrome iOS,
+            // Android Chrome y navegadores internos de Instagram/Facebook.
+            if(isMobile) return links.wa || links.api || links.app;
+
+            // En escritorio priorizamos WhatsApp Web.
             return links.web || links.api || links.wa;
         };
 
         window.navigateToExternalWhatsApp = function(url, options = {}) {
             if(!url) return false;
-            const isMobile = window.isMobileDevice?.() || /CriOS|FxiOS|Instagram|FBAN|FBAV|Mobile/i.test(navigator.userAgent || '');
+            const isMobile = window.isMobileCheckoutBrowser?.() || false;
             const target = options.target || (isMobile ? '_self' : '_blank');
+
             try {
-                const a = document.createElement('a');
-                a.href = url;
-                a.rel = 'noopener noreferrer';
-                a.target = target;
-                a.style.position = 'fixed';
-                a.style.left = '-9999px';
-                a.style.top = '-9999px';
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(() => { try { a.remove(); } catch(e) {} }, 800);
-                if(isMobile) {
-                    setTimeout(() => {
-                        if(document.visibilityState === 'visible') {
-                            try { window.location.assign(url); } catch(e) { try { window.location.href = url; } catch(_) {} }
-                        }
-                    }, 80);
+                if(isMobile || target === '_self') {
+                    // Solo para acciones generales fuera del botón nativo del carrito.
+                    // El checkout móvil no usa esta función: deja que el <a> siga su href.
+                    window.location.href = url;
+                    return true;
                 }
-                return true;
+
+                const opened = window.open(url, '_blank', 'noopener,noreferrer');
+                return !!opened;
             } catch(error) {
                 try {
-                    if(isMobile) window.location.href = url;
-                    else window.open(url, '_blank', 'noopener,noreferrer');
+                    window.location.href = url;
                     return true;
                 } catch(e) {
                     return false;
@@ -7820,6 +7643,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
         window.openWhatsAppMessage = function(message, phone = window.WA_NUMBER, options = {}) {
             const url = window.getCheckoutWhatsAppUrl(message, phone);
             const opened = window.navigateToExternalWhatsApp(url, options);
+
             if(options.showFallback !== false) {
                 setTimeout(() => {
                     if(!opened || document.visibilityState === 'visible') {
@@ -7827,11 +7651,13 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                     }
                 }, options.fallbackDelay || 1400);
             }
+
             return url;
         };
 
         window.prepareOrderForCheckout = function() {
             if(!window.cart || !window.cart.length) return null;
+
             const subtotal = window.cart.reduce((s,i) => s + (Number(i.price || 0) * Number(i.qty || 0)), 0);
             const discountApplied = !!window.descuentoAplicado;
             const finalTotal = discountApplied ? subtotal * 0.8 : subtotal;
@@ -7880,6 +7706,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 createdAt,
                 localOnly: true
             };
+
             return { subtotal, finalTotal, discountApplied, clientToken, isLogged, contactPhone, clientNameForOrder, sessionUid, items, createdAt, localOrderId, msg, url, pendingOrder };
         };
 
@@ -7899,7 +7726,9 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                             if(window.currentUser.data) window.currentUser.data.descuento_usado = true;
                         } catch(e) {}
                     }
+
                     if(!db) return;
+
                     let writeUid = auth?.currentUser?.uid || window.currentUser?.uid || null;
                     if(!writeUid && auth) {
                         try {
@@ -7911,6 +7740,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                         }
                     }
                     if(!writeUid) throw new Error('No hay sesión autenticada para registrar el pedido.');
+
                     const orderData = {
                         uid: isLogged ? window.currentUser.uid : writeUid,
                         registeredUser: !!isLogged,
@@ -7931,6 +7761,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                         selectedPet: window.state?.nombreMascota || '',
                         createdAt
                     };
+
                     await setDoc(window.getOrderDocRef(localOrderId), window.sanitizeClientOrderForWrite({ ...orderData, localId: localOrderId }), { merge: true });
                     pendingOrder.localOnly = false;
                     window.lastOrderId = localOrderId;
@@ -7945,60 +7776,97 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
         };
 
         window.finalizarPedido = function(event) {
-            if(event) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            if (!window.cart || !window.cart.length) {
+            const btn = event?.currentTarget || document.getElementById('btn-finalizar-pedido');
+            const isMobileCheckout = window.isMobileCheckoutBrowser?.() || false;
+
+            if(!window.cart || !window.cart.length) {
+                if(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
                 window.showToast?.('Agrega productos antes de pedir por WhatsApp.');
                 return false;
             }
+
             const prepared = window.prepareOrderForCheckout?.();
-            if(!prepared) {
+            if(!prepared || !prepared.url) {
+                if(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
                 window.showToast?.('No se pudo preparar el pedido. Intenta nuevamente.');
                 return false;
             }
 
-            // Estado local primero: si el usuario vuelve desde WhatsApp, ya verá pedido en proceso.
+            if(btn) {
+                btn.setAttribute('href', prepared.url);
+                btn.setAttribute('target', isMobileCheckout ? '_self' : '_blank');
+                btn.setAttribute('rel', 'noopener noreferrer');
+            }
+
+            // Estado local primero: si el usuario vuelve desde WhatsApp, ya verá el pedido en proceso.
             window.cacheUserOrderLocal?.(prepared.pendingOrder);
             window.queuePendingOrderForSync?.(prepared.pendingOrder);
             try { localStorage.setItem('milkarf_last_order_id', prepared.localOrderId); } catch(e) {}
             window.renderUserOrders?.(window.getLocalUserOrders?.() || [prepared.pendingOrder]);
             window.actualizarUIAuth?.();
             window.showCartPostOrderState?.(prepared.localOrderId);
-            window.cart = [];
-            window.cartPostOrderActive = true;
-            window.resetMenuQuantities?.();
-            window.updateCartUI?.();
             window.showToast?.('Tu pedido quedó en proceso. Continúa por WhatsApp para confirmar disponibilidad y entrega.', 'success');
 
-            // Guardado Firestore en paralelo: nunca bloquea la salida a WhatsApp.
+            // showCartPostOrderState/updateCartUI pueden cambiar el href a # porque el carrito se vacía.
+            // Por eso se vuelve a fijar justo antes de entregar el control al navegador.
+            if(btn) {
+                btn.setAttribute('href', prepared.url);
+                btn.setAttribute('target', isMobileCheckout ? '_self' : '_blank');
+                btn.setAttribute('rel', 'noopener noreferrer');
+            }
+
+            // Firestore corre en paralelo y nunca bloquea la salida hacia WhatsApp.
             window.savePreparedOrderNonBlocking?.(prepared);
 
-            // Redirección compatible con Safari, Chrome móvil, Instagram y escritorio.
-            const opened = window.navigateToExternalWhatsApp?.(prepared.url, { target: window.isMobileDevice?.() ? '_self' : '_blank' });
-            setTimeout(() => {
-                if(!opened || document.visibilityState === 'visible') window.showWhatsAppManualFallback?.(prepared.url);
-            }, 1400);
+            if(isMobileCheckout) {
+                // Clave del bug: no usar preventDefault, window.open ni a.click().
+                // El navegador móvil debe seguir el href real del <a> como navegación nativa.
+                setTimeout(() => {
+                    if(document.visibilityState === 'visible') {
+                        window.showWhatsAppManualFallback?.(prepared.url);
+                    }
+                }, 1800);
+                return true;
+            }
+
+            // Escritorio: sí evitamos la navegación nativa para abrir WhatsApp Web en una pestaña nueva.
+            if(event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            const opened = window.open(prepared.url, '_blank', 'noopener,noreferrer');
+            if(!opened) window.showWhatsAppManualFallback?.(prepared.url);
             return false;
         };
 
         window.refreshCheckoutWhatsAppLink = function() {
             const btn = document.getElementById('btn-finalizar-pedido');
             if(!btn) return;
+
             if(!window.cart || !window.cart.length) {
                 btn.setAttribute('href', '#');
                 btn.setAttribute('target', '_self');
+                btn.setAttribute('rel', 'noopener noreferrer');
                 return;
             }
+
             try {
                 const prepared = window.prepareOrderForCheckout?.();
+                const isMobile = window.isMobileCheckoutBrowser?.() || false;
                 btn.setAttribute('href', prepared?.url || '#');
-                btn.setAttribute('target', window.isMobileDevice?.() ? '_self' : '_blank');
+                btn.setAttribute('target', isMobile ? '_self' : '_blank');
                 btn.setAttribute('rel', 'noopener noreferrer');
             } catch(error) {
                 btn.setAttribute('href', '#');
                 btn.setAttribute('target', '_self');
+                btn.setAttribute('rel', 'noopener noreferrer');
             }
         };
 
@@ -8046,6 +7914,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 checkoutBtn.dataset.fastWaReady = '1';
                 checkoutBtn.addEventListener('pointerdown', () => window.refreshCheckoutWhatsAppLink?.(), { passive: true });
                 checkoutBtn.addEventListener('touchstart', () => window.refreshCheckoutWhatsAppLink?.(), { passive: true });
+                checkoutBtn.addEventListener('mouseenter', () => window.refreshCheckoutWhatsAppLink?.(), { passive: true });
             }
             if((window.location.hash || '') === '#carrito') window.restoreCartPostOrderStateIfNeeded?.();
             window.initPreloader();
