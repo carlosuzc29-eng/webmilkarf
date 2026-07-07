@@ -280,6 +280,8 @@
         }
 
         /* UX refinada: navegación móvil más inmediata */
+        #mobile-bottom-nav { transition: transform 0.22s ease, opacity 0.22s ease; will-change: transform, opacity; }
+        #mobile-bottom-nav.mobile-nav-hidden { transform: translateY(calc(100% + 18px)); opacity: 0; pointer-events: none; }
         #mobile-bottom-nav button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: transform 0.08s ease, background-color 0.12s ease; }
         #mobile-bottom-nav button:active { transform: scale(0.94); }
         #mobile-bottom-nav button.active-mobile-nav { background: rgba(66, 29, 142, 0.10); color: #421d8e; }
@@ -6195,9 +6197,9 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
         };
 
         window.finalizarPedido = function(event) {
-            if(event) event.preventDefault();
             const btn = event?.currentTarget || document.getElementById('btn-finalizar-pedido');
             if (!window.cart.length) {
+                if(event) event.preventDefault();
                 window.showToast?.('Agrega productos antes de pedir por WhatsApp.');
                 return false;
             }
@@ -6224,9 +6226,13 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             });
 
             const links = window.buildWhatsAppLinks(msg, window.WA_NUMBER);
+            const isMobileCheckout = window.isMobileDevice?.() || false;
+            const checkoutUrl = isMobileCheckout ? (links.wa || links.api) : (links.web || links.api);
             if(btn) {
-                btn.setAttribute('href', (window.isIOSDevice?.() ? links.wa : links.api));
-                btn.setAttribute('target', window.isMobileDevice?.() ? '_self' : '_blank');
+                // Safari/iPhone funciona mejor cuando el elemento es un enlace real
+                // y el navegador sigue el href nativo al terminar el gesto del usuario.
+                btn.setAttribute('href', checkoutUrl);
+                btn.setAttribute('target', isMobileCheckout ? '_self' : '_blank');
                 btn.setAttribute('rel', 'noopener noreferrer');
             }
 
@@ -6265,18 +6271,21 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             window.resetMenuQuantities?.();
             window.updateCartUI?.();
             if(btn) {
-                btn.setAttribute('href', links.wa || links.api);
-                btn.setAttribute('target', '_self');
+                // Se vuelve a fijar después de refrescar el carrito para que updateCartUI no lo cambie a #.
+                btn.setAttribute('href', checkoutUrl);
+                btn.setAttribute('target', isMobileCheckout ? '_self' : '_blank');
                 btn.setAttribute('rel', 'noopener noreferrer');
             }
             window.showToast('Tu pedido quedó en proceso. Continúa la atención por WhatsApp.', 'success');
 
-            // Safari en iPhone necesita que WhatsApp se abra por navegación directa dentro del mismo gesto.
-            window.openWhatsAppMessage?.(msg, window.WA_NUMBER, {
-                directGesture: true,
-                preferWaMe: true,
-                fallbackDelay: 1800
-            });
+            // Importante para Safari/iPhone: no usamos window.open ni window.location aquí.
+            // Permitimos que el <a> siga su href nativo retornando true al final del onclick.
+            // Si por algún navegador interno no abre, queda un respaldo manual visible.
+            setTimeout(() => {
+                if(document.visibilityState === 'visible') {
+                    window.showWhatsAppManualFallback?.(checkoutUrl);
+                }
+            }, 1600);
 
             // Guardado no bloqueante: no debe retrasar ni bloquear la apertura de WhatsApp.
             void (async () => {
@@ -6342,7 +6351,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 }
             })();
 
-            return false;
+            return true;
         };
 
         function initApp() {
@@ -7309,6 +7318,23 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             } catch(error) { btn.setAttribute('href', '#'); }
         };
 
+        window.installCheckoutNativeLinkGuards = function() {
+            if(window.__milkarf_checkout_native_link_ready) return;
+            window.__milkarf_checkout_native_link_ready = true;
+            const attach = () => {
+                const btn = document.getElementById('btn-finalizar-pedido');
+                if(!btn || btn.__milkarf_native_link_bound) return;
+                btn.__milkarf_native_link_bound = true;
+                const prepare = () => window.refreshCheckoutWhatsAppLink?.();
+                ['pointerdown', 'touchstart', 'mousedown', 'focus'].forEach(evt => {
+                    btn.addEventListener(evt, prepare, { passive: true });
+                });
+            };
+            if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attach, { once: true });
+            else attach();
+        };
+        window.installCheckoutNativeLinkGuards?.();
+
         const __milkarfUpdateCartForWhatsApp = window.updateCart;
         if(typeof __milkarfUpdateCartForWhatsApp === 'function') {
             window.updateCart = function(...args) {
@@ -7744,11 +7770,274 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             }
         };
 
+
+        /* PATCH UX/WHATSAPP CROSS-BROWSER 2026-07: apertura confiable en iPhone Safari/Chrome/Instagram y carrito post-pedido */
+        window.getCheckoutWhatsAppUrl = function(message, phone = window.WA_NUMBER) {
+            const links = window.buildWhatsAppLinks(message, phone);
+            const isMobile = window.isMobileDevice?.() || /CriOS|FxiOS|Instagram|FBAN|FBAV/i.test(navigator.userAgent || '');
+            const isIOS = window.isIOSDevice?.() || /iPhone|iPad|iPod|CriOS|FxiOS/i.test(navigator.userAgent || '');
+            if(isMobile) {
+                // wa.me es el flujo más estable en Safari/Chrome iOS y navegadores internos.
+                return (isIOS ? links.wa : links.api) || links.wa || links.api;
+            }
+            return links.web || links.api || links.wa;
+        };
+
+        window.navigateToExternalWhatsApp = function(url, options = {}) {
+            if(!url) return false;
+            const isMobile = window.isMobileDevice?.() || /CriOS|FxiOS|Instagram|FBAN|FBAV|Mobile/i.test(navigator.userAgent || '');
+            const target = options.target || (isMobile ? '_self' : '_blank');
+            try {
+                const a = document.createElement('a');
+                a.href = url;
+                a.rel = 'noopener noreferrer';
+                a.target = target;
+                a.style.position = 'fixed';
+                a.style.left = '-9999px';
+                a.style.top = '-9999px';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => { try { a.remove(); } catch(e) {} }, 800);
+                if(isMobile) {
+                    setTimeout(() => {
+                        if(document.visibilityState === 'visible') {
+                            try { window.location.assign(url); } catch(e) { try { window.location.href = url; } catch(_) {} }
+                        }
+                    }, 80);
+                }
+                return true;
+            } catch(error) {
+                try {
+                    if(isMobile) window.location.href = url;
+                    else window.open(url, '_blank', 'noopener,noreferrer');
+                    return true;
+                } catch(e) {
+                    return false;
+                }
+            }
+        };
+
+        window.openWhatsAppMessage = function(message, phone = window.WA_NUMBER, options = {}) {
+            const url = window.getCheckoutWhatsAppUrl(message, phone);
+            const opened = window.navigateToExternalWhatsApp(url, options);
+            if(options.showFallback !== false) {
+                setTimeout(() => {
+                    if(!opened || document.visibilityState === 'visible') {
+                        window.showWhatsAppManualFallback?.(url);
+                    }
+                }, options.fallbackDelay || 1400);
+            }
+            return url;
+        };
+
+        window.prepareOrderForCheckout = function() {
+            if(!window.cart || !window.cart.length) return null;
+            const subtotal = window.cart.reduce((s,i) => s + (Number(i.price || 0) * Number(i.qty || 0)), 0);
+            const discountApplied = !!window.descuentoAplicado;
+            const finalTotal = discountApplied ? subtotal * 0.8 : subtotal;
+            const clientToken = window.getClientToken?.() || '';
+            const isLogged = !!(window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email));
+            const contactPhone = window.normalizePhone?.(window.currentUser?.data?.telefono || window.currentUser?.data?.phone || window.currentUser?.data?.whatsapp || (() => { try { return localStorage.getItem('milkarf_contact_phone') || ''; } catch(e) { return ''; } })()) || '';
+            const clientNameForOrder = (window.currentUser?.data?.nombre || window.currentUser?.data?.nombre_persona || window.currentUser?.data?.userName || window.currentUser?.displayName || window.currentUser?.email || '').trim();
+            const sessionUid = auth?.currentUser?.uid || window.currentUser?.uid || 'anonimo';
+            const items = window.cart.map(i => ({
+                name: i.name,
+                weight: i.weight,
+                qty: Math.max(1, Number(i.qty || 1)),
+                price: Number(i.price || 0),
+                forPet: i.forPet || ''
+            }));
+            const createdAt = new Date().toISOString();
+            const localOrderId = 'local_' + Date.now();
+            const msg = window.getWhatsAppTemplate('newOrder', {
+                items: items.map(i => ({ name: i.name, weight: i.weight, qty: i.qty, forPet: i.forPet || '' })),
+                subtotal,
+                discountApplied,
+                discountAmount: discountApplied ? (subtotal * 0.2) : 0,
+                finalTotal,
+                location: window.userLocation || ''
+            });
+            const url = window.getCheckoutWhatsAppUrl(msg, window.WA_NUMBER);
+            const pendingOrder = {
+                id: localOrderId,
+                uid: isLogged ? window.currentUser.uid : sessionUid,
+                clientToken,
+                registeredUser: !!isLogged,
+                userName: isLogged ? (clientNameForOrder || window.currentUser.email) : 'Usuario Invitado',
+                nombre: isLogged ? clientNameForOrder : '',
+                nombre_persona: isLogged ? clientNameForOrder : '',
+                email: isLogged ? (window.currentUser.email || '') : '',
+                phone: contactPhone,
+                telefono: contactPhone,
+                whatsapp: contactPhone,
+                items,
+                total: finalTotal,
+                descuentoAplicado: discountApplied,
+                status: 'en_proceso',
+                estado: 'en_proceso',
+                pointsBase: Math.floor(finalTotal),
+                selectedPet: window.state?.nombreMascota || '',
+                createdAt,
+                localOnly: true
+            };
+            return { subtotal, finalTotal, discountApplied, clientToken, isLogged, contactPhone, clientNameForOrder, sessionUid, items, createdAt, localOrderId, msg, url, pendingOrder };
+        };
+
+        window.savePreparedOrderNonBlocking = function(prepared) {
+            if(!prepared) return;
+            void (async () => {
+                try {
+                    const { pendingOrder, isLogged, clientNameForOrder, contactPhone, clientToken, items, finalTotal, discountApplied, localOrderId, createdAt } = prepared;
+                    if (discountApplied && isLogged) {
+                        try {
+                            let reclamados = [];
+                            try { reclamados = JSON.parse(localStorage.getItem('milkarf_descuentos_uids') || '[]'); } catch(e){}
+                            if (!reclamados.includes(window.currentUser.uid)) {
+                                reclamados.push(window.currentUser.uid);
+                                try { localStorage.setItem('milkarf_descuentos_uids', JSON.stringify(reclamados)); } catch(e){}
+                            }
+                            if(window.currentUser.data) window.currentUser.data.descuento_usado = true;
+                        } catch(e) {}
+                    }
+                    if(!db) return;
+                    let writeUid = auth?.currentUser?.uid || window.currentUser?.uid || null;
+                    if(!writeUid && auth) {
+                        try {
+                            const anonCred = await signInAnonymously(auth);
+                            writeUid = anonCred?.user?.uid || null;
+                            window.currentUser = anonCred?.user || window.currentUser;
+                        } catch(authError) {
+                            console.warn('No se pudo crear sesión anónima para registrar el pedido:', authError);
+                        }
+                    }
+                    if(!writeUid) throw new Error('No hay sesión autenticada para registrar el pedido.');
+                    const orderData = {
+                        uid: isLogged ? window.currentUser.uid : writeUid,
+                        registeredUser: !!isLogged,
+                        clientToken,
+                        userName: isLogged ? (clientNameForOrder || window.currentUser.email) : 'Usuario Invitado',
+                        nombre: isLogged ? clientNameForOrder : '',
+                        nombre_persona: isLogged ? clientNameForOrder : '',
+                        email: isLogged ? (window.currentUser.email || '') : '',
+                        phone: contactPhone,
+                        telefono: contactPhone,
+                        whatsapp: contactPhone,
+                        items,
+                        total: finalTotal,
+                        descuentoAplicado: discountApplied,
+                        status: 'en_proceso',
+                        estado: 'en_proceso',
+                        pointsBase: Math.floor(finalTotal),
+                        selectedPet: window.state?.nombreMascota || '',
+                        createdAt
+                    };
+                    await setDoc(window.getOrderDocRef(localOrderId), window.sanitizeClientOrderForWrite({ ...orderData, localId: localOrderId }), { merge: true });
+                    pendingOrder.localOnly = false;
+                    window.lastOrderId = localOrderId;
+                    try { localStorage.setItem('milkarf_last_order_id', localOrderId); } catch(e){}
+                    window.cacheUserOrderLocal?.(pendingOrder);
+                    window.persistCartPostOrderState?.(localOrderId);
+                    window.startUserOrdersListener?.();
+                } catch(error) {
+                    console.warn('Pedido preparado en WhatsApp/local, pero Firestore no confirmó de inmediato:', error);
+                }
+            })();
+        };
+
+        window.finalizarPedido = function(event) {
+            if(event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            if (!window.cart || !window.cart.length) {
+                window.showToast?.('Agrega productos antes de pedir por WhatsApp.');
+                return false;
+            }
+            const prepared = window.prepareOrderForCheckout?.();
+            if(!prepared) {
+                window.showToast?.('No se pudo preparar el pedido. Intenta nuevamente.');
+                return false;
+            }
+
+            // Estado local primero: si el usuario vuelve desde WhatsApp, ya verá pedido en proceso.
+            window.cacheUserOrderLocal?.(prepared.pendingOrder);
+            window.queuePendingOrderForSync?.(prepared.pendingOrder);
+            try { localStorage.setItem('milkarf_last_order_id', prepared.localOrderId); } catch(e) {}
+            window.renderUserOrders?.(window.getLocalUserOrders?.() || [prepared.pendingOrder]);
+            window.actualizarUIAuth?.();
+            window.showCartPostOrderState?.(prepared.localOrderId);
+            window.cart = [];
+            window.cartPostOrderActive = true;
+            window.resetMenuQuantities?.();
+            window.updateCartUI?.();
+            window.showToast?.('Tu pedido quedó en proceso. Continúa por WhatsApp para confirmar disponibilidad y entrega.', 'success');
+
+            // Guardado Firestore en paralelo: nunca bloquea la salida a WhatsApp.
+            window.savePreparedOrderNonBlocking?.(prepared);
+
+            // Redirección compatible con Safari, Chrome móvil, Instagram y escritorio.
+            const opened = window.navigateToExternalWhatsApp?.(prepared.url, { target: window.isMobileDevice?.() ? '_self' : '_blank' });
+            setTimeout(() => {
+                if(!opened || document.visibilityState === 'visible') window.showWhatsAppManualFallback?.(prepared.url);
+            }, 1400);
+            return false;
+        };
+
+        window.refreshCheckoutWhatsAppLink = function() {
+            const btn = document.getElementById('btn-finalizar-pedido');
+            if(!btn) return;
+            if(!window.cart || !window.cart.length) {
+                btn.setAttribute('href', '#');
+                btn.setAttribute('target', '_self');
+                return;
+            }
+            try {
+                const prepared = window.prepareOrderForCheckout?.();
+                btn.setAttribute('href', prepared?.url || '#');
+                btn.setAttribute('target', window.isMobileDevice?.() ? '_self' : '_blank');
+                btn.setAttribute('rel', 'noopener noreferrer');
+            } catch(error) {
+                btn.setAttribute('href', '#');
+                btn.setAttribute('target', '_self');
+            }
+        };
+
+        window.initMobileBottomNavAutoHide = function() {
+            const nav = document.getElementById('mobile-bottom-nav');
+            if(!nav || nav.dataset.autohideReady === '1') return;
+            nav.dataset.autohideReady = '1';
+            let lastY = 0;
+            let ticking = false;
+            const show = () => nav.classList.remove('mobile-nav-hidden');
+            const hide = () => nav.classList.add('mobile-nav-hidden');
+            const onScroll = (source) => {
+                if(!source) return;
+                const y = source.scrollTop || 0;
+                if(ticking) return;
+                ticking = true;
+                requestAnimationFrame(() => {
+                    const delta = y - lastY;
+                    const active = window.getActiveViewId?.() || '';
+                    if(active === 'view-cart' || active === 'view-dashboard' || y < 40 || delta < -8) show();
+                    else if(delta > 10 && y > 80) hide();
+                    lastY = y;
+                    ticking = false;
+                });
+            };
+            document.querySelectorAll('.view').forEach(view => {
+                view.addEventListener('scroll', () => onScroll(view), { passive: true });
+            });
+            ['touchstart','pointerdown','mousemove','keydown'].forEach(evt => {
+                document.addEventListener(evt, () => show(), { passive: true });
+            });
+        };
+
         window.addEventListener('DOMContentLoaded', () => {
             if (typeof window.refreshIcons === 'function') window.refreshIcons();
             window.setMaxBirthdayDates();
             initApp();
             window.initFastMobileNav?.();
+            window.initMobileBottomNavAutoHide?.();
             window.initHistoryNavigation?.();
             window.syncPendingOrders?.();
             window.refreshCheckoutWhatsAppLink?.();
