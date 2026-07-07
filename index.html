@@ -8197,15 +8197,83 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             }
         };
 
+        // PATCH FINAL: limpieza robusta del carrito después de enviar a WhatsApp.
+        // Motivo: en móviles, al abrir WhatsApp/wa.me, Safari, Chrome iOS e Instagram Browser pueden
+        // restaurar la página desde BFCache y mostrar el carrito anterior si el estado no se fuerza al volver.
+        window.forceClearCartAfterWhatsAppOrder = function(prepared = null, options = {}) {
+            const opts = { persist: true, toast: true, ...options };
+            const orderId = prepared?.localOrderId || window.lastOrderId || null;
+
+            window.cartPostOrderActive = true;
+            if(orderId) window.lastOrderId = orderId;
+
+            // Vaciar memoria de carrito y cantidades de forma explícita.
+            window.cart = [];
+            window.qtys = { pollo: 0, res: 0 };
+            window.descuentoAplicado = false;
+            window.userLocation = null;
+
+            // Limpiar controles visibles del menú/carrito.
+            try { window.resetMenuQuantities?.(); } catch(error) {}
+            try { window.resetCartDeliveryUI?.(); } catch(error) {}
+
+            // Persistir estado post-pedido para cuando el usuario vuelva desde WhatsApp.
+            if(opts.persist) {
+                try { window.persistCartPostOrderState?.(orderId); } catch(error) {}
+            }
+
+            const empty = document.getElementById('cart-empty');
+            const cont = document.getElementById('cart-items-container');
+            const sum = document.getElementById('cart-summary');
+            const post = document.getElementById('cart-post-order');
+            const fab = document.getElementById('cart-fab');
+            const badge = document.getElementById('cart-badge');
+            const title = document.getElementById('cart-title');
+            const backBtn = document.getElementById('cart-back-shop-btn');
+            const summaryLines = document.getElementById('cart-summary-lines');
+            const cartTotal = document.getElementById('cart-total');
+            const cartTotalOriginal = document.getElementById('cart-total-original');
+            const locationStatus = document.getElementById('location-status');
+            const locationText = document.getElementById('location-btn-text');
+
+            if(empty) empty.classList.add('hidden');
+            if(cont) {
+                cont.classList.add('hidden');
+                cont.innerHTML = '';
+            }
+            if(sum) sum.classList.add('hidden');
+            if(post) post.classList.remove('hidden');
+            if(title) title.textContent = 'Pedido en proceso';
+            if(backBtn) backBtn.classList.add('hidden');
+            if(fab) fab.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+            if(badge) badge.textContent = '0';
+            if(summaryLines) summaryLines.innerHTML = '';
+            if(cartTotal) cartTotal.textContent = '$0.00';
+            if(cartTotalOriginal) {
+                cartTotalOriginal.textContent = '';
+                cartTotalOriginal.classList.add('hidden');
+            }
+            if(locationStatus) {
+                locationStatus.textContent = '';
+                locationStatus.classList.add('hidden');
+            }
+            if(locationText) locationText.textContent = 'Marcar mi ubicación en el mapa';
+
+            try { window.refreshIcons?.(); } catch(error) {}
+
+            if(prepared) {
+                try { window.renderUserOrders?.(window.getLocalUserOrders?.() || [prepared.pendingOrder]); } catch(error) {}
+                try { window.actualizarUIAuth?.(); } catch(error) {}
+                if(opts.toast) window.showToast?.('Tu pedido está en proceso. Continúa por WhatsApp para confirmar disponibilidad y entrega.', 'success');
+            }
+        };
+
         window.completeCheckoutLocalState = function(prepared) {
             if(!prepared) return;
             window.cacheUserOrderLocal?.(prepared.pendingOrder);
             window.queuePendingOrderForSync?.(prepared.pendingOrder);
             try { localStorage.setItem('milkarf_last_order_id', prepared.localOrderId); } catch(error) {}
-            window.renderUserOrders?.(window.getLocalUserOrders?.() || [prepared.pendingOrder]);
-            window.actualizarUIAuth?.();
-            window.showCartPostOrderState?.(prepared.localOrderId);
-            window.showToast?.('Tu pedido está en proceso. Continúa por WhatsApp para confirmar disponibilidad y entrega.', 'success');
+            window.forceClearCartAfterWhatsAppOrder?.(prepared, { persist: true, toast: true });
         };
 
         window.finalizarPedido = function(event) {
@@ -8218,6 +8286,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 return false;
             }
 
+            // Preparar el pedido ANTES de limpiar el carrito, porque el mensaje de WhatsApp necesita los ítems.
             const prepared = window.prepareOrderForCheckout?.();
             if(!prepared || !prepared.url) {
                 if(event) { event.preventDefault(); event.stopPropagation(); }
@@ -8231,17 +8300,18 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 btn.setAttribute('rel', 'noopener noreferrer');
             }
 
-            // Vacía el carrito y muestra inmediatamente el estado pedido en proceso.
+            // Limpieza inmediata y persistente: se ejecuta antes de salir a WhatsApp.
             window.completeCheckoutLocalState?.(prepared);
 
-            // showCartPostOrderState/updateCartUI vacían el carrito y pueden dejar href=#. Lo restauramos antes de salir a WhatsApp.
+            // Firestore no debe bloquear la salida a WhatsApp.
+            window.savePreparedOrderNonBlocking?.(prepared);
+
+            // Algunas funciones de UI pueden cambiar el href al dejar el carrito vacío. Lo restauramos justo antes de navegar.
             if(btn) {
                 btn.setAttribute('href', prepared.url);
                 btn.setAttribute('target', isMobileCheckout ? '_self' : '_blank');
                 btn.setAttribute('rel', 'noopener noreferrer');
             }
-
-            window.savePreparedOrderNonBlocking?.(prepared);
 
             if(isMobileCheckout) {
                 setTimeout(() => {
@@ -8249,6 +8319,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                         window.showWhatsAppManualFallback?.(prepared.url);
                     }
                 }, 1800);
+                // Importante en móvil: dejar que el <a> navegue de forma nativa.
                 return true;
             }
 
@@ -8257,6 +8328,36 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if(!opened) window.showWhatsAppManualFallback?.(prepared.url);
             return false;
         };
+
+        window.restorePostCheckoutStateOnReturn = function() {
+            try {
+                const raw = sessionStorage.getItem(window.POST_ORDER_STATE_KEY);
+                if(!raw) return false;
+                const state = JSON.parse(raw);
+                const recent = state?.savedAt && (Date.now() - Number(state.savedAt) < 1000 * 60 * 30);
+                if(!state?.active || !recent) {
+                    window.clearCartPostOrderPersistedState?.();
+                    return false;
+                }
+                window.lastOrderId = state.orderId || window.lastOrderId || null;
+                window.forceClearCartAfterWhatsAppOrder?.(null, { persist: false, toast: false });
+                return true;
+            } catch(error) {
+                window.clearCartPostOrderPersistedState?.();
+                return false;
+            }
+        };
+
+        // Al volver desde WhatsApp, muchos móviles restauran desde BFCache y no disparan DOMContentLoaded.
+        window.addEventListener('pageshow', () => {
+            window.restorePostCheckoutStateOnReturn?.();
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if(document.visibilityState === 'visible') {
+                window.restorePostCheckoutStateOnReturn?.();
+            }
+        });
 
         window.addEventListener('DOMContentLoaded', () => {
             window.handleGoogleRedirectResult?.();
