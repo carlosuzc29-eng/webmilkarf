@@ -1461,7 +1461,7 @@
                                 <i data-lucide="clipboard-list" class="w-4 h-4"></i> Ver estado del pedido
                             </button>
                             <button onclick="window.hideCartPostOrderState(); window.navigateTo('view-perros');" class="w-full flex items-center justify-center gap-2 bg-white dark:bg-[#0d0718] border border-purple-border/60 dark:border-purple/30 text-purple dark:text-white font-extrabold text-sm py-4 rounded-2xl shadow-sm transition-all active:scale-95">
-                                <i data-lucide="utensils" class="w-4 h-4"></i> Ver menú
+                                <i data-lucide="utensils" class="w-4 h-4"></i> Volver al menú
                             </button>
                         </div>
                     </div>
@@ -1865,7 +1865,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithCustomToken, signInAnonymously, setPersistence, browserLocalPersistence, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, linkWithCredential, EmailAuthProvider, signOut, signInWithCustomToken, signInAnonymously, setPersistence, browserLocalPersistence, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, addDoc, getDocs, serverTimestamp, onSnapshot, deleteDoc, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // =========================================================================================
@@ -7899,6 +7899,368 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 document.addEventListener(evt, () => show(), { passive: true });
             });
         };
+
+
+
+        /* PATCH AUTH/REGISTRO/CARRITO 2026-07: Google móvil, creación de cuenta robusta y estado post-pedido */
+        window.isMobileAuthBrowser = function() {
+            const ua = navigator.userAgent || '';
+            return !!(window.isMobileDevice?.() || /Android|iPhone|iPad|iPod|Mobile|CriOS|FxiOS|Instagram|FBAN|FBAV|Line|TikTok/i.test(ua));
+        };
+
+        window.setAuthError = function(message, tone = 'error') {
+            const err = document.getElementById('auth-error');
+            if(!err) {
+                if(message) window.showToast?.(String(message));
+                return;
+            }
+            err.textContent = String(message || 'Ocurrió un error. Intenta nuevamente.');
+            if(tone === 'success') {
+                err.className = 'mt-3 text-xs font-bold text-green-dark bg-green/20 border border-green/30 p-2.5 rounded-lg text-center leading-tight';
+            } else if(tone === 'info') {
+                err.className = 'mt-3 text-xs font-bold text-purple-dark bg-purple/10 border border-purple/20 p-2.5 rounded-lg text-center leading-tight';
+            } else {
+                err.className = 'mt-3 text-xs font-bold text-pink bg-pink/10 border border-pink/20 p-2.5 rounded-lg text-center leading-tight';
+            }
+            err.classList.remove('hidden');
+        };
+
+        window.clearAuthError = function() {
+            const err = document.getElementById('auth-error');
+            if(err) err.classList.add('hidden');
+        };
+
+        window.traductorErrores = function(code) {
+            switch(String(code || '')) {
+                case 'auth/email-already-in-use':
+                case 'auth/credential-already-in-use':
+                    return 'Este correo ya tiene una cuenta. Intenta iniciar sesión o usa otro correo.';
+                case 'auth/invalid-email': return 'El formato del correo es inválido.';
+                case 'auth/weak-password': return 'La contraseña debe tener al menos 6 caracteres.';
+                case 'auth/missing-password': return 'Ingresa una contraseña.';
+                case 'auth/user-not-found':
+                case 'auth/wrong-password':
+                case 'auth/invalid-credential': return 'El correo o la contraseña son incorrectos.';
+                case 'auth/popup-blocked': return 'El navegador bloqueó la ventana de Google. Se intentará abrir con redirección.';
+                case 'auth/popup-closed-by-user':
+                case 'auth/cancelled-popup-request': return 'El inicio con Google fue cancelado antes de completarse.';
+                case 'auth/unauthorized-domain': return 'Este dominio no está autorizado en Firebase Authentication. Agrégalo en Firebase Console > Authentication > Settings > Authorized domains.';
+                case 'auth/operation-not-allowed': return 'Este método de acceso no está habilitado en Firebase. Activa Email/Password y Google en Authentication > Sign-in method.';
+                case 'auth/network-request-failed': return 'Hay un problema de conexión. Revisa internet e intenta de nuevo.';
+                case 'auth/account-exists-with-different-credential': return 'Este correo ya existe con otro método de inicio de sesión.';
+                case 'permission-denied': return 'La cuenta se creó, pero Firestore no permitió guardar el perfil. Revisa las reglas de la base de datos.';
+                default: return 'No se pudo completar la acción. Intenta nuevamente.';
+            }
+        };
+
+        window.getRegisterFormPayload = function() {
+            const emailEl = document.getElementById('auth-email-reg');
+            const nameEl = document.getElementById('auth-name-reg');
+            const phoneEl = document.getElementById('auth-phone-reg');
+            const passEl = document.getElementById('auth-pass-reg');
+            const tipoEl = document.getElementById('reg-pet-tipo');
+            const nombreEl = document.getElementById('reg-pet-nombre');
+            const edadEl = document.getElementById('reg-pet-edad');
+            const pesoEl = document.getElementById('reg-pet-peso');
+            const razaEl = document.getElementById('reg-pet-raza');
+            const cumpleEl = document.getElementById('reg-pet-cumple');
+
+            const payload = {
+                els: { emailEl, nameEl, phoneEl, passEl, tipoEl, nombreEl, edadEl, pesoEl, razaEl, cumpleEl },
+                email: emailEl ? emailEl.value.trim().toLowerCase() : '',
+                clientName: nameEl ? nameEl.value.trim() : '',
+                rawPhone: phoneEl ? phoneEl.value.trim() : '',
+                phone: window.normalizePhone?.(phoneEl ? phoneEl.value.trim() : '') || '',
+                pass: passEl ? passEl.value : '',
+                tipo: tipoEl ? tipoEl.value : 'perro',
+                nombre: nombreEl ? nombreEl.value.trim() : '',
+                edad: edadEl ? edadEl.value.trim() : '',
+                peso: pesoEl ? pesoEl.value.trim() : '',
+                raza: razaEl ? razaEl.value.trim() : '',
+                cumple: cumpleEl ? cumpleEl.value : ''
+            };
+            payload.mascota = {
+                id: Date.now().toString(),
+                tipo: payload.tipo,
+                nombre: payload.nombre,
+                edad: payload.edad,
+                peso: payload.peso,
+                raza: payload.raza || 'Mestizo',
+                cumple: payload.cumple || ''
+            };
+            return payload;
+        };
+
+        window.savePendingUserProfileLocal = function(uid, data) {
+            try {
+                localStorage.setItem('milkarf_pending_user_profile_' + uid, JSON.stringify({ ...data, savedAt: new Date().toISOString() }));
+            } catch(error) {}
+        };
+
+        window.writeUserProfileSafe = async function(uid, data) {
+            if(!uid || !db) throw new Error('missing-user-or-db');
+            try {
+                await setDoc(window.getUserPath(uid), data, { merge: true });
+                return { ok: true };
+            } catch(error) {
+                console.warn('No se pudo guardar perfil en Firestore. Se conservará localmente:', error);
+                window.savePendingUserProfileLocal?.(uid, data);
+                return { ok: false, error };
+            }
+        };
+
+        window.registrarYGuardarMascota = async function() {
+            window.vibrate?.(20);
+            if(!auth || !db) { window.showToast?.('Firebase no está configurado.'); return; }
+
+            const payload = window.getRegisterFormPayload();
+            const { els, email, clientName, phone, pass, nombre, edad, peso, cumple, mascota } = payload;
+
+            if(!clientName || !email || !phone || phone.length < 10 || !pass || pass.length < 6 || !nombre || !edad || !peso) {
+                window.setAuthError?.('Completa tu nombre, correo, WhatsApp, contraseña y los datos requeridos de tu mascota.');
+                return;
+            }
+            if(!/^\S+@\S+\.\S+$/.test(email)) {
+                window.setAuthError?.('Ingresa un correo válido.');
+                return;
+            }
+            if(cumple && window.isFutureBirthday?.(cumple)) {
+                window.setAuthError?.('La fecha de nacimiento no puede ser futura.');
+                return;
+            }
+
+            const btn = document.getElementById('btn-reg-email');
+            try {
+                window.clearAuthError?.();
+                if(btn) { btn.textContent = 'Creando cuenta...'; btn.disabled = true; }
+
+                let cred = null;
+                const activeUser = auth.currentUser;
+
+                if(activeUser && activeUser.isAnonymous) {
+                    const emailCredential = EmailAuthProvider.credential(email, pass);
+                    cred = await linkWithCredential(activeUser, emailCredential);
+                } else {
+                    cred = await createUserWithEmailAndPassword(auth, email, pass);
+                }
+
+                const user = cred.user;
+                try { await updateProfile(user, { displayName: clientName }); } catch(profileErr) { console.warn('No se pudo actualizar displayName:', profileErr); }
+                try { await user.getIdToken(true); } catch(tokenErr) { console.warn('No se pudo refrescar token antes de guardar perfil:', tokenErr); }
+
+                const userData = {
+                    uid: user.uid,
+                    mascotas: [mascota],
+                    puntos: 0,
+                    puntos_historicos: 0,
+                    email: user.email || email,
+                    nombre: clientName,
+                    nombre_persona: clientName,
+                    userName: clientName,
+                    displayName: clientName,
+                    telefono: phone,
+                    phone: phone,
+                    whatsapp: phone,
+                    updatedAt: serverTimestamp()
+                };
+
+                const write = await window.writeUserProfileSafe(user.uid, userData);
+                window.currentUser = user;
+                window.currentUser.data = { ...userData, updatedAt: new Date().toISOString() };
+                window.state.nombreMascota = nombre;
+
+                try { localStorage.setItem('milkarf_contact_phone', phone); } catch(error) {}
+                Object.values(els).forEach(el => { if(el && 'value' in el) el.value = ''; });
+
+                window.actualizarUIAuth?.();
+                window.cerrarModalAuth?.();
+
+                if(write.ok) {
+                    window.showToast?.('Cuenta, contacto y mascota guardados con éxito.', 'success');
+                } else {
+                    window.showToast?.('Cuenta creada. El perfil quedó guardado localmente mientras se revisa la sincronización.', 'success');
+                }
+            } catch(error) {
+                console.error('Error registrando usuario:', error);
+                window.setAuthError?.(window.traductorErrores?.(error.code) || 'No se pudo crear la cuenta. Intenta nuevamente.');
+            } finally {
+                if(btn) { btn.textContent = 'Crear Cuenta y Entrar'; btn.disabled = false; }
+            }
+        };
+
+        window.finishGoogleLogin = async function(user) {
+            if(!user) return false;
+            try { await user.getIdToken(true); } catch(tokenErr) { console.warn('No se pudo refrescar token de Google:', tokenErr); }
+
+            let data = null;
+            try {
+                const userRef = window.getUserPath(user.uid);
+                const docSnap = await getDoc(userRef);
+                if(docSnap.exists()) data = docSnap.data();
+                else {
+                    data = {
+                        uid: user.uid,
+                        email: user.email || '',
+                        nombre: user.displayName || '',
+                        nombre_persona: user.displayName || '',
+                        userName: user.displayName || '',
+                        displayName: user.displayName || '',
+                        mascotas: [],
+                        puntos: 0,
+                        puntos_historicos: 0,
+                        updatedAt: serverTimestamp()
+                    };
+                    await window.writeUserProfileSafe?.(user.uid, data);
+                }
+            } catch(error) {
+                console.warn('Google login OK, pero no se pudo leer/crear perfil:', error);
+                data = { mascotas: [], puntos: 0, puntos_historicos: 0 };
+            }
+
+            window.currentUser = user;
+            window.currentUser.data = data || { mascotas: [], puntos: 0, puntos_historicos: 0 };
+            window.isAdmin = ADMIN_EMAILS.includes((user.email || '').toLowerCase());
+
+            const hasPets = Array.isArray(window.currentUser.data?.mascotas) && window.currentUser.data.mascotas.length > 0;
+            if(!hasPets && !window.isAdmin) {
+                window.abrirModalAuth?.();
+                setTimeout(() => {
+                    window.mostrarFormularioMascota?.('add');
+                    window.setAuthError?.('Google ya inició sesión. Completa los datos de tu mascota para finalizar tu perfil.', 'info');
+                }, 80);
+            } else {
+                window.cerrarModalAuth?.();
+            }
+
+            window.actualizarUIAuth?.();
+            return true;
+        };
+
+        window.loginConGoogle = async function() {
+            window.vibrate?.(30);
+            if(!auth || !db) { window.showToast?.('Firebase no está configurado.'); return; }
+
+            const provider = new GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account' });
+            const btn = document.getElementById('auth-google-btn');
+            const useRedirect = window.isMobileAuthBrowser?.() || false;
+
+            try {
+                window.clearAuthError?.();
+                if(btn) { btn.disabled = true; btn.classList.add('opacity-60', 'pointer-events-none'); }
+
+                if(useRedirect) {
+                    try { sessionStorage.setItem('milkarf_google_redirect_pending', '1'); } catch(error) {}
+                    await signInWithRedirect(auth, provider);
+                    return;
+                }
+
+                try {
+                    const cred = await signInWithPopup(auth, provider);
+                    await window.finishGoogleLogin?.(cred.user);
+                    window.showToast?.('Sesión iniciada con Google.', 'success');
+                } catch(popupError) {
+                    const fallbackCodes = ['auth/popup-blocked', 'auth/cancelled-popup-request', 'auth/web-storage-unsupported', 'auth/internal-error'];
+                    if(fallbackCodes.includes(popupError.code)) {
+                        try { sessionStorage.setItem('milkarf_google_redirect_pending', '1'); } catch(error) {}
+                        await signInWithRedirect(auth, provider);
+                        return;
+                    }
+                    throw popupError;
+                }
+            } catch(error) {
+                console.error('Error Google Auth:', error);
+                window.setAuthError?.(window.traductorErrores?.(error.code) || 'Hubo un problema con Google. Intenta nuevamente.');
+            } finally {
+                if(btn) { btn.disabled = false; btn.classList.remove('opacity-60', 'pointer-events-none'); }
+            }
+        };
+
+        window.handleGoogleRedirectResult = async function() {
+            if(!auth) return;
+            let wasPending = false;
+            try { wasPending = sessionStorage.getItem('milkarf_google_redirect_pending') === '1'; } catch(error) {}
+            try {
+                const result = await getRedirectResult(auth);
+                if(result?.user) {
+                    try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(error) {}
+                    await window.finishGoogleLogin?.(result.user);
+                    window.showToast?.('Sesión iniciada con Google.', 'success');
+                } else if(wasPending) {
+                    try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(error) {}
+                }
+            } catch(error) {
+                console.error('Error procesando redirect Google:', error);
+                try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(e) {}
+                window.abrirModalAuth?.();
+                window.setAuthError?.(window.traductorErrores?.(error.code) || 'No se pudo completar el inicio con Google.');
+            }
+        };
+
+        window.completeCheckoutLocalState = function(prepared) {
+            if(!prepared) return;
+            window.cacheUserOrderLocal?.(prepared.pendingOrder);
+            window.queuePendingOrderForSync?.(prepared.pendingOrder);
+            try { localStorage.setItem('milkarf_last_order_id', prepared.localOrderId); } catch(error) {}
+            window.renderUserOrders?.(window.getLocalUserOrders?.() || [prepared.pendingOrder]);
+            window.actualizarUIAuth?.();
+            window.showCartPostOrderState?.(prepared.localOrderId);
+            window.showToast?.('Tu pedido está en proceso. Continúa por WhatsApp para confirmar disponibilidad y entrega.', 'success');
+        };
+
+        window.finalizarPedido = function(event) {
+            const btn = event?.currentTarget || document.getElementById('btn-finalizar-pedido');
+            const isMobileCheckout = window.isMobileCheckoutBrowser?.() || false;
+
+            if(!window.cart || !window.cart.length) {
+                if(event) { event.preventDefault(); event.stopPropagation(); }
+                window.showToast?.('Agrega productos antes de pedir por WhatsApp.');
+                return false;
+            }
+
+            const prepared = window.prepareOrderForCheckout?.();
+            if(!prepared || !prepared.url) {
+                if(event) { event.preventDefault(); event.stopPropagation(); }
+                window.showToast?.('No se pudo preparar el pedido. Intenta nuevamente.');
+                return false;
+            }
+
+            if(btn) {
+                btn.setAttribute('href', prepared.url);
+                btn.setAttribute('target', isMobileCheckout ? '_self' : '_blank');
+                btn.setAttribute('rel', 'noopener noreferrer');
+            }
+
+            // Vacía el carrito y muestra inmediatamente el estado pedido en proceso.
+            window.completeCheckoutLocalState?.(prepared);
+
+            // showCartPostOrderState/updateCartUI vacían el carrito y pueden dejar href=#. Lo restauramos antes de salir a WhatsApp.
+            if(btn) {
+                btn.setAttribute('href', prepared.url);
+                btn.setAttribute('target', isMobileCheckout ? '_self' : '_blank');
+                btn.setAttribute('rel', 'noopener noreferrer');
+            }
+
+            window.savePreparedOrderNonBlocking?.(prepared);
+
+            if(isMobileCheckout) {
+                setTimeout(() => {
+                    if(document.visibilityState === 'visible') {
+                        window.showWhatsAppManualFallback?.(prepared.url);
+                    }
+                }, 1800);
+                return true;
+            }
+
+            if(event) { event.preventDefault(); event.stopPropagation(); }
+            const opened = window.open(prepared.url, '_blank', 'noopener,noreferrer');
+            if(!opened) window.showWhatsAppManualFallback?.(prepared.url);
+            return false;
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            window.handleGoogleRedirectResult?.();
+        });
 
         window.addEventListener('DOMContentLoaded', () => {
             if (typeof window.refreshIcons === 'function') window.refreshIcons();
