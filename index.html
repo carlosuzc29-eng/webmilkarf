@@ -855,7 +855,7 @@
                                         </div>
                                         <div class="flex items-center gap-2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/30 rounded-2xl p-1">
                                             <button onclick="window.changeQty('pollo', -1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">−</button>
-                                            <input id="qty-pollo" type="number" min="1" value="1" inputmode="numeric" oninput="window.setQty('pollo', this.value)" class="w-12 h-8 text-center font-black text-purple dark:text-white text-sm bg-transparent outline-none" aria-label="Cantidad de pollo">
+                                            <input id="qty-pollo" type="number" min="0" value="0" inputmode="numeric" onfocus="this.select()" onblur="if(this.value==='') { this.value='0'; window.setQty('pollo', 0); }" oninput="window.setQty('pollo', this.value)" class="w-12 h-8 text-center font-black text-purple dark:text-white text-sm bg-transparent outline-none" aria-label="Cantidad de pollo">
                                             <button onclick="window.changeQty('pollo', 1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">+</button>
                                         </div>
                                     </div>
@@ -915,7 +915,7 @@
                                         </div>
                                         <div class="flex items-center gap-2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/30 rounded-2xl p-1">
                                             <button onclick="window.changeQty('res', -1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">−</button>
-                                            <input id="qty-res" type="number" min="1" value="1" inputmode="numeric" oninput="window.setQty('res', this.value)" class="w-12 h-8 text-center font-black text-purple dark:text-white text-sm bg-transparent outline-none" aria-label="Cantidad de res">
+                                            <input id="qty-res" type="number" min="0" value="0" inputmode="numeric" onfocus="this.select()" onblur="if(this.value==='') { this.value='0'; window.setQty('res', 0); }" oninput="window.setQty('res', this.value)" class="w-12 h-8 text-center font-black text-purple dark:text-white text-sm bg-transparent outline-none" aria-label="Cantidad de res">
                                             <button onclick="window.changeQty('res', 1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">+</button>
                                         </div>
                                     </div>
@@ -2072,7 +2072,7 @@
         window.descuentoAplicado = false;
         window.userLocation = null;
         window.cart = [];
-        window.qtys = { pollo: 1, res: 1 };
+        window.qtys = { pollo: 0, res: 0 };
         window.isRegisteringPet = false;
                 window.editingPetIndex = null;
         window.isAdmin = window.isAdmin || false;
@@ -2436,7 +2436,7 @@ Queremos confirmar disponibilidad y coordinar la entrega.`;
             window.lastOrderId = null;
             window.state = { nombreMascota: '', etapa: null, cachorroEdad: null, actividad: null };
             window.cart = [];
-            window.qtys = { pollo: 1, res: 1 };
+            window.qtys = { pollo: 0, res: 0 };
             window.currentWeightPollo = '250gr';
             window.currentWeightRes = '250gr';
             if(unsubUserOrders) { unsubUserOrders(); unsubUserOrders = null; }
@@ -5785,17 +5785,38 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
         };
 
         window.setQty = function(prod, value) {
-            const parsed = parseInt(value, 10);
-            window.qtys[prod] = Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
             const qtyProd = document.getElementById(`qty-${prod}`);
-            if (qtyProd) qtyProd.value = window.qtys[prod];
+            const raw = String(value ?? '').trim();
+
+            // En el menú la cantidad inicia en 0 y debe poder borrarse para escribir pedidos grandes.
+            // Si el campo queda vacío mientras el usuario escribe, no lo forzamos a 1.
+            if(raw === '') {
+                window.qtys[prod] = 0;
+                return;
+            }
+
+            let parsed = parseInt(raw, 10);
+            if(!Number.isFinite(parsed) || parsed < 0) parsed = 0;
+            parsed = Math.min(parsed, 999);
+            window.qtys[prod] = parsed;
+            if (qtyProd && qtyProd.value !== String(parsed)) qtyProd.value = String(parsed);
         };
 
         window.changeQty = function(prod, delta) {
             window.vibrate(20);
-            window.qtys[prod] = Math.max(1, (window.qtys[prod] || 1) + delta);
+            const current = parseInt(window.qtys[prod], 10);
+            window.qtys[prod] = Math.max(0, (Number.isFinite(current) ? current : 0) + delta);
             const qtyProd = document.getElementById(`qty-${prod}`);
-            if (qtyProd) qtyProd.value = window.qtys[prod];
+            if (qtyProd) qtyProd.value = String(window.qtys[prod]);
+        };
+
+
+        window.resetMenuQuantities = function() {
+            window.qtys = { pollo: 0, res: 0 };
+            ['pollo', 'res'].forEach(prod => {
+                const input = document.getElementById(`qty-${prod}`);
+                if(input) input.value = '0';
+            });
         };
         
         window.applyWeightButtonStyle = function(groupId, selectedButton, weight) {
@@ -5854,7 +5875,13 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const prices = isPollo ? window.PRICES_POLLO : window.PRICES_RES;
             const name = isPollo ? 'Pollo con Zanahoria' : 'Res con Calabacín';
             const price = parseFloat(prices[weight].replace('$',''));
-            const qty = Math.max(1, parseInt(window.qtys[prod], 10) || 1);
+            const qty = parseInt(window.qtys[prod], 10) || 0;
+            if(qty <= 0) {
+                window.showToast?.('Selecciona la cantidad antes de agregar al carrito.');
+                const qtyInput = document.getElementById(`qty-${prod}`);
+                if(qtyInput) qtyInput.focus();
+                return;
+            }
             const key = `${prod}-${weight}`;
             const forPet = window.state.nombreMascota || '';
 
@@ -5878,9 +5905,9 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 setTimeout(() => t.remove(), 300);
             }, 2000);
             
-            window.qtys[prod] = 1; 
+            window.qtys[prod] = 0; 
             const qtyProd = document.getElementById(`qty-${prod}`);
-            if(qtyProd) qtyProd.value = 1;
+            if(qtyProd) qtyProd.value = '0';
         };
 
         window.updateCartUI = function() {
@@ -6079,7 +6106,8 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const opts = { persist: true, ...options };
             window.cartPostOrderActive = true;
             if(orderId) window.lastOrderId = orderId;
-            window.cart.length = 0;
+            window.cart = [];
+            window.resetMenuQuantities?.();
             window.descuentoAplicado = false;
             window.resetCartDeliveryUI?.();
             if(opts.persist) window.persistCartPostOrderState?.(orderId || window.lastOrderId || null);
@@ -6109,7 +6137,8 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             window.vibrate(20);
             window.cartPostOrderActive = false;
             window.clearCartPostOrderPersistedState?.();
-            window.cart.length = 0;
+            window.cart = [];
+            window.resetMenuQuantities?.();
             window.descuentoAplicado = false;
             window.resetCartDeliveryUI?.();
             window.updateCartUI();
@@ -6231,6 +6260,10 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             window.renderUserOrders?.(window.getLocalUserOrders?.() || [pendingOrderForCache]);
             window.actualizarUIAuth?.();
             window.showCartPostOrderState?.(localOrderId);
+            window.cart = [];
+            window.cartPostOrderActive = true;
+            window.resetMenuQuantities?.();
+            window.updateCartUI?.();
             if(btn) {
                 btn.setAttribute('href', links.wa || links.api);
                 btn.setAttribute('target', '_self');
@@ -6355,6 +6388,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if(priceRes) priceRes.textContent = window.PRICES_RES[window.currentWeightRes];
             window.applyWeightButtonStyle('weight-group-pollo', document.querySelector('#weight-group-pollo button'), window.currentWeightPollo);
             window.applyWeightButtonStyle('weight-group-res', document.querySelector('#weight-group-res button'), window.currentWeightRes);
+            window.resetMenuQuantities?.();
             
             // Iniciar Paws
             const frag = document.createDocumentFragment();
