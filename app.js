@@ -41,6 +41,15 @@
                 window.currentUser = user;
                 const userEmail = user?.email?.toLowerCase?.() || '';
 
+                if(user && (!user.isAnonymous || user.email)) {
+                    try {
+                        if(sessionStorage.getItem('milkarf_google_redirect_pending') === '1') {
+                            sessionStorage.removeItem('milkarf_google_redirect_pending');
+                            setTimeout(() => window.finishGoogleLogin?.(user), 100);
+                        }
+                    } catch(error) {}
+                }
+
                 if(user && db && (!user.isAnonymous || user.email)) {
                     // Si el usuario es ADMIN, no inicializamos data de usuario normal.
                     if (ADMIN_EMAILS.includes(userEmail)) {
@@ -6019,9 +6028,13 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
 
 
         /* PATCH AUTH/REGISTRO/CARRITO 2026-07: Google móvil, creación de cuenta robusta y estado post-pedido */
-        window.isMobileAuthBrowser = function() {
+        window.isInAppBrowser = function() {
             const ua = navigator.userAgent || '';
-            return !!(window.isMobileDevice?.() || /Android|iPhone|iPad|iPod|Mobile|CriOS|FxiOS|Instagram|FBAN|FBAV|Line|TikTok/i.test(ua));
+            return /Instagram|FBAN|FBAV|Line|TikTok/i.test(ua);
+        };
+
+        window.isMobileAuthBrowser = function() {
+            return window.isInAppBrowser();
         };
 
         window.setAuthError = function(message, tone = 'error') {
@@ -6259,13 +6272,13 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const provider = new GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
             const btn = document.getElementById('auth-google-btn');
-            const useRedirect = window.isMobileAuthBrowser?.() || false;
+            const forceRedirectOnly = window.isInAppBrowser?.() || false;
 
             try {
                 window.clearAuthError?.();
                 if(btn) { btn.disabled = true; btn.classList.add('opacity-60', 'pointer-events-none'); }
 
-                if(useRedirect) {
+                if(forceRedirectOnly) {
                     try { sessionStorage.setItem('milkarf_google_redirect_pending', '1'); } catch(error) {}
                     await signInWithRedirect(auth, provider);
                     return;
@@ -6276,8 +6289,14 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                     await window.finishGoogleLogin?.(cred.user);
                     window.showToast?.('Sesión iniciada con Google.', 'success');
                 } catch(popupError) {
-                    const fallbackCodes = ['auth/popup-blocked', 'auth/cancelled-popup-request', 'auth/web-storage-unsupported', 'auth/internal-error'];
-                    if(fallbackCodes.includes(popupError.code)) {
+                    const fallbackCodes = [
+                        'auth/popup-blocked',
+                        'auth/cancelled-popup-request',
+                        'auth/web-storage-unsupported',
+                        'auth/operation-not-supported-in-this-environment',
+                        'auth/internal-error'
+                    ];
+                    if(fallbackCodes.includes(popupError.code) || /Android|Mobile/i.test(navigator.userAgent || '')) {
                         try { sessionStorage.setItem('milkarf_google_redirect_pending', '1'); } catch(error) {}
                         await signInWithRedirect(auth, provider);
                         return;
@@ -6298,12 +6317,27 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             try { wasPending = sessionStorage.getItem('milkarf_google_redirect_pending') === '1'; } catch(error) {}
             try {
                 const result = await getRedirectResult(auth);
-                if(result?.user) {
+                const resolvedUser = result?.user || auth.currentUser;
+                if(resolvedUser && (!resolvedUser.isAnonymous || resolvedUser.email)) {
                     try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(error) {}
-                    await window.finishGoogleLogin?.(result.user);
+                    await window.finishGoogleLogin?.(resolvedUser);
                     window.showToast?.('Sesión iniciada con Google.', 'success');
                 } else if(wasPending) {
-                    try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(error) {}
+                    // En Android Chrome, la sesión puede tardar unos ms en restaurarse desde indexedDB/localStorage
+                    let attempts = 0;
+                    const checkInterval = setInterval(async () => {
+                        attempts++;
+                        const u = auth.currentUser;
+                        if(u && (!u.isAnonymous || u.email)) {
+                            clearInterval(checkInterval);
+                            try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(error) {}
+                            await window.finishGoogleLogin?.(u);
+                            window.showToast?.('Sesión iniciada con Google.', 'success');
+                        } else if(attempts >= 10) {
+                            clearInterval(checkInterval);
+                            try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(error) {}
+                        }
+                    }, 150);
                 }
             } catch(error) {
                 console.error('Error procesando redirect Google:', error);
