@@ -128,19 +128,6 @@
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-green hover:text-white tracking-wider uppercase block flex items-center gap-3 justify-center" data-target="view-cart">🛒 Mi Carrito</a></li>
         </ul>
         
-        <!-- MENÚ ADMIN (EXCLUSIVO) -->
-        <ul id="admin-nav-links" class="nav-links space-y-5 text-center hidden">
-            <li class="mb-4"><div class="inline-block bg-pink/20 text-pink px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border border-pink/30">Modo Administrador</div></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('resumen'); window.forceCloseMenu();">📌 Resumen</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('pedidos'); window.forceCloseMenu();">📊 Pedidos</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('usuarios'); window.forceCloseMenu();">👥 Clientes</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('canjes'); window.forceCloseMenu();">🎁 Canjes</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-pink tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('cumples'); window.forceCloseMenu();">🎂 Cumpleaños</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-admin'); window.switchAdminTab('herramientas'); window.forceCloseMenu();">🧰 Herramientas</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300 mt-8 pt-8 border-t border-white/10"><a href="#" class="text-xl font-extrabold text-gray-300 hover:text-green tracking-wider uppercase block" onclick="event.preventDefault(); window.navigateTo('view-calc'); window.forceCloseMenu();"><i data-lucide="calculator" class="w-5 h-5 inline-block mr-2"></i> Usar Calculadora</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="text-xl font-extrabold text-gray-400 hover:text-white tracking-wider uppercase block" onclick="event.preventDefault(); window.salirAdmin(); window.forceCloseMenu();"><i data-lucide="external-link" class="w-5 h-5 inline-block mr-2"></i> Ver Web</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="text-lg font-extrabold text-pink hover:text-white tracking-wider uppercase block" onclick="event.preventDefault(); window.cerrarSesionAdmin(); window.forceCloseMenu();"><i data-lucide="log-out" class="w-5 h-5 inline-block mr-2"></i> Cerrar Sesión</a></li>
-        </ul>
     </nav>
 
     <div id="prezi-canvas">
@@ -1200,83 +1187,6 @@
                     </div>
                 </div>
                 <!-- ESPACIADOR INFERIOR -->
-                <div class="h-24 w-full shrink-0 pointer-events-none"></div>
-            </div>
-        </section>
-
-        <!-- PANEL DE ADMINISTRACIÓN -->
-        <section id="view-admin" class="view next">
-            <div class="view-wrapper">
-                <div class="max-w-6xl w-full mb-6">
-                    <div class="bg-white/90 dark:bg-darkcard/90 backdrop-blur-md border border-purple-border/40 dark:border-purple/20 rounded-[2rem] shadow-xl p-5 md:p-6">
-                        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-                            <div class="flex items-start gap-4 text-left">
-                                <div class="w-14 h-14 rounded-2xl bg-pink/10 flex items-center justify-center text-pink shrink-0 border border-pink/20">
-                                    <i data-lucide="shield-check" class="w-7 h-7"></i>
-                                </div>
-                                <div>
-                                    <div class="inline-flex items-center gap-2 bg-green/15 text-green-dark dark:text-green border border-green/25 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest mb-2">
-                                        <span class="w-2 h-2 rounded-full bg-green animate-pulse"></span> Sesión admin activa
-                                    </div>
-                                    <h2 class="text-3xl md:text-4xl font-black text-purple-dark dark:text-white leading-none">Panel Milkarf</h2>
-                                    <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-semibold mt-2 max-w-2xl">Centro de control para pedidos, clientes, canjes, cumpleaños y herramientas internas. Tu sesión queda abierta en este dispositivo hasta que cierres sesión.</p>
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-2 sm:flex gap-2 shrink-0">
-                                <button onclick="window.salirAdmin()" class="flex items-center justify-center gap-2 bg-purple-light dark:bg-purple/20 border border-purple/20 text-purple-dark dark:text-white font-black text-[10px] uppercase tracking-widest px-4 py-3 rounded-xl hover:bg-purple hover:text-white transition-all active:scale-95">
-                                    <i data-lucide="external-link" class="w-4 h-4"></i> Ver web
-                                </button>
-                                <button onclick="window.navigateTo('view-calc')" class="flex items-center justify-center gap-2 bg-green/20 border border-green/30 text-green-dark dark:text-green font-black text-[10px] uppercase tracking-widest px-4 py-3 rounded-xl hover:bg-green hover:text-purple-dark transition-all active:scale-95">
-                                    <i data-lucide="calculator" class="w-4 h-4"></i> Calculadora
-                                </button>
-                                <button onclick="window.switchAdminTab('pedidos')" class="flex items-center justify-center gap-2 bg-pink/10 border border-pink/20 text-pink font-black text-[10px] uppercase tracking-widest px-4 py-3 rounded-xl hover:bg-pink hover:text-white transition-all active:scale-95">
-                                    <i data-lucide="clipboard-list" class="w-4 h-4"></i> Pedidos
-                                </button>
-                                <button onclick="window.cerrarSesionAdmin()" class="flex items-center justify-center gap-2 bg-white dark:bg-[#0d0718] border border-pink/30 text-pink font-black text-[10px] uppercase tracking-widest px-4 py-3 rounded-xl hover:bg-pink hover:text-white transition-all active:scale-95">
-                                    <i data-lucide="log-out" class="w-4 h-4"></i> Cerrar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="max-w-6xl w-full">
-                    <!-- TABS ADMIN -->
-                    <div class="bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/20 rounded-3xl shadow-sm p-2 mb-6 overflow-x-auto custom-scroll">
-                        <div class="flex gap-2 min-w-max">
-                            <button id="tab-admin-resumen" onclick="window.switchAdminTab('resumen')" class="admin-tab-btn text-xs font-black px-4 py-3 rounded-2xl whitespace-nowrap transition-all">Resumen</button>
-                            <button id="tab-admin-pedidos" onclick="window.switchAdminTab('pedidos')" class="admin-tab-btn text-xs font-black px-4 py-3 rounded-2xl whitespace-nowrap transition-all">Pedidos</button>
-                            <button id="tab-admin-usuarios" onclick="window.switchAdminTab('usuarios')" class="admin-tab-btn text-xs font-black px-4 py-3 rounded-2xl whitespace-nowrap transition-all">Clientes</button>
-                            <button id="tab-admin-canjes" onclick="window.switchAdminTab('canjes')" class="admin-tab-btn text-xs font-black px-4 py-3 rounded-2xl whitespace-nowrap transition-all">Canjes</button>
-                            <button id="tab-admin-cumples" onclick="window.switchAdminTab('cumples')" class="admin-tab-btn text-xs font-black px-4 py-3 rounded-2xl whitespace-nowrap transition-all">Cumpleaños</button>
-                            <button id="tab-admin-herramientas" onclick="window.switchAdminTab('herramientas')" class="admin-tab-btn text-xs font-black px-4 py-3 rounded-2xl whitespace-nowrap transition-all">Herramientas</button>
-                        </div>
-                    </div>
-
-                    <div id="admin-summary-container" class="admin-panel space-y-5 pb-20">
-                        <p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando resumen administrativo...</p>
-                    </div>
-
-                    <div id="admin-orders-container" class="admin-panel space-y-4 pb-20 hidden">
-                        <p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando pedidos de Firebase...</p>
-                    </div>
-
-                    <div id="admin-users-container" class="admin-panel space-y-4 pb-20 hidden">
-                        <p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando usuarios de Firebase...</p>
-                    </div>
-
-                    <div id="admin-redeems-container" class="admin-panel space-y-4 pb-20 hidden">
-                        <p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando canjes...</p>
-                    </div>
-
-                    <div id="admin-birthdays-container" class="admin-panel space-y-4 pb-20 hidden">
-                        <p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando próximos cumpleaños...</p>
-                    </div>
-
-                    <div id="admin-tools-container" class="admin-panel space-y-4 pb-20 hidden">
-                        <p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">Cargando herramientas...</p>
-                    </div>
-                </div>
                 <div class="h-24 w-full shrink-0 pointer-events-none"></div>
             </div>
         </section>

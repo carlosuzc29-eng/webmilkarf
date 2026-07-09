@@ -40,6 +40,21 @@
                 window.authReady = true;
                 window.currentUser = user;
                 const userEmail = user?.email?.toLowerCase?.() || '';
+                const isAdminPage = window.location.pathname.endsWith('admin.html');
+
+                if (isAdminPage) {
+                    const adminView = document.getElementById('view-admin');
+                    if (adminView) adminView.classList.add('active');
+                    if (user && ADMIN_EMAILS.includes(userEmail)) {
+                        window.isAdmin = true;
+                        window.cerrarModalAdmin?.();
+                        setTimeout(() => window.enterAdminMode?.({ navigate: false, load: true }), 50);
+                    } else {
+                        window.isAdmin = false;
+                        setTimeout(() => window.abrirModalAdmin?.(), 50);
+                    }
+                    return;
+                }
 
                 if(user && (!user.isAnonymous || user.email)) {
                     try {
@@ -51,20 +66,7 @@
                 }
 
                 if(user && db && (!user.isAnonymous || user.email)) {
-                    // Si el usuario es ADMIN, no inicializamos data de usuario normal.
-                    if (ADMIN_EMAILS.includes(userEmail)) {
-                        window.isAdmin = true;
-                        setTimeout(() => {
-                            if (typeof window.enterAdminMode === 'function') {
-                                window.enterAdminMode({ navigate: true, load: true });
-                            } else {
-                                console.warn('enterAdminMode aún no está disponible. Reintentando...');
-                                setTimeout(() => window.enterAdminMode?.({ navigate: true, load: true }), 150);
-                            }
-                        }, 0);
-                        return;
-                    }
-
+                    // En index.html, un administrador navega de forma normal como cliente
                     window.isAdmin = false;
                     try {
                         const userRef = typeof __firebase_config !== 'undefined' 
@@ -702,6 +704,11 @@ Queremos confirmar disponibilidad y coordinar la entrega.`;
         };
 
         window.navigateTo = function(targetId) {
+            if (window.location.pathname.endsWith('admin.html')) {
+                const adminView = document.getElementById('view-admin');
+                if (adminView) adminView.classList.add('active');
+                return true;
+            }
             if (!targetId) return;
             const target = document.getElementById(targetId);
             const views = Array.from(document.querySelectorAll('.view'));
@@ -2173,6 +2180,13 @@ Deja el campo vacío para quitar la foto.`, current);
                 window.forceCloseMenu?.();
                 if(auth) await signOut(auth);
                 window.resetAppStateForLogout?.();
+
+                const isAdminPage = window.location.pathname.endsWith('admin.html');
+                if (isAdminPage) {
+                    window.abrirModalAdmin?.();
+                    return;
+                }
+
                 const mainNav = document.getElementById('main-nav-links');
                 const adminNav = document.getElementById('admin-nav-links');
                 const topAuth = document.getElementById('top-auth-btn-wrap');
@@ -5225,6 +5239,11 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
 
         const __milkarfNavigateCoreForHistory = window.navigateTo;
         window.navigateTo = function(targetId, options = {}) {
+            if(window.location.pathname.endsWith('admin.html')) {
+                const adminView = document.getElementById('view-admin');
+                if (adminView) adminView.classList.add('active');
+                return true;
+            }
             const opts = { pushHistory: true, replaceHistory: false, fromPopState: false, ...options };
             const target = document.getElementById(targetId);
             if(!target || !target.classList.contains('view')) {
@@ -5251,7 +5270,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
         };
 
         window.initHistoryNavigation = function() {
-            if(window.__milkarf_history_ready) return;
+            if(window.__milkarf_history_ready || window.location.pathname.endsWith('admin.html')) return;
             window.__milkarf_history_ready = true;
             const initialView = window.getViewFromHash(window.location.hash);
             window.navigateTo(initialView, { pushHistory: false, replaceHistory: true });
@@ -6248,10 +6267,29 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
 
             window.currentUser = user;
             window.currentUser.data = data || { mascotas: [], puntos: 0, puntos_historicos: 0 };
-            window.isAdmin = ADMIN_EMAILS.includes((user.email || '').toLowerCase());
+            const isAdminPage = window.location.pathname.endsWith('admin.html');
+            const emailUser = (user.email || '').toLowerCase();
+            const isAdminEmail = ADMIN_EMAILS.includes(emailUser);
+
+            if (isAdminPage) {
+                if (isAdminEmail) {
+                    window.isAdmin = true;
+                    window.enterAdminMode?.({ navigate: false, load: true });
+                } else {
+                    const err = document.getElementById('admin-error');
+                    if (err) {
+                        err.textContent = "Tu cuenta de Google (" + emailUser + ") no tiene permisos de administrador.";
+                        err.classList.remove('hidden');
+                    }
+                    await signOut(auth);
+                }
+                return true;
+            }
+
+            window.isAdmin = false;
 
             const hasPets = Array.isArray(window.currentUser.data?.mascotas) && window.currentUser.data.mascotas.length > 0;
-            if(!hasPets && !window.isAdmin) {
+            if(!hasPets) {
                 window.abrirModalAuth?.();
                 setTimeout(() => {
                     window.mostrarFormularioMascota?.('add');
