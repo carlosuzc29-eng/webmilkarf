@@ -1,0 +1,214 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in [
+          'deliapr@milkarf.com',
+          'carlosuzc@milkarf.com'
+        ];
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function hasSafeLimit(max) {
+      return request.query.limit != null && request.query.limit <= max;
+    }
+
+    function noAdminUserFields() {
+      return !request.resource.data.keys().hasAny([
+        'admin',
+        'isAdmin',
+        'role',
+        'roles',
+        'claims'
+      ]);
+    }
+
+    function userPointFieldsAreInitialZero() {
+      return
+        (!('puntos' in request.resource.data) || request.resource.data.puntos == 0)
+        && (!('puntos_historicos' in request.resource.data) || request.resource.data.puntos_historicos == 0)
+        && (!('points' in request.resource.data) || request.resource.data.points == 0)
+        && (!('pointsAvailable' in request.resource.data) || request.resource.data.pointsAvailable == 0)
+        && (!('pointsHistorical' in request.resource.data) || request.resource.data.pointsHistorical == 0);
+    }
+
+    function noClientSensitivePointFieldsChanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        'points',
+        'puntos',
+        'pointsAvailable',
+        'puntosDisponibles',
+        'pointsHistorical',
+        'puntosHistoricos',
+        'puntos_historicos',
+        'level',
+        'nivel',
+        'pointsMultiplier',
+        'multiplicadorPuntos'
+      ]);
+    }
+
+    function userCreateIsSafe(userId) {
+      return isOwner(userId)
+        && request.resource.data.uid == userId
+        && noAdminUserFields()
+        && userPointFieldsAreInitialZero()
+        && (!('nombre' in request.resource.data) || (request.resource.data.nombre is string && request.resource.data.nombre.size() <= 200))
+        && (!('email' in request.resource.data) || (request.resource.data.email is string && request.resource.data.email.size() <= 320))
+        && request.resource.data.keys().hasOnly([
+          'uid',
+          'nombre',
+          'nombre_persona',
+          'userName',
+          'displayName',
+          'email',
+          'phone',
+          'telefono',
+          'whatsapp',
+          'mascotas',
+          'clientToken',
+          'photoUrl',
+          'photoURL',
+          'updatedAt',
+          'lastLoginAt',
+          'puntos',
+          'puntos_historicos',
+          'points',
+          'pointsAvailable',
+          'pointsHistorical'
+        ]);
+    }
+
+    function userUpdateIsSafe(userId) {
+      return isOwner(userId)
+        && request.resource.data.uid == resource.data.uid
+        && noAdminUserFields()
+        && noClientSensitivePointFieldsChanged()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'uid',
+          'nombre',
+          'nombre_persona',
+          'userName',
+          'displayName',
+          'email',
+          'phone',
+          'telefono',
+          'whatsapp',
+          'mascotas',
+          'clientToken',
+          'photoUrl',
+          'photoURL',
+          'updatedAt',
+          'lastLoginAt'
+        ]);
+    }
+
+    function orderBelongsToUser() {
+      return signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    function noClientAdminOrderFields() {
+      return !request.resource.data.keys().hasAny([
+        'pointsAwarded',
+        'pointsGranted',
+        'pointsMultiplier',
+        'confirmedAt',
+        'completedAt',
+        'cancelledAt',
+        'deliveryCost',
+        'totalWithDelivery',
+        'deliveryDate',
+        'deliveryNoteMessage',
+        'deliveryNoteSentAt'
+      ]);
+    }
+
+    function orderCreateIsSafe() {
+      return signedIn()
+        && request.resource.data.uid is string
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.items is list
+        && request.resource.data.items.size() > 0
+        && request.resource.data.items.size() <= 50
+        && request.resource.data.total is number
+        && request.resource.data.total >= 0
+        && request.resource.data.total <= 10000
+        && noClientAdminOrderFields()
+        && (
+          ('estado' in request.resource.data && request.resource.data.estado is string && request.resource.data.estado in ['en_proceso', 'proceso'])
+          || ('status' in request.resource.data && request.resource.data.status is string && request.resource.data.status in ['en_proceso', 'proceso'])
+        );
+    }
+
+    function canjeBelongsToUser() {
+      return signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    function canjeCreateIsSafe() {
+      return signedIn()
+        && request.resource.data.uid is string
+        && request.resource.data.uid == request.auth.uid
+        && (
+          ('estado' in request.resource.data && request.resource.data.estado is string && request.resource.data.estado in ['solicitado', 'pendiente'])
+          || ('status' in request.resource.data && request.resource.data.status is string && request.resource.data.status in ['solicitado', 'pendiente'])
+        );
+    }
+
+    match /usuarios/{userId} {
+      allow create: if userCreateIsSafe(userId);
+      allow get: if isAdmin() || isOwner(userId);
+      allow list: if isAdmin() && hasSafeLimit(100);
+      allow update: if isAdmin() || userUpdateIsSafe(userId);
+      allow delete: if isAdmin();
+    }
+
+    match /pedidos/{pedidoId} {
+      allow create: if orderCreateIsSafe();
+      allow get: if isAdmin() || orderBelongsToUser();
+      allow list: if (isAdmin() && hasSafeLimit(100))
+                  || (signedIn() && hasSafeLimit(50) && resource.data.uid == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /canjes/{canjeId} {
+      allow create: if canjeCreateIsSafe();
+      allow get: if isAdmin() || canjeBelongsToUser();
+      allow list: if (isAdmin() && hasSafeLimit(100))
+                  || (signedIn() && hasSafeLimit(50) && resource.data.uid == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /beneficiosCanje/{beneficioId} {
+      allow get: if true;
+      allow list: if hasSafeLimit(100);
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /catalogoCanjes/{beneficioId} {
+      allow get: if true;
+      allow list: if hasSafeLimit(100);
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /recompensas/{beneficioId} {
+      allow get: if true;
+      allow list: if hasSafeLimit(100);
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
