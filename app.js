@@ -42,6 +42,7 @@
                 const userEmail = user?.email?.toLowerCase?.() || '';
                 const isAdminPage = window.location.pathname.endsWith('admin.html');
 
+                // ── Admin page: manejo separado ──
                 if (isAdminPage) {
                     const adminView = document.getElementById('view-admin');
                     if (adminView) adminView.classList.add('active');
@@ -56,20 +57,8 @@
                     return;
                 }
 
-                if(user && (!user.isAnonymous || user.email)) {
-                    try {
-                        const pendingGoogle = sessionStorage.getItem('milkarf_google_redirect_pending') === '1' ||
-                                              localStorage.getItem('milkarf_google_login_in_progress') === '1';
-                        if (pendingGoogle) {
-                            try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(e) {}
-                            try { localStorage.removeItem('milkarf_google_login_in_progress'); } catch(e) {}
-                            setTimeout(() => window.finishGoogleLogin?.(user), 100);
-                        }
-                    } catch(error) {}
-                }
-
+                // ── Usuario real (no anónimo, o anónimo con email) ──
                 if(user && db && (!user.isAnonymous || user.email)) {
-                    // En index.html, un administrador navega de forma normal como cliente
                     window.isAdmin = false;
                     try {
                         const userRef = typeof __firebase_config !== 'undefined' 
@@ -110,6 +99,14 @@
                     return;
                 }
 
+                // ── Usuario anónimo (sin email): tratar como no logueado para la UI ──
+                if (user && user.isAnonymous && !user.email) {
+                    window.isAdmin = false;
+                    window.actualizarUIAuth();
+                    return;
+                }
+
+                // ── Sin usuario: iniciar sesión anónima si no hay Google pendiente ──
                 if (!user) {
                     window.isAdmin = false;
                     const mainNav = document.getElementById('main-nav-links');
@@ -121,15 +118,14 @@
 
                     let isPendingGoogle = false;
                     try {
-                        isPendingGoogle = sessionStorage.getItem('milkarf_google_redirect_pending') === '1' ||
-                                          localStorage.getItem('milkarf_google_login_in_progress') === '1';
+                        isPendingGoogle = localStorage.getItem('milkarf_google_login_in_progress') === '1';
                     } catch(e) {}
 
                     if (!isPendingGoogle) {
                         initEnvAuth();
                     }
+                    window.actualizarUIAuth();
                 }
-                window.actualizarUIAuth();
             });
         }
 
@@ -6322,82 +6318,78 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const provider = new GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
             const btn = document.getElementById('auth-google-btn');
-            const ua = navigator.userAgent || '';
-            const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || window.isInAppBrowser?.();
 
             try {
                 window.clearAuthError?.();
                 if(btn) { btn.disabled = true; btn.classList.add('opacity-60', 'pointer-events-none'); }
 
-                try {
-                    localStorage.setItem('milkarf_google_login_in_progress', '1');
-                    sessionStorage.setItem('milkarf_google_redirect_pending', '1');
-                } catch(error) {}
-
-                const forceRedirectOnly = window.isInAppBrowser?.() || false;
-                if(forceRedirectOnly) {
+                // En navegadores internos (Instagram, Facebook, TikTok), redirect es obligatorio
+                if(window.isInAppBrowser?.()) {
+                    try { localStorage.setItem('milkarf_google_login_in_progress', '1'); } catch(e) {}
                     await signInWithRedirect(auth, provider);
                     return;
                 }
 
+                // Intentar popup primero (funciona en desktop y muchos móviles)
                 try {
                     const cred = await signInWithPopup(auth, provider);
-                    try { localStorage.removeItem('milkarf_google_login_in_progress'); } catch(e) {}
-                    try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(e) {}
                     await window.finishGoogleLogin?.(cred.user);
                     window.showToast?.('Sesión iniciada con Google.', 'success');
                 } catch(popupError) {
+                    // Si el popup falla (bloqueado, etc.), usar redirect como respaldo
+                    console.warn('Popup Google falló, usando redirect:', popupError.code);
+                    try { localStorage.setItem('milkarf_google_login_in_progress', '1'); } catch(e) {}
                     await signInWithRedirect(auth, provider);
                 }
             } catch(error) {
                 console.error('Error Google Auth:', error);
                 try { localStorage.removeItem('milkarf_google_login_in_progress'); } catch(e) {}
-                try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(e) {}
                 window.setAuthError?.(window.traductorErrores?.(error.code) || 'Hubo un problema con Google. Intenta nuevamente.');
             } finally {
-                if(btn && !isMobile) { btn.disabled = false; btn.classList.remove('opacity-60', 'pointer-events-none'); }
+                if(btn) { btn.disabled = false; btn.classList.remove('opacity-60', 'pointer-events-none'); }
             }
         };
 
         window.handleGoogleRedirectResult = async function() {
             if(!auth) return;
+
             let wasPending = false;
             try {
-                wasPending = sessionStorage.getItem('milkarf_google_redirect_pending') === '1' ||
-                             localStorage.getItem('milkarf_google_login_in_progress') === '1';
+                wasPending = localStorage.getItem('milkarf_google_login_in_progress') === '1';
             } catch(error) {}
 
             try {
                 const result = await getRedirectResult(auth);
-                const resolvedUser = result?.user || (auth.currentUser && !auth.currentUser.isAnonymous ? auth.currentUser : null);
-                if(resolvedUser && (!resolvedUser.isAnonymous || resolvedUser.email)) {
+
+                // Solo procesar si getRedirectResult devolvió un usuario real
+                if(result && result.user) {
                     try { localStorage.removeItem('milkarf_google_login_in_progress'); } catch(error) {}
-                    try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(error) {}
-                    await window.finishGoogleLogin?.(resolvedUser);
+                    await window.finishGoogleLogin?.(result.user);
                     window.showToast?.('Sesión iniciada con Google.', 'success');
-                } else if(wasPending) {
-                    // En Android Chrome, el almacenamiento IndexedDB puede tardar en inicializar
+                    return;
+                }
+
+                // Si no hubo resultado pero había un redirect pendiente,
+                // esperar a que onAuthStateChanged reciba el usuario de Google
+                if(wasPending) {
                     let attempts = 0;
                     const checkInterval = setInterval(async () => {
                         attempts++;
                         const u = auth.currentUser;
-                        if(u && (!u.isAnonymous || u.email)) {
+                        if(u && !u.isAnonymous && u.email) {
                             clearInterval(checkInterval);
                             try { localStorage.removeItem('milkarf_google_login_in_progress'); } catch(error) {}
-                            try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(error) {}
                             await window.finishGoogleLogin?.(u);
                             window.showToast?.('Sesión iniciada con Google.', 'success');
-                        } else if(attempts >= 25) {
+                        } else if(attempts >= 20) {
                             clearInterval(checkInterval);
                             try { localStorage.removeItem('milkarf_google_login_in_progress'); } catch(error) {}
-                            try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(error) {}
                         }
-                    }, 200);
+                    }, 250);
                 }
             } catch(error) {
                 console.error('Error procesando redirect Google:', error);
                 try { localStorage.removeItem('milkarf_google_login_in_progress'); } catch(e) {}
-                try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(e) {}
                 window.abrirModalAuth?.();
                 window.setAuthError?.(window.traductorErrores?.(error.code) || 'No se pudo completar el inicio con Google.');
             }
