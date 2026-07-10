@@ -544,14 +544,17 @@ Revisar el pedido desde el panel administrador para continuar la atención.`;
                     const clientName = data.clientName || order.userName || order.nombre || order.email || 'cliente Milkarf';
                     const petName = data.petName || order.selectedPet || (noteItems.find(i => i.forPet)?.forPet) || 'tu peludo';
                     const petText = petName !== 'tu mascota' && petName !== 'tu peludo' ? petName : 'tu peludo';
+                    const deliveryDate = data.deliveryDateLabel || 'Por confirmar';
 
                     return `¡Hola, ${clientName}! 🐾
 
-Acá está tu nota de entrega de Milkarf. Muchas gracias por tu compra y por confiar en nuestra nutrición natural para mascotas. ❤️
+Acá está tu nota de entrega oficial de Milkarf. Tu pedido ya está confirmado y programado para entrega (${deliveryDate}). 🚚✨
 
-¡Esperamos que ${petText} lo disfrute muchísimo! 🐶✨
+Muchas gracias por tu compra y por consentir a tu mascota con nuestra nutrición natural. ❤️
 
-Adjunto te enviamos la nota con el detalle. Cuando realices el pago o si tienes alguna duda, puedes compartirnos el comprobante por este mismo chat. ¡Feliz día!`;
+¡Esperamos que ${petText} lo disfrute muchísimo! 🐶🦴
+
+Cualquier duda adicional con la entrega, quedamos a tu disposición por este chat. ¡Que tengas un excelente día!`;
                 }
 
                 case 'birthday':
@@ -3260,7 +3263,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                         </div>
                     </div>
                     <div class="delivery-capture-footer">
-                        Cuando realices el pago, envía el comprobante por WhatsApp para confirmar tu pedido.
+                        ¡Gracias por tu compra! Pedido confirmado y programado para entrega.
                         <br>Milkarf · Nutrición natural para mascotas
                     </div>
                 </div>
