@@ -44,14 +44,27 @@
 
                 if (isAdminPage) {
                     const adminView = document.getElementById('view-admin');
-                    if (adminView) adminView.classList.add('active');
+                    const adminAuthScreen = document.getElementById('admin-auth-screen');
+                    const preloader = document.getElementById('preloader');
+                    if (preloader) { preloader.classList.add('opacity-0', 'pointer-events-none'); setTimeout(() => preloader.classList.add('hidden'), 280); }
+
                     if (user && ADMIN_EMAILS.includes(userEmail)) {
                         window.isAdmin = true;
+                        if (adminAuthScreen) adminAuthScreen.classList.add('hidden');
+                        if (adminView) {
+                            adminView.classList.remove('hidden');
+                            adminView.classList.add('active');
+                        }
+                        window.updateAdminProfileUI?.(user);
                         window.cerrarModalAdmin?.();
                         setTimeout(() => window.enterAdminMode?.({ navigate: false, load: true }), 50);
                     } else {
                         window.isAdmin = false;
-                        setTimeout(() => window.abrirModalAdmin?.(), 50);
+                        if (adminView) {
+                            adminView.classList.add('hidden');
+                            adminView.classList.remove('active');
+                        }
+                        if (adminAuthScreen) adminAuthScreen.classList.remove('hidden');
                     }
                     return;
                 }
@@ -2099,6 +2112,106 @@ Deja el campo vacío para quitar la foto.`, current);
             }, 300);
         };
 
+        window.updateAdminProfileUI = function(user) {
+            if (!user) return;
+            const nameEl = document.getElementById('admin-header-name');
+            const avatarEl = document.getElementById('admin-header-avatar');
+            const iconEl = document.getElementById('admin-header-icon');
+            const profName = document.getElementById('admin-profile-name');
+            const profEmail = document.getElementById('admin-profile-email');
+            const profAvatar = document.getElementById('admin-profile-avatar');
+
+            const displayName = user.displayName || user.email?.split('@')[0] || 'Administrador';
+            const firstName = displayName.split(' ')[0];
+            const email = user.email || '';
+            const photo = user.photoURL;
+
+            if (nameEl) nameEl.textContent = firstName;
+            if (profName) profName.textContent = displayName;
+            if (profEmail) profEmail.textContent = email;
+
+            if (photo && photo.startsWith('http')) {
+                if (avatarEl) { avatarEl.src = photo; avatarEl.classList.remove('hidden'); }
+                if (iconEl) iconEl.classList.add('hidden');
+                if (profAvatar) profAvatar.src = photo;
+            } else {
+                if (avatarEl) avatarEl.classList.add('hidden');
+                if (iconEl) iconEl.classList.remove('hidden');
+                if (profAvatar) profAvatar.src = 'logo.png';
+            }
+        };
+
+        window.abrirPerfilAdmin = function() {
+            window.vibrate(20);
+            const modal = document.getElementById('admin-profile-modal');
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                const box = document.getElementById('admin-profile-box');
+                if (box) box.classList.remove('scale-95');
+            }, 10);
+        };
+
+        window.cerrarPerfilAdmin = function() {
+            const modal = document.getElementById('admin-profile-modal');
+            if (!modal) return;
+            modal.classList.add('opacity-0');
+            const box = document.getElementById('admin-profile-box');
+            if (box) box.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        };
+
+        window.loginConGoogleAdmin = async function() {
+            window.vibrate?.(30);
+            if (!auth) { window.showToast?.('Autenticación no configurada.'); return; }
+            const provider = new GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account' });
+            const btn = document.getElementById('auth-google-btn-admin') || document.getElementById('auth-google-btn');
+            try {
+                if (btn) { btn.disabled = true; btn.classList.add('opacity-60'); }
+                const ua = navigator.userAgent || '';
+                const forceRedirect = /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || window.isInAppBrowser?.();
+
+                if (forceRedirect) {
+                    try { localStorage.setItem('milkarf_google_login_in_progress', '1'); } catch(e) {}
+                    await signInWithRedirect(auth, provider);
+                    return;
+                }
+                const cred = await signInWithPopup(auth, provider);
+                const userEmail = cred.user.email?.toLowerCase?.() || '';
+                if (ADMIN_EMAILS.includes(userEmail)) {
+                    window.isAdmin = true;
+                    window.updateAdminProfileUI?.(cred.user);
+                    const adminAuthScreen = document.getElementById('admin-auth-screen');
+                    const adminView = document.getElementById('view-admin');
+                    if (adminAuthScreen) adminAuthScreen.classList.add('hidden');
+                    if (adminView) { adminView.classList.remove('hidden'); adminView.classList.add('active'); }
+                    window.enterAdminMode({ navigate: false, load: true });
+                } else {
+                    await signOut(auth);
+                    const err = document.getElementById('admin-error');
+                    if (err) {
+                        err.textContent = `La cuenta (${userEmail}) no tiene acceso de administrador.`;
+                        err.classList.remove('hidden');
+                    }
+                }
+            } catch(error) {
+                console.error('Error Google Admin Login:', error);
+                const err = document.getElementById('admin-error');
+                if (err && error.code !== 'auth/popup-closed-by-user') {
+                    err.textContent = "Hubo un error con Google. Inténtalo de nuevo.";
+                    err.classList.remove('hidden');
+                }
+            } finally {
+                if (btn) { btn.disabled = false; btn.classList.remove('opacity-60'); }
+            }
+        };
+
         window.enterAdminMode = function({ navigate = true, load = true } = {}) {
             window.isAdmin = true;
             window.isRegisteringPet = false;
@@ -2174,6 +2287,12 @@ Deja el campo vacío para quitar la foto.`, current);
                 if (ADMIN_EMAILS.includes(email)) {
                     ui.value = ''; 
                     pi.value = '';
+                    window.isAdmin = true;
+                    window.updateAdminProfileUI?.(cred.user);
+                    const adminAuthScreen = document.getElementById('admin-auth-screen');
+                    const adminView = document.getElementById('view-admin');
+                    if (adminAuthScreen) adminAuthScreen.classList.add('hidden');
+                    if (adminView) { adminView.classList.remove('hidden'); adminView.classList.add('active'); }
                     window.enterAdminMode({ navigate: true, load: true });
                 } else {
                     window.isAdmin = false;
@@ -2225,7 +2344,12 @@ Deja el campo vacío para quitar la foto.`, current);
 
                 const isAdminPage = window.location.pathname.endsWith('admin.html');
                 if (isAdminPage) {
-                    window.abrirModalAdmin?.();
+                    window.cerrarPerfilAdmin?.();
+                    const adminAuthScreen = document.getElementById('admin-auth-screen');
+                    const adminView = document.getElementById('view-admin');
+                    if (adminView) { adminView.classList.add('hidden'); adminView.classList.remove('active'); }
+                    if (adminAuthScreen) adminAuthScreen.classList.remove('hidden');
+                    window.showToast('Sesión administrativa cerrada.', 'info');
                     return;
                 }
 
