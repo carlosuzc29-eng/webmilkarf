@@ -3464,6 +3464,13 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                     window.showToast?.('Nota visual lista para compartir por WhatsApp.', 'success');
                 } else {
                     if(blob) {
+                        try {
+                            if(navigator.clipboard && window.ClipboardItem) {
+                                await navigator.clipboard.write([new window.ClipboardItem({ 'image/png': blob })]);
+                            }
+                        } catch(clipErr) {
+                            console.log('No se pudo copiar automáticamente al portapapeles:', clipErr);
+                        }
                         const url = URL.createObjectURL(blob);
                         const link = document.createElement('a');
                         link.href = url;
@@ -3474,7 +3481,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                         setTimeout(() => URL.revokeObjectURL(url), 5000);
                     }
                     window.openWhatsAppMessage(message, phone);
-                    window.showToast?.('La imagen se descargó. Adjunta la nota en el chat de WhatsApp que se abrirá.', 'success');
+                    window.showToast?.('¡Foto copiada al portapapeles y descargada! En WhatsApp presiona Ctrl+V (o Pegar).', 'success');
                 }
             } catch(imageError) {
                 console.warn('No se pudo generar o compartir la nota visual. Se enviará texto de respaldo:', imageError);
