@@ -1151,6 +1151,30 @@ Deja el campo vacío para quitar la foto.`, current);
         window.abrirModalAuth = function() {
             vibrate(20);
             window.setMaxBirthdayDates();
+            window.isRegisteringPet = false;
+            
+            const formLogin = document.getElementById('form-login');
+            if (formLogin) formLogin.classList.remove('hidden');
+            const formRegister = document.getElementById('form-register');
+            if (formRegister) formRegister.classList.add('hidden');
+            const formPetProfile = document.getElementById('form-pet-profile');
+            if (formPetProfile) formPetProfile.classList.add('hidden');
+            const authTabs = document.getElementById('auth-tabs');
+            if (authTabs) authTabs.classList.remove('hidden');
+            const authGoogleBtn = document.getElementById('auth-google-btn');
+            if (authGoogleBtn) authGoogleBtn.classList.remove('hidden');
+            const authSeparator = document.getElementById('auth-separator');
+            if (authSeparator) authSeparator.classList.remove('hidden');
+            const tabLogin = document.getElementById('tab-login');
+            const tabReg = document.getElementById('tab-register');
+            if (tabLogin) tabLogin.className = "flex-1 pb-2 text-sm font-black border-b-2 border-purple text-purple dark:text-white transition-colors";
+            if (tabReg) tabReg.className = "flex-1 pb-2 text-sm font-bold text-gray-400 dark:text-gray-500 border-b-2 border-transparent transition-colors hover:text-purple";
+            const err = document.getElementById('auth-error');
+            if (err) {
+                err.className = "hidden mt-3 text-xs font-bold text-pink bg-pink/10 border border-pink/20 p-2.5 rounded-lg text-center leading-tight";
+                err.textContent = "";
+            }
+
             const modal = document.getElementById('modal-auth');
             if(!modal) return;
             modal.classList.remove('hidden');
@@ -1269,10 +1293,6 @@ Deja el campo vacío para quitar la foto.`, current);
                     return;
                 }
 
-                if ((!window.currentUser.data || !window.currentUser.data.mascotas || window.currentUser.data.mascotas.length === 0) && !window.isRegisteringPet) {
-                    window.mostrarFormularioMascota();
-                    return;
-                }
 
                 const primerNombre = window.currentUser.displayName ? window.currentUser.displayName.split(' ')[0] : (window.currentUser.email ? window.currentUser.email.split('@')[0] : 'Usuario');
                 const puntosDisp = window.currentUser.data?.puntos || 0;
