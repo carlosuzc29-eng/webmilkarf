@@ -95,8 +95,11 @@
                             // Init hist points if missing
                             data.puntos_historicos = data.puntos_historicos || data.puntos || 0;
                             window.currentUser.data = data;
+                            if(data.descuento_usado) window.descuentoAplicado = false;
+                            window.syncCartOnLogin?.(data);
                         } else {
                             window.currentUser.data = { puntos: 0, puntos_historicos: 0, mascotas: [] };
+                            window.saveCartToStorage?.();
                         }
                     } catch(e) { console.warn(e); }
 
@@ -4049,6 +4052,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if (exist) exist.qty += qty; else window.cart.push({key, name, weight, price, qty, forPet});
             
             window.updateCartUI();
+            window.saveCartToStorage();
             
             const t = document.createElement('div');
             t.className = 'fixed top-10 left-1/2 -translate-x-1/2 z-[9999] bg-green text-purple-dark text-sm font-black px-6 py-3 rounded-full shadow-2xl shadow-green/30 flex items-center gap-2 transform transition-all translate-y-[-20px] opacity-0';
@@ -4183,6 +4187,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if(!window.cart[index]) return;
             window.cart[index].qty = Math.max(1, (parseInt(window.cart[index].qty, 10) || 1) + delta);
             window.updateCartUI();
+            window.saveCartToStorage();
         };
 
         window.setCartQty = function(index, value) {
@@ -4190,19 +4195,80 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const parsed = parseInt(value, 10);
             window.cart[index].qty = Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
             window.updateCartUI();
+            window.saveCartToStorage();
         };
 
         window.removeFromCartAt = function(index) {
             window.vibrate(20);
             if(window.cart[index]) window.cart.splice(index, 1);
             window.updateCartUI();
+            window.saveCartToStorage();
         };
 
         window.removeFromCart = function(k, p) { 
             window.vibrate(20); 
             const idx = window.cart.findIndex(i => i.key === k && (i.forPet || '') === p);
             if (idx !== -1) window.cart.splice(idx, 1); 
-            window.updateCartUI(); 
+            window.updateCartUI();
+            window.saveCartToStorage(); 
+        };
+
+        // ─── PERSISTENCIA DEL CARRITO ───
+        window._cartSaveTimer = null;
+
+        window.saveCartToStorage = function() {
+            // Guardar en localStorage siempre (respaldo local)
+            try {
+                localStorage.setItem('milkarf_cart', JSON.stringify(window.cart || []));
+            } catch(e) {}
+
+            // Guardar en Firestore si el usuario está autenticado (debounced 2s)
+            if(window._cartSaveTimer) clearTimeout(window._cartSaveTimer);
+            window._cartSaveTimer = setTimeout(async () => {
+                try {
+                    const user = window.currentUser;
+                    if(!user || user.isAnonymous || !user.email || !db) return;
+                    const cartData = (window.cart || []).map(i => ({
+                        key: i.key, name: i.name, weight: i.weight,
+                        price: i.price, qty: i.qty, forPet: i.forPet || ''
+                    }));
+                    await setDoc(window.getUserPath(user.uid), { cart: cartData, updatedAt: serverTimestamp() }, { merge: true });
+                } catch(e) { console.warn('No se pudo sincronizar carrito a Firestore:', e); }
+            }, 2000);
+        };
+
+        window.loadCartFromLocalStorage = function() {
+            try {
+                const saved = localStorage.getItem('milkarf_cart');
+                if(saved) {
+                    const parsed = JSON.parse(saved);
+                    if(Array.isArray(parsed) && parsed.length > 0) {
+                        window.cart = parsed;
+                        window.updateCartUI();
+                    }
+                }
+            } catch(e) {}
+        };
+
+        window.syncCartOnLogin = async function(userData) {
+            if(!userData || !Array.isArray(userData.cart)) return;
+            const remoteCart = userData.cart;
+            if(remoteCart.length === 0 && window.cart.length === 0) return;
+
+            // Fusionar: prioridad al carrito local si tiene ítems, sino usar remoto
+            if(window.cart.length === 0) {
+                window.cart = remoteCart;
+            } else if(remoteCart.length > 0) {
+                // Fusionar sin duplicados (por key+forPet)
+                for(const ri of remoteCart) {
+                    const exists = window.cart.find(li => li.key === ri.key && (li.forPet || '') === (ri.forPet || ''));
+                    if(!exists) {
+                        window.cart.push(ri);
+                    }
+                }
+            }
+            window.updateCartUI();
+            window.saveCartToStorage();
         };
 
         window.resetCartDeliveryUI = function() {
@@ -5887,6 +5953,15 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                                 try { localStorage.setItem('milkarf_descuentos_uids', JSON.stringify(reclamados)); } catch(e){}
                             }
                             if(window.currentUser.data) window.currentUser.data.descuento_usado = true;
+                            if(db && window.currentUser?.uid) {
+                                try {
+                                    await setDoc(window.getUserPath(window.currentUser.uid), {
+                                        uid: window.currentUser.uid,
+                                        descuento_usado: true,
+                                        updatedAt: serverTimestamp()
+                                    }, { merge: true });
+                                } catch(errDoc) { console.warn('Error al marcar descuento_usado en Firestore:', errDoc); }
+                            }
                         } catch(e) {}
                     }
 
@@ -6590,6 +6665,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 checkoutBtn.addEventListener('mouseenter', () => window.refreshCheckoutWhatsAppLink?.(), { passive: true });
             }
             if((window.location.hash || '') === '#carrito') window.restoreCartPostOrderStateIfNeeded?.();
+            window.loadCartFromLocalStorage?.();
             window.initPreloader();
             setTimeout(() => window.repairViewState?.(window.getActiveViewId?.() || 'view-home'), 1200);
         };

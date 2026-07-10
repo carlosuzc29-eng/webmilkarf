@@ -85,7 +85,9 @@ service cloud.firestore {
           'puntos_historicos',
           'points',
           'pointsAvailable',
-          'pointsHistorical'
+          'pointsHistorical',
+          'cart',
+          'descuento_usado'
         ]);
     }
 
@@ -94,6 +96,9 @@ service cloud.firestore {
         && request.resource.data.uid == resource.data.uid
         && noAdminUserFields()
         && noClientSensitivePointFieldsChanged()
+        // descuento_usado: solo puede cambiar a true, nunca de true a false
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['descuento_usado'])
+            || request.resource.data.descuento_usado == true)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'uid',
           'nombre',
@@ -109,7 +114,9 @@ service cloud.firestore {
           'photoUrl',
           'photoURL',
           'updatedAt',
-          'lastLoginAt'
+          'lastLoginAt',
+          'cart',
+          'descuento_usado'
         ]);
     }
 
