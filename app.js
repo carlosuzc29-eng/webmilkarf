@@ -118,7 +118,16 @@
                     if(mainNav) mainNav.classList.remove('hidden');
                     if(adminNav) adminNav.classList.add('hidden');
                     if(topAuth) topAuth.style.display = 'block';
-                    initEnvAuth();
+
+                    let isPendingGoogle = false;
+                    try {
+                        isPendingGoogle = sessionStorage.getItem('milkarf_google_redirect_pending') === '1' ||
+                                          localStorage.getItem('milkarf_google_login_in_progress') === '1';
+                    } catch(e) {}
+
+                    if (!isPendingGoogle) {
+                        initEnvAuth();
+                    }
                 }
                 window.actualizarUIAuth();
             });
@@ -6325,8 +6334,8 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                     sessionStorage.setItem('milkarf_google_redirect_pending', '1');
                 } catch(error) {}
 
-                // En Android/Móviles, signInWithPopup suele ser bloqueado o causar pérdida de contexto. Usar redirección inmediata.
-                if(isMobile) {
+                const forceRedirectOnly = window.isInAppBrowser?.() || false;
+                if(forceRedirectOnly) {
                     await signInWithRedirect(auth, provider);
                     return;
                 }

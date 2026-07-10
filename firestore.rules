@@ -172,6 +172,14 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    match /artifacts/{appId}/users/{userId} {
+      allow create: if userCreateIsSafe(userId);
+      allow get: if isAdmin() || isOwner(userId);
+      allow list: if isAdmin() && hasSafeLimit(100);
+      allow update: if isAdmin() || userUpdateIsSafe(userId);
+      allow delete: if isAdmin();
+    }
+
     match /pedidos/{pedidoId} {
       allow create: if orderCreateIsSafe();
       allow get: if isAdmin() || orderBelongsToUser();
