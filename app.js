@@ -58,8 +58,11 @@
 
                 if(user && (!user.isAnonymous || user.email)) {
                     try {
-                        if(sessionStorage.getItem('milkarf_google_redirect_pending') === '1') {
-                            sessionStorage.removeItem('milkarf_google_redirect_pending');
+                        const pendingGoogle = sessionStorage.getItem('milkarf_google_redirect_pending') === '1' ||
+                                              localStorage.getItem('milkarf_google_login_in_progress') === '1';
+                        if (pendingGoogle) {
+                            try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(e) {}
+                            try { localStorage.removeItem('milkarf_google_login_in_progress'); } catch(e) {}
                             setTimeout(() => window.finishGoogleLogin?.(user), 100);
                         }
                     } catch(error) {}
@@ -6310,75 +6313,81 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const provider = new GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
             const btn = document.getElementById('auth-google-btn');
-            const forceRedirectOnly = window.isInAppBrowser?.() || false;
+            const ua = navigator.userAgent || '';
+            const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || window.isInAppBrowser?.();
 
             try {
                 window.clearAuthError?.();
                 if(btn) { btn.disabled = true; btn.classList.add('opacity-60', 'pointer-events-none'); }
 
-                if(forceRedirectOnly) {
-                    try { sessionStorage.setItem('milkarf_google_redirect_pending', '1'); } catch(error) {}
+                try {
+                    localStorage.setItem('milkarf_google_login_in_progress', '1');
+                    sessionStorage.setItem('milkarf_google_redirect_pending', '1');
+                } catch(error) {}
+
+                // En Android/Móviles, signInWithPopup suele ser bloqueado o causar pérdida de contexto. Usar redirección inmediata.
+                if(isMobile) {
                     await signInWithRedirect(auth, provider);
                     return;
                 }
 
                 try {
                     const cred = await signInWithPopup(auth, provider);
+                    try { localStorage.removeItem('milkarf_google_login_in_progress'); } catch(e) {}
+                    try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(e) {}
                     await window.finishGoogleLogin?.(cred.user);
                     window.showToast?.('Sesión iniciada con Google.', 'success');
                 } catch(popupError) {
-                    const fallbackCodes = [
-                        'auth/popup-blocked',
-                        'auth/cancelled-popup-request',
-                        'auth/web-storage-unsupported',
-                        'auth/operation-not-supported-in-this-environment',
-                        'auth/internal-error'
-                    ];
-                    if(fallbackCodes.includes(popupError.code) || /Android|Mobile/i.test(navigator.userAgent || '')) {
-                        try { sessionStorage.setItem('milkarf_google_redirect_pending', '1'); } catch(error) {}
-                        await signInWithRedirect(auth, provider);
-                        return;
-                    }
-                    throw popupError;
+                    await signInWithRedirect(auth, provider);
                 }
             } catch(error) {
                 console.error('Error Google Auth:', error);
+                try { localStorage.removeItem('milkarf_google_login_in_progress'); } catch(e) {}
+                try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(e) {}
                 window.setAuthError?.(window.traductorErrores?.(error.code) || 'Hubo un problema con Google. Intenta nuevamente.');
             } finally {
-                if(btn) { btn.disabled = false; btn.classList.remove('opacity-60', 'pointer-events-none'); }
+                if(btn && !isMobile) { btn.disabled = false; btn.classList.remove('opacity-60', 'pointer-events-none'); }
             }
         };
 
         window.handleGoogleRedirectResult = async function() {
             if(!auth) return;
             let wasPending = false;
-            try { wasPending = sessionStorage.getItem('milkarf_google_redirect_pending') === '1'; } catch(error) {}
+            try {
+                wasPending = sessionStorage.getItem('milkarf_google_redirect_pending') === '1' ||
+                             localStorage.getItem('milkarf_google_login_in_progress') === '1';
+            } catch(error) {}
+
             try {
                 const result = await getRedirectResult(auth);
-                const resolvedUser = result?.user || auth.currentUser;
+                const resolvedUser = result?.user || (auth.currentUser && !auth.currentUser.isAnonymous ? auth.currentUser : null);
                 if(resolvedUser && (!resolvedUser.isAnonymous || resolvedUser.email)) {
+                    try { localStorage.removeItem('milkarf_google_login_in_progress'); } catch(error) {}
                     try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(error) {}
                     await window.finishGoogleLogin?.(resolvedUser);
                     window.showToast?.('Sesión iniciada con Google.', 'success');
                 } else if(wasPending) {
-                    // En Android Chrome, la sesión puede tardar unos ms en restaurarse desde indexedDB/localStorage
+                    // En Android Chrome, el almacenamiento IndexedDB puede tardar en inicializar
                     let attempts = 0;
                     const checkInterval = setInterval(async () => {
                         attempts++;
                         const u = auth.currentUser;
                         if(u && (!u.isAnonymous || u.email)) {
                             clearInterval(checkInterval);
+                            try { localStorage.removeItem('milkarf_google_login_in_progress'); } catch(error) {}
                             try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(error) {}
                             await window.finishGoogleLogin?.(u);
                             window.showToast?.('Sesión iniciada con Google.', 'success');
-                        } else if(attempts >= 10) {
+                        } else if(attempts >= 25) {
                             clearInterval(checkInterval);
+                            try { localStorage.removeItem('milkarf_google_login_in_progress'); } catch(error) {}
                             try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(error) {}
                         }
-                    }, 150);
+                    }, 200);
                 }
             } catch(error) {
                 console.error('Error procesando redirect Google:', error);
+                try { localStorage.removeItem('milkarf_google_login_in_progress'); } catch(e) {}
                 try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(e) {}
                 window.abrirModalAuth?.();
                 window.setAuthError?.(window.traductorErrores?.(error.code) || 'No se pudo completar el inicio con Google.');
