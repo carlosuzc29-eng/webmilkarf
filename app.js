@@ -127,6 +127,13 @@
 
                     if (!isPendingGoogle) {
                         initEnvAuth();
+                    } else {
+                        // Hay un login de Google en progreso — no iniciar sesión anónima.
+                        // Limpiar banderas después de un tiempo prudente si no se completó.
+                        setTimeout(() => {
+                            try { localStorage.removeItem('milkarf_google_login_in_progress'); } catch(e) {}
+                            try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch(e) {}
+                        }, 8000);
                     }
                 }
                 window.actualizarUIAuth();
