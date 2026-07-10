@@ -3219,8 +3219,13 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
         };
 
         window.renderDeliveryNoteCapture = function(payload = {}) {
-            const target = document.getElementById('delivery-note-capture');
-            if(!target) return;
+            let target = document.getElementById('delivery-note-capture');
+            if(!target) {
+                target = document.createElement('div');
+                target.id = 'delivery-note-capture';
+                target.style.cssText = 'position:fixed; left:-9999px; top:0; width:600px; pointer-events:none; z-index:-1;';
+                document.body.appendChild(target);
+            }
             const safe = window.escapeHTML || ((v) => String(v ?? ''));
             const items = Array.isArray(payload.items) ? payload.items : [];
             const itemsHtml = items.length ? items.map(item => {
@@ -3284,9 +3289,17 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             if(!order) throw new Error('No se encontró el pedido para generar la nota.');
             const payload = window.getDeliveryNotePayload(order);
             window.renderDeliveryNoteCapture?.(payload);
-            const target = document.getElementById('delivery-note-capture');
+            let target = document.getElementById('delivery-note-capture');
             if(!target) throw new Error('No se encontró el contenedor de la nota visual.');
-            if(!window.html2canvas) throw new Error('La librería para generar imagen aún no ha cargado. Intenta nuevamente en unos segundos.');
+            if(!window.html2canvas) {
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error('No se pudo cargar la librería de captura de imagen.'));
+                    document.head.appendChild(script);
+                });
+            }
             await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
             return await window.html2canvas(target.firstElementChild || target, {
                 scale: 2,
