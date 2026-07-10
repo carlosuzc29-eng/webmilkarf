@@ -19,11 +19,8 @@
         let auth = null;
         let appId = typeof __app_id !== 'undefined' ? __app_id : 'milkarf-app';
         const ADMIN_EMAILS = [
-            'deliapr@milkarf.com',
-            'carlosuzc@milkarf.com',
             'milkarffood@gmail.com',
-            'carlosauv11@gmail.com',
-            'carlosuzc29@gmail.com'
+            'carlosauv11@gmail.com'
         ];
         window.ADMIN_EMAILS = ADMIN_EMAILS;
 

@@ -10,11 +10,8 @@ service cloud.firestore {
     function isAdmin() {
       return signedIn()
         && request.auth.token.email in [
-          'deliapr@milkarf.com',
-          'carlosuzc@milkarf.com',
           'milkarffood@gmail.com',
-          'carlosauv11@gmail.com',
-          'carlosuzc29@gmail.com'
+          'carlosauv11@gmail.com'
         ];
     }
 
