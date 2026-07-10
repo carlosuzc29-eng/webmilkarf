@@ -542,33 +542,16 @@ Revisar el pedido desde el panel administrador para continuar la atención.`;
                     const deliveryCost = Number(data.deliveryCost || 0);
                     const finalTotal = productTotal + deliveryCost;
                     const clientName = data.clientName || order.userName || order.nombre || order.email || 'cliente Milkarf';
-                    const petName = data.petName || order.selectedPet || (noteItems.find(i => i.forPet)?.forPet) || 'tu mascota';
-                    const deliveryDate = data.deliveryDateLabel || 'Por confirmar';
+                    const petName = data.petName || order.selectedPet || (noteItems.find(i => i.forPet)?.forPet) || 'tu peludo';
+                    const petText = petName !== 'tu mascota' && petName !== 'tu peludo' ? petName : 'tu peludo';
 
-                    return `Hola, ${clientName}.
+                    return `¡Hola, ${clientName}! 🐾
 
-Te compartimos tu nota de entrega Milkarf.
+Acá está tu nota de entrega de Milkarf. Muchas gracias por tu compra y por confiar en nuestra nutrición natural para mascotas. ❤️
 
-Cliente: ${clientName}
-Mascota asociada: ${petName}
-Fecha de entrega: ${deliveryDate}
+¡Esperamos que ${petText} lo disfrute muchísimo! 🐶✨
 
-Detalle del pedido:
-${items}
-
-Total de productos: ${currency(productTotal)}
-Delivery: ${currency(deliveryCost)}
-Total a pagar: ${currency(finalTotal)}
-
-Datos de pago:
-Banco de Venezuela
-Cuenta: 0102 0443 7700 0093 1771
-C.I: 20.530.321
-Pago movil: 0414-179-1136
-
-Pago en Bs. a tasa BCV del dia. Si pagas en divisas, puedes consultarnos por el descuento disponible.
-
-Cuando realices el pago, por favor envia el comprobante por este mismo chat para confirmar tu pedido.`;
+Adjunto te enviamos la nota con el detalle. Cuando realices el pago o si tienes alguna duda, puedes compartirnos el comprobante por este mismo chat. ¡Feliz día!`;
                 }
 
                 case 'birthday':
@@ -3147,7 +3130,8 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
         };
 
         window.getDeliveryNotePayload = function(order = {}) {
-            const deliveryCost = Math.max(0, Number(document.getElementById('delivery-note-cost')?.value || order.deliveryCost || 0));
+            const feeInput = document.getElementById('delivery-note-fee') || document.getElementById('delivery-note-cost');
+            const deliveryCost = Math.max(0, Number(feeInput?.value || order.deliveryCost || 0));
             const deliveryDate = document.getElementById('delivery-note-date')?.value || order.deliveryDate || '';
             const items = window.getDeliveryNoteItems(order);
             const productTotal = Number(order.total || items.reduce((sum, i) => sum + (Number(i.price || 0) * Number(i.qty || 0)), 0));
@@ -3312,12 +3296,12 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
         };
 
         window.canvasToBlob = function(canvas) {
-            return new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 1));
+            return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95));
         };
 
         window.getDeliveryNoteFileName = function(order = {}) {
             const base = `nota-entrega-milkarf-${order.userName || order.nombre || order.id || Date.now()}`;
-            return String(base).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '.png';
+            return String(base).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '.jpg';
         };
 
         window.downloadDeliveryNoteImage = async function() {
@@ -3349,7 +3333,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const box = document.getElementById('modal-delivery-note-box');
             if(!modal || !box) return;
             const phoneInput = document.getElementById('delivery-note-phone');
-            const costInput = document.getElementById('delivery-note-cost');
+            const costInput = document.getElementById('delivery-note-fee') || document.getElementById('delivery-note-cost');
             const dateInput = document.getElementById('delivery-note-date');
             const idInput = document.getElementById('delivery-note-order-id');
             const subtitle = document.getElementById('delivery-note-subtitle');
@@ -3452,7 +3436,7 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 const canvas = await window.getDeliveryNoteCanvas();
                 const blob = await window.canvasToBlob(canvas);
                 const fileName = window.getDeliveryNoteFileName(order);
-                const file = blob ? new File([blob], fileName, { type: 'image/png' }) : null;
+                const file = blob ? new File([blob], fileName, { type: 'image/jpeg' }) : null;
                 const shareText = `Nota de entrega Milkarf para ${payload.clientName}. Total a pagar: $${payload.finalTotal.toFixed(2)}.`;
 
                 if(file && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {

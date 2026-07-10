@@ -298,12 +298,13 @@
 
                         <div id="delivery-note-error" class="hidden bg-pink/10 border border-pink/20 text-pink text-xs font-bold rounded-xl p-3"></div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <button type="button" onclick="window.closeDeliveryNoteModal()" class="w-full bg-white dark:bg-[#0d0718] border border-purple-border/60 dark:border-purple/30 text-purple dark:text-white font-black text-[10px] uppercase tracking-widest py-3.5 rounded-xl">Cancelar</button>
-                            <button type="button" onclick="window.downloadDeliveryNoteImage()" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/60 dark:border-purple/30 text-purple dark:text-green font-black text-[10px] uppercase tracking-widest py-3.5 rounded-xl">Descargar imagen</button>
-                            <button type="button" onclick="window.sendDeliveryNoteToClient()" class="w-full bg-green hover:bg-[#a6b621] text-purple-dark font-black text-[10px] uppercase tracking-widest py-3.5 rounded-xl shadow-md">Enviar nota visual</button>
+                        <div class="pt-2">
+                            <button type="button" onclick="window.sendDeliveryNoteToClient()" class="w-full bg-green hover:bg-[#a6b621] text-purple-dark font-black text-sm uppercase tracking-widest py-4 rounded-2xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
+                                <i data-lucide="send" class="w-5 h-5"></i>
+                                <span>Enviar nota de entrega</span>
+                            </button>
                         </div>
-                        <p class="text-[10px] text-purple/45 dark:text-gray-500 font-semibold leading-relaxed text-center mt-2">En celulares compatibles se abrirá el menú para compartir la imagen. Si no está disponible, la nota se descargará y se abrirá WhatsApp con el texto de respaldo.</p>
+                        <p class="text-[10px] text-purple/50 dark:text-gray-400 font-semibold leading-relaxed text-center mt-2">La foto de la nota en formato .jpg se descargará automáticamente y se abrirá WhatsApp con el mensaje de entrega listo.</p>
                     </div>
                 </div>
             </div>
