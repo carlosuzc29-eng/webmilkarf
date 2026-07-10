@@ -11,7 +11,10 @@ service cloud.firestore {
       return signedIn()
         && request.auth.token.email in [
           'deliapr@milkarf.com',
-          'carlosuzc@milkarf.com'
+          'carlosuzc@milkarf.com',
+          'milkarffood@gmail.com',
+          'carlosauv11@gmail.com',
+          'carlosuzc29@gmail.com'
         ];
     }
 
