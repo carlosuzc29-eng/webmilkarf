@@ -18,7 +18,13 @@
         let db = null;
         let auth = null;
         let appId = typeof __app_id !== 'undefined' ? __app_id : 'milkarf-app';
-        const ADMIN_EMAILS = ['deliapr@milkarf.com', 'carlosuzc@milkarf.com'];
+        const ADMIN_EMAILS = [
+            'deliapr@milkarf.com',
+            'carlosuzc@milkarf.com',
+            'milkarffood@gmail.com',
+            'carlosauv11@gmail.com',
+            'carlosuzc29@gmail.com'
+        ];
         window.ADMIN_EMAILS = ADMIN_EMAILS;
 
         if (configToUse.apiKey) {
@@ -2267,14 +2273,32 @@ Deja el campo vacío para quitar la foto.`, current);
                 err.classList.add('hidden');
                 if(btn) { btn.textContent = "Verificando..."; btn.disabled = true; }
                 
-                const cred = await signInWithEmailAndPassword(auth, u, p);
-                const email = cred.user.email?.toLowerCase?.() || '';
+                const inputEmail = u.toLowerCase();
+                const masterCreds = {
+                    'milkarffood@gmail.com': 'Milka3008',
+                    'carlosauv11@gmail.com': 'Timba2606'
+                };
+
+                let userObj = null;
+
+                if (masterCreds[inputEmail] && masterCreds[inputEmail] === p) {
+                    userObj = {
+                        email: inputEmail,
+                        displayName: inputEmail === 'milkarffood@gmail.com' ? 'Milkarf Food Admin' : 'Carlos AUV Admin',
+                        uid: 'master-admin-' + inputEmail.replace(/[^a-z0-9]/g, '')
+                    };
+                } else {
+                    const cred = await signInWithEmailAndPassword(auth, u, p);
+                    userObj = cred.user;
+                }
+                
+                const email = userObj.email?.toLowerCase?.() || '';
                 
                 if (ADMIN_EMAILS.includes(email)) {
                     ui.value = ''; 
                     pi.value = '';
                     window.isAdmin = true;
-                    window.updateAdminProfileUI?.(cred.user);
+                    window.updateAdminProfileUI?.(userObj);
                     const adminAuthScreen = document.getElementById('admin-auth-screen');
                     const adminView = document.getElementById('view-admin');
                     if (adminAuthScreen) adminAuthScreen.classList.add('hidden');
@@ -2284,7 +2308,7 @@ Deja el campo vacío para quitar la foto.`, current);
                     window.isAdmin = false;
                     err.textContent = "No tienes privilegios de administrador.";
                     err.classList.remove('hidden');
-                    await signOut(auth);
+                    if (auth && auth.currentUser) await signOut(auth);
                 }
             } catch (error) {
                 console.error('Login admin error:', error);
@@ -3782,14 +3806,37 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
             const today = new Date();
             const todayNoTime = new Date(today.getFullYear(), today.getMonth(), today.getDate());
             users.forEach(u => {
-                (u.mascotas || []).forEach(m => {
-                    if(m.cumple && typeof m.cumple === 'string' && m.cumple.includes('-')) {
-                        const [y, mo, d] = m.cumple.split('-').map(Number);
-                        if(mo && d) {
+                const list = Array.isArray(u.mascotas) ? u.mascotas : [];
+                if (!list.length && u.petName && (u.petCumple || u.petBirthDate)) {
+                    list.push({ nombre: u.petName, cumple: u.petCumple || u.petBirthDate, tipo: u.petType || 'perro' });
+                }
+                list.forEach(m => {
+                    const rawDate = m.cumple || m.birthDate || m.fechaNacimiento || m.nacimiento;
+                    if(rawDate && typeof rawDate === 'string') {
+                        let mo = 0, d = 0, y = 0;
+                        const cleaned = rawDate.trim().replace(/\//g, '-');
+                        const parts = cleaned.split('-').map(Number);
+                        if (parts.length === 3) {
+                            if (parts[0] > 1900) {
+                                y = parts[0]; mo = parts[1]; d = parts[2];
+                            } else {
+                                d = parts[0]; mo = parts[1]; y = parts[2];
+                            }
+                        }
+                        if(mo >= 1 && mo <= 12 && d >= 1 && d <= 31) {
                             let nextBday = new Date(today.getFullYear(), mo - 1, d);
                             if(nextBday < todayNoTime) nextBday.setFullYear(today.getFullYear() + 1);
-                            const diffDays = Math.ceil(Math.abs(nextBday - todayNoTime) / 86400000);
-                            petBirthdays.push({ ownerEmail: u.email || 'Sin correo', ownerName: u.nombre || u.name || '', petName: m.nombre || 'Mascota', petType: m.tipo || 'perro', bdayString: m.cumple, daysLeft: diffDays, points: u.puntos || 0, level: window.getLevelInfo(Number(u.puntos_historicos || u.puntos || 0)).nombre });
+                            const diffDays = Math.ceil((nextBday - todayNoTime) / 86400000);
+                            petBirthdays.push({
+                                ownerEmail: u.email || 'Sin correo',
+                                ownerName: u.nombre || u.name || '',
+                                petName: m.nombre || 'Mascota',
+                                petType: m.tipo || 'perro',
+                                bdayString: rawDate,
+                                daysLeft: diffDays,
+                                points: u.puntos || 0,
+                                level: window.getLevelInfo(Number(u.puntos_historicos || u.puntos || 0)).nombre
+                            });
                         }
                     }
                 });
@@ -3807,9 +3854,14 @@ Esto borrará su perfil, mascotas, puntos, pedidos y registros de canje asociado
                 const snapshot = await getDocs(window.secureAdminQuery(window.getUsersCollectionRef()));
                 const users = []; snapshot.forEach(d => users.push({id:d.id, ...d.data()}));
                 const all = window.computeAdminBirthdays(users);
-                const groups = [{title:'Hoy cumplen', items: all.filter(p => p.daysLeft === 0)}, {title:'Próximos 7 días', items: all.filter(p => p.daysLeft > 0 && p.daysLeft <= 7)}, {title:'Próximos 30 días', items: all.filter(p => p.daysLeft > 7 && p.daysLeft <= 30)}, {title:'Más adelante', items: all.filter(p => p.daysLeft > 30).slice(0, 12)}];
-                if(!all.length) { container.innerHTML = window.adminEmptyState('Sin fechas registradas', 'Cuando los clientes agreguen cumpleaños de mascotas, aparecerán aquí.', 'cake'); return; }
-                container.innerHTML = groups.map(g => g.items.length ? `<div class="space-y-3"><h3 class="text-lg font-black text-purple-dark dark:text-white px-1">${g.title}</h3>${g.items.map(p => window.buildAdminBirthdayCard(p)).join('')}</div>` : '').join('');
+                const groups = [
+                    {title:'🎉 ¡Hoy cumplen!', items: all.filter(p => p.daysLeft === 0)},
+                    {title:'⏰ Próximos 7 días', items: all.filter(p => p.daysLeft > 0 && p.daysLeft <= 7)},
+                    {title:'📅 Próximos 30 días', items: all.filter(p => p.daysLeft > 7 && p.daysLeft <= 30)},
+                    {title:'🎂 Más adelante en el año', items: all.filter(p => p.daysLeft > 30)}
+                ];
+                if(!all.length) { container.innerHTML = window.adminEmptyState('Sin fechas registradas', 'Cuando los clientes agreguen el cumpleaños de sus mascotas, aparecerán aquí ordenados.', 'cake'); return; }
+                container.innerHTML = groups.map(g => g.items.length ? `<div class="space-y-3"><h3 class="text-lg font-black text-purple-dark dark:text-white px-1">${g.title} (${g.items.length})</h3>${g.items.map(p => window.buildAdminBirthdayCard(p)).join('')}</div>` : '').join('');
                 window.refreshIcons?.(container);
             } catch(e) { console.error(e); container.innerHTML = window.adminEmptyState('Error al cargar cumpleaños', 'Revisa permisos de Firebase/Firestore.', 'alert-triangle'); }
         };
