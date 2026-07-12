@@ -533,14 +533,6 @@ Revisar el pedido desde el panel administrador para continuar la atención.`;
         case 'deliveryNote': {
             const order = data.order || {};
             const noteItems = Array.isArray(data.items) ? data.items : (Array.isArray(order.items) ? order.items : []);
-            const items = noteItems.length ? noteItems.map((i, index) => {
-                const qty = Number(i.qty || 0);
-                const lineTotal = Number(i.price || 0) * qty;
-                const weight = i.weight || i.tam || i.presentation || '';
-                const pet = i.forPet ? ` - Para ${i.forPet}` : '';
-                const custom = i.personalizado ? ' personalizado' : '';
-                return `${index + 1}. ${qty} x ${i.name || 'Producto'}${weight ? ` (${weight})` : ''}${custom}${pet} - ${currency(lineTotal)}`;
-            }).join('\n') : 'Pedido Milkarf';
             const productTotal = Number(data.productTotal ?? order.total ?? 0);
             const deliveryCost = Number(data.deliveryCost || 0);
             const finalTotal = productTotal + deliveryCost;
@@ -548,16 +540,24 @@ Revisar el pedido desde el panel administrador para continuar la atención.`;
             const petName = data.petName || order.selectedPet || (noteItems.find(i => i.forPet)?.forPet) || 'tu peludo';
             const petText = petName !== 'tu mascota' && petName !== 'tu peludo' ? petName : 'tu peludo';
             const deliveryDate = data.deliveryDateLabel || 'Por confirmar';
+            const orderIdShort = order.id ? `#${String(order.id).slice(-8).toUpperCase()}` : '#PEDIDO';
+            const direccion = order.direccion || order.address || order.dir || 'A convenir';
+            const ptsSumados = Number(order.pointsAwarded || order.pointsGranted || Math.floor(finalTotal));
 
             return `¡Hola, ${clientName}! 🐾
 
-Acá está tu nota de entrega oficial de Milkarf. Tu pedido ya está confirmado y programado para entrega (${deliveryDate}). 🚚✨
+¡Muchísimas gracias por tu compra en Milkarf! ❤️ Nos alegra muchísimo consentir a ${petText} con nuestra nutrición natural y evolutiva.
 
-Muchas gracias por tu compra y por consentir a tu mascota con nuestra nutrición natural. ❤️
+Acá te enviamos la información oficial de tu pedido programado para entrega:
+📦 Pedido: ${orderIdShort}
+📅 Fecha de entrega: ${deliveryDate}
+📍 Dirección: ${direccion}
+💰 Total pagado / confirmado: $${finalTotal.toFixed(2)}
+🌟 Puntos sumados a tu cuenta: +${ptsSumados} ptos Milkarf
 
-¡Esperamos que ${petText} lo disfrute muchísimo! 🐶🦴
+Adjunto a este mensaje te compartimos tu Nota de Entrega oficial en imagen. 🖼️✨
 
-Cualquier duda adicional con la entrega, quedamos a tu disposición por este chat. ¡Que tengas un excelente día!`;
+¡Esperamos que ${petText} lo disfrute muchísimo! 🐶🦴 Cualquier consulta adicional, estamos a tu orden por acá.`;
         }
 
         case 'birthday':
@@ -3446,24 +3446,27 @@ window.sendDeliveryNoteToClient = async function () {
         const blob = await window.canvasToBlob(canvas);
         const fileName = window.getDeliveryNoteFileName(order);
         const file = blob ? new File([blob], fileName, { type: 'image/jpeg' }) : null;
-        const shareText = `Nota de entrega Milkarf para ${payload.clientName}. Total a pagar: $${payload.finalTotal.toFixed(2)}.`;
 
-        if (file && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
-            await navigator.share({
-                title: 'Nota de entrega Milkarf',
-                text: shareText,
-                files: [file]
-            });
-            window.showToast?.('Nota visual lista para compartir por WhatsApp.', 'success');
-        } else {
+        const ua = navigator.userAgent || '';
+        const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+        let sharedDirectly = false;
+
+        if (isMobile && file && navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Nota de entrega Milkarf',
+                    text: message,
+                    files: [file]
+                });
+                sharedDirectly = true;
+                window.showToast?.('Nota visual enviada con éxito.', 'success');
+            } catch (shareErr) {
+                console.log('Compartición nativa cancelada o no disponible, usando descarga + WhatsApp:', shareErr);
+            }
+        }
+
+        if (!sharedDirectly) {
             if (blob) {
-                try {
-                    if (navigator.clipboard && window.ClipboardItem) {
-                        await navigator.clipboard.write([new window.ClipboardItem({ 'image/png': blob })]);
-                    }
-                } catch (clipErr) {
-                    console.log('No se pudo copiar automáticamente al portapapeles:', clipErr);
-                }
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
@@ -3474,12 +3477,12 @@ window.sendDeliveryNoteToClient = async function () {
                 setTimeout(() => URL.revokeObjectURL(url), 5000);
             }
             window.openWhatsAppMessage(message, phone);
-            window.showToast?.('¡Foto copiada al portapapeles y descargada! En WhatsApp presiona Ctrl+V (o Pegar).', 'success');
+            window.showToast?.('Imagen descargada. Se abrió WhatsApp con el resumen del pedido para adjuntar la nota.', 'success');
         }
     } catch (imageError) {
         console.warn('No se pudo generar o compartir la nota visual. Se enviará texto de respaldo:', imageError);
         window.openWhatsAppMessage(message, phone);
-        window.showToast?.('No se pudo generar la imagen. Se abrió WhatsApp con el texto de la nota.', 'success');
+        window.showToast?.('No se pudo generar la imagen. Se abrió WhatsApp con el texto del pedido.', 'success');
     }
     window.closeDeliveryNoteModal();
 };
