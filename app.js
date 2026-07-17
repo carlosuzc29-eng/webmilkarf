@@ -24,10 +24,56 @@ const ADMIN_EMAILS = [
 ];
 window.ADMIN_EMAILS = ADMIN_EMAILS;
 
+window.checkIsAdminDynamic = async function(email) {
+    if (!email) return false;
+    if (ADMIN_EMAILS.includes(email)) return true;
+    if (!db) return false;
+    try {
+        const adminDoc = typeof __firebase_config !== 'undefined'
+            ? await getDoc(doc(db, 'artifacts', appId, 'admins', email))
+            : await getDoc(doc(db, 'admins', email));
+        if (adminDoc.exists()) return true;
+    } catch (e) {
+        console.warn('Error verificando admin dinámico en Firestore:', e);
+    }
+    return false;
+};
+
+window.loadDynamicStoreConfig = async function () {
+    if (!db) return;
+    try {
+        const configDocRef = typeof __firebase_config !== 'undefined'
+            ? doc(db, 'artifacts', appId, 'config', 'tienda')
+            : doc(db, 'config', 'tienda');
+        const snap = await getDoc(configDocRef);
+        if (snap.exists()) {
+            const data = snap.data();
+            if (data.PRICES_POLLO) window.PRICES_POLLO = data.PRICES_POLLO;
+            if (data.PRICES_RES) window.PRICES_RES = data.PRICES_RES;
+            if (Array.isArray(data.REDEEM_ITEMS)) window.REDEEM_ITEMS = data.REDEEM_ITEMS;
+            
+            const pricePollo = document.getElementById('price-pollo');
+            if (pricePollo && window.PRICES_POLLO && window.PRICES_POLLO[window.currentWeightPollo]) {
+                pricePollo.textContent = window.PRICES_POLLO[window.currentWeightPollo];
+            }
+            const priceRes = document.getElementById('price-res');
+            if (priceRes && window.PRICES_RES && window.PRICES_RES[window.currentWeightRes]) {
+                priceRes.textContent = window.PRICES_RES[window.currentWeightRes];
+            }
+            if (typeof window.renderCanjesCatalog === 'function') {
+                window.renderCanjesCatalog();
+            }
+        }
+    } catch (error) {
+        console.warn('No se pudo cargar config dinámica de tienda (usando fallback estático):', error);
+    }
+};
+
 if (configToUse.apiKey) {
     const app = initializeApp(configToUse);
     db = getFirestore(app);
     auth = getAuth(app);
+    window.loadDynamicStoreConfig?.();
     setPersistence(auth, browserLocalPersistence).catch((error) => {
         console.warn('No se pudo fijar persistencia local de sesión:', error);
     });
@@ -42,6 +88,7 @@ if (configToUse.apiKey) {
     onAuthStateChanged(auth, async user => {
         window.authReady = true;
         window.currentUser = user;
+        window.loadDynamicStoreConfig?.();
         const userEmail = user?.email?.toLowerCase?.() || '';
         const isAdminPage = window.location.pathname.endsWith('admin.html');
 
@@ -51,7 +98,8 @@ if (configToUse.apiKey) {
             const preloader = document.getElementById('preloader');
             if (preloader) { preloader.classList.add('opacity-0', 'pointer-events-none'); setTimeout(() => preloader.classList.add('hidden'), 280); }
 
-            if (user && ADMIN_EMAILS.includes(userEmail)) {
+            const isUserAdmin = user && await window.checkIsAdminDynamic(userEmail);
+            if (isUserAdmin) {
                 window.isAdmin = true;
                 if (adminAuthScreen) adminAuthScreen.classList.add('hidden');
                 if (adminView) {
@@ -79,7 +127,9 @@ if (configToUse.apiKey) {
                 if (pendingGoogle) {
                     try { sessionStorage.removeItem('milkarf_google_redirect_pending'); } catch (e) { }
                     try { localStorage.removeItem('milkarf_google_login_in_progress'); } catch (e) { }
-                    setTimeout(() => window.finishGoogleLogin?.(user), 100);
+                    if (window._finishGoogleLoginProcessing !== user.uid) {
+                        setTimeout(() => window.finishGoogleLogin?.(user), 50);
+                    }
                 }
             } catch (error) { }
         }
@@ -88,34 +138,43 @@ if (configToUse.apiKey) {
             // En index.html, un administrador navega de forma normal como cliente
             window.isAdmin = false;
             try {
-                const userRef = typeof __firebase_config !== 'undefined'
-                    ? doc(db, 'artifacts', appId, 'users', user.uid)
-                    : doc(db, 'usuarios', user.uid);
-
-                const docSnap = await getDoc(userRef);
-                if (docSnap.exists()) {
-                    let data = docSnap.data();
-                    // Fix legacy data sin arrays
-                    if (data.mascota_nombre && !data.mascotas) {
-                        data.mascotas = [{
-                            id: Date.now().toString(),
-                            tipo: data.mascota_tipo || 'perro',
-                            nombre: data.mascota_nombre,
-                            edad: data.mascota_edad || '',
-                            peso: data.mascota_peso || '',
-                            raza: data.mascota_raza || 'Mestizo',
-                            cumple: ''
-                        }];
-                        setDoc(userRef, { mascotas: data.mascotas }, { merge: true });
-                    }
-                    // Init hist points if missing
-                    data.puntos_historicos = data.puntos_historicos || data.puntos || 0;
-                    window.currentUser.data = data;
-                    if (data.descuento_usado) window.descuentoAplicado = false;
-                    window.syncCartOnLogin?.(data);
+                if (window._loadedProfileUid === user.uid && window.currentUser?.data) {
+                    if (window.currentUser.data.descuento_usado) window.descuentoAplicado = false;
+                    window.syncCartOnLogin?.(window.currentUser.data);
                 } else {
-                    window.currentUser.data = { puntos: 0, puntos_historicos: 0, mascotas: [] };
-                    window.saveCartToStorage?.();
+                    const userRef = typeof __firebase_config !== 'undefined'
+                        ? doc(db, 'artifacts', appId, 'users', user.uid)
+                        : doc(db, 'usuarios', user.uid);
+
+                    const docSnap = await getDoc(userRef);
+                    if (docSnap.exists()) {
+                        let data = docSnap.data();
+                        // Fix legacy data sin arrays
+                        if (data.mascota_nombre && !data.mascotas) {
+                            data.mascotas = [{
+                                id: Date.now().toString(),
+                                tipo: data.mascota_tipo || 'perro',
+                                nombre: data.mascota_nombre,
+                                edad: data.mascota_edad || '',
+                                peso: data.mascota_peso || '',
+                                raza: data.mascota_raza || 'Mestizo',
+                                cumple: ''
+                            }];
+                            setDoc(userRef, { mascotas: data.mascotas }, { merge: true });
+                        }
+                        // Init hist points if missing
+                        data.puntos_historicos = data.puntos_historicos || data.puntos || 0;
+                        window.currentUser = user;
+                        window.currentUser.data = data;
+                        window._loadedProfileUid = user.uid;
+                        if (data.descuento_usado) window.descuentoAplicado = false;
+                        window.syncCartOnLogin?.(data);
+                    } else {
+                        window.currentUser = user;
+                        window.currentUser.data = { puntos: 0, puntos_historicos: 0, mascotas: [] };
+                        window._loadedProfileUid = user.uid;
+                        window.saveCartToStorage?.();
+                    }
                 }
             } catch (e) { console.warn(e); }
 
@@ -2176,7 +2235,8 @@ window.loginConGoogleAdmin = async function () {
         }
 
         const userEmail = cred.user.email?.toLowerCase?.() || '';
-        if (ADMIN_EMAILS.includes(userEmail)) {
+        const isUserAdmin = await window.checkIsAdminDynamic(userEmail);
+        if (isUserAdmin) {
             window.isAdmin = true;
             window.updateAdminProfileUI?.(cred.user);
             const adminAuthScreen = document.getElementById('admin-auth-screen');
@@ -2275,8 +2335,8 @@ window.verificarLoginAdmin = async function() {
         
         const cred = await signInWithEmailAndPassword(auth, u, p);
         const email = cred.user.email?.toLowerCase?.() || '';
-        
-        if (ADMIN_EMAILS.includes(email)) {
+        const isUserAdmin = await window.checkIsAdminDynamic(email);
+        if (isUserAdmin) {
             ui.value = ''; 
             pi.value = '';
             window.isAdmin = true;
@@ -3518,12 +3578,13 @@ window.enterAdminMode = function ({ navigate = true, load = true } = {}) {
 
 window.switchAdminTab = function (tab = 'resumen') {
     if (!window.isAdmin) { window.showToast('Debes iniciar sesión como administrador.'); return; }
-    const valid = ['resumen', 'pedidos', 'usuarios', 'canjes', 'cumples', 'herramientas'];
+    if (tab === 'calc') tab = 'calculadora';
+    const valid = ['resumen', 'pedidos', 'usuarios', 'canjes', 'cumples', 'herramientas', 'calculadora'];
     if (!valid.includes(tab)) tab = 'resumen';
     window.adminCurrentTab = tab;
     valid.forEach(t => {
         const btn = document.getElementById(`tab-admin-${t}`);
-        const panelId = t === 'resumen' ? 'admin-summary-container' : t === 'usuarios' ? 'admin-users-container' : t === 'canjes' ? 'admin-redeems-container' : t === 'cumples' ? 'admin-birthdays-container' : t === 'herramientas' ? 'admin-tools-container' : 'admin-orders-container';
+        const panelId = t === 'resumen' ? 'admin-summary-container' : t === 'usuarios' ? 'admin-users-container' : t === 'canjes' ? 'admin-redeems-container' : t === 'cumples' ? 'admin-birthdays-container' : t === 'herramientas' ? 'admin-tools-container' : t === 'calculadora' ? 'admin-calc-container' : 'admin-orders-container';
         const panel = document.getElementById(panelId);
         if (btn) btn.className = `admin-tab-btn text-xs font-black px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${t === tab ? window.adminTabActiveClass : window.adminTabInactiveClass}`;
         if (panel) panel.classList.toggle('hidden', t !== tab);
@@ -3534,6 +3595,7 @@ window.switchAdminTab = function (tab = 'resumen') {
     if (tab === 'canjes') window.loadAdminRedeems();
     if (tab === 'cumples') window.loadAdminBirthdays();
     if (tab === 'herramientas') window.loadAdminTools();
+    if (tab === 'calculadora') window.loadAdminCalculadora();
     window.refreshIcons?.();
 };
 
@@ -3928,7 +3990,199 @@ window.cancelarPedidoAdmin = async function (orderId) {
 window.loadAdminTools = function () {
     const container = document.getElementById('admin-tools-container');
     if (!container) return;
-    container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-5"><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 shadow-sm text-left"><div class="w-12 h-12 rounded-2xl bg-green/15 text-green-dark dark:text-green flex items-center justify-center mb-4"><i data-lucide="calculator" class="w-6 h-6"></i></div><h3 class="text-xl font-black text-purple-dark dark:text-white">Calculadora nutricional</h3><p class="text-xs text-gray-500 font-semibold leading-relaxed mt-2">Úsala para orientar pedidos o calcular una referencia inicial para una mascota.</p><button onclick="window.navigateTo('view-calc')" class="mt-5 w-full bg-green text-purple-dark font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl">Abrir calculadora</button></div><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 shadow-sm text-left"><div class="w-12 h-12 rounded-2xl bg-pink/10 text-pink flex items-center justify-center mb-4"><i data-lucide="info" class="w-6 h-6"></i></div><h3 class="text-xl font-black text-purple-dark dark:text-white">Guía de estados</h3><div class="space-y-3 mt-4 text-xs font-semibold text-gray-500"><p><strong class="text-pink">En proceso:</strong> pedido recibido, pendiente por confirmar.</p><p><strong class="text-green-dark dark:text-green">Confirmado:</strong> validado por administración y con puntos otorgados si aplica.</p><p><strong class="text-purple">Completado:</strong> pedido entregado/cerrado.</p></div></div><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 shadow-sm text-left md:col-span-2"><h3 class="text-xl font-black text-purple-dark dark:text-white">Acciones rápidas</h3><div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4"><button onclick="window.switchAdminTab('pedidos')" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl">Revisar pedidos</button><button onclick="window.switchAdminTab('canjes')" class="bg-green/20 text-green-dark dark:text-green font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl">Ver canjes</button><button onclick="window.cerrarSesionAdmin()" class="bg-pink/10 text-pink font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl border border-pink/20">Cerrar sesión</button></div></div></div>`;
+    container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-5"><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 shadow-sm text-left"><div class="w-12 h-12 rounded-2xl bg-green/15 text-green-dark dark:text-green flex items-center justify-center mb-4"><i data-lucide="calculator" class="w-6 h-6"></i></div><h3 class="text-xl font-black text-purple-dark dark:text-white">Calculadora nutricional</h3><p class="text-xs text-gray-500 font-semibold leading-relaxed mt-2">Úsala para orientar pedidos o calcular una referencia inicial para una mascota.</p><button onclick="window.switchAdminTab('calculadora')" class="mt-5 w-full bg-green text-purple-dark font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl">Abrir calculadora</button></div><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 shadow-sm text-left"><div class="w-12 h-12 rounded-2xl bg-pink/10 text-pink flex items-center justify-center mb-4"><i data-lucide="info" class="w-6 h-6"></i></div><h3 class="text-xl font-black text-purple-dark dark:text-white">Guía de estados</h3><div class="space-y-3 mt-4 text-xs font-semibold text-gray-500"><p><strong class="text-pink">En proceso:</strong> pedido recibido, pendiente por confirmar.</p><p><strong class="text-green-dark dark:text-green">Confirmado:</strong> validado por administración y con puntos otorgados si aplica.</p><p><strong class="text-purple">Completado:</strong> pedido entregado/cerrado.</p></div></div><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 shadow-sm text-left md:col-span-2"><h3 class="text-xl font-black text-purple-dark dark:text-white">Acciones rápidas</h3><div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4"><button onclick="window.switchAdminTab('pedidos')" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl">Revisar pedidos</button><button onclick="window.switchAdminTab('canjes')" class="bg-green/20 text-green-dark dark:text-green font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl">Ver canjes</button><button onclick="window.cerrarSesionAdmin()" class="bg-pink/10 text-pink font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl border border-pink/20">Cerrar sesión</button></div></div></div>`;
+    window.refreshIcons?.(container);
+};
+
+window.loadAdminCalculadora = function () {
+    const container = document.getElementById('admin-calc-container');
+    if (!container) return;
+    if (container.dataset.loaded === 'true') return;
+
+    container.innerHTML = `
+    <div class="max-w-2xl mx-auto bg-white dark:bg-darkcard rounded-[32px] shadow-2xl border border-purple-border/20 dark:border-purple/20 overflow-hidden text-left">
+        <div class="bg-gradient-to-br from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#1a0836] p-6 relative overflow-hidden select-none">
+            <div class="absolute -right-6 -bottom-6 text-white/5"><i data-lucide="scale-3d" class="w-24 h-24"></i></div>
+            <div class="text-[11px] font-extrabold text-green tracking-widest uppercase mb-1">Herramienta del Administrador</div>
+            <div class="text-xs text-white/75 font-semibold">Calculadora Nutricional Integrada BARF para cálculo y orientación directa.</div>
+        </div>
+
+        <div class="p-6 space-y-6">
+            <div class="bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 rounded-2xl p-5 text-left">
+                <div class="flex items-start gap-3">
+                    <div class="w-9 h-9 rounded-full bg-green/20 text-green-dark dark:text-green flex items-center justify-center shrink-0"><i data-lucide="info" class="w-4 h-4"></i></div>
+                    <div>
+                        <h3 class="text-sm font-black text-purple-dark dark:text-white mb-1">Cálculo en vivo en Administración</h3>
+                        <p class="text-xs leading-relaxed text-gray-600 dark:text-gray-400 font-medium">Estima las porciones y bolsas recomendadas de cualquier cliente o mascota directamente desde el panel de control sin abrir la web pública.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 1: NOMBRE -->
+            <div>
+                <div class="text-[10px] font-bold text-purple/50 dark:text-gray-400 tracking-wider uppercase mb-3 flex items-center gap-2 text-left">
+                    <span class="w-5 h-5 bg-purple dark:bg-green dark:text-darkbg text-white text-[10px] font-black rounded-full flex items-center justify-center">1</span> Nombre de la mascota o referencia
+                </div>
+                <input type="text" id="calc-nombre" name="calc_pet_name" autocomplete="off" autocapitalize="words" placeholder="Ej. Mascota del Cliente" class="w-full bg-purple-light dark:bg-[#0d0718] border-2 border-purple-border/50 dark:border-purple/30 rounded-2xl p-4 text-lg font-black text-purple dark:text-white outline-none focus:border-purple transition-all text-center">
+            </div>
+
+            <!-- PASO 2: ETAPA -->
+            <div>
+                <div class="text-[10px] font-bold text-purple/50 dark:text-gray-400 tracking-wider uppercase mb-3 flex items-center gap-2 text-left">
+                    <span class="w-5 h-5 bg-purple dark:bg-green dark:text-darkbg text-white text-[10px] font-black rounded-full flex items-center justify-center">2</span> Etapa de vida
+                </div>
+                <div class="flex gap-2 w-full" id="etapa-group">
+                    <button class="btn-opt flex-1 dark:bg-[#0d0718] dark:text-white dark:border-purple/30 calc-etapa-btn" onclick="window.selectEtapa('cachorro', this)">🐶 Cachorro<br><span class="text-[9px] font-semibold opacity-60">0–12 meses</span></button>
+                    <button class="btn-opt flex-1 dark:bg-[#0d0718] dark:text-white dark:border-purple/30 calc-etapa-btn" onclick="window.selectEtapa('adulto', this)">🐕 Adulto<br><span class="text-[9px] font-semibold opacity-60">1–7 años</span></button>
+                    <button class="btn-opt flex-1 dark:bg-[#0d0718] dark:text-white dark:border-purple/30 calc-etapa-btn" onclick="window.selectEtapa('senior', this)">🦴 Senior<br><span class="text-[9px] font-semibold opacity-60">+7 años</span></button>
+                </div>
+
+                <div id="sub-cachorro" class="hidden mt-4">
+                    <div class="text-[10px] font-bold text-purple/50 dark:text-gray-400 tracking-wider uppercase mb-2 flex items-center gap-2 text-left">
+                        <span class="w-5 h-5 bg-green text-purple-dark text-[10px] font-black rounded-full flex items-center justify-center">↳</span> Edad del cachorro
+                    </div>
+                    <div class="grid grid-cols-2 gap-2" id="edad-group">
+                        <button class="btn-opt text-left dark:bg-[#0d0718] dark:text-white dark:border-purple/30 calc-sub-btn" onclick="window.selectSubOpt('cachorroEdad', '2-4', this)">2 – 4 meses</button>
+                        <button class="btn-opt text-left dark:bg-[#0d0718] dark:text-white dark:border-purple/30 calc-sub-btn" onclick="window.selectSubOpt('cachorroEdad', '4-6', this)">4 – 6 meses</button>
+                        <button class="btn-opt text-left dark:bg-[#0d0718] dark:text-white dark:border-purple/30 calc-sub-btn" onclick="window.selectSubOpt('cachorroEdad', '6-9', this)">6 – 9 meses</button>
+                        <button class="btn-opt text-left dark:bg-[#0d0718] dark:text-white dark:border-purple/30 calc-sub-btn" onclick="window.selectSubOpt('cachorroEdad', '9-12', this)">9 – 12 meses</button>
+                    </div>
+                </div>
+
+                <div id="sub-actividad" class="hidden mt-4">
+                    <div class="text-[10px] font-bold text-purple/50 dark:text-gray-400 tracking-wider uppercase mb-2 flex items-center gap-2 text-left">
+                        <span class="w-5 h-5 bg-pink text-white text-[10px] font-black rounded-full flex items-center justify-center">↳</span> Condición y actividad
+                    </div>
+                    <div class="flex flex-col gap-2" id="actividad-group">
+                        <button class="btn-opt text-left dark:bg-[#0d0718] dark:text-white dark:border-purple/30 calc-sub-btn" onclick="window.selectSubOpt('actividad', 'esterilizado_bajo', this)">✂️ Esterilizado/castrado</button>
+                        <button class="btn-opt text-left dark:bg-[#0d0718] dark:text-white dark:border-purple/30 calc-sub-btn" onclick="window.selectSubOpt('actividad', 'bajo', this)">😴 Poco activo</button>
+                        <button class="btn-opt text-left dark:bg-[#0d0718] dark:text-white dark:border-purple/30 calc-sub-btn" onclick="window.selectSubOpt('actividad', 'normal', this)">🚶 Activo (Normal)</button>
+                        <button class="btn-opt text-left dark:bg-[#0d0718] dark:text-white dark:border-purple/30 calc-sub-btn" onclick="window.selectSubOpt('actividad', 'alto', this)">🏃 Muy activo</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 3: PESO -->
+            <div>
+                <div class="text-[10px] font-bold text-purple/50 dark:text-gray-400 tracking-wider uppercase mb-3 flex items-center gap-2 text-left">
+                    <span class="w-5 h-5 bg-purple dark:bg-green dark:text-darkbg text-white text-[10px] font-black rounded-full flex items-center justify-center">3</span> Peso actual
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="text" inputmode="decimal" id="pesoInput" name="calc_pet_weight_kg" autocomplete="off" autocorrect="off" spellcheck="false" pattern="[0-9]+([\\.,][0-9]+)?" class="flex-1 w-full min-w-0 p-4 rounded-2xl bg-purple-light dark:bg-[#0d0718] border-2 border-purple-border/50 dark:border-purple/30 text-2xl font-black text-purple dark:text-white outline-none focus:border-purple transition-all text-center" placeholder="0">
+                    <span class="text-lg font-black text-purple/40 dark:text-gray-500 uppercase shrink-0">kg</span>
+                </div>
+                <div class="flex gap-2 mt-3">
+                    <button type="button" id="btn-menos" class="flex-1 bg-white dark:bg-[#0d0718] border-2 border-purple-border/50 dark:border-purple/30 hover:border-purple text-purple dark:text-white font-black p-2.5 rounded-xl transition-all text-lg">−</button>
+                    <button type="button" id="btn-mas" class="flex-1 bg-white dark:bg-[#0d0718] border-2 border-purple-border/50 dark:border-purple/30 hover:border-purple text-purple dark:text-white font-black p-2.5 rounded-xl transition-all text-lg">+</button>
+                </div>
+            </div>
+
+            <button id="btn-calcular-racion" onclick="window.calcularRacion()" class="w-full p-5 bg-gradient-to-r from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#421d8e] text-white font-extrabold text-sm tracking-wide rounded-2xl shadow-lg shadow-purple/30 transition-all flex items-center justify-center gap-2 select-none">
+                <i data-lucide="sparkles" class="w-5 h-5 text-green"></i> Calcular Ración
+            </button>
+
+            <div id="errorMsg" class="error-msg text-left"></div>
+
+            <div id="tu-resultado" class="result text-left">
+                <div class="bg-purple-light dark:bg-[#0d0718] rounded-[24px] border border-purple-border/30 dark:border-purple/20 overflow-hidden shadow-xl">
+                    <div id="result-top" class="p-6 text-center text-white">
+                        <div id="result-title-name" class="text-[10px] font-extrabold tracking-widest uppercase mb-1 opacity-80">Debe comer diariamente</div>
+                        <div id="result-grams" class="text-6xl font-black tracking-tight select-all">0</div>
+                        <div class="text-sm font-extrabold uppercase tracking-wider opacity-70 mt-1">gramos al día</div>
+                        <div id="result-subtitle-pet" class="text-xs font-semibold opacity-80 mt-2"></div>
+                    </div>
+
+                    <div class="p-6 space-y-4">
+                        <div class="flex justify-between items-center pb-3 border-b border-purple-border/30 dark:border-purple/20 text-xs md:text-sm">
+                            <span class="font-semibold text-purple/65 dark:text-gray-400">Energía Diaria (DER)</span>
+                            <span class="font-black text-purple dark:text-white" id="r-kcal">0 kcal/día</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3 border-b border-purple-border/30 dark:border-purple/20 text-xs md:text-sm">
+                            <span class="font-semibold text-purple/65 dark:text-gray-400">Repartido en</span>
+                            <span class="font-black text-purple dark:text-white" id="r-comidas">0 veces</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3 border-b border-purple-border/30 dark:border-purple/20 text-xs md:text-sm">
+                            <span class="font-semibold text-purple/65 dark:text-gray-400">Cada porción de</span>
+                            <span class="font-black text-purple dark:text-white" id="r-por-comida">0g</span>
+                        </div>
+
+                        <div class="bg-purple-border/15 dark:bg-purple/10 rounded-2xl p-5 space-y-3 border border-purple-border/30 dark:border-purple/20">
+                            <div class="text-[9px] font-black tracking-widest text-purple/60 dark:text-gray-400 uppercase">Equivalencia diaria</div>
+                            <div class="grid grid-cols-3 gap-3">
+                                <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-xl p-3 text-center shadow-sm">
+                                    <div class="text-lg font-black text-purple dark:text-white" id="b-250">0</div>
+                                    <div class="text-[9px] font-bold text-purple/40 dark:text-gray-500 uppercase mt-1">Bolsas 250g</div>
+                                </div>
+                                <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-xl p-3 text-center shadow-sm">
+                                    <div class="text-lg font-black text-purple dark:text-white" id="b-550">0</div>
+                                    <div class="text-[9px] font-bold text-purple/40 dark:text-gray-500 uppercase mt-1">Bolsas 550g</div>
+                                </div>
+                                <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-xl p-3 text-center shadow-sm">
+                                    <div class="text-lg font-black text-purple dark:text-white" id="b-850">0</div>
+                                    <div class="text-[9px] font-bold text-purple/40 dark:text-gray-500 uppercase mt-1">Bolsas 850g</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-green/10 dark:bg-green/5 rounded-2xl p-4 space-y-3 border border-green/20 dark:border-green/10">
+                            <div class="text-[9px] font-black tracking-widest text-green-dark dark:text-green uppercase flex items-center gap-2">
+                                <i data-lucide="calendar" class="w-3.5 h-3.5 shrink-0"></i> Plan de Pedido Mensual
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-left">
+                                <div class="bg-white dark:bg-darkcard rounded-xl p-3 shadow-sm border border-green/10 min-w-0">
+                                    <span class="text-[9px] font-bold text-purple/40 dark:text-gray-500 uppercase block leading-tight mb-1">Kilos / mes</span>
+                                    <span class="text-base font-black text-purple-dark dark:text-white leading-none" id="plan-kilos-mes">0.0 kg</span>
+                                </div>
+                                <div class="bg-white dark:bg-darkcard rounded-xl p-3 shadow-sm border border-green/10 min-w-0">
+                                    <span class="text-[9px] font-bold text-purple/40 dark:text-gray-500 uppercase block leading-tight mb-1">Porciones / mes</span>
+                                    <span class="text-base font-black text-purple-dark dark:text-white leading-none" id="plan-porciones-mes">0</span>
+                                </div>
+                            </div>
+                            <div class="text-[8px] font-black tracking-widest text-purple/40 dark:text-gray-500 uppercase">Bolsas para todo el mes:</div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="bg-white dark:bg-darkcard rounded-xl p-2 text-center shadow-sm border border-green/10">
+                                    <div class="text-sm font-black text-purple dark:text-white leading-none" id="plan-b250-mes">0</div>
+                                    <div class="text-[7px] font-bold text-purple/45 dark:text-gray-500 uppercase mt-1 leading-tight">Bolsas<br>250g</div>
+                                </div>
+                                <div class="bg-white dark:bg-darkcard rounded-xl p-2 text-center shadow-sm border border-green/10">
+                                    <div class="text-sm font-black text-purple dark:text-white leading-none" id="plan-b550-mes">0</div>
+                                    <div class="text-[7px] font-bold text-purple/45 dark:text-gray-500 uppercase mt-1 leading-tight">Bolsas<br>550g</div>
+                                </div>
+                                <div class="bg-white dark:bg-darkcard rounded-xl p-2 text-center shadow-sm border border-green/10">
+                                    <div class="text-sm font-black text-purple dark:text-white leading-none" id="plan-b850-mes">0</div>
+                                    <div class="text-[7px] font-bold text-purple/45 dark:text-gray-500 uppercase mt-1 leading-tight">Bolsas<br>850g</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="r-note" class="bg-green-light dark:bg-green/10 border-l-4 border-green text-[10px] leading-relaxed text-purple-dark/85 dark:text-gray-300 font-medium p-4 rounded-r-xl"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+    container.dataset.loaded = 'true';
+    window.prepareCalculatorInputs?.(false);
+
+    const iMenos = document.getElementById('btn-menos');
+    const iMas = document.getElementById('btn-mas');
+    const pInput = document.getElementById('pesoInput');
+    if (iMenos && pInput) iMenos.onclick = () => {
+        window.vibrate?.(20);
+        let val = parseFloat(pInput.value.replace(',', '.')) || 0;
+        pInput.value = Math.max(0.5, val - 1);
+        const tRes = document.getElementById('tu-resultado');
+        if (tRes) tRes.classList.remove('visible', 'show');
+    };
+    if (iMas && pInput) iMas.onclick = () => {
+        window.vibrate?.(20);
+        let val = parseFloat(pInput.value.replace(',', '.')) || 0;
+        pInput.value = Math.min(90, val + 1);
+        const tRes = document.getElementById('tu-resultado');
+        if (tRes) tRes.classList.remove('visible', 'show');
+    };
+
     window.refreshIcons?.(container);
 };
 
@@ -6520,27 +6774,37 @@ window.registrarYGuardarMascota = async function () {
 
 window.finishGoogleLogin = async function (user) {
     if (!user) return false;
-    try { await user.getIdToken(true); } catch (tokenErr) { console.warn('No se pudo refrescar token de Google:', tokenErr); }
+    if (window._finishGoogleLoginProcessing === user.uid && (Date.now() - (window._lastGoogleLoginTimestamp || 0)) < 3000) {
+        return true;
+    }
+    window._finishGoogleLoginProcessing = user.uid;
+    window._lastGoogleLoginTimestamp = Date.now();
 
     let data = null;
     try {
-        const userRef = window.getUserPath(user.uid);
-        const docSnap = await getDoc(userRef);
-        if (docSnap.exists()) data = docSnap.data();
-        else {
-            data = {
-                uid: user.uid,
-                email: user.email || '',
-                nombre: user.displayName || '',
-                nombre_persona: user.displayName || '',
-                userName: user.displayName || '',
-                displayName: user.displayName || '',
-                mascotas: [],
-                puntos: 0,
-                puntos_historicos: 0,
-                updatedAt: serverTimestamp()
-            };
-            await window.writeUserProfileSafe?.(user.uid, data);
+        if (window._loadedProfileUid === user.uid && window.currentUser?.data) {
+            data = window.currentUser.data;
+        } else {
+            const userRef = window.getUserPath(user.uid);
+            const docSnap = await getDoc(userRef);
+            if (docSnap.exists()) {
+                data = docSnap.data();
+            } else {
+                data = {
+                    uid: user.uid,
+                    email: user.email || '',
+                    nombre: user.displayName || '',
+                    nombre_persona: user.displayName || '',
+                    userName: user.displayName || '',
+                    displayName: user.displayName || '',
+                    mascotas: [],
+                    puntos: 0,
+                    puntos_historicos: 0,
+                    updatedAt: serverTimestamp()
+                };
+                await window.writeUserProfileSafe?.(user.uid, data);
+            }
+            window._loadedProfileUid = user.uid;
         }
     } catch (error) {
         console.warn('Google login OK, pero no se pudo leer/crear perfil:', error);
@@ -6551,7 +6815,7 @@ window.finishGoogleLogin = async function (user) {
     window.currentUser.data = data || { mascotas: [], puntos: 0, puntos_historicos: 0 };
     const isAdminPage = window.location.pathname.endsWith('admin.html');
     const emailUser = (user.email || '').toLowerCase();
-    const isAdminEmail = ADMIN_EMAILS.includes(emailUser);
+    const isAdminEmail = await window.checkIsAdminDynamic(emailUser);
 
     if (isAdminPage) {
         if (isAdminEmail) {
