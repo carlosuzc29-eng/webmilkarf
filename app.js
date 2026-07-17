@@ -666,6 +666,8 @@ window.resetAppStateForLogout = function () {
     window.lastOrderId = null;
     window.state = { nombreMascota: '', etapa: null, cachorroEdad: null, actividad: null };
     window.cart = [];
+    try { localStorage.removeItem('milkarf_cart'); } catch (e) { }
+    try { window.saveCartToStorage?.(); } catch (e) { }
     window.qtys = { pollo: 0, res: 0 };
     window.currentWeightPollo = '250gr';
     window.currentWeightRes = '250gr';
@@ -4681,6 +4683,13 @@ window.saveCartToStorage = function () {
 
 window.loadCartFromLocalStorage = function () {
     try {
+        if (!localStorage.getItem('milkarf_cart_ghost_cleanup_v1')) {
+            localStorage.removeItem('milkarf_cart');
+            localStorage.setItem('milkarf_cart_ghost_cleanup_v1', '1');
+            window.cart = [];
+            window.updateCartUI?.();
+            return;
+        }
         const saved = localStorage.getItem('milkarf_cart');
         if (saved) {
             const parsed = JSON.parse(saved);
@@ -4775,6 +4784,8 @@ window.showCartPostOrderState = function (orderId = null, options = {}) {
     window.cartPostOrderActive = true;
     if (orderId) window.lastOrderId = orderId;
     window.cart = [];
+    try { localStorage.removeItem('milkarf_cart'); } catch (e) { }
+    try { window.saveCartToStorage?.(); } catch (e) { }
     window.resetMenuQuantities?.();
     window.descuentoAplicado = false;
     window.resetCartDeliveryUI?.();
@@ -4806,6 +4817,8 @@ window.clearCart = function () {
     window.cartPostOrderActive = false;
     window.clearCartPostOrderPersistedState?.();
     window.cart = [];
+    try { localStorage.removeItem('milkarf_cart'); } catch (e) { }
+    try { window.saveCartToStorage?.(); } catch (e) { }
     window.resetMenuQuantities?.();
     window.descuentoAplicado = false;
     window.resetCartDeliveryUI?.();
@@ -6949,6 +6962,8 @@ window.forceClearCartAfterWhatsAppOrder = function (prepared = null, options = {
 
     // Vaciar memoria de carrito y cantidades de forma explícita.
     window.cart = [];
+    try { localStorage.removeItem('milkarf_cart'); } catch (e) { }
+    try { window.saveCartToStorage?.(); } catch (e) { }
     window.qtys = { pollo: 0, res: 0 };
     window.descuentoAplicado = false;
     window.userLocation = null;
