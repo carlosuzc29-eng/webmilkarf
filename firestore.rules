@@ -227,7 +227,7 @@ service cloud.firestore {
     }
 
     match /canjes/{canjeId} {
-      allow create: if canjeCreateIsSafe();
+      allow create: if isAdmin() || canjeCreateIsSafe();
       allow get: if isAdmin() || canjeBelongsToUser();
       allow list: if (isAdmin() && hasSafeLimit(100))
                   || (signedIn() && hasSafeLimit(50) && resource.data.uid == request.auth.uid);
@@ -235,7 +235,7 @@ service cloud.firestore {
     }
 
     match /artifacts/{appId}/public/data/canjes/{canjeId} {
-      allow create: if canjeCreateIsSafe();
+      allow create: if isAdmin() || canjeCreateIsSafe();
       allow get: if isAdmin() || canjeBelongsToUser();
       allow list: if (isAdmin() && hasSafeLimit(100))
                   || (signedIn() && hasSafeLimit(50) && resource.data.uid == request.auth.uid);
@@ -282,6 +282,14 @@ service cloud.firestore {
       allow get: if isAdmin() || (signedIn() && request.auth.token != null && (request.auth.token.email == email || request.auth.token.email.lower() == email.lower()));
       allow list: if isAdmin() && hasSafeLimit(100);
       allow create, update, delete: if isAdmin();
+    }
+
+    match /puntos_ajustes/{ajusteId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /artifacts/{appId}/public/data/puntos_ajustes/{ajusteId} {
+      allow read, write: if isAdmin();
     }
 
     match /{document=**} {

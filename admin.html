@@ -227,6 +227,37 @@
         </div>
     </div>
 
+    <!-- MODAL SUMAR PUNTOS MANUALMENTE ADMIN -->
+    <div id="modal-admin-sumar-puntos" class="fixed inset-0 z-[1003] bg-black/80 backdrop-blur-md hidden items-center justify-center opacity-0 transition-opacity duration-300 p-4">
+        <div id="modal-admin-sumar-puntos-box" class="bg-white dark:bg-darkcard w-full max-w-sm rounded-[2rem] shadow-2xl p-6 transform scale-95 transition-transform duration-300 relative pointer-events-auto flex flex-col text-left border border-purple/50">
+            <button onclick="window.cerrarModalSumarPuntos()" class="absolute top-5 right-5 text-gray-400 hover:text-pink transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            <h3 class="text-xl font-black text-purple-dark dark:text-white mb-1">Sumar Puntos</h3>
+            <p class="text-xs text-gray-500 mb-4">Otorgar puntos manualmente a un cliente desde la administración.</p>
+            
+            <input type="hidden" id="sumar-pts-uid">
+            <div class="bg-purple/5 dark:bg-purple/10 p-3 rounded-xl border border-purple/10 mb-4">
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Cliente:</p>
+                <p id="sumar-pts-user-name" class="font-black text-purple-dark dark:text-white text-sm truncate mt-0.5">-</p>
+                <p class="text-[10px] text-purple font-bold mt-1">Puntos actuales: <span id="sumar-pts-user-current">0</span></p>
+            </div>
+            
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Cantidad a sumar (+)</label>
+                    <input type="number" id="sumar-pts-cantidad" placeholder="Ej: 50, 100, 250..." min="1" max="100000" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-bold outline-none focus:border-purple text-center">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Motivo o nota (opcional)</label>
+                    <input type="text" id="sumar-pts-motivo" placeholder="Ej: Promoción especial, fidelidad, ajuste..." class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-xs font-semibold outline-none focus:border-purple">
+                </div>
+            </div>
+
+            <button id="btn-ejecutar-sumar-pts" onclick="window.procesarSumarPuntos()" class="w-full bg-purple hover:bg-purple-dark text-white font-black text-sm py-3.5 rounded-xl transition-all shadow-md mt-6 flex items-center justify-center gap-2">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> Otorgar Puntos
+            </button>
+        </div>
+    </div>
+
     <!-- MODAL NOTA DE ENTREGA ADMIN -->
     <div id="modal-delivery-note" class="fixed inset-0 z-[1004] bg-black/80 backdrop-blur-md hidden items-center justify-center opacity-0 transition-opacity duration-300 p-4">
         <div id="modal-delivery-note-box" class="bg-white dark:bg-darkcard w-full max-w-3xl rounded-[2rem] shadow-2xl transform scale-95 transition-transform duration-300 relative pointer-events-auto flex flex-col text-left border border-green/50 max-h-[92vh] overflow-hidden">

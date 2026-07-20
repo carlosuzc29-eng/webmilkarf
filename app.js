@@ -1525,12 +1525,15 @@ window.loginConEmail = async function () {
     try {
         if (err) err.classList.add('hidden');
         const btn = document.getElementById('btn-login-email');
-        if (btn) { btn.textContent = "Verificando..."; btn.disabled = true; }
+        if (btn) { btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline mr-1"></i> Verificando...'; btn.disabled = true; }
 
         await signInWithEmailAndPassword(auth, email, pass);
 
-        if (btn) { btn.textContent = "Iniciar Sesión"; btn.disabled = false; }
-        window.cerrarModalAuth();
+        if (btn) { btn.innerHTML = '<i data-lucide="check" class="w-4 h-4 inline mr-1"></i> ¡Conectado!'; }
+        setTimeout(() => {
+            if (btn) { btn.textContent = "Iniciar Sesión"; btn.disabled = false; }
+            window.cerrarModalAuth();
+        }, 150);
     } catch (error) {
         if (err) {
             err.textContent = window.traductorErrores(error.code);
@@ -2715,6 +2718,9 @@ window.loadAdminUsers = async function () {
                         <div class="flex items-center justify-between mb-4 mt-3">
                             ${desc}
                             <div class="flex items-center gap-2">
+                                <button onclick="window.abrirModalSumarPuntos('${u.id}', '${email}', ${ptsDisp})" class="text-[10px] bg-purple hover:bg-purple-dark text-white px-3 py-1.5 rounded-lg font-black uppercase tracking-widest shadow-md transition-all active:scale-95 flex items-center gap-1">
+                                    <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> + Puntos
+                                </button>
                                 <button onclick="window.abrirModalCanje('${u.id}', '${email}', ${ptsDisp})" class="text-[10px] bg-green hover:bg-[#a6b621] text-purple-dark px-3 py-1.5 rounded-lg font-black uppercase tracking-widest shadow-md transition-all active:scale-95 flex items-center gap-1">
                                     <i data-lucide="gift" class="w-3.5 h-3.5"></i> Canjear
                                 </button>
@@ -2903,6 +2909,7 @@ window.cerrarModalCanje = function () {
         modal.classList.remove('flex');
     }, 300);
 };
+window.closeAdminCanjeModal = window.cerrarModalCanje;
 
 window.procesarCanje = async function () {
     if (!window.isAdmin) {
@@ -2954,6 +2961,122 @@ window.procesarCanje = async function () {
         console.error(e);
     } finally {
         if (btn) { btn.textContent = "Confirmar y Descontar"; btn.disabled = false; }
+    }
+};
+
+window.abrirModalSumarPuntos = function (uid, email, puntos) {
+    if (!window.isAdmin) {
+        window.showToast('Acceso restringido. Solo los administradores pueden otorgar puntos.');
+        return;
+    }
+    const uidInput = document.getElementById('sumar-pts-uid');
+    const userName = document.getElementById('sumar-pts-user-name');
+    const userPts = document.getElementById('sumar-pts-user-current');
+    const cantidad = document.getElementById('sumar-pts-cantidad');
+    const motivo = document.getElementById('sumar-pts-motivo');
+    const modal = document.getElementById('modal-admin-sumar-puntos');
+    const box = document.getElementById('modal-admin-sumar-puntos-box');
+    if (!uidInput || !userName || !userPts || !cantidad || !modal) {
+        console.warn('Elementos de modal sumar puntos no encontrados.');
+        return;
+    }
+
+    uidInput.value = uid;
+    userName.textContent = email || 'Cliente';
+    userPts.textContent = Number(puntos || 0);
+    cantidad.value = "";
+    if (motivo) motivo.value = "";
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        if (box) box.classList.remove('scale-95');
+    }, 10);
+};
+
+window.cerrarModalSumarPuntos = function () {
+    const modal = document.getElementById('modal-admin-sumar-puntos');
+    if (!modal) return;
+    modal.classList.add('opacity-0');
+    document.getElementById('modal-admin-sumar-puntos-box')?.classList.add('scale-95');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }, 300);
+};
+
+window.procesarSumarPuntos = async function () {
+    if (!window.isAdmin) {
+        window.showToast('Acceso denegado. Solo administradores.');
+        return;
+    }
+    if (!db) {
+        window.showToast('Firebase no está disponible.');
+        return;
+    }
+
+    const uidEl = document.getElementById('sumar-pts-uid');
+    const cantidadEl = document.getElementById('sumar-pts-cantidad');
+    const motivoEl = document.getElementById('sumar-pts-motivo');
+    if (!uidEl || !cantidadEl) return;
+
+    const uid = uidEl.value;
+    const cantidad = parseInt(cantidadEl.value, 10);
+    const motivo = motivoEl ? motivoEl.value.trim() : '';
+
+    if (!uid || isNaN(cantidad) || cantidad <= 0 || cantidad > 100000) {
+        window.showToast("Por favor, ingresa una cantidad válida de puntos mayor a 0.");
+        return;
+    }
+
+    const btn = document.getElementById('btn-ejecutar-sumar-pts');
+    if (btn) { btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Otorgando...'; btn.disabled = true; }
+
+    try {
+        const userRef = window.getUserPath(uid);
+        const docSnap = await getDoc(userRef);
+        let ptsDispBefore = 0;
+        let ptsHistBefore = 0;
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            ptsDispBefore = Number(data.puntos || 0);
+            ptsHistBefore = Number(data.puntos_historicos || ptsDispBefore || 0);
+        }
+
+        const ptsDispAfter = ptsDispBefore + cantidad;
+        const ptsHistAfter = ptsHistBefore + cantidad;
+
+        await setDoc(userRef, {
+            puntos: ptsDispAfter,
+            puntos_historicos: ptsHistAfter,
+            updatedAt: serverTimestamp()
+        }, { merge: true });
+
+        try {
+            const logData = {
+                uid,
+                email: document.getElementById('sumar-pts-user-name')?.textContent || '',
+                pointsAdded: cantidad,
+                reason: motivo || 'Ajuste manual administrativo',
+                adminEmail: window.currentUser?.email || 'Admin',
+                type: 'manual_admin_adjustment',
+                createdAt: new Date().toISOString()
+            };
+            await setDoc(doc(window.getSecureCollectionRef('puntos_ajustes'), 'ajuste_' + Date.now()), logData);
+        } catch (errLog) {
+            console.warn('No se pudo guardar registro del ajuste en puntos_ajustes:', errLog);
+        }
+
+        window.showToast(`¡Listo! Se sumaron ${cantidad} puntos al usuario.`, 'success');
+        window.cerrarModalSumarPuntos();
+        window.loadAdminUsers();
+        if (window.adminCurrentTab === 'resumen') window.loadAdminSummary?.();
+    } catch (e) {
+        window.showToast("Error al otorgar puntos en Firebase.");
+        console.error(e);
+    } finally {
+        if (btn) { btn.innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4"></i> Otorgar Puntos'; btn.disabled = false; window.refreshIcons?.(btn); }
     }
 };
 
@@ -3845,7 +3968,7 @@ window.buildAdminUserCard = function (u) {
     return `<div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left">
                 <div class="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
                     <div class="min-w-0"><div class="flex items-center gap-2 flex-wrap"><h4 class="font-black text-purple-dark dark:text-white text-base truncate">${window.escapeHTML(email)}</h4><span class="text-[9px] font-black uppercase tracking-widest bg-purple-light dark:bg-purple/20 text-purple dark:text-white px-2 py-1 rounded-lg border border-purple/20">${window.escapeHTML(levelObj.nombre)}</span></div><p class="text-[10px] text-gray-500 font-bold mt-1">Histórico: ${ptsHist} ptos · Disponibles: ${ptsDisp} ptos</p></div>
-                    <div class="grid grid-cols-2 sm:flex gap-2"><button onclick="window.abrirModalCanje('${u.id}', '${window.escapeHTML(email)}', ${ptsDisp})" class="text-[10px] bg-green hover:bg-[#a6b621] text-purple-dark px-3 py-2.5 rounded-xl font-black uppercase tracking-widest shadow-sm transition-all flex items-center gap-1 justify-center"><i data-lucide="gift" class="w-3.5 h-3.5"></i> Canjear</button><button onclick="window.eliminarUsuarioAdmin('${u.id}', '${window.escapeHTML(email)}')" class="text-[10px] bg-pink/10 hover:bg-pink text-pink hover:text-white px-3 py-2.5 rounded-xl font-black uppercase tracking-widest shadow-sm transition-all flex items-center gap-1 border border-pink/20 justify-center"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Eliminar</button></div>
+                    <div class="grid grid-cols-2 sm:flex gap-2"><button onclick="window.abrirModalSumarPuntos('${u.id}', '${window.escapeHTML(email)}', ${ptsDisp})" class="text-[10px] bg-purple hover:bg-purple-dark text-white px-3 py-2.5 rounded-xl font-black uppercase tracking-widest shadow-sm transition-all flex items-center gap-1 justify-center"><i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> + Puntos</button><button onclick="window.abrirModalCanje('${u.id}', '${window.escapeHTML(email)}', ${ptsDisp})" class="text-[10px] bg-green hover:bg-[#a6b621] text-purple-dark px-3 py-2.5 rounded-xl font-black uppercase tracking-widest shadow-sm transition-all flex items-center gap-1 justify-center"><i data-lucide="gift" class="w-3.5 h-3.5"></i> Canjear</button><button onclick="window.eliminarUsuarioAdmin('${u.id}', '${window.escapeHTML(email)}')" class="text-[10px] bg-pink/10 hover:bg-pink text-pink hover:text-white px-3 py-2.5 rounded-xl font-black uppercase tracking-widest shadow-sm transition-all flex items-center gap-1 border border-pink/20 justify-center"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Eliminar</button></div>
                 </div><div class="mt-4 border-t border-purple/10 pt-4"><p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Mascotas (${pets.length})</p><div class="grid grid-cols-1 md:grid-cols-2 gap-2">${mascotas || '<p class="text-xs text-gray-400 italic font-medium">Sin mascotas registradas</p>'}</div></div>
             </div>`;
 };
@@ -4610,6 +4733,13 @@ window.updateCartUI = function () {
                 `).join('');
     }
 
+    if (window.descuentoAplicado) {
+        const isLoggedUser = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
+        const alreadyUsed = window.currentUser?.data?.descuento_usado === true;
+        if (!isLoggedUser || alreadyUsed) {
+            window.descuentoAplicado = false;
+        }
+    }
     const finalPrice = window.descuentoAplicado ? tPrice * 0.8 : tPrice;
     const cOriginal = document.getElementById('cart-total-original');
 
@@ -6343,6 +6473,13 @@ window.prepareOrderForCheckout = function () {
     if (!window.cart || !window.cart.length) return null;
 
     const subtotal = window.cart.reduce((s, i) => s + (Number(i.price || 0) * Number(i.qty || 0)), 0);
+    if (window.descuentoAplicado) {
+        const isLoggedUser = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
+        const alreadyUsed = window.currentUser?.data?.descuento_usado === true;
+        if (!isLoggedUser || alreadyUsed) {
+            window.descuentoAplicado = false;
+        }
+    }
     const discountApplied = !!window.descuentoAplicado;
     const finalTotal = discountApplied ? subtotal * 0.8 : subtotal;
     const clientToken = window.getClientToken?.() || '';
