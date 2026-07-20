@@ -137,8 +137,21 @@ if (configToUse.apiKey) {
         if (user && db && (!user.isAnonymous || user.email)) {
             // En index.html, un administrador navega de forma normal como cliente
             window.isAdmin = false;
+            window.currentUser = user;
+            if (!window.currentUser.data) {
+                window.currentUser.data = { puntos: 0, puntos_historicos: 0, mascotas: [] };
+            }
+
+            const mainNav = document.getElementById('main-nav-links');
+            const adminNav = document.getElementById('admin-nav-links');
+            const topAuth = document.getElementById('top-auth-btn-wrap');
+            if (mainNav) mainNav.classList.remove('hidden');
+            if (adminNav) adminNav.classList.add('hidden');
+            if (topAuth) topAuth.style.display = 'block';
+            window.actualizarUIAuth();
+
             try {
-                if (window._loadedProfileUid === user.uid && window.currentUser?.data) {
+                if (window._loadedProfileUid === user.uid && window.currentUser?.data?.puntos !== undefined) {
                     if (window.currentUser.data.descuento_usado) window.descuentoAplicado = false;
                     window.syncCartOnLogin?.(window.currentUser.data);
                 } else {
@@ -175,16 +188,9 @@ if (configToUse.apiKey) {
                         window._loadedProfileUid = user.uid;
                         window.saveCartToStorage?.();
                     }
+                    window.actualizarUIAuth();
                 }
             } catch (e) { console.warn(e); }
-
-            const mainNav = document.getElementById('main-nav-links');
-            const adminNav = document.getElementById('admin-nav-links');
-            const topAuth = document.getElementById('top-auth-btn-wrap');
-            if (mainNav) mainNav.classList.remove('hidden');
-            if (adminNav) adminNav.classList.add('hidden');
-            if (topAuth) topAuth.style.display = 'block';
-            window.actualizarUIAuth();
             return;
         }
 
@@ -3357,6 +3363,27 @@ window.buildDeliveryNoteMessage = function (order = {}, deliveryCost = 0, delive
     return window.getWhatsAppTemplate('deliveryNote', payload);
 };
 
+window.copyDeliveryNoteMessage = async function () {
+    const previewEl = document.getElementById('delivery-note-message-preview');
+    const text = previewEl ? previewEl.textContent || '' : '';
+    if (!text.trim()) {
+        window.showToast?.('No hay mensaje para copiar.');
+        return;
+    }
+    try {
+        await navigator.clipboard.writeText(text);
+        window.showToast?.('Mensaje copiado al portapapeles.', 'success');
+    } catch (err) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+        window.showToast?.('Mensaje copiado al portapapeles.', 'success');
+    }
+};
+
 window.updateDeliveryNotePreview = function () {
     const orderId = document.getElementById('delivery-note-order-id')?.value || '';
     const order = window.getAdminOrderById(orderId);
@@ -4696,26 +4723,28 @@ window.updateCartUI = function () {
 
     if (cont) {
         cont.innerHTML = window.cart.map((i, idx) => `
-                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/30 dark:border-purple/20 p-4 shadow-sm">
+                    <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/40 dark:border-purple/25 p-5 shadow-md transition-all premium-card">
                         <div class="flex items-start justify-between gap-3">
-                            <div class="flex-1 min-w-0">
-                                <div class="font-extrabold text-sm text-purple-dark dark:text-white truncate">${window.escapeHTML(i.name)}</div>
-                                <div class="text-[10px] text-purple/50 dark:text-gray-400 font-bold uppercase mt-1">${window.escapeHTML(i.weight)}</div>
-                                ${i.forPet ? `<span class="bg-pink/10 text-pink text-[9px] font-bold px-2 py-0.5 rounded uppercase mt-1.5 inline-block">Para ${window.escapeHTML(i.forPet)}</span>` : ''}
+                            <div class="flex-1 min-w-0 text-left">
+                                <div class="font-black text-base text-purple-dark dark:text-white truncate">${window.escapeHTML(i.name)}</div>
+                                <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                                    <span class="bg-purple/10 dark:bg-purple/20 text-purple-dark dark:text-purple-light text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">${window.escapeHTML(i.weight)}</span>
+                                    ${i.forPet ? `<span class="bg-pink/15 text-pink text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider inline-flex items-center gap-1"><i data-lucide="heart" class="w-2.5 h-2.5 fill-current"></i> Para ${window.escapeHTML(i.forPet)}</span>` : ''}
+                                </div>
                             </div>
-                            <button onclick="window.removeFromCartAt(${idx})" class="w-8 h-8 bg-pink/10 hover:bg-pink/20 text-pink rounded-full flex items-center justify-center transition-colors active:scale-90 shrink-0">
+                            <button onclick="window.removeFromCartAt(${idx})" class="w-10 h-10 bg-pink/10 hover:bg-pink text-pink hover:text-white rounded-2xl flex items-center justify-center transition-all active:scale-90 shrink-0 touch-target-safe shadow-sm" aria-label="Eliminar producto">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>
-                        <div class="flex items-center justify-between gap-3 mt-4 pt-4 border-t border-purple-border/20 dark:border-purple/20">
-                            <div class="flex items-center gap-2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/30 rounded-2xl p-1">
-                                <button type="button" onclick="window.changeCartQty(${idx}, -1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">−</button>
-                                <input type="number" min="1" value="${i.qty}" oninput="window.setCartQty(${idx}, this.value)" class="w-14 h-8 text-center font-black text-purple dark:text-white text-sm bg-transparent outline-none" aria-label="Cantidad en carrito">
-                                <button type="button" onclick="window.changeCartQty(${idx}, 1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">+</button>
+                        <div class="flex items-center justify-between gap-3 mt-4 pt-4 border-t border-purple-border/25 dark:border-purple/20">
+                            <div class="flex items-center gap-1 bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl p-1 shadow-inner">
+                                <button type="button" onclick="window.changeCartQty(${idx}, -1)" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm active:scale-95 touch-target-safe">−</button>
+                                <input type="number" min="1" value="${i.qty}" oninput="window.setCartQty(${idx}, this.value)" class="w-12 h-10 text-center font-black text-purple dark:text-white text-sm bg-transparent outline-none" aria-label="Cantidad en carrito">
+                                <button type="button" onclick="window.changeCartQty(${idx}, 1)" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm active:scale-95 touch-target-safe">+</button>
                             </div>
                             <div class="text-right">
-                                <div class="font-black text-pink text-base">$${(i.price * i.qty).toFixed(2)}</div>
-                                <div class="text-[10px] text-gray-400 font-semibold">$${i.price.toFixed(2)} c/u</div>
+                                <div class="font-black text-pink text-lg tracking-tight">$${(i.price * i.qty).toFixed(2)}</div>
+                                <div class="text-[10px] text-gray-400 font-bold">$${i.price.toFixed(2)} c/u</div>
                             </div>
                         </div>
                     </div>

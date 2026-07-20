@@ -135,94 +135,106 @@
         <!-- VISTA: INICIO -->
         <section id="view-home" class="view active">
             <div class="view-wrapper">
-                <div class="max-w-4xl w-full mx-auto flex flex-col items-center">
-                    <div class="flex flex-col items-center justify-center text-center w-full mb-8 mt-6">
-                        <div class="mb-4">
-                            <!-- LOGO INTEGRADO -->
-                            <img decoding="async" src="logo.png" fetchpriority="high" alt="Milkarf Logo" class="w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-xl" onerror="this.outerHTML='<div class=\'w-16 h-16 bg-purple dark:bg-darkcard rounded-3xl flex items-center justify-center shadow-lg text-white dark:border dark:border-purple/30\'><i data-lucide=\'paw-print\' class=\'w-9 h-9 text-green\'></i></div>'">
+                <div class="max-w-5xl w-full mx-auto flex flex-col items-center">
+                    <div class="flex flex-col items-center justify-center text-center w-full mb-10 mt-6">
+                        <div class="relative mb-6">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-pink/30 via-purple/20 to-green/30 rounded-full blur-2xl transform scale-125 opacity-70 dark:opacity-40"></div>
+                            <img decoding="async" src="logo.png" fetchpriority="high" alt="Milkarf Logo" class="relative w-28 h-28 md:w-36 md:h-36 object-contain drop-shadow-2xl transition-transform duration-500 hover:scale-105" onerror="this.outerHTML='<div class=\'w-20 h-20 bg-purple dark:bg-darkcard rounded-3xl flex items-center justify-center shadow-lg text-white dark:border dark:border-purple/30\'><i data-lucide=\'paw-print\' class=\'w-10 h-10 text-green\'></i></div>'">
                         </div>
-                        <h1 class="text-6xl md:text-8xl font-black tracking-tight text-purple-dark dark:text-white select-none">Milkarf</h1>
-                        <p class="text-[11px] md:text-sm font-extrabold text-pink uppercase tracking-[0.25em] mt-3 select-none max-w-[280px] sm:max-w-full leading-tight">Alimentación <span class="text-green">NATURAL</span> para mascotas</p>
+                        <h1 class="text-6xl sm:text-7xl md:text-8xl font-black tracking-tight bg-gradient-to-r from-purple-dark via-purple to-pink dark:from-white dark:via-purple-light dark:to-pink text-transparent bg-clip-text select-none leading-tight">Milkarf</h1>
+                        <div class="inline-flex items-center gap-2 bg-purple/10 dark:bg-purple/20 border border-purple/20 dark:border-purple/30 px-4 py-1.5 rounded-full mt-4 shadow-sm">
+                            <span class="w-2 h-2 rounded-full bg-green animate-pulse"></span>
+                            <p class="text-[11px] md:text-xs font-black text-purple-dark dark:text-purple-light uppercase tracking-[0.22em] select-none leading-none">Alimentación <span class="text-green-dark dark:text-green">NATURAL</span> & Evolutiva</p>
+                        </div>
                     </div>
 
-                    <button class="nav-btn mb-8 flex items-center gap-3 bg-white dark:bg-darkcard border border-purple-border dark:border-purple/30 px-6 py-3.5 rounded-full text-purple dark:text-white hover:text-pink hover:border-pink/40 font-extrabold text-sm tracking-wide shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5" data-target="view-mision">
-                        <i data-lucide="sparkles" class="w-4 h-4 text-pink"></i> Misión Milkarf
+                    <button class="nav-btn mb-10 flex items-center gap-3 glass-panel px-7 py-4 rounded-full text-purple-dark dark:text-white hover:text-pink border border-purple-border/60 dark:border-purple/30 font-extrabold text-sm tracking-wide shadow-lg premium-card touch-target-safe" data-target="view-mision">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-pink"></i> Conoce nuestra Misión & Filosofía
+                        <i data-lucide="arrow-right" class="w-4 h-4 opacity-60"></i>
                     </button>
 
-                    <div class="nav-card w-full max-w-2xl bg-gradient-to-br from-purple to-purple-dark dark:from-[#2e1060] dark:to-[#1a0836] text-white rounded-3xl p-6 md:p-8 flex items-center justify-between shadow-2xl border border-white/10 transition-all duration-300 select-none cursor-pointer mb-8" data-target="view-calc">
+                    <!-- BANNER CALCULADORA NUTRICIONAL DESTACADO -->
+                    <div class="nav-card premium-card w-full max-w-3xl bg-gradient-to-br from-purple-dark via-[#351675] to-purple text-white rounded-[2.2rem] p-7 md:p-9 flex flex-col sm:flex-row sm:items-center justify-between shadow-glow-purple border border-white/15 select-none cursor-pointer mb-12 gap-6" data-target="view-calc">
                         <div class="flex items-center gap-5">
-                            <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-green">
+                            <div class="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-green shrink-0 border border-white/10 shadow-inner">
                                 <i data-lucide="scale" class="w-8 h-8"></i>
                             </div>
                             <div class="text-left">
-                                <h3 class="text-xl md:text-2xl font-black text-green mb-1">Calculadora Nutricional</h3>
-                                <p class="text-xs md:text-sm text-purple-light/80 dark:text-purple-light/60 font-medium">Descubre los gramos exactos que necesita tu mascota</p>
+                                <span class="inline-block bg-green/20 text-green border border-green/30 text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full mb-1">Herramienta Gratuita</span>
+                                <h3 class="text-2xl md:text-3xl font-black text-white tracking-tight">Calculadora Nutricional</h3>
+                                <p class="text-xs md:text-sm text-purple-light/80 font-medium mt-1 max-w-md leading-relaxed">Obtén los gramos diarios exactos, calorías y raciones recomendadas para tu perro o gato.</p>
                             </div>
                         </div>
-                        <div class="text-2xl text-green hidden md:block">
-                            <i data-lucide="chevron-right" class="w-8 h-8"></i>
+                        <div class="flex items-center justify-center gap-2 bg-green text-purple-dark font-black text-xs uppercase tracking-wider px-5 py-3 rounded-xl sm:shrink-0 shadow-md hover:bg-[#c8db2e] transition-all">
+                            <span>Calcular ración</span>
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
                         </div>
                     </div>
 
-                    <div class="w-full max-w-3xl flex flex-wrap gap-6 justify-center mt-2">
-                        <div class="nav-card relative w-[230px] h-[280px] rounded-3xl overflow-hidden shadow-xl dark:shadow-purple/10 hover:shadow-2xl transition-all duration-300 group cursor-pointer" data-target="view-perros">
+                    <!-- GRID DE LÍNEAS DE PRODUCTOS & GUÍA -->
+                    <div class="w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 justify-center mt-2">
+                        <div class="nav-card premium-card relative h-[310px] rounded-[2rem] overflow-hidden shadow-xl dark:shadow-purple/10 border border-purple-border/30 dark:border-purple/20 group cursor-pointer flex flex-col justify-end p-6" data-target="view-perros">
                             <div class="absolute inset-0 w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style="background-image: url('https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=600&auto=format&fit=crop');"></div>
-                            <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/90 via-purple-dark/40 dark:from-[#0d0718]/95 dark:via-[#0d0718]/50 to-transparent z-10"></div>
-                            <div class="absolute bottom-6 left-6 z-20 text-left">
-                                <span class="text-[10px] font-black text-green tracking-wider uppercase block mb-1">Evolución</span>
+                            <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/95 via-purple-dark/40 dark:from-[#0d0718]/95 dark:via-[#0d0718]/60 to-transparent z-10"></div>
+                            <div class="relative z-20 text-left">
+                                <span class="inline-block bg-green text-purple-dark text-[9px] font-black tracking-widest uppercase px-2.5 py-0.5 rounded-full mb-2 shadow-sm">Nutrición BARF</span>
                                 <h2 class="text-2xl font-black text-white leading-tight">Línea<br>Perros</h2>
+                                <p class="text-[11px] text-purple-light/80 font-medium mt-1">Menús balanceados listos para servir.</p>
                             </div>
                         </div>
 
-                        <div class="nav-card relative w-[230px] h-[280px] rounded-3xl overflow-hidden shadow-xl dark:shadow-purple/10 hover:shadow-2xl transition-all duration-300 group cursor-pointer" data-target="view-gatos">
+                        <div class="nav-card premium-card relative h-[310px] rounded-[2rem] overflow-hidden shadow-xl dark:shadow-purple/10 border border-purple-border/30 dark:border-purple/20 group cursor-pointer flex flex-col justify-end p-6" data-target="view-gatos">
                             <div class="absolute inset-0 w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style="background-image: url('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=600&auto=format&fit=crop');"></div>
-                            <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/90 via-purple-dark/40 dark:from-[#0d0718]/95 dark:via-[#0d0718]/50 to-transparent z-10"></div>
-                            <div class="absolute bottom-6 left-6 z-20 text-left">
-                                <span class="text-[10px] font-black text-green tracking-wider uppercase block mb-1">Instinto</span>
+                            <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/95 via-purple-dark/40 dark:from-[#0d0718]/95 dark:via-[#0d0718]/60 to-transparent z-10"></div>
+                            <div class="relative z-20 text-left">
+                                <span class="inline-block bg-purple/40 backdrop-blur-md text-white border border-white/20 text-[9px] font-black tracking-widest uppercase px-2.5 py-0.5 rounded-full mb-2">Felinos</span>
                                 <h2 class="text-2xl font-black text-white leading-tight">Línea<br>Gatos</h2>
+                                <p class="text-[11px] text-purple-light/80 font-medium mt-1">Fórmulas evolutivas especializadas.</p>
                             </div>
                         </div>
 
-                        <div class="nav-card relative w-[230px] h-[280px] rounded-3xl overflow-hidden shadow-xl dark:shadow-purple/10 hover:shadow-2xl transition-all duration-300 group cursor-pointer" data-target="view-faq">
+                        <div class="nav-card premium-card relative h-[310px] rounded-[2rem] overflow-hidden shadow-xl dark:shadow-purple/10 border border-purple-border/30 dark:border-purple/20 group cursor-pointer flex flex-col justify-end p-6" data-target="view-faq">
                             <img decoding="async" src="https://images.unsplash.com/photo-1601758125946-6ec2ef64daf8?q=80&w=600&auto=format&fit=crop" alt="Perro comiendo" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
-                            <div class="absolute inset-0 bg-gradient-to-t from-pink-dark/95 via-pink/50 dark:from-[#180e29]/95 dark:via-[#180e29]/50 to-transparent z-10"></div>
-                            <div class="absolute bottom-6 left-6 z-20 text-left">
-                                <span class="text-[10px] font-black text-green tracking-wider uppercase block mb-1">Filosofía</span>
+                            <div class="absolute inset-0 bg-gradient-to-t from-pink-dark/95 via-pink/50 dark:from-[#180e29]/95 dark:via-[#180e29]/60 to-transparent z-10"></div>
+                            <div class="relative z-20 text-left">
+                                <span class="inline-block bg-white text-pink-dark text-[9px] font-black tracking-widest uppercase px-2.5 py-0.5 rounded-full mb-2 shadow-sm">Aprende</span>
                                 <h2 class="text-2xl font-black text-white leading-tight">Guía para<br>empezar natural</h2>
+                                <p class="text-[11px] text-white/85 font-medium mt-1">Preguntas y transición paso a paso.</p>
                             </div>
                         </div>
 
-                        <div class="nav-card relative w-[230px] h-[280px] rounded-3xl overflow-hidden shadow-xl dark:shadow-purple/10 hover:shadow-2xl transition-all duration-300 group cursor-pointer" data-target="view-snacks">
+                        <div class="nav-card premium-card relative h-[310px] rounded-[2rem] overflow-hidden shadow-xl dark:shadow-purple/10 border border-purple-border/30 dark:border-purple/20 group cursor-pointer flex flex-col justify-between p-6" data-target="view-snacks">
                             <img decoding="async" src="https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?q=80&w=600&auto=format&fit=crop" alt="Perrito recibiendo un snack" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80" loading="lazy">
                             <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/95 via-purple-dark/50 dark:from-[#0d0718]/95 dark:via-[#0d0718]/60 to-transparent z-10"></div>
-                            <div class="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none">
-                                <div class="bg-pink text-white text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest shadow-lg flex items-center gap-2 transform -translate-y-4">
-                                    <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> Ver Info
-                                </div>
+                            <div class="relative z-20 flex justify-end">
+                                <span class="bg-pink text-white text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg flex items-center gap-1.5 border border-white/20">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> Próximamente
+                                </span>
                             </div>
-                            <div class="absolute bottom-6 left-6 z-20 text-left">
-                                <span class="text-[10px] font-black text-pink tracking-wider uppercase block mb-1">Premios 100% Naturales</span>
+                            <div class="relative z-20 text-left">
+                                <span class="inline-block bg-pink/30 backdrop-blur-md text-pink-light border border-pink/30 text-[9px] font-black tracking-widest uppercase px-2.5 py-0.5 rounded-full mb-2">Premios 100% Naturales</span>
                                 <h2 class="text-2xl font-black text-white leading-tight">Snacks</h2>
+                                <p class="text-[11px] text-purple-light/80 font-medium mt-1">Deshidratados sin aditivos ni conservantes.</p>
                             </div>
                         </div>
                     </div>
 
-                    <footer class="w-full max-w-4xl mx-auto mt-16 pt-8 border-t border-purple-border/50 dark:border-purple/20 text-center flex flex-col items-center gap-5">
+                    <footer class="w-full max-w-4xl mx-auto mt-20 pt-8 border-t border-purple-border/50 dark:border-purple/20 text-center flex flex-col items-center gap-5">
                         <div class="bg-purple/10 dark:bg-purple/5 text-purple-dark dark:text-purple-light px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase border border-purple/20">Nutrición Científica & Evolutiva</div>
                         <div class="flex gap-4">
-                            <a href="#" onclick="event.preventDefault(); window.openWhatsApp('general');" class="w-10 h-10 rounded-full bg-white dark:bg-darkcard shadow-md flex items-center justify-center text-[#25D366] hover:scale-110 transition-transform dark:border dark:border-purple/30">
+                            <a href="#" onclick="event.preventDefault(); window.openWhatsApp('general');" class="w-11 h-11 rounded-full bg-white dark:bg-darkcard shadow-md flex items-center justify-center text-[#25D366] hover:scale-110 transition-all dark:border dark:border-purple/30 touch-target-safe">
                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                             </a>
-                            <a href="https://www.instagram.com/milkarfood" target="_blank" class="w-10 h-10 rounded-full bg-white dark:bg-darkcard shadow-md flex items-center justify-center text-[#d72b8f] hover:scale-110 transition-transform dark:border dark:border-purple/30">
+                            <a href="https://www.instagram.com/milkarfood" target="_blank" class="w-11 h-11 rounded-full bg-white dark:bg-darkcard shadow-md flex items-center justify-center text-[#d72b8f] hover:scale-110 transition-all dark:border dark:border-purple/30 touch-target-safe">
                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
                             </a>
                         </div>
-                        <p class="text-[10px] text-purple/50 dark:text-purple/40 font-semibold mb-4">Milkarf · Nutrición real y balanceada</p>
-                        <p class="text-[9px] text-purple/30 dark:text-gray-600 font-bold tracking-widest mt-2 uppercase">designed by @cauv19</p>
+                        <p class="text-[11px] text-purple/60 dark:text-purple/40 font-bold mb-4">Milkarf · Nutrición real y balanceada</p>
+                        <p class="text-[9px] text-purple/35 dark:text-gray-600 font-bold tracking-widest mt-1 uppercase">designed by @cauv19</p>
                     </footer>
                     
                     <!-- ESPACIADOR INFERIOR -->
-                    <div class="h-24 w-full shrink-0 pointer-events-none"></div>
+                    <div class="h-28 w-full shrink-0 pointer-events-none"></div>
                 </div>
             </div>
         </section>
@@ -476,78 +488,79 @@
         <!-- VISTA LÍNEA PERROS -->
         <section id="view-perros" class="view next">
             <div class="view-wrapper">
-                <div class="max-w-2xl w-full mb-6">
-                    <button class="nav-btn flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300" data-target="view-home">
+                <div class="max-w-2xl w-full mb-6 text-center md:text-left">
+                    <button class="nav-btn flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple-border/80 text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300 active:scale-95 touch-target-safe mx-auto md:mx-0" data-target="view-home">
                         <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Inicio
                     </button>
-                    <h2 class="text-3xl font-black text-purple-dark dark:text-white mt-4">Menús para Perros</h2>
-                    <p class="text-sm font-bold text-pink uppercase tracking-widest mt-1">Nutrición Evolutiva Adaptada</p>
+                    <h2 class="text-3xl md:text-4xl font-black text-purple-dark dark:text-white mt-5 tracking-tight">Menús para Perros</h2>
+                    <p class="text-xs font-bold text-pink uppercase tracking-widest mt-1">Nutrición Evolutiva Adaptada a tu Mascota</p>
                 </div>
 
-                <div id="menu-pet-selector-wrap" class="hidden w-full max-w-4xl mb-5 bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/20 rounded-3xl p-5 shadow-sm">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div id="menu-pet-selector-wrap" class="hidden w-full max-w-5xl mb-6 bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-[2.2rem] p-6 md:p-8 shadow-xl premium-card">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div class="text-left flex-1">
+                            <span class="text-[10px] font-black uppercase tracking-widest text-pink mb-1.5 block">Personaliza tu pedido</span>
+                            <h3 class="text-xl font-black text-purple-dark dark:text-white tracking-tight">¿Para quién estás armando este carrito?</h3>
+                            <p class="text-xs text-gray-600 dark:text-gray-300 font-medium mt-1 leading-relaxed">Selecciona una mascota para que cada producto quede vinculado a su nombre en el pedido y en WhatsApp.</p>
+                        </div>
+                        <div class="w-full md:w-80">
+                            <select id="menu-active-pet-select" onchange="window.selectPetForPurchase(this.value)" class="w-full bg-purple-light/90 dark:bg-[#0d0718] border-2 border-purple-border/60 dark:border-purple/30 rounded-2xl p-4 text-sm font-black text-purple-dark dark:text-white outline-none focus:border-purple shadow-sm touch-target-safe"></select>
+                        </div>
+                    </div>
+                    <div id="menu-active-pet-hint" class="mt-5 text-xs font-semibold text-purple-dark/80 dark:text-gray-300 bg-purple-light/80 dark:bg-purple/15 rounded-2xl p-4 border border-purple-border/40 dark:border-purple/20 text-left"></div>
+                </div>
+
+                <div class="w-full max-w-5xl mb-6 bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-[2.2rem] p-6 md:p-8 shadow-lg premium-card">
+                    <h3 class="text-lg font-black text-purple-dark dark:text-white mb-4 flex items-center gap-2.5 text-left"><i data-lucide="help-circle" class="w-5 h-5 text-green shrink-0"></i> ¿Cuál menú elegir para mi mascota?</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                        <div class="bg-purple-light/60 dark:bg-[#0d0718] rounded-2xl p-5 border border-purple-border/50 dark:border-purple/20 shadow-sm">
+                            <p class="text-base font-black text-purple-dark dark:text-white">Pollo con Zanahoria</p>
+                            <p class="text-xs text-gray-600 dark:text-gray-300 font-medium mt-1.5 leading-relaxed">Excelente opción para iniciar la transición y para tutores que buscan una proteína suave y familiar dentro de una fórmula balanceada.</p>
+                        </div>
+                        <div class="bg-purple-light/60 dark:bg-[#0d0718] rounded-2xl p-5 border border-purple-border/50 dark:border-purple/20 shadow-sm">
+                            <p class="text-base font-black text-purple-dark dark:text-white">Res con Calabacín</p>
+                            <p class="text-xs text-gray-600 dark:text-gray-300 font-medium mt-1.5 leading-relaxed">Ideal para rotar variedad proteica y aportar nutrientes intensos a perros activos, siempre considerando su ración recomendada.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-full max-w-5xl mb-6 bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-[2.2rem] p-6 md:p-8 shadow-lg premium-card">
+                    <div class="flex items-start gap-4 mb-5">
+                        <div class="w-12 h-12 rounded-2xl bg-pink/15 text-pink flex items-center justify-center shrink-0 shadow-sm border border-pink/20"><i data-lucide="package-check" class="w-6 h-6"></i></div>
                         <div class="text-left">
-                            <p class="text-[10px] font-black uppercase tracking-widest text-pink mb-1">Personaliza tu pedido</p>
-                            <h3 class="text-lg font-black text-purple-dark dark:text-white">¿Para quién estás armando este carrito?</h3>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Selecciona una mascota para que cada producto quede asociado a su nombre en el pedido y en WhatsApp.</p>
-                        </div>
-                        <div class="w-full md:w-72">
-                            <select id="menu-active-pet-select" onchange="window.selectPetForPurchase(this.value)" class="w-full bg-purple-light dark:bg-[#0d0718] border-2 border-purple-border/50 dark:border-purple/30 rounded-2xl p-3 text-sm font-black text-purple-dark dark:text-white outline-none focus:border-purple"></select>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-green-dark dark:text-green mb-1 block">Guía de Bolsas</span>
+                            <h3 class="text-xl font-black text-purple-dark dark:text-white tracking-tight">¿Qué presentación elegir?</h3>
+                            <p class="text-xs text-gray-600 dark:text-gray-300 font-medium mt-1 leading-relaxed">La presentación ideal depende del consumo diario. Usa nuestra calculadora para obtener una recomendación exacta.</p>
                         </div>
                     </div>
-                    <div id="menu-active-pet-hint" class="mt-4 text-[11px] font-semibold text-gray-500 dark:text-gray-400 bg-purple-light/70 dark:bg-purple/10 rounded-2xl p-3 border border-purple-border/30 dark:border-purple/20"></div>
-                </div>
-
-                <div class="w-full max-w-4xl mb-6 bg-purple-light/70 dark:bg-purple/10 border border-purple-border/40 dark:border-purple/20 rounded-3xl p-5 shadow-sm">
-                    <h3 class="text-base font-black text-purple-dark dark:text-white mb-3 flex items-center gap-2"><i data-lucide="help-circle" class="w-5 h-5 text-green"></i> ¿Cuál menú elegir?</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
-                        <div class="bg-white dark:bg-darkcard rounded-2xl p-4 border border-purple-border/30 dark:border-purple/20">
-                            <p class="text-sm font-black text-purple-dark dark:text-white">Pollo con Zanahoria</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Buena opción para iniciar transición y para tutores que buscan una proteína familiar dentro de una fórmula balanceada.</p>
-                        </div>
-                        <div class="bg-white dark:bg-darkcard rounded-2xl p-4 border border-purple-border/30 dark:border-purple/20">
-                            <p class="text-sm font-black text-purple-dark dark:text-white">Res con Calabacín</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Ideal para rotar variedad proteica y acompañar perros activos, siempre considerando su ración recomendada.</p>
-                        </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 text-left">
+                        <div class="rounded-2xl bg-purple/10 dark:bg-purple/20 border border-purple/30 p-5 shadow-sm"><p class="text-base font-black text-purple-dark dark:text-white">250g</p><p class="text-xs text-gray-600 dark:text-gray-300 font-medium mt-1.5">Prueba inicial, razas pequeñas o porciones diarias bajas.</p></div>
+                        <div class="rounded-2xl bg-pink/10 dark:bg-pink/15 border border-pink/30 p-5 shadow-sm"><p class="text-base font-black text-purple-dark dark:text-white">550g</p><p class="text-xs text-gray-600 dark:text-gray-300 font-medium mt-1.5">Razas medianas o consumo diario moderado.</p></div>
+                        <div class="rounded-2xl bg-green/15 dark:bg-green/15 border border-green/30 p-5 shadow-sm"><p class="text-base font-black text-purple-dark dark:text-white">850g</p><p class="text-xs text-gray-600 dark:text-gray-300 font-medium mt-1.5">Razas grandes, hogares con varias mascotas o planes mensuales.</p></div>
                     </div>
                 </div>
 
-                <div class="w-full max-w-4xl mb-6 bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/20 rounded-3xl p-5 shadow-sm">
-                    <div class="flex items-start gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-2xl bg-pink/10 text-pink flex items-center justify-center shrink-0"><i data-lucide="package-check" class="w-5 h-5"></i></div>
-                        <div class="text-left">
-                            <p class="text-[10px] font-black uppercase tracking-widest text-green-dark dark:text-green mb-1">Guía orientativa</p>
-                            <h3 class="text-lg font-black text-purple-dark dark:text-white">¿Qué presentación elegir?</h3>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">La presentación ideal depende de la ración diaria. Usa la calculadora para una recomendación personalizada.</p>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-left">
-                        <div class="rounded-2xl bg-purple/10 dark:bg-purple/20 border border-purple/20 p-4"><p class="text-sm font-black text-purple-dark dark:text-white">250g</p><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Prueba inicial, razas pequeñas o porciones bajas.</p></div>
-                        <div class="rounded-2xl bg-pink/10 dark:bg-pink/10 border border-pink/20 p-4"><p class="text-sm font-black text-purple-dark dark:text-white">550g</p><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Razas medianas o consumo moderado.</p></div>
-                        <div class="rounded-2xl bg-green/10 dark:bg-green/10 border border-green/20 p-4"><p class="text-sm font-black text-purple-dark dark:text-white">850g</p><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Razas grandes, hogares con varias mascotas o pedidos mensuales.</p></div>
-                    </div>
-                </div>
-
-                <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 justify-center mt-4 pb-8">
+                <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 justify-center mt-4 pb-8">
                     <!-- Producto 1: Pollo -->
-                    <div class="bg-white dark:bg-darkcard rounded-3xl overflow-hidden shadow-2xl dark:shadow-purple/10 border border-purple-border/20 dark:border-purple/20 flex flex-col h-full">
-                        <div class="h-[240px] relative bg-purple/10 dark:bg-purple/20 overflow-hidden select-none">
-                            <img decoding="async" src="https://i.ibb.co/hJP9yxd7/Gemini-Generated-Image-p554u5p554u5p554.jpg" onerror="this.src='https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=600&auto=format&fit=crop'" alt="Menú de Pollo con Zanahoria" class="w-full h-full object-cover" loading="lazy">
-                            <span class="absolute top-5 right-5 bg-pink text-white text-xs font-black tracking-widest px-4 py-2 rounded-full uppercase shadow-md z-20">Pollo</span>
+                    <div class="bg-white dark:bg-darkcard rounded-[2.2rem] overflow-hidden shadow-xl hover:shadow-2xl dark:shadow-purple/10 border border-purple-border/40 dark:border-purple/25 flex flex-col h-full premium-card">
+                        <div class="h-[260px] relative bg-purple/10 dark:bg-purple/20 overflow-hidden select-none group">
+                            <img decoding="async" src="https://i.ibb.co/hJP9yxd7/Gemini-Generated-Image-p554u5p554u5p554.jpg" onerror="this.src='https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=600&auto=format&fit=crop'" alt="Menú de Pollo con Zanahoria" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy">
+                            <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/80 via-transparent to-transparent opacity-60"></div>
+                            <span class="absolute top-5 right-5 bg-pink/90 backdrop-blur-md text-white text-xs font-black tracking-widest px-4 py-2 rounded-full uppercase shadow-md z-20 border border-white/20">Pollo</span>
                         </div>
-                        <div class="p-6 space-y-6 flex-grow flex flex-col justify-between">
-                            <div class="text-left space-y-2">
-                                <h3 class="text-2xl font-black text-purple-dark dark:text-white">Pollo con Zanahoria</h3>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
-                                    <strong>Ingredientes:</strong> Muslos con piel, patas, mollejas y vísceras selectas de pollo, zanahorias frescas, semillas de chía, vitaminas y minerales.
+                        <div class="p-7 space-y-6 flex-grow flex flex-col justify-between">
+                            <div class="text-left space-y-3">
+                                <h3 class="text-2xl md:text-3xl font-black text-purple-dark dark:text-white tracking-tight">Pollo con Zanahoria</h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 font-medium leading-relaxed">
+                                    <strong class="text-purple-dark dark:text-white">Ingredientes:</strong> Muslos con piel, patas, mollejas y vísceras selectas de pollo, zanahorias frescas, semillas de chía, vitaminas y minerales.
                                 </p>
-                                <div class="mt-4 bg-purple-light/70 dark:bg-[#0d0718] rounded-2xl border border-purple-border/40 dark:border-purple/20 overflow-hidden">
-                                    <div class="px-4 py-3 border-b border-purple-border/40 dark:border-purple/20 flex items-center gap-2">
+                                <div class="mt-5 bg-purple-light/80 dark:bg-[#0d0718] rounded-2xl border border-purple-border/50 dark:border-purple/20 overflow-hidden shadow-sm">
+                                    <div class="px-4 py-3 border-b border-purple-border/50 dark:border-purple/20 flex items-center gap-2">
                                         <i data-lucide="clipboard-list" class="w-4 h-4 text-pink shrink-0"></i>
                                         <span class="text-[10px] font-black tracking-widest text-purple-dark dark:text-white uppercase">Aportes principales</span>
                                     </div>
                                     <table class="nutrition-table">
-                                        <thead class="bg-white/70 dark:bg-darkcard/60 text-purple/60 dark:text-gray-400">
+                                        <thead class="bg-white/80 dark:bg-darkcard/80 text-purple/70 dark:text-gray-400">
                                             <tr><th class="text-left">Aporte</th><th class="text-left">Fuente</th><th class="text-left">Función</th></tr>
                                         </thead>
                                         <tbody class="divide-y divide-purple-border/30 dark:divide-purple/10 text-gray-600 dark:text-gray-300">
@@ -560,29 +573,29 @@
                                     </table>
                                 </div>
                             </div>
-                            <div class="space-y-4">
+                            <div class="space-y-5 pt-2">
                                 <div class="text-left">
-                                    <span class="text-[10px] font-black tracking-widest text-purple/50 dark:text-gray-500 uppercase block mb-2">Presentación:</span>
-                                    <div class="grid grid-cols-3 gap-2" id="weight-group-pollo">
-                                        <button class="weight-btn-pollo weight-size-btn p-3 text-xs font-extrabold text-white border-2 border-purple rounded-xl bg-purple opacity-100 weight-active" onclick="window.selectWeightPollo('250gr', this)">250g</button>
-                                        <button class="weight-btn-pollo weight-size-btn p-3 text-xs font-extrabold text-purple dark:text-white border-2 border-purple-border/50 dark:border-purple/30 rounded-xl bg-white dark:bg-darkbg opacity-60" onclick="window.selectWeightPollo('550gr', this)">550g</button>
-                                        <button class="weight-btn-pollo weight-size-btn p-3 text-xs font-extrabold text-purple dark:text-white border-2 border-purple-border/50 dark:border-purple/30 rounded-xl bg-white dark:bg-darkbg opacity-60" onclick="window.selectWeightPollo('850gr', this)">850g</button>
+                                    <span class="text-[10px] font-black tracking-widest text-purple/60 dark:text-gray-400 uppercase block mb-2">Selecciona la Presentación:</span>
+                                    <div class="grid grid-cols-3 gap-2.5" id="weight-group-pollo">
+                                        <button class="weight-btn-pollo weight-size-btn touch-target-safe p-3 text-xs font-extrabold text-white border-2 border-purple rounded-xl bg-purple opacity-100 weight-active shadow-sm" onclick="window.selectWeightPollo('250gr', this)">250g</button>
+                                        <button class="weight-btn-pollo weight-size-btn touch-target-safe p-3 text-xs font-extrabold text-purple dark:text-white border-2 border-purple-border/60 dark:border-purple/30 rounded-xl bg-white dark:bg-darkbg opacity-60" onclick="window.selectWeightPollo('550gr', this)">550g</button>
+                                        <button class="weight-btn-pollo weight-size-btn touch-target-safe p-3 text-xs font-extrabold text-purple dark:text-white border-2 border-purple-border/60 dark:border-purple/30 rounded-xl bg-white dark:bg-darkbg opacity-60" onclick="window.selectWeightPollo('850gr', this)">850g</button>
                                     </div>
                                 </div>
-                                <div class="border-t border-purple-border/20 dark:border-purple/20 pt-5 space-y-4">
+                                <div class="border-t border-purple-border/30 dark:border-purple/20 pt-5 space-y-4">
                                     <div class="flex items-center justify-between">
                                         <div class="text-left">
-                                            <span class="text-[10px] font-bold tracking-widest text-purple/40 dark:text-gray-500 uppercase block mb-0.5">Precio unitario</span>
-                                            <h4 id="price-pollo" class="text-3xl font-black text-purple-dark dark:text-white">$2.50</h4>
+                                            <span class="text-[10px] font-bold tracking-widest text-purple/50 dark:text-gray-400 uppercase block mb-0.5">Precio unitario</span>
+                                            <h4 id="price-pollo" class="text-3xl font-black text-purple-dark dark:text-white tracking-tight">$2.50</h4>
                                         </div>
-                                        <div class="flex items-center gap-2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/30 rounded-2xl p-1">
-                                            <button onclick="window.changeQty('pollo', -1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">−</button>
-                                            <input id="qty-pollo" type="number" min="0" value="0" inputmode="numeric" onfocus="this.select()" onblur="if(this.value==='') { this.value='0'; window.setQty('pollo', 0); }" oninput="window.setQty('pollo', this.value)" class="w-12 h-8 text-center font-black text-purple dark:text-white text-sm bg-transparent outline-none" aria-label="Cantidad de pollo">
-                                            <button onclick="window.changeQty('pollo', 1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">+</button>
+                                        <div class="flex items-center gap-1 bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl p-1.5 shadow-inner">
+                                            <button onclick="window.changeQty('pollo', -1)" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm active:scale-95 touch-target-safe">−</button>
+                                            <input id="qty-pollo" type="number" min="0" value="0" inputmode="numeric" onfocus="this.select()" onblur="if(this.value==='') { this.value='0'; window.setQty('pollo', 0); }" oninput="window.setQty('pollo', this.value)" class="w-12 h-10 text-center font-black text-purple dark:text-white text-base bg-transparent outline-none" aria-label="Cantidad de pollo">
+                                            <button onclick="window.changeQty('pollo', 1)" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm active:scale-95 touch-target-safe">+</button>
                                         </div>
                                     </div>
-                                    <button onclick="window.addToCart('pollo')" class="w-full flex items-center justify-center gap-2 bg-purple hover:bg-pink text-white font-extrabold text-sm tracking-wide py-4 rounded-2xl shadow-lg transition-all transform active:scale-[0.98]">
-                                        <i data-lucide="shopping-cart" class="w-4 h-4"></i> Agregar para mi mascota
+                                    <button onclick="window.addToCart('pollo')" class="w-full flex items-center justify-center gap-2.5 bg-purple hover:bg-pink text-white font-extrabold text-sm tracking-wide py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all transform active:scale-[0.98] touch-target-safe">
+                                        <i data-lucide="shopping-cart" class="w-5 h-5"></i> Agregar para mi mascota
                                     </button>
                                 </div>
                             </div>
@@ -590,24 +603,25 @@
                     </div>
 
                     <!-- Producto 2: Res -->
-                    <div class="bg-white dark:bg-darkcard rounded-3xl overflow-hidden shadow-2xl dark:shadow-purple/10 border border-purple-border/20 dark:border-purple/20 flex flex-col h-full">
-                        <div class="h-[240px] relative bg-purple/10 dark:bg-purple/20 overflow-hidden select-none">
-                            <img decoding="async" src="https://i.ibb.co/JFjvhsXw/Gemini-Generated-Image-5fkask5fkask5fka.jpg" onerror="this.src='https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=600&auto=format&fit=crop'" alt="Menú de Carne de Res con Calabacín" class="w-full h-full object-cover" loading="lazy">
-                            <span class="absolute top-5 right-5 bg-green text-purple-dark text-xs font-black tracking-widest px-4 py-2 rounded-full uppercase shadow-md z-20">Res</span>
+                    <div class="bg-white dark:bg-darkcard rounded-[2.2rem] overflow-hidden shadow-xl hover:shadow-2xl dark:shadow-purple/10 border border-purple-border/40 dark:border-purple/25 flex flex-col h-full premium-card">
+                        <div class="h-[260px] relative bg-purple/10 dark:bg-purple/20 overflow-hidden select-none group">
+                            <img decoding="async" src="https://i.ibb.co/JFjvhsXw/Gemini-Generated-Image-5fkask5fkask5fka.jpg" onerror="this.src='https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=600&auto=format&fit=crop'" alt="Menú de Carne de Res con Calabacín" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy">
+                            <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/80 via-transparent to-transparent opacity-60"></div>
+                            <span class="absolute top-5 right-5 bg-green/90 backdrop-blur-md text-purple-dark text-xs font-black tracking-widest px-4 py-2 rounded-full uppercase shadow-md z-20 border border-white/20">Res</span>
                         </div>
-                        <div class="p-6 space-y-6 flex-grow flex flex-col justify-between">
-                            <div class="text-left space-y-2">
-                                <h3 class="text-2xl font-black text-purple-dark dark:text-white">Carne de Res con Calabacín</h3>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
-                                    <strong>Ingredientes:</strong> Carne magra de res, corazón, lengua y vísceras selectas de res, calabacín fresco, semillas de chía, vitaminas y minerales. <strong>Contiene patas de pollo.</strong>
+                        <div class="p-7 space-y-6 flex-grow flex flex-col justify-between">
+                            <div class="text-left space-y-3">
+                                <h3 class="text-2xl md:text-3xl font-black text-purple-dark dark:text-white tracking-tight">Carne de Res con Calabacín</h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 font-medium leading-relaxed">
+                                    <strong class="text-purple-dark dark:text-white">Ingredientes:</strong> Carne magra de res, corazón, lengua y vísceras selectas de res, calabacín fresco, semillas de chía, vitaminas y minerales. <strong class="text-pink">Contiene patas de pollo.</strong>
                                 </p>
-                                <div class="mt-4 bg-purple-light/70 dark:bg-[#0d0718] rounded-2xl border border-purple-border/40 dark:border-purple/20 overflow-hidden">
-                                    <div class="px-4 py-3 border-b border-purple-border/40 dark:border-purple/20 flex items-center gap-2">
+                                <div class="mt-5 bg-purple-light/80 dark:bg-[#0d0718] rounded-2xl border border-purple-border/50 dark:border-purple/20 overflow-hidden shadow-sm">
+                                    <div class="px-4 py-3 border-b border-purple-border/50 dark:border-purple/20 flex items-center gap-2">
                                         <i data-lucide="clipboard-list" class="w-4 h-4 text-green-dark dark:text-green shrink-0"></i>
                                         <span class="text-[10px] font-black tracking-widest text-purple-dark dark:text-white uppercase">Aportes principales</span>
                                     </div>
                                     <table class="nutrition-table">
-                                        <thead class="bg-white/70 dark:bg-darkcard/60 text-purple/60 dark:text-gray-400">
+                                        <thead class="bg-white/80 dark:bg-darkcard/80 text-purple/70 dark:text-gray-400">
                                             <tr><th class="text-left">Aporte</th><th class="text-left">Fuente</th><th class="text-left">Función</th></tr>
                                         </thead>
                                         <tbody class="divide-y divide-purple-border/30 dark:divide-purple/10 text-gray-600 dark:text-gray-300">
@@ -620,29 +634,29 @@
                                     </table>
                                 </div>
                             </div>
-                            <div class="space-y-4">
+                            <div class="space-y-5 pt-2">
                                 <div class="text-left">
-                                    <span class="text-[10px] font-black tracking-widest text-purple/50 dark:text-gray-500 uppercase block mb-2">Presentación:</span>
-                                    <div class="grid grid-cols-3 gap-2" id="weight-group-res">
-                                        <button class="weight-btn-res weight-size-btn p-3 text-xs font-extrabold text-white border-2 border-purple rounded-xl bg-purple opacity-100 weight-active" onclick="window.selectWeightRes('250gr', this)">250g</button>
-                                        <button class="weight-btn-res weight-size-btn p-3 text-xs font-extrabold text-purple dark:text-white border-2 border-purple-border/50 dark:border-purple/30 rounded-xl bg-white dark:bg-darkbg opacity-60" onclick="window.selectWeightRes('550gr', this)">550g</button>
-                                        <button class="weight-btn-res weight-size-btn p-3 text-xs font-extrabold text-purple dark:text-white border-2 border-purple-border/50 dark:border-purple/30 rounded-xl bg-white dark:bg-darkbg opacity-60" onclick="window.selectWeightRes('850gr', this)">850g</button>
+                                    <span class="text-[10px] font-black tracking-widest text-purple/60 dark:text-gray-400 uppercase block mb-2">Selecciona la Presentación:</span>
+                                    <div class="grid grid-cols-3 gap-2.5" id="weight-group-res">
+                                        <button class="weight-btn-res weight-size-btn touch-target-safe p-3 text-xs font-extrabold text-white border-2 border-purple rounded-xl bg-purple opacity-100 weight-active shadow-sm" onclick="window.selectWeightRes('250gr', this)">250g</button>
+                                        <button class="weight-btn-res weight-size-btn touch-target-safe p-3 text-xs font-extrabold text-purple dark:text-white border-2 border-purple-border/60 dark:border-purple/30 rounded-xl bg-white dark:bg-darkbg opacity-60" onclick="window.selectWeightRes('550gr', this)">550g</button>
+                                        <button class="weight-btn-res weight-size-btn touch-target-safe p-3 text-xs font-extrabold text-purple dark:text-white border-2 border-purple-border/60 dark:border-purple/30 rounded-xl bg-white dark:bg-darkbg opacity-60" onclick="window.selectWeightRes('850gr', this)">850g</button>
                                     </div>
                                 </div>
-                                <div class="border-t border-purple-border/20 dark:border-purple/20 pt-5 space-y-4">
+                                <div class="border-t border-purple-border/30 dark:border-purple/20 pt-5 space-y-4">
                                     <div class="flex items-center justify-between">
                                         <div class="text-left">
-                                            <span class="text-[10px] font-bold tracking-widest text-purple/40 dark:text-gray-500 uppercase block mb-0.5">Precio unitario</span>
-                                            <h4 id="price-res" class="text-3xl font-black text-purple-dark dark:text-white">$3.50</h4>
+                                            <span class="text-[10px] font-bold tracking-widest text-purple/50 dark:text-gray-400 uppercase block mb-0.5">Precio unitario</span>
+                                            <h4 id="price-res" class="text-3xl font-black text-purple-dark dark:text-white tracking-tight">$3.50</h4>
                                         </div>
-                                        <div class="flex items-center gap-2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/30 rounded-2xl p-1">
-                                            <button onclick="window.changeQty('res', -1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">−</button>
-                                            <input id="qty-res" type="number" min="0" value="0" inputmode="numeric" onfocus="this.select()" onblur="if(this.value==='') { this.value='0'; window.setQty('res', 0); }" oninput="window.setQty('res', this.value)" class="w-12 h-8 text-center font-black text-purple dark:text-white text-sm bg-transparent outline-none" aria-label="Cantidad de res">
-                                            <button onclick="window.changeQty('res', 1)" class="w-8 h-8 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm">+</button>
+                                        <div class="flex items-center gap-1 bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl p-1.5 shadow-inner">
+                                            <button onclick="window.changeQty('res', -1)" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm active:scale-95 touch-target-safe">−</button>
+                                            <input id="qty-res" type="number" min="0" value="0" inputmode="numeric" onfocus="this.select()" onblur="if(this.value==='') { this.value='0'; window.setQty('res', 0); }" oninput="window.setQty('res', this.value)" class="w-12 h-10 text-center font-black text-purple dark:text-white text-base bg-transparent outline-none" aria-label="Cantidad de res">
+                                            <button onclick="window.changeQty('res', 1)" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm active:scale-95 touch-target-safe">+</button>
                                         </div>
                                     </div>
-                                    <button onclick="window.addToCart('res')" class="w-full flex items-center justify-center gap-2 bg-purple hover:bg-pink text-white font-extrabold text-sm tracking-wide py-4 rounded-2xl shadow-lg transition-all transform active:scale-[0.98]">
-                                        <i data-lucide="shopping-cart" class="w-4 h-4"></i> Agregar para mi mascota
+                                    <button onclick="window.addToCart('res')" class="w-full flex items-center justify-center gap-2.5 bg-purple hover:bg-pink text-white font-extrabold text-sm tracking-wide py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all transform active:scale-[0.98] touch-target-safe">
+                                        <i data-lucide="shopping-cart" class="w-5 h-5"></i> Agregar para mi mascota
                                     </button>
                                 </div>
                             </div>
@@ -657,18 +671,19 @@
         <!-- VISTA LÍNEA GATOS -->
         <section id="view-gatos" class="view next">
             <div class="view-wrapper">
-                <div class="max-w-2xl w-full mb-6">
-                    <button class="nav-btn flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300" data-target="view-home">
+                <div class="max-w-2xl w-full mb-6 text-center md:text-left">
+                    <button class="nav-btn flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple-border/80 text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300 active:scale-95 touch-target-safe mx-auto md:mx-0" data-target="view-home">
                         <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Inicio
                     </button>
-                    <h2 class="text-3xl font-black text-purple-dark dark:text-white mt-4">Línea Felina</h2>
+                    <h2 class="text-3xl md:text-4xl font-black text-purple-dark dark:text-white mt-5 tracking-tight">Línea Felina</h2>
+                    <p class="text-xs font-bold text-pink uppercase tracking-widest mt-1">Nutrición Real y Balanceada para Gatos</p>
                 </div>
-                <div class="flex flex-col items-center justify-center max-w-lg w-full mx-auto select-none py-12">
-                    <div class="w-24 h-24 bg-pink/10 rounded-full flex items-center justify-center text-pink mb-6">
+                <div class="max-w-xl w-full bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-[2.2rem] p-8 md:p-12 shadow-xl text-center mx-auto select-none my-6 premium-card">
+                    <div class="w-24 h-24 bg-gradient-to-tr from-pink/20 via-purple/10 to-pink/10 rounded-3xl flex items-center justify-center text-pink mx-auto mb-6 shadow-sm border border-purple-border/30 dark:border-purple/20">
                         <i data-lucide="sparkles" class="w-12 h-12"></i>
                     </div>
-                    <h2 class="text-5xl font-black text-purple-dark dark:text-white tracking-tight leading-none mb-4 text-center">Próximamente...</h2>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-sm text-center">La evolución de la nutrición felina real y balanceada está en pleno desarrollo.</p>
+                    <h2 class="text-4xl md:text-5xl font-black text-purple-dark dark:text-white tracking-tight leading-tight mb-4">Próximamente...</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 font-semibold leading-relaxed max-w-sm mx-auto">La evolución de la nutrición felina 100% natural, segura y especializada está en pleno desarrollo en nuestras cocinas.</p>
                 </div>
             </div>
         </section>
@@ -677,36 +692,41 @@
         <section id="view-snacks" class="view next">
             <div class="view-wrapper">
                 <div class="max-w-2xl w-full mb-6 text-center md:text-left">
-                    <button class="nav-btn flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300 mx-auto md:mx-0" data-target="view-home">
+                    <button class="nav-btn flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple-border/80 text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300 active:scale-95 touch-target-safe mx-auto md:mx-0" data-target="view-home">
                         <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Inicio
                     </button>
-                    <h2 class="text-3xl md:text-4xl font-black text-purple-dark dark:text-white mt-4">Snacks Saludables</h2>
-                    <p class="text-sm font-bold text-pink uppercase tracking-widest mt-1">Premios 100% Naturales</p>
+                    <h2 class="text-3xl md:text-4xl font-black text-purple-dark dark:text-white mt-5 tracking-tight">Snacks Saludables</h2>
+                    <p class="text-xs font-bold text-pink uppercase tracking-widest mt-1">Premios 100% Naturales</p>
                 </div>
-                <div class="max-w-2xl w-full bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 md:p-8 shadow-xl text-left space-y-6">
+                <div class="max-w-2xl w-full bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-[2.2rem] p-7 md:p-9 shadow-xl text-left space-y-6 premium-card">
                     <div class="flex items-center gap-4 mb-2">
-                        <div class="w-12 h-12 rounded-full bg-pink/10 flex items-center justify-center text-pink shrink-0">
-                            <i data-lucide="award" class="w-6 h-6"></i>
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-pink/20 to-purple/10 flex items-center justify-center text-pink shrink-0 shadow-sm border border-purple-border/30 dark:border-purple/20">
+                            <i data-lucide="award" class="w-7 h-7"></i>
                         </div>
-                        <h3 class="text-xl md:text-2xl font-black text-purple-dark dark:text-white">Próximo Lanzamiento</h3>
+                        <div>
+                            <span class="text-[10px] font-black tracking-widest uppercase text-purple/60 dark:text-gray-400">Línea de Recompensas</span>
+                            <h3 class="text-2xl md:text-3xl font-black text-purple-dark dark:text-white tracking-tight">Próximo Lanzamiento</h3>
+                        </div>
                     </div>
-                    <p class="text-gray-600 dark:text-gray-300 text-sm md:text-base leading-relaxed">
-                        Estamos desarrollando una línea exclusiva de snacks deshidratados a baja temperatura. Nuestro proceso artesanal garantiza que conserven todos sus nutrientes sin necesidad de añadir químicos o aditivos.
+                    <p class="text-gray-600 dark:text-gray-300 text-sm md:text-base font-medium leading-relaxed">
+                        Estamos desarrollando una línea exclusiva de snacks deshidratados a baja temperatura. Nuestro proceso artesanal garantiza que conserven todos sus nutrientes originales sin necesidad de añadir químicos, conservantes ni aditivos sintéticos.
                     </p>
-                    <div class="bg-purple-light dark:bg-[#0d0718] p-5 rounded-2xl border border-purple-border/50 dark:border-purple/20 space-y-4">
-                        <h4 class="text-sm font-extrabold text-purple-dark dark:text-white">Beneficios certificados:</h4>
-                        <ul class="space-y-3">
-                            <li class="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-400">
-                                <i data-lucide="check-circle" class="w-5 h-5 text-green shrink-0"></i>
-                                <span><strong>Un solo ingrediente:</strong> Evita alergias y sensibilidades alimentarias.</span>
+                    <div class="bg-purple-light/90 dark:bg-[#0d0718] p-6 rounded-3xl border border-purple-border/50 dark:border-purple/20 space-y-4 shadow-sm">
+                        <h4 class="text-xs font-black uppercase tracking-wider text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-green shrink-0"></i> Beneficios Certificados:
+                        </h4>
+                        <ul class="space-y-3.5">
+                            <li class="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-300 font-medium">
+                                <i data-lucide="check" class="w-4 h-4 text-green shrink-0 mt-0.5 font-bold"></i>
+                                <span><strong class="text-purple-dark dark:text-white">Un solo ingrediente:</strong> Evita alergias y sensibilidades alimentarias. Ideal para mascotas delicadas.</span>
                             </li>
-                            <li class="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-400">
-                                <i data-lucide="check-circle" class="w-5 h-5 text-green shrink-0"></i>
-                                <span><strong>Salud Dental:</strong> Ayuda a remover el sarro y fortalecer encías.</span>
+                            <li class="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-300 font-medium">
+                                <i data-lucide="check" class="w-4 h-4 text-green shrink-0 mt-0.5 font-bold"></i>
+                                <span><strong class="text-purple-dark dark:text-white">Salud Dental:</strong> Ayuda a remover el sarro acumulado y fortalecer encías de manera natural.</span>
                             </li>
-                            <li class="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-400">
-                                <i data-lucide="check-circle" class="w-5 h-5 text-green shrink-0"></i>
-                                <span><strong>Alta Palatabilidad:</strong> Refuerzo positivo perfecto para el entrenamiento.</span>
+                            <li class="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-300 font-medium">
+                                <i data-lucide="check" class="w-4 h-4 text-green shrink-0 mt-0.5 font-bold"></i>
+                                <span><strong class="text-purple-dark dark:text-white">Alta Palatabilidad:</strong> Refuerzo positivo perfecto para entrenamientos y premiar su lealtad.</span>
                             </li>
                         </ul>
                     </div>
@@ -1089,72 +1109,72 @@
                 <div id="cart-items-container" class="hidden w-full max-w-lg space-y-4 mb-6"></div>
 
                 <div id="cart-summary" class="hidden w-full max-w-lg space-y-6 pb-20">
-                    <div class="bg-white dark:bg-darkcard rounded-[1.5rem] border border-purple-border/40 dark:border-purple/20 shadow-xl p-6 md:p-8 space-y-4">
-                        <div class="text-[10px] font-black tracking-widest text-purple/50 dark:text-gray-500 uppercase mb-2">Resumen del pedido</div>
-                        <div id="cart-summary-lines" class="space-y-2 text-sm border-b border-purple-border/20 dark:border-purple/20 pb-4"></div>
+                    <div class="bg-white dark:bg-darkcard rounded-[2.2rem] border border-purple-border/40 dark:border-purple/25 shadow-xl p-7 md:p-8 space-y-5 premium-card">
+                        <div class="text-[10px] font-black tracking-widest text-purple/60 dark:text-gray-400 uppercase mb-1">Resumen del pedido</div>
+                        <div id="cart-summary-lines" class="space-y-2.5 text-sm border-b border-purple-border/30 dark:border-purple/20 pb-5"></div>
                         
-                        <div id="descuento-banner" class="bg-pink/10 border border-pink/30 rounded-xl p-4 flex flex-col gap-3 mt-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-pink text-white flex items-center justify-center shrink-0">
-                                    <i data-lucide="gift" class="w-4 h-4"></i>
+                        <div id="descuento-banner" class="bg-gradient-to-r from-pink/15 via-purple/10 to-pink/15 border border-pink/30 rounded-2xl p-4.5 flex flex-col gap-3.5 mt-4 shadow-sm">
+                            <div class="flex items-center gap-3.5">
+                                <div class="w-10 h-10 rounded-2xl bg-pink text-white flex items-center justify-center shrink-0 shadow-md">
+                                    <i data-lucide="gift" class="w-5 h-5"></i>
                                 </div>
                                 <div class="text-left">
                                     <h4 class="text-xs font-black text-pink uppercase tracking-wider">Descuento de Bienvenida</h4>
-                                    <p class="text-[10px] text-gray-500 font-semibold">Regístrate y obtén un 20% en tu primer pedido.</p>
+                                    <p class="text-[11px] text-gray-600 dark:text-gray-300 font-semibold leading-tight">Regístrate o inicia sesión y obtén un 20% en tu primer pedido.</p>
                                 </div>
                             </div>
-                            <button id="btn-abrir-modal-desc" onclick="window.abrirModalDescuento()" class="w-full py-2 bg-pink hover:bg-pink-dark text-white text-xs font-extrabold rounded-lg transition-all">
+                            <button id="btn-abrir-modal-desc" onclick="window.abrirModalDescuento()" class="w-full py-3 bg-pink hover:bg-pink-dark text-white text-xs font-black rounded-xl transition-all shadow-sm active:scale-95 touch-target-safe">
                                 Validar Descuento
                             </button>
                         </div>
 
-                        <div class="flex justify-between items-center pt-2">
-                            <div class="flex flex-col">
-                                <span class="font-extrabold text-purple-dark dark:text-white text-base">Total</span>
+                        <div class="flex justify-between items-center pt-3 border-t border-purple-border/20 dark:border-purple/20">
+                            <div class="flex flex-col text-left">
+                                <span class="font-black text-purple-dark dark:text-white text-lg tracking-tight">Total a Pagar</span>
                                 <span id="cart-total-original" class="text-xs text-gray-400 line-through hidden"></span>
                             </div>
-                            <span id="cart-total" class="text-2xl font-black text-pink">$0.00</span>
+                            <span id="cart-total" class="text-3xl font-black text-pink tracking-tight">$0.00</span>
                         </div>
                     </div>
 
-                    <div class="flex items-start gap-4 bg-purple-light/80 dark:bg-black/20 border border-purple-border/50 dark:border-purple/20 rounded-2xl p-5">
-                        <div class="w-10 h-10 bg-white dark:bg-darkcard rounded-full flex items-center justify-center shrink-0 shadow-sm"><span class="text-lg">🛵</span></div>
-                        <p class="text-sm font-semibold text-purple/80 dark:text-gray-400 leading-relaxed mt-0.5">
-                            El <strong class="text-purple-dark dark:text-white">costo de envío</strong> es adicional. Se calculará por WhatsApp al confirmar tu dirección.
+                    <div class="flex items-start gap-4 bg-purple-light/90 dark:bg-black/30 border border-purple-border/50 dark:border-purple/20 rounded-2xl p-5 shadow-sm">
+                        <div class="w-11 h-11 bg-white dark:bg-darkcard rounded-2xl flex items-center justify-center shrink-0 shadow-sm border border-purple-border/30 dark:border-purple/20"><span class="text-xl">🛵</span></div>
+                        <p class="text-sm font-semibold text-purple/90 dark:text-gray-300 leading-relaxed text-left mt-0.5">
+                            El <strong class="text-purple-dark dark:text-white font-black">costo de envío</strong> es adicional. Se calculará por WhatsApp de forma exacta al verificar tu dirección.
                         </p>
                     </div>
 
-                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-2xl p-4 space-y-3 mt-2">
-                        <div class="text-[10px] font-black tracking-widest text-purple/50 dark:text-gray-500 uppercase flex items-center gap-2">
-                            <i data-lucide="map-pin" class="w-3.5 h-3.5 shrink-0"></i> Tu ubicación para el delivery
+                    <div class="bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-3xl p-5 space-y-3.5 mt-2 shadow-md">
+                        <div class="text-[10px] font-black tracking-widest text-purple/60 dark:text-gray-400 uppercase flex items-center gap-2">
+                            <i data-lucide="map-pin" class="w-4 h-4 text-pink shrink-0"></i> Tu ubicación de entrega
                         </div>
-                        <button id="location-btn" onclick="window.captureLocation()" class="w-full flex items-center justify-center gap-2 border-2 border-dashed border-purple/30 dark:border-purple/40 hover:border-purple text-purple dark:text-white font-extrabold text-sm py-3.5 rounded-xl transition-all hover:bg-purple-light dark:hover:bg-purple/10 active:scale-[0.98]">
-                            <i data-lucide="map-pin" class="w-4 h-4 shrink-0"></i>
+                        <button id="location-btn" onclick="window.captureLocation()" class="w-full flex items-center justify-center gap-2.5 border-2 border-dashed border-purple/40 dark:border-purple/40 hover:border-purple text-purple-dark dark:text-white font-extrabold text-sm py-4 rounded-2xl transition-all hover:bg-purple-light dark:hover:bg-purple/10 active:scale-[0.98] touch-target-safe">
+                            <i data-lucide="map-pin" class="w-4 h-4 shrink-0 text-pink"></i>
                             <span id="location-btn-text">Marcar mi ubicación en el mapa</span>
                         </button>
-                        <div id="location-status" class="hidden text-xs font-semibold text-purple/60 dark:text-gray-400 leading-relaxed"></div>
+                        <div id="location-status" class="hidden text-xs font-semibold text-purple/70 dark:text-gray-300 leading-relaxed text-left"></div>
                     </div>
 
-                    <div class="bg-purple-light/80 dark:bg-purple/10 border border-purple-border/40 dark:border-purple/20 rounded-2xl p-4 text-left space-y-2">
-                        <h4 class="text-xs font-black text-purple-dark dark:text-white uppercase tracking-widest flex items-center gap-2"><i data-lucide="info" class="w-4 h-4 text-pink"></i> Antes de enviar</h4>
-                        <p class="text-[11px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">Tu pedido se envía por WhatsApp y quedará como <b>En proceso</b> hasta que el equipo Milkarf lo confirme. Los puntos se suman cuando el administrador marca el pedido como completado.</p>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
-                            <button onclick="window.navigateTo('view-calc')" class="bg-white dark:bg-darkcard border border-purple/20 text-purple dark:text-white text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl">Calcular ración</button>
-                            <button onclick="window.navigateTo('view-faq')" class="bg-white dark:bg-darkcard border border-purple/20 text-purple dark:text-white text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl">Guía transición</button>
-                            <a href="#" onclick="event.preventDefault(); window.openWhatsApp('quickHelp');" class="bg-white dark:bg-darkcard border border-green/30 text-green-dark dark:text-green text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl text-center">Ayuda rápida</a>
+                    <div class="bg-purple-light/90 dark:bg-purple/15 border border-purple-border/50 dark:border-purple/20 rounded-3xl p-5 text-left space-y-2.5 shadow-sm">
+                        <h4 class="text-xs font-black text-purple-dark dark:text-white uppercase tracking-widest flex items-center gap-2"><i data-lucide="info" class="w-4 h-4 text-pink"></i> Importante antes de enviar</h4>
+                        <p class="text-xs text-gray-600 dark:text-gray-300 font-semibold leading-relaxed">Tu pedido se envía por WhatsApp y quedará en estado <b class="text-purple-dark dark:text-white">En proceso</b> hasta que nuestro equipo confirme el pago. Los puntos de fidelización se suman automáticamente en cuanto se marque el pedido como completado.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2">
+                            <button onclick="window.navigateTo('view-calc')" class="bg-white dark:bg-darkcard border border-purple/25 dark:border-purple/30 text-purple-dark dark:text-white text-[10px] font-black uppercase tracking-widest py-3 rounded-xl hover:border-purple transition-colors touch-target-safe">Calcular ración</button>
+                            <button onclick="window.navigateTo('view-faq')" class="bg-white dark:bg-darkcard border border-purple/25 dark:border-purple/30 text-purple-dark dark:text-white text-[10px] font-black uppercase tracking-widest py-3 rounded-xl hover:border-purple transition-colors touch-target-safe">Guía transición</button>
+                            <a href="#" onclick="event.preventDefault(); window.openWhatsApp('quickHelp');" class="bg-white dark:bg-darkcard border border-green/40 dark:border-green/30 text-green-dark dark:text-green text-[10px] font-black uppercase tracking-widest py-3 rounded-xl text-center hover:bg-green/10 transition-colors touch-target-safe flex items-center justify-center">Ayuda rápida</a>
                         </div>
                     </div>
 
-                    <a id="btn-finalizar-pedido" href="#" target="_self" rel="noopener noreferrer" onclick="return window.finalizarPedido(event)" class="w-full flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20ba59] text-white font-extrabold text-lg py-5 rounded-[1.25rem] shadow-xl shadow-green/20 hover:shadow-glow-green transition-all active:scale-95 group">
-                        <i data-lucide="send" class="w-6 h-6 shrink-0 group-hover:translate-x-1 transition-transform"></i>
-                        Pedir por WhatsApp
+                    <a id="btn-finalizar-pedido" href="#" target="_self" rel="noopener noreferrer" onclick="return window.finalizarPedido(event)" class="w-full flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20ba59] text-white font-black text-lg py-5 rounded-[1.4rem] shadow-xl shadow-green/25 hover:shadow-glow-green transition-all active:scale-95 group touch-target-safe">
+                        <i data-lucide="send" class="w-6 h-6 shrink-0 group-hover:translate-x-1.5 transition-transform"></i>
+                        Confirmar y Pedir por WhatsApp
                     </a>
 
-                    <button id="btn-ver-mis-pedidos" onclick="window.navigateTo('view-dashboard'); window.startUserOrdersListener(true);" class="hidden w-full flex items-center justify-center gap-2 bg-white dark:bg-darkcard border border-green/30 text-green-dark dark:text-green font-extrabold text-sm py-3.5 rounded-xl shadow-sm hover:bg-green/10 transition-all active:scale-95">
+                    <button id="btn-ver-mis-pedidos" onclick="window.navigateTo('view-dashboard'); window.startUserOrdersListener(true);" class="hidden w-full flex items-center justify-center gap-2 bg-white dark:bg-darkcard border border-green/40 text-green-dark dark:text-green font-extrabold text-sm py-4 rounded-2xl shadow-sm hover:bg-green/10 transition-all active:scale-95 touch-target-safe">
                         <i data-lucide="clipboard-check" class="w-4 h-4"></i> Ver estado de mi pedido
                     </button>
 
-                    <button id="btn-clear-cart" onclick="window.clearCart()" class="w-full text-center text-xs font-bold text-purple/40 dark:text-gray-500 hover:text-pink transition-colors py-2">
+                    <button id="btn-clear-cart" onclick="window.clearCart()" class="w-full text-center text-xs font-bold text-purple/50 dark:text-gray-400 hover:text-pink transition-colors py-3 touch-target-safe">
                         Vaciar carrito
                     </button>
                 </div>
@@ -1192,17 +1212,17 @@
         </section>
 
         <!-- FAB CART -->
-        <button id="cart-fab" class="nav-btn fixed bottom-24 md:bottom-6 right-6 z-[999] w-16 h-16 bg-purple hover:bg-pink text-white rounded-full shadow-2xl shadow-purple/40 flex items-center justify-center transition-all duration-300 transform translate-y-24 opacity-0 pointer-events-none active:scale-95" aria-label="Ver carrito" data-target="view-cart">
+        <button id="cart-fab" class="nav-btn fixed bottom-24 md:bottom-6 right-6 z-[999] w-16 h-16 bg-purple hover:bg-pink text-white rounded-full shadow-2xl shadow-purple/40 hover:shadow-glow-purple flex items-center justify-center transition-all duration-300 transform translate-y-24 opacity-0 pointer-events-none active:scale-95 touch-target-safe border border-white/20" aria-label="Ver carrito" data-target="view-cart">
             <i data-lucide="shopping-cart" class="w-7 h-7"></i>
-            <span id="cart-badge" class="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] bg-pink text-white text-[11px] font-black rounded-full flex items-center justify-center shadow-md px-1">0</span>
+            <span id="cart-badge" class="absolute -top-1.5 -right-1.5 min-w-[24px] h-[24px] bg-pink text-white text-xs font-black rounded-full flex items-center justify-center shadow-lg px-1.5 border-2 border-white dark:border-darkcard">0</span>
         </button>
 
-        <nav id="mobile-bottom-nav" class="md:hidden fixed bottom-3 left-3 right-3 z-[998] bg-white/95 dark:bg-darkcard/95 backdrop-blur-xl border border-purple-border/40 dark:border-purple/20 rounded-[1.5rem] shadow-2xl p-2 grid grid-cols-5 gap-1">
-            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-2xl text-purple dark:text-white font-black text-[9px] uppercase tracking-tight active:scale-95" data-target="view-home"><i data-lucide="home" class="w-5 h-5"></i>Inicio</button>
-            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-2xl text-purple dark:text-white font-black text-[9px] uppercase tracking-tight active:scale-95" data-target="view-calc"><i data-lucide="scale" class="w-5 h-5"></i>Calcular</button>
-            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-2xl text-purple dark:text-white font-black text-[9px] uppercase tracking-tight active:scale-95" data-target="view-perros"><i data-lucide="beef" class="w-5 h-5"></i>Menú</button>
-            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-2xl text-purple dark:text-white font-black text-[9px] uppercase tracking-tight active:scale-95" data-target="view-cart"><i data-lucide="shopping-cart" class="w-5 h-5"></i>Carrito</button>
-            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-2xl text-purple dark:text-white font-black text-[9px] uppercase tracking-tight active:scale-95" data-target="view-dashboard"><i data-lucide="user" class="w-5 h-5"></i>Perfil</button>
+        <nav id="mobile-bottom-nav" class="md:hidden fixed bottom-3 left-3 right-3 z-[998] bg-white/90 dark:bg-darkcard/90 backdrop-blur-2xl border border-purple-border/50 dark:border-purple/30 rounded-[1.8rem] shadow-2xl p-2 grid grid-cols-5 gap-1 shadow-purple/10">
+            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2.5 rounded-2xl text-purple dark:text-white font-black text-[9px] uppercase tracking-tight hover:bg-purple/10 dark:hover:bg-purple/20 transition-all active:scale-95 touch-target-safe" data-target="view-home"><i data-lucide="home" class="w-5 h-5"></i>Inicio</button>
+            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2.5 rounded-2xl text-purple dark:text-white font-black text-[9px] uppercase tracking-tight hover:bg-purple/10 dark:hover:bg-purple/20 transition-all active:scale-95 touch-target-safe" data-target="view-calc"><i data-lucide="scale" class="w-5 h-5"></i>Calcular</button>
+            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2.5 rounded-2xl text-purple dark:text-white font-black text-[9px] uppercase tracking-tight hover:bg-purple/10 dark:hover:bg-purple/20 transition-all active:scale-95 touch-target-safe" data-target="view-perros"><i data-lucide="beef" class="w-5 h-5"></i>Menú</button>
+            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2.5 rounded-2xl text-purple dark:text-white font-black text-[9px] uppercase tracking-tight hover:bg-purple/10 dark:hover:bg-purple/20 transition-all active:scale-95 touch-target-safe" data-target="view-cart"><i data-lucide="shopping-cart" class="w-5 h-5"></i>Carrito</button>
+            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2.5 rounded-2xl text-purple dark:text-white font-black text-[9px] uppercase tracking-tight hover:bg-purple/10 dark:hover:bg-purple/20 transition-all active:scale-95 touch-target-safe" data-target="view-dashboard"><i data-lucide="user" class="w-5 h-5"></i>Perfil</button>
         </nav>
 
     </div>
@@ -1482,23 +1502,23 @@
     </div>
 
     <!-- MODAL DESCUENTO -->
-    <div id="modal-descuento" class="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm hidden items-center justify-center opacity-0 transition-opacity duration-300 p-4">
-        <div id="modal-descuento-box" class="bg-white dark:bg-darkcard w-full max-w-sm rounded-3xl shadow-2xl p-6 transform scale-95 transition-transform duration-300 flex flex-col">
+    <div id="modal-descuento" class="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-md hidden items-center justify-center opacity-0 transition-opacity duration-300 p-4">
+        <div id="modal-descuento-box" class="bg-white dark:bg-darkcard w-full max-w-sm rounded-[2.2rem] shadow-2xl p-7 transform scale-95 transition-transform duration-300 flex flex-col border border-purple-border/40 dark:border-purple/25 premium-card">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-base font-black text-purple-dark dark:text-white leading-tight">Descuento por primera compra</h3>
-                <button id="btn-cerrar-modal-desc" onclick="window.cerrarModalDescuento()"><i data-lucide="x" class="w-5 h-5 text-gray-400 hover:text-pink transition-colors"></i></button>
+                <h3 class="text-lg font-black text-purple-dark dark:text-white leading-tight tracking-tight">Descuento de bienvenida</h3>
+                <button id="btn-cerrar-modal-desc" onclick="window.cerrarModalDescuento()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-purple-light/80 dark:bg-darkbg text-gray-400 hover:text-pink transition-colors active:scale-95 touch-target-safe"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
-            <p class="text-xs text-gray-500 mb-4 font-medium">Verifica tus datos para aplicar la promoción de bienvenida.</p>
+            <p class="text-xs text-gray-600 dark:text-gray-300 mb-5 font-semibold leading-relaxed">Verifica tus datos y los de tu mascota para aplicar de inmediato la promoción especial de bienvenida.</p>
             
-            <div class="space-y-3">
-                <input type="text" id="desc-nombre" placeholder="Tu Nombre y Apellido" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
-                <input type="tel" id="desc-telefono" placeholder="Número de WhatsApp" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
-                <input type="text" id="desc-mascota" placeholder="Nombre de tu Mascota" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
+            <div class="space-y-3.5">
+                <input type="text" id="desc-nombre" placeholder="Tu Nombre y Apellido" class="w-full bg-purple-light/80 dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl p-4 text-sm font-semibold outline-none focus:border-purple transition-all text-left">
+                <input type="tel" id="desc-telefono" placeholder="Número de WhatsApp" class="w-full bg-purple-light/80 dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl p-4 text-sm font-semibold outline-none focus:border-purple transition-all text-left">
+                <input type="text" id="desc-mascota" placeholder="Nombre de tu Mascota" class="w-full bg-purple-light/80 dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl p-4 text-sm font-semibold outline-none focus:border-purple transition-all text-left">
             </div>
 
-            <div id="desc-error" class="hidden mt-3 text-xs font-bold text-pink bg-pink/10 p-2 rounded-lg text-center leading-tight"></div>
+            <div id="desc-error" class="hidden mt-3 text-xs font-bold text-pink bg-pink/10 p-3 rounded-xl text-center leading-tight border border-pink/20"></div>
 
-            <button id="btn-verificar" onclick="window.verificarDescuento()" class="w-full bg-green text-purple-dark font-black uppercase text-sm py-3 rounded-xl mt-4 hover:bg-[#a6b621] transition-colors active:scale-95">
+            <button id="btn-verificar" onclick="window.verificarDescuento()" class="w-full bg-green hover:bg-[#a6b621] text-purple-dark font-black uppercase text-sm py-4 rounded-2xl mt-5 shadow-lg shadow-green/20 transition-all active:scale-95 touch-target-safe">
                 Aplicar 20%
             </button>
         </div>
