@@ -2549,18 +2549,18 @@ window.renderUserOrders = function (orders = []) {
         return `
                     <div class="relative bg-white dark:bg-darkcard rounded-2xl border border-purple-border/30 dark:border-purple/20 p-4 text-left overflow-hidden shadow-sm">
                         <div class="absolute top-0 left-0 w-1 h-full ${info.bar}"></div>
-                        <div class="flex justify-between items-start gap-3 pl-1">
-                            <div class="min-w-0">
+                        <div class="flex justify-between items-start gap-2 pl-1">
+                            <div class="min-w-0 flex-1 pr-2">
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">${date}</p>
                                 </div>
-                                <h5 class="text-sm font-black text-purple-dark dark:text-white mt-1 leading-snug">${window.escapeHTML(items)}</h5>
+                                <h5 class="text-sm font-black text-purple-dark dark:text-white mt-1 leading-snug break-words">${window.escapeHTML(items)}</h5>
                                 <p class="text-xs text-gray-500 dark:text-gray-400 font-bold mt-1">${total}</p>
                             </div>
                             <span class="shrink-0 px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${info.classes}">${info.label}</span>
                         </div>
-                        <div class="mt-3 ml-1 bg-purple-light/70 dark:bg-[#0d0718] border border-purple-border/30 dark:border-purple/20 rounded-xl p-3">
-                            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed">${window.escapeHTML(helper)}</p>
+                        <div class="mt-3 ml-1 bg-purple-light/70 dark:bg-[#0d0718] border border-purple-border/30 dark:border-purple/20 rounded-xl p-3 overflow-hidden">
+                            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold leading-relaxed break-words">${window.escapeHTML(helper)}</p>
                             ${points > 0 ? `<div class="mt-2 inline-flex items-center gap-1 bg-green/15 text-green-dark dark:text-green border border-green/20 rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest"><i data-lucide="sparkles" class="w-3 h-3"></i> +${points} ptos</div>` : ''}
                         </div>
                     </div>`;
@@ -2626,17 +2626,17 @@ window.renderAdminOrders = function (orders) {
         return `
                 <div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left relative overflow-hidden transition-all">
                     <div class="absolute top-0 left-0 w-1 h-full ${statusInfo.bar}"></div>
-                    <div class="flex justify-between items-start mb-3 pl-1">
-                        <div>
-                            <h4 class="font-black text-purple-dark dark:text-white text-sm md:text-base leading-tight">${safeUser}</h4>
-                            <p class="text-[10px] text-purple/50 dark:text-gray-500 font-bold">${date}</p>
+                    <div class="flex justify-between items-start mb-3 pl-1 gap-2">
+                        <div class="min-w-0 flex-1 pr-2">
+                            <h4 class="font-black text-purple-dark dark:text-white text-sm md:text-base leading-tight break-words">${safeUser}</h4>
+                            <p class="text-[10px] text-purple/50 dark:text-gray-500 font-bold mt-0.5">${date}</p>
                         </div>
                         <span class="px-2.5 py-1 rounded-md border text-[9px] font-black uppercase tracking-widest shrink-0 ${statusInfo.classes}">
                             ${statusInfo.label}
                         </span>
                     </div>
-                    <div class="bg-purple-light dark:bg-[#0d0718] rounded-xl p-3 mb-4 border border-purple-border/30 dark:border-purple/20 pl-1">
-                        <ul class="text-xs text-gray-600 dark:text-gray-400 pl-4 list-disc space-y-1.5 font-medium">
+                    <div class="bg-purple-light dark:bg-[#0d0718] rounded-xl p-3 mb-4 border border-purple-border/30 dark:border-purple/20 pl-1 overflow-hidden">
+                        <ul class="text-xs text-gray-600 dark:text-gray-400 pl-4 list-disc space-y-1.5 font-medium break-words">
                             ${safeItems}
                         </ul>
                     </div>
@@ -2645,7 +2645,9 @@ window.renderAdminOrders = function (orders) {
                             <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest block leading-tight">Total Cobrado</span>
                             <span class="font-black text-purple dark:text-white text-lg">$${totalNumber.toFixed(2)}</span>
                         </div>
-                        ${actionButton}
+                        <div class="flex items-center gap-2 flex-wrap">
+                            ${actionButton}
+                        </div>
                     </div>
                 </div>
                 `;
@@ -2711,19 +2713,19 @@ window.loadAdminUsers = async function () {
                     `).join('');
 
             return `
-                    <div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left relative">
-                        <div class="flex justify-between items-start mb-2">
-                            <div class="pr-2 min-w-0">
-                                <p class="font-black text-purple-dark dark:text-white text-sm truncate leading-tight">${email}</p>
+                    <div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-2 gap-2">
+                            <div class="pr-2 min-w-0 flex-1">
+                                <p class="font-black text-purple-dark dark:text-white text-sm break-all leading-tight">${email}</p>
                                 <p class="text-[10px] font-bold text-gray-500 mt-1">${levelObj.nombre} (Histórico: ${ptsHist} puntos)</p>
                             </div>
                             <div class="flex flex-col items-end shrink-0 gap-2">
                                 <span class="text-xs font-black text-purple dark:text-white bg-purple-light dark:bg-purple/20 px-3 py-1.5 rounded-xl border border-purple/20 shadow-sm">${ptsDisp} ptos</span>
                             </div>
                         </div>
-                        <div class="flex items-center justify-between mb-4 mt-3">
-                            ${desc}
-                            <div class="flex items-center gap-2">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 mt-3">
+                            <div>${desc}</div>
+                            <div class="flex items-center gap-1.5 flex-wrap">
                                 <button onclick="window.abrirModalSumarPuntos('${u.id}', '${email}', ${ptsDisp})" class="text-[10px] bg-purple hover:bg-purple-dark text-white px-3 py-1.5 rounded-lg font-black uppercase tracking-widest shadow-md transition-all active:scale-95 flex items-center gap-1">
                                     <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> + Puntos
                                 </button>
@@ -2849,21 +2851,21 @@ window.loadAdminBirthdays = async function () {
             return `
                     <div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border ${isNear ? 'border-pink/50 dark:border-pink/30 shadow-lg shadow-pink/10' : 'border-purple-border/50 dark:border-purple/20'} text-left relative overflow-hidden transition-all">
                         ${isNear ? '<div class="absolute top-0 left-0 w-1 h-full bg-pink"></div>' : ''}
-                        <div class="flex justify-between items-start mb-2 pl-1">
-                            <div>
-                                <h4 class="font-black ${isNear ? 'text-pink' : 'text-purple-dark dark:text-white'} text-base flex items-center gap-2">
+                        <div class="flex justify-between items-start mb-2 pl-1 gap-2">
+                            <div class="min-w-0 flex-1 pr-2">
+                                <h4 class="font-black ${isNear ? 'text-pink' : 'text-purple-dark dark:text-white'} text-base flex items-center gap-2 flex-wrap break-words">
                                     ${p.petType === 'gato' ? '🐱' : '🐶'} ${p.petName}
                                     ${isNear ? '<i data-lucide="cake" class="w-4 h-4"></i>' : ''}
                                 </h4>
                                 <p class="text-[10px] text-gray-500 font-bold mt-0.5">Nacimiento: ${p.bdayString}</p>
                             </div>
-                            <span class="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${isNear ? 'bg-pink text-white' : 'bg-purple/5 text-purple'}">
+                            <span class="shrink-0 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${isNear ? 'bg-pink text-white' : 'bg-purple/5 text-purple'}">
                                 ${p.daysLeft === 0 ? '¡Hoy!' : (p.daysLeft === 1 ? 'Mañana' : `En ${p.daysLeft} días`)}
                             </span>
                         </div>
-                        <div class="bg-purple-light dark:bg-[#0d0718] p-3 rounded-xl border border-purple/10 mt-3 ml-1">
+                        <div class="bg-purple-light dark:bg-[#0d0718] p-3 rounded-xl border border-purple/10 mt-3 ml-1 overflow-hidden">
                             <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Contacto / Dueño:</p>
-                            <p class="text-xs font-black text-purple-dark dark:text-white truncate">${p.ownerEmail}</p>
+                            <p class="text-xs font-black text-purple-dark dark:text-white break-all">${p.ownerEmail}</p>
                         </div>
                     </div>`;
         }).join('');

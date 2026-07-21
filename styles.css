@@ -301,6 +301,33 @@ input[type=number], input[type=text], input[type=tel], input[type=email], input[
     min-width: 44px;
 }
 
+/* ==========================================================================
+   SISTEMA GLOBAL ANTI-DESBORDAMIENTO DE TEXTOS (cero errores visuales)
+   ========================================================================== */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+p, h1, h2, h3, h4, h5, h6, span, div, a, label, li, td, th, button, input, select, textarea {
+    max-width: 100%;
+}
+td, th {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+.admin-panel, .premium-card, .nav-card, .glass-panel, [id$="-box"], [id$="-modal"], .bg-white, .dark\:bg-darkcard {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+.break-all, [id$="-email"], [id$="-uid"], [id$="-name"], [id*="correo"], [id*="user-name"] {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+input, select, textarea {
+    max-width: 100%;
+    text-overflow: ellipsis;
+}
+
 @media (max-width: 768px) {
     .view { transition: transform 0.38s cubic-bezier(0.25, 1, 0.3, 1), opacity 0.25s ease; }
     .view.next { transform: translate3d(18%, 0, -40px) scale(0.98); }
