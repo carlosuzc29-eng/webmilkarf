@@ -2598,27 +2598,59 @@ window.loadAdminOrders = function () {
     });
 };
 
+window.applyAdminOrderFilter = function(status) {
+    window.switchAdminTab('pedidos');
+    setTimeout(() => {
+        const select = document.getElementById('admin-order-status-filter');
+        if (select) {
+            select.value = status;
+            window.filterAdminOrders();
+        }
+    }, 50);
+};
+
 window.renderAdminOrders = function (orders) {
     const container = document.getElementById('admin-orders-container');
     if (!container) return;
-    if (orders.length === 0) {
-        container.innerHTML = '<p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">No hay pedidos registrados aún.</p>';
+    
+    let filteredOrders = orders;
+    let filterHeader = '';
+    
+    if (window.adminOrderFilter) {
+        filteredOrders = orders.filter(o => String(o.status || 'en_proceso').toLowerCase() === window.adminOrderFilter.toLowerCase());
+        const filterLabels = {
+            'en_proceso': 'En Proceso',
+            'confirmado': 'Confirmados',
+            'completado': 'Completados'
+        };
+        const label = filterLabels[window.adminOrderFilter] || window.adminOrderFilter;
+        filterHeader = `
+            <div class="flex items-center justify-between bg-purple-light dark:bg-purple/10 border border-purple/20 p-3 rounded-2xl mb-4">
+                <span class="text-xs font-black text-purple-dark dark:text-white flex items-center gap-2"><i data-lucide="filter" class="w-4 h-4 text-purple"></i> Filtrando: ${window.escapeHTML(label)}</span>
+                <button onclick="window.clearAdminOrderFilter()" class="text-[10px] bg-white dark:bg-darkcard border border-purple/20 text-pink hover:bg-pink hover:text-white px-3 py-1.5 rounded-xl font-bold uppercase tracking-widest transition-all">Quitar filtro</button>
+            </div>
+        `;
+    }
+
+    if (filteredOrders.length === 0) {
+        container.innerHTML = filterHeader + '<p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">No hay pedidos para mostrar.</p>';
+        window.refreshIcons?.(container);
         return;
     }
-    container.innerHTML = orders.map(o => {
+    container.innerHTML = filterHeader + filteredOrders.map(o => {
         const date = o.createdAt ? new Date(o.createdAt).toLocaleString('es-VE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Sin fecha';
         const pts = Math.floor(Number(o.total || 0));
         const statusInfo = window.getOrderStatusInfo(o.status);
         const status = String(o.status || 'en_proceso').toLowerCase();
         let actionButton = '';
-        if (status === 'pendiente' || status === 'en_proceso') {
-            if (o.registeredUser === true && o.uid && o.uid !== 'anonimo') {
-                actionButton = `<button onclick="window.aprobarPedidoAdmin('${o.id}', '${o.uid}', ${pts})" class="bg-green text-purple-dark text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-[#a6b621] transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check-circle" class="w-4 h-4"></i> Completar pedido y dar puntos</button>`;
-            } else {
-                actionButton = `<button onclick="window.confirmarPedidoInvitadoAdmin('${o.id}')" class="bg-green text-purple-dark text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-[#a6b621] transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check-circle" class="w-4 h-4"></i> Confirmar pedido</button>`;
-            }
+        if (status === 'pendiente' || status === 'en_proceso' || status === 'solicitado') {
+            actionButton = `<button onclick="window.marcarConfirmadoAdmin('${o.id}')" class="bg-blue-500 text-white text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-blue-600 transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check-circle" class="w-4 h-4"></i> Confirmar pedido</button>`;
         } else if (status === 'confirmado' || status === 'verificado') {
-            actionButton = `<button onclick="window.marcarCompletadoAdmin('${o.id}')" class="bg-purple text-white text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-pink transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check" class="w-4 h-4"></i> Marcar completado</button>`;
+            if (o.registeredUser === true && o.uid && o.uid !== 'anonimo') {
+                actionButton = `<button onclick="window.aprobarPedidoAdmin('${o.id}', '${o.uid}', ${pts})" class="bg-green text-purple-dark text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-[#a6b621] transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check-square" class="w-4 h-4"></i> Completar pedido y dar puntos</button>`;
+            } else {
+                actionButton = `<button onclick="window.marcarCompletadoAdmin('${o.id}')" class="bg-purple text-white text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-pink transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check-square" class="w-4 h-4"></i> Marcar completado</button>`;
+            }
         }
         const safeUser = window.escapeHTML(o.userName || 'Usuario');
         const safeItems = Array.isArray(o.items) ? o.items.map(i => `<li><span class="font-bold text-purple-dark dark:text-gray-300">${Number(i.qty || 0)}x</span> ${window.escapeHTML(i.name || 'Producto')} (${window.escapeHTML(i.weight || '')}) ${i.forPet ? `<span class="opacity-60 italic">- ${window.escapeHTML(i.forPet)}</span>` : ''}</li>`).join('') : '<li>Pedido sin detalle</li>';
@@ -3229,6 +3261,20 @@ window.marcarCompletadoAdmin = async function (orderId) {
         window.showToast(`Pedido marcado como completado.`, 'success');
     } catch (e) {
         window.showToast("Error al actualizar pedido.");
+        console.error(e);
+    }
+};
+
+window.marcarConfirmadoAdmin = async function (orderId) {
+    window.vibrate(20);
+    if (!window.isAdmin) { window.showToast('Debes iniciar sesión como administrador.'); return; }
+    if (!db) { window.showToast('Firebase no está disponible.'); return; }
+    try {
+        const orderRef = window.getOrderDocRef(orderId);
+        await setDoc(orderRef, { status: 'confirmado', confirmedAt: new Date().toISOString() }, { merge: true });
+        window.showToast(`Pedido confirmado correctamente.`, 'success');
+    } catch (e) {
+        window.showToast("Error al confirmar pedido.");
         console.error(e);
     }
 };
@@ -3912,11 +3958,11 @@ window.buildAdminOrderCard = function (o) {
     const items = Array.isArray(o.items) ? o.items.map(i => `<li class="flex justify-between gap-3 text-xs"><span><strong>${Number(i.qty || 0)}x</strong> ${window.escapeHTML(i.name || 'Producto')} ${i.weight ? `(${window.escapeHTML(i.weight)})` : ''} ${i.forPet ? `<em class="text-purple/50 dark:text-gray-500">para ${window.escapeHTML(i.forPet)}</em>` : ''}</span><span class="font-black text-purple-dark dark:text-white">$${(Number(i.price || 0) * Number(i.qty || 0)).toFixed(2)}</span></li>`).join('') : '<li class="text-xs text-gray-500">Pedido sin detalle</li>';
     let primary = '';
     if (['pendiente', 'en_proceso', 'solicitado'].includes(status)) {
-        primary = (o.registeredUser === true && o.uid && o.uid !== 'anonimo')
-            ? `<button onclick="window.aprobarPedidoAdmin('${o.id}', '${o.uid}', ${pts})" class="bg-green text-purple-dark text-[10px] font-black px-4 py-3 rounded-xl shadow-md hover:bg-[#a6b621] transition-all flex items-center gap-2 justify-center"><i data-lucide="check-circle" class="w-4 h-4"></i> Completar + puntos</button>`
-            : `<button onclick="window.confirmarPedidoInvitadoAdmin('${o.id}')" class="bg-green text-purple-dark text-[10px] font-black px-4 py-3 rounded-xl shadow-md hover:bg-[#a6b621] transition-all flex items-center gap-2 justify-center"><i data-lucide="check-circle" class="w-4 h-4"></i> Confirmar</button>`;
+        primary = `<button onclick="window.marcarConfirmadoAdmin('${o.id}')" class="bg-blue-500 text-white text-[10px] font-black px-4 py-3 rounded-xl shadow-md hover:bg-blue-600 transition-all flex items-center gap-2 justify-center"><i data-lucide="check-circle" class="w-4 h-4"></i> Confirmar pedido</button>`;
     } else if (['confirmado', 'verificado'].includes(status)) {
-        primary = `<button onclick="window.marcarCompletadoAdmin('${o.id}')" class="bg-purple text-white text-[10px] font-black px-4 py-3 rounded-xl shadow-md hover:bg-pink transition-all flex items-center gap-2 justify-center"><i data-lucide="badge-check" class="w-4 h-4"></i> Completar</button>`;
+        primary = (o.registeredUser === true && o.uid && o.uid !== 'anonimo')
+            ? `<button onclick="window.aprobarPedidoAdmin('${o.id}', '${o.uid}', ${pts})" class="bg-green text-purple-dark text-[10px] font-black px-4 py-3 rounded-xl shadow-md hover:bg-[#a6b621] transition-all flex items-center gap-2 justify-center"><i data-lucide="check-square" class="w-4 h-4"></i> Completar + puntos</button>`
+            : `<button onclick="window.marcarCompletadoAdmin('${o.id}')" class="bg-purple text-white text-[10px] font-black px-4 py-3 rounded-xl shadow-md hover:bg-pink transition-all flex items-center gap-2 justify-center"><i data-lucide="check-square" class="w-4 h-4"></i> Completar</button>`;
     }
     const canCancel = !['completado', 'cancelado'].includes(status);
     return `<div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left relative overflow-hidden">
@@ -6291,7 +6337,7 @@ window.renderAdminSummaryFallback = function (results = []) {
 
 window.ensureAdminSummaryHelpers = function () {
     if (typeof window.adminMetricCard !== 'function') {
-        window.adminMetricCard = function (label, value, icon = 'bar-chart-3', tone = 'purple') {
+        window.adminMetricCard = function (label, value, icon = 'bar-chart-3', tone = 'purple', onClickStr = null) {
             const esc = window.escapeHTML || (v => String(v ?? ''));
             const colors = {
                 purple: 'bg-purple-light dark:bg-purple/15 border-purple-border/40 text-purple dark:text-green',
@@ -6299,7 +6345,9 @@ window.ensureAdminSummaryHelpers = function () {
                 green: 'bg-green/15 border-green/25 text-green-dark dark:text-green'
             };
             const c = colors[tone] || colors.purple;
-            return `<div class="rounded-3xl border ${c} p-4 md:p-5 shadow-sm min-h-[120px] flex flex-col justify-between">
+            const clickAttr = onClickStr ? `onclick="${onClickStr}" role="button" tabindex="0"` : '';
+            const clickClasses = onClickStr ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all' : '';
+            return `<div ${clickAttr} class="rounded-3xl border ${c} ${clickClasses} p-4 md:p-5 shadow-sm min-h-[120px] flex flex-col justify-between">
                         <div class="flex items-center justify-between gap-3"><span class="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-purple/55 dark:text-gray-400 leading-tight">${esc(label)}</span><span class="w-9 h-9 rounded-2xl bg-white/80 dark:bg-darkcard/70 border border-white/60 dark:border-purple/20 flex items-center justify-center shrink-0"><i data-lucide="${icon}" class="w-4 h-4"></i></span></div>
                         <div class="mt-4 text-2xl md:text-3xl font-black text-purple-dark dark:text-white leading-none">${esc(value)}</div>
                     </div>`;
@@ -6401,12 +6449,12 @@ window.loadAdminSummary = async function () {
         container.innerHTML = `
                     ${[...hardFailures, ...softFailures].length ? `<div class="mb-5 space-y-3">${[...hardFailures, ...softFailures].map(r => window.renderFirestorePermissionHelp?.(r.error, r.label) || '').join('')}</div>` : ''}
                     <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-6">
-                        ${window.adminMetricCard('En proceso', inProcess, 'clock', 'pink')}
-                        ${window.adminMetricCard('Confirmados', confirmed, 'check-circle', 'green')}
-                        ${window.adminMetricCard('Completados', completed, 'package-check', 'purple')}
-                        ${window.adminMetricCard('Clientes', users.length, 'users', 'purple')}
-                        ${window.adminMetricCard('Canjes pendientes', pendingRedeems, 'gift', 'pink')}
-                        ${window.adminMetricCard('Ventas completadas', '$' + totalCompleted.toFixed(2), 'trending-up', 'green')}
+                        ${window.adminMetricCard('En proceso', inProcess, 'clock', 'pink', "window.applyAdminOrderFilter('en_proceso')")}
+                        ${window.adminMetricCard('Confirmados', confirmed, 'check-circle', 'green', "window.applyAdminOrderFilter('confirmado')")}
+                        ${window.adminMetricCard('Completados', completed, 'package-check', 'purple', "window.applyAdminOrderFilter('completado')")}
+                        ${window.adminMetricCard('Clientes', users.length, 'users', 'purple', "window.switchAdminTab('usuarios')")}
+                        ${window.adminMetricCard('Canjes pendientes', pendingRedeems, 'gift', 'pink', "window.switchAdminTab('canjes')")}
+                        ${window.adminMetricCard('Ventas completadas', '$' + totalCompleted.toFixed(2), 'trending-up', 'green', "window.applyAdminOrderFilter('completado')")}
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
                         <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-5 shadow-sm">
