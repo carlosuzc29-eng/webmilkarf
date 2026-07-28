@@ -3823,17 +3823,18 @@ window.loadAdminSummary = async function () {
         const upcoming = window.computeAdminBirthdays(users).filter(p => p.daysLeft <= 30).length;
         const recentOrders = orders.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)).slice(0, 4);
         const urgentRedeems = redeems.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)).slice(0, 3);
+        const totalCompleted = orders.filter(o => String(o.status || '').toLowerCase() === 'completado').reduce((sum, o) => sum + Number(o.totalWithDelivery || o.total || 0), 0);
         const kpi = [
-            { label: 'Pedidos en proceso', value: inProcess, icon: 'clock-3', color: 'text-pink', bg: 'bg-pink/10', tab: 'pedidos' },
-            { label: 'Confirmados', value: confirmed, icon: 'check-circle', color: 'text-green-dark dark:text-green', bg: 'bg-green/15', tab: 'pedidos' },
-            { label: 'Completados', value: completed, icon: 'badge-check', color: 'text-purple', bg: 'bg-purple/10', tab: 'pedidos' },
+            { label: 'En proceso', value: inProcess, icon: 'clock-3', color: 'text-pink', bg: 'bg-pink/10', tab: 'pedidos', filter: 'en_proceso' },
+            { label: 'Confirmados', value: confirmed, icon: 'check-circle', color: 'text-green-dark dark:text-green', bg: 'bg-green/15', tab: 'pedidos', filter: 'confirmado' },
+            { label: 'Completados', value: completed, icon: 'badge-check', color: 'text-purple', bg: 'bg-purple/10', tab: 'pedidos', filter: 'completado' },
+            { label: 'Ventas completadas', value: '$' + totalCompleted.toFixed(2), icon: 'trending-up', color: 'text-green-dark dark:text-green', bg: 'bg-green/15', tab: 'pedidos', filter: 'completado' },
             { label: 'Clientes', value: users.length, icon: 'users', color: 'text-purple', bg: 'bg-purple/10', tab: 'usuarios' },
-            { label: 'Canjes pendientes', value: pendingRedeems, icon: 'gift', color: 'text-pink', bg: 'bg-pink/10', tab: 'canjes' },
-            { label: 'Cumples 30 días', value: upcoming, icon: 'cake', color: 'text-green-dark dark:text-green', bg: 'bg-green/15', tab: 'cumples' }
+            { label: 'Canjes pendientes', value: pendingRedeems, icon: 'gift', color: 'text-pink', bg: 'bg-pink/10', tab: 'canjes' }
         ];
         container.innerHTML = `
                     <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
-                        ${kpi.map(i => `<button onclick="window.switchAdminTab('${i.tab}')" class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-4 text-left shadow-sm hover:shadow-md transition-all active:scale-95">
+                        ${kpi.map(i => `<button onclick="${i.filter ? `window.applyAdminOrderFilter('${i.filter}')` : `window.switchAdminTab('${i.tab}')`}" class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-4 text-left shadow-sm hover:shadow-md transition-all active:scale-95">
                             <div class="w-10 h-10 rounded-2xl ${i.bg} ${i.color} flex items-center justify-center mb-3"><i data-lucide="${i.icon}" class="w-5 h-5"></i></div>
                             <p class="text-2xl font-black text-purple-dark dark:text-white leading-none">${i.value}</p>
                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-2 leading-tight">${i.label}</p>
