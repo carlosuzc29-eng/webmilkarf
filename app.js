@@ -3469,7 +3469,7 @@ window.renderDeliveryNoteCapture = function (payload = {}) {
     if (!target) {
         target = document.createElement('div');
         target.id = 'delivery-note-capture';
-        target.style.cssText = 'position:fixed; left:-9999px; top:0; width:600px; pointer-events:none; z-index:-1;';
+        target.style.cssText = 'position:fixed; left:-9999px; top:0; width:800px; pointer-events:none; z-index:-1;';
         document.body.appendChild(target);
     }
     const safe = window.escapeHTML || ((v) => String(v ?? ''));
@@ -3553,7 +3553,7 @@ window.getDeliveryNoteCanvas = async function () {
         useCORS: true,
         allowTaint: true,
         logging: false,
-        windowWidth: 600
+        windowWidth: 800
     });
 };
 
