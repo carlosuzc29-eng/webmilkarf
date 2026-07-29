@@ -375,6 +375,15 @@ window.hasRealUserSession = function () {
     return !!(window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email));
 };
 
+window.capitalizeName = function (value = '') {
+    if (!value) return '';
+    return String(value)
+        .toLowerCase()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+};
+
 window.escapeHTML = function (value = '') {
     return String(value)
         .replace(/&/g, '&amp;')
@@ -523,7 +532,7 @@ window.__legacyOpenWhatsAppMessageUnused = function (message, phone = window.WA_
 
 window.getWhatsAppTemplate = function (type = 'general', data = {}) {
     const currency = (value) => '$' + Number(value || 0).toFixed(2);
-    const userName = data.userName || data.email || 'Cliente Milkarf';
+    const userName = window.capitalizeName(data.userName || data.email || 'Cliente Milkarf');
 
     switch (type) {
         case 'general':
@@ -601,7 +610,7 @@ Revisar el pedido desde el panel administrador para continuar la atención.`;
             const productTotal = Number(data.productTotal ?? order.total ?? 0);
             const deliveryCost = Number(data.deliveryCost || 0);
             const finalTotal = productTotal + deliveryCost;
-            const clientName = data.clientName || order.userName || order.nombre || order.email || 'cliente Milkarf';
+            const clientName = window.capitalizeName(data.clientName || order.userName || order.nombre || order.email || 'cliente Milkarf');
             const petName = data.petName || order.selectedPet || (noteItems.find(i => i.forPet)?.forPet) || 'tu peludo';
             const petText = petName !== 'tu mascota' && petName !== 'tu peludo' ? petName : 'tu peludo';
             const deliveryDate = data.deliveryDateLabel || 'Por confirmar';
@@ -3376,7 +3385,7 @@ window.getDeliveryNotePayload = function (order = {}) {
     const deliveryDate = document.getElementById('delivery-note-date')?.value || order.deliveryDate || '';
     const items = window.getDeliveryNoteItems(order);
     const productTotal = Number(order.total || items.reduce((sum, i) => sum + (Number(i.price || 0) * Number(i.qty || 0)), 0));
-    const clientName = order.userName || order.nombre_persona || order.nombre || order.displayName || order.email || 'Cliente Milkarf';
+    const clientName = window.capitalizeName(order.userName || order.nombre_persona || order.nombre || order.displayName || order.email || 'Cliente Milkarf');
     const petName = order.selectedPet || items.find(i => i.forPet)?.forPet || 'tu mascota';
     return {
         order,
@@ -3854,14 +3863,14 @@ window.loadAdminSummary = async function () {
 window.buildAdminMiniOrder = function (o) {
     const items = Array.isArray(o.items) ? o.items.map(i => `${Number(i.qty || 0)}x ${i.name || 'Producto'}`).join(' · ') : 'Pedido Milkarf';
     return `<div class="rounded-2xl border border-purple-border/30 dark:border-purple/20 bg-purple-light/40 dark:bg-[#0d0718] p-4 text-left">
-                <div class="flex justify-between items-start gap-3"><div class="min-w-0"><p class="text-sm font-black text-purple-dark dark:text-white truncate">${window.escapeHTML(o.userName || o.email || 'Usuario')}</p><p class="text-[10px] text-gray-500 font-bold mt-1 truncate">${window.escapeHTML(items)}</p></div>${window.renderStatusBadge(o.status)}</div>
+                <div class="flex justify-between items-start gap-3"><div class="min-w-0"><p class="text-sm font-black text-purple-dark dark:text-white truncate">${window.escapeHTML(window.capitalizeName(o.userName || o.email || 'Usuario'))}</p><p class="text-[10px] text-gray-500 font-bold mt-1 truncate">${window.escapeHTML(items)}</p></div>${window.renderStatusBadge(o.status)}</div>
                 <p class="text-[10px] text-gray-400 font-bold mt-2">${window.formatAdminDate(o.createdAt)} · $${Number(o.total || 0).toFixed(2)}</p>
             </div>`;
 };
 
 window.buildAdminRedeemMini = function (r) {
     return `<div class="rounded-2xl border border-purple-border/30 dark:border-purple/20 bg-purple-light/40 dark:bg-[#0d0718] p-4 text-left">
-                <div class="flex justify-between gap-3"><div><p class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</p><p class="text-[10px] text-gray-500 font-bold mt-1">${window.escapeHTML(r.email || r.userName || 'Cliente')} · ${Number(r.points || 0)} ptos</p></div><span class="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg bg-pink/10 text-pink border border-pink/20 h-fit">${window.escapeHTML(r.status || 'solicitado')}</span></div>
+                <div class="flex justify-between gap-3"><div><p class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</p><p class="text-[10px] text-gray-500 font-bold mt-1">${window.escapeHTML(window.capitalizeName(r.userName || r.email || 'Cliente'))} · ${Number(r.points || 0)} ptos</p></div><span class="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg bg-pink/10 text-pink border border-pink/20 h-fit">${window.escapeHTML(r.status || 'solicitado')}</span></div>
             </div>`;
 };
 
@@ -3962,7 +3971,7 @@ window.buildAdminOrderCard = function (o) {
     return `<div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-1 h-full ${window.getOrderStatusInfo(status).bar}"></div>
                 <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 pl-2">
-                    <div class="min-w-0"><div class="flex items-center gap-2 flex-wrap mb-2">${window.renderStatusBadge(status)}<span class="text-[9px] font-black uppercase tracking-widest text-gray-400">#${window.escapeHTML(o.id.slice(0, 8))}</span></div><h4 class="font-black text-purple-dark dark:text-white text-base leading-tight truncate">${window.escapeHTML(o.userName || o.email || 'Usuario Invitado')}</h4><p class="text-[10px] text-gray-500 font-bold mt-1">${window.formatAdminDate(o.createdAt)}</p></div>
+                    <div class="min-w-0"><div class="flex items-center gap-2 flex-wrap mb-2">${window.renderStatusBadge(status)}<span class="text-[9px] font-black uppercase tracking-widest text-gray-400">#${window.escapeHTML(o.id.slice(0, 8))}</span></div><h4 class="font-black text-purple-dark dark:text-white text-base leading-tight truncate">${window.escapeHTML(window.capitalizeName(o.userName || o.email || 'Usuario Invitado'))}</h4><p class="text-[10px] text-gray-500 font-bold mt-1">${window.formatAdminDate(o.createdAt)}</p></div>
                     <div class="text-left md:text-right shrink-0"><span class="text-[10px] text-gray-400 font-black uppercase tracking-widest block">Total</span><span class="font-black text-purple dark:text-white text-2xl">$${totalNumber.toFixed(2)}</span>${o.descuentoAplicado ? '<p class="text-[9px] font-black text-pink uppercase tracking-widest">20% aplicado</p>' : ''}${Number(o.pointsAwarded || o.pointsGranted || 0) > 0 ? `<p class="text-[9px] font-black text-green-dark dark:text-green uppercase tracking-widest mt-1">+${Number(o.pointsAwarded || o.pointsGranted || 0)} ptos</p>` : ''}</div>
                 </div>
                 <div class="bg-purple-light/70 dark:bg-[#0d0718] rounded-2xl p-4 my-4 border border-purple-border/30 dark:border-purple/20 ml-2"><ul class="space-y-2">${items}</ul></div>
@@ -4157,7 +4166,7 @@ window.buildAdminRedeemCard = function (r) {
         points: r.points || 0
     });
     const w = window.buildWhatsAppUrl(msg);
-    return `<div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left"><div class="flex flex-col md:flex-row md:items-start justify-between gap-4"><div><span class="inline-flex px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${statusClass}">${window.escapeHTML(status)}</span><h4 class="font-black text-purple-dark dark:text-white text-base mt-3">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</h4><p class="text-xs text-gray-500 font-bold mt-1">${window.escapeHTML(r.email || r.userName || 'Cliente')} · ${Number(r.points || 0)} ptos</p><p class="text-[10px] text-gray-400 font-bold mt-1">${window.formatAdminDate(r.createdAt)}</p></div><div class="grid grid-cols-1 sm:grid-cols-3 gap-2"><button onclick="window.actualizarCanjeAdmin('${r.id}', 'aprobado')" class="bg-green text-purple-dark text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest">Aprobar</button><button onclick="window.actualizarCanjeAdmin('${r.id}', 'entregado')" class="bg-purple text-white text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest">Entregado</button><a href="${w}" target="_blank" class="bg-[#25D366]/15 text-[#168d43] dark:text-green border border-[#25D366]/30 text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest text-center">WhatsApp</a></div></div></div>`;
+    return `<div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left"><div class="flex flex-col md:flex-row md:items-start justify-between gap-4"><div><span class="inline-flex px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-widest ${statusClass}">${window.escapeHTML(status)}</span><h4 class="font-black text-purple-dark dark:text-white text-base mt-3">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</h4><p class="text-xs text-gray-500 font-bold mt-1">${window.escapeHTML(window.capitalizeName(r.userName || r.email || 'Cliente'))} · ${Number(r.points || 0)} ptos</p><p class="text-[10px] text-gray-400 font-bold mt-1">${window.formatAdminDate(r.createdAt)}</p></div><div class="grid grid-cols-1 sm:grid-cols-3 gap-2"><button onclick="window.actualizarCanjeAdmin('${r.id}', 'aprobado')" class="bg-green text-purple-dark text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest">Aprobar</button><button onclick="window.actualizarCanjeAdmin('${r.id}', 'entregado')" class="bg-purple text-white text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest">Entregado</button><a href="${w}" target="_blank" class="bg-[#25D366]/15 text-[#168d43] dark:text-green border border-[#25D366]/30 text-[10px] font-black px-4 py-3 rounded-xl uppercase tracking-widest text-center">WhatsApp</a></div></div></div>`;
 };
 
 window.actualizarCanjeAdmin = async function (redeemId, status) {
