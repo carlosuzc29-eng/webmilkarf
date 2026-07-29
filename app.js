@@ -609,7 +609,7 @@ Revisar el pedido desde el panel administrador para continuar la atención.`;
             const noteItems = Array.isArray(data.items) ? data.items : (Array.isArray(order.items) ? order.items : []);
             const productTotal = Number(data.productTotal ?? order.total ?? 0);
             const deliveryCost = Number(data.deliveryCost || 0);
-            const finalTotal = productTotal + deliveryCost;
+            const finalTotal = Number(data.finalTotal ?? (productTotal + deliveryCost));
             const clientName = window.capitalizeName(data.clientName || order.userName || order.nombre || order.email || 'cliente Milkarf');
             const petName = data.petName || order.selectedPet || (noteItems.find(i => i.forPet)?.forPet) || 'tu peludo';
             const petText = petName !== 'tu mascota' && petName !== 'tu peludo' ? petName : 'tu peludo';
