@@ -618,7 +618,7 @@ Revisar el pedido desde el panel administrador para continuar la atención.`;
             const direccion = order.direccion || order.address || order.dir || 'A convenir';
             const ptsSumados = Number(order.pointsAwarded || order.pointsGranted || Math.floor(finalTotal));
 
-            return `¡Hola, ${clientName}! 🐾 Gracias por tu compra en Milkarf. ❤️
+            return `¡Hola, ${clientName}! 🐾 Gracias por tu compra en Milkarf. 💜
 
 Te adjuntamos tu Nota de Entrega con el detalle de tu pedido para ${petText}. 🖼️✨
 
