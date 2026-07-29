@@ -3384,15 +3384,22 @@ window.getDeliveryNotePayload = function (order = {}) {
     const deliveryCost = Math.max(0, Number(feeInput?.value || order.deliveryCost || 0));
     const deliveryDate = document.getElementById('delivery-note-date')?.value || order.deliveryDate || '';
     const items = window.getDeliveryNoteItems(order);
-    const productTotal = Number(order.total || items.reduce((sum, i) => sum + (Number(i.price || 0) * Number(i.qty || 0)), 0));
+    const rawSubtotal = items.reduce((sum, i) => sum + (Number(i.price || 0) * Number(i.qty || 0)), 0);
+    const hasDiscount = order.descuentoAplicado === true;
+    const discountAmount = hasDiscount ? rawSubtotal * 0.2 : 0;
+    const productTotal = rawSubtotal;
+    const finalTotal = productTotal - discountAmount + deliveryCost;
+
     const clientName = window.capitalizeName(order.userName || order.nombre_persona || order.nombre || order.displayName || order.email || 'Cliente Milkarf');
     const petName = order.selectedPet || items.find(i => i.forPet)?.forPet || 'tu mascota';
     return {
         order,
         items,
         productTotal,
+        hasDiscount,
+        discountAmount,
         deliveryCost,
-        finalTotal: productTotal + deliveryCost,
+        finalTotal,
         deliveryDate,
         deliveryDateLabel: window.getDeliveryDateLabel(deliveryDate),
         clientName,
@@ -3404,7 +3411,7 @@ window.buildDeliveryNoteMessage = function (order = {}, deliveryCost = 0, delive
     const payload = window.getDeliveryNotePayload(order);
     if (deliveryCost !== undefined && deliveryCost !== null) {
         payload.deliveryCost = Math.max(0, Number(deliveryCost || 0));
-        payload.finalTotal = payload.productTotal + payload.deliveryCost;
+        payload.finalTotal = payload.productTotal - payload.discountAmount + payload.deliveryCost;
     }
     if (deliveryDate !== undefined && deliveryDate !== null && deliveryDate !== '') {
         payload.deliveryDate = deliveryDate;
@@ -3448,6 +3455,8 @@ window.updateDeliveryNotePreview = function () {
     const dateEl = document.getElementById('delivery-note-date-text');
     const itemsEl = document.getElementById('delivery-note-items');
     const productsTotalEl = document.getElementById('delivery-note-subtotal');
+    const discountRowEl = document.getElementById('delivery-note-discount-row');
+    const discountAmountEl = document.getElementById('delivery-note-discount-amount');
     const deliveryTotalEl = document.getElementById('delivery-note-delivery-cost');
     const finalTotalEl = document.getElementById('delivery-note-total');
 
@@ -3467,6 +3476,14 @@ window.updateDeliveryNotePreview = function () {
         }).join('') : '<p class="text-xs text-gray-500 font-semibold">Este pedido no tiene productos registrados.</p>';
     }
     if (productsTotalEl) productsTotalEl.textContent = '$' + payload.productTotal.toFixed(2);
+    if (discountRowEl) {
+        if (payload.hasDiscount) {
+            discountRowEl.classList.remove('hidden');
+            if (discountAmountEl) discountAmountEl.textContent = '-$' + payload.discountAmount.toFixed(2);
+        } else {
+            discountRowEl.classList.add('hidden');
+        }
+    }
     if (deliveryTotalEl) deliveryTotalEl.textContent = '$' + payload.deliveryCost.toFixed(2);
     if (finalTotalEl) finalTotalEl.textContent = '$' + payload.finalTotal.toFixed(2);
     if (messagePreview) messagePreview.textContent = message;
@@ -3518,6 +3535,7 @@ window.renderDeliveryNoteCapture = function (payload = {}) {
                         </div>
                         <div class="delivery-capture-totals">
                             <div class="delivery-capture-total-row"><span>Total productos</span><span>$${Number(payload.productTotal || 0).toFixed(2)}</span></div>
+                            ${payload.hasDiscount ? `<div class="delivery-capture-total-row"><span style="color: #b9cb25;">Descuento (1era Compra)</span><span style="color: #b9cb25;">-$${Number(payload.discountAmount || 0).toFixed(2)}</span></div>` : ''}
                             <div class="delivery-capture-total-row"><span>Delivery</span><span>$${Number(payload.deliveryCost || 0).toFixed(2)}</span></div>
                             <div class="delivery-capture-total-row delivery-capture-final"><span>Total a pagar</span><span>$${Number(payload.finalTotal || 0).toFixed(2)}</span></div>
                         </div>
