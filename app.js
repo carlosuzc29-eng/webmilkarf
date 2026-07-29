@@ -611,13 +611,11 @@ Revisar el pedido desde el panel administrador para continuar la atención.`;
 
             return `¡Hola, ${clientName}! 🐾 Gracias por tu compra en Milkarf. ❤️
 
-Te adjuntamos tu Nota de Entrega oficial con el detalle de tu pedido para ${petText}. 🖼️✨
+Te adjuntamos tu Nota de Entrega con el detalle de tu pedido para ${petText}. 🖼️✨
 
 💰 Total a pagar: $${finalTotal.toFixed(2)}
 📅 Fecha de entrega: ${deliveryDate}
-🌟 Puntos sumados: +${ptsSumados} ptos
-
-¡Cualquier duda, estamos a tu orden! 🐶🦴`;
+🌟 Puntos sumados: +${ptsSumados} ptos`;
         }
 
         case 'birthday':
