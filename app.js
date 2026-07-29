@@ -3671,7 +3671,7 @@ window.sendDeliveryNoteToClient = async function () {
     const order = window.getAdminOrderById(orderId);
     const rawPhone = document.getElementById('delivery-note-phone')?.value || '';
     const phone = window.normalizePhone(rawPhone);
-    const deliveryCost = Math.max(0, Number(document.getElementById('delivery-note-cost')?.value || 0));
+    const deliveryCost = Math.max(0, Number(document.getElementById('delivery-note-fee')?.value || 0));
     const deliveryDate = document.getElementById('delivery-note-date')?.value || '';
     const err = document.getElementById('delivery-note-error');
     if (err) { err.classList.add('hidden'); err.textContent = ''; }
@@ -3690,7 +3690,7 @@ window.sendDeliveryNoteToClient = async function () {
 
     const payload = window.getDeliveryNotePayload(order);
     payload.deliveryCost = deliveryCost;
-    payload.finalTotal = payload.productTotal + deliveryCost;
+    payload.finalTotal = payload.productTotal - (payload.discountAmount || 0) + deliveryCost;
     payload.deliveryDate = deliveryDate;
     payload.deliveryDateLabel = window.getDeliveryDateLabel(deliveryDate);
     const message = window.getWhatsAppTemplate('deliveryNote', payload);
