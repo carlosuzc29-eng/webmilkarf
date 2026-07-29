@@ -614,10 +614,11 @@ Revisar el pedido desde el panel administrador para continuar la atención.`;
 ¡Muchísimas gracias por tu compra en Milkarf! ❤️ Nos alegra muchísimo consentir a ${petText} con nuestra nutrición natural y evolutiva.
 
 Acá te enviamos la información oficial de tu pedido programado para entrega:
-📦 Pedido: ${orderIdShort}
+📦 Total productos: $${productTotal.toFixed(2)}
+🚚 Delivery: $${deliveryCost.toFixed(2)}
+💰 Total a pagar: $${finalTotal.toFixed(2)}
 📅 Fecha de entrega: ${deliveryDate}
 📍 Dirección: ${direccion}
-💰 Total pagado / confirmado: $${finalTotal.toFixed(2)}
 🌟 Puntos sumados a tu cuenta: +${ptsSumados} ptos Milkarf
 
 Adjunto a este mensaje te compartimos tu Nota de Entrega oficial en imagen. 🖼️✨
@@ -3443,11 +3444,11 @@ window.updateDeliveryNotePreview = function () {
 
     const clientEl = document.getElementById('delivery-note-client');
     const petEl = document.getElementById('delivery-note-pet');
-    const dateEl = document.getElementById('delivery-note-preview-date');
-    const itemsEl = document.getElementById('delivery-note-items-preview');
-    const productsTotalEl = document.getElementById('delivery-note-products-total');
-    const deliveryTotalEl = document.getElementById('delivery-note-delivery-total');
-    const finalTotalEl = document.getElementById('delivery-note-final-total');
+    const dateEl = document.getElementById('delivery-note-date-text');
+    const itemsEl = document.getElementById('delivery-note-items');
+    const productsTotalEl = document.getElementById('delivery-note-subtotal');
+    const deliveryTotalEl = document.getElementById('delivery-note-delivery-cost');
+    const finalTotalEl = document.getElementById('delivery-note-total');
 
     if (clientEl) clientEl.textContent = payload.clientName;
     if (petEl) petEl.textContent = 'Mascota asociada: ' + payload.petName;
@@ -3555,12 +3556,12 @@ window.getDeliveryNoteCanvas = async function () {
     }
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     return await window.html2canvas(target.firstElementChild || target, {
-        scale: 2,
+        scale: 3,
         backgroundColor: '#f5f0e8',
         useCORS: true,
         allowTaint: true,
         logging: false,
-        windowWidth: 1200
+        windowWidth: 600
     });
 };
 
