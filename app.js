@@ -609,21 +609,15 @@ Revisar el pedido desde el panel administrador para continuar la atención.`;
             const direccion = order.direccion || order.address || order.dir || 'A convenir';
             const ptsSumados = Number(order.pointsAwarded || order.pointsGranted || Math.floor(finalTotal));
 
-            return `¡Hola, ${clientName}! 🐾
+            return `¡Hola, ${clientName}! 🐾 Gracias por tu compra en Milkarf. ❤️
 
-¡Muchísimas gracias por tu compra en Milkarf! ❤️ Nos alegra muchísimo consentir a ${petText} con nuestra nutrición natural y evolutiva.
+Te adjuntamos tu Nota de Entrega oficial con el detalle de tu pedido para ${petText}. 🖼️✨
 
-Acá te enviamos la información oficial de tu pedido programado para entrega:
-📦 Total productos: $${productTotal.toFixed(2)}
-🚚 Delivery: $${deliveryCost.toFixed(2)}
 💰 Total a pagar: $${finalTotal.toFixed(2)}
 📅 Fecha de entrega: ${deliveryDate}
-📍 Dirección: ${direccion}
-🌟 Puntos sumados a tu cuenta: +${ptsSumados} ptos Milkarf
+🌟 Puntos sumados: +${ptsSumados} ptos
 
-Adjunto a este mensaje te compartimos tu Nota de Entrega oficial en imagen. 🖼️✨
-
-¡Esperamos que ${petText} lo disfrute muchísimo! 🐶🦴 Cualquier consulta adicional, estamos a tu orden por acá.`;
+¡Cualquier duda, estamos a tu orden! 🐶🦴`;
         }
 
         case 'birthday':
