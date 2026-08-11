@@ -1392,6 +1392,9 @@
                     <form id="form-login" onsubmit="event.preventDefault();" class="space-y-3 mb-4 text-left">
                         <input type="email" id="auth-email-login" placeholder="Correo electrónico" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
                         <input type="password" id="auth-pass-login" placeholder="Contraseña" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left">
+                        <div class="text-right -mt-1 mb-1">
+                            <button type="button" onclick="window.recuperarPassword()" class="text-[11px] font-bold text-purple/60 dark:text-gray-400 hover:text-pink transition-colors cursor-pointer">¿Olvidaste tu contraseña?</button>
+                        </div>
                         <button id="btn-login-email" onclick="window.loginConEmail()" type="button" class="w-full bg-purple hover:bg-pink text-white font-extrabold text-sm py-3.5 rounded-xl transition-all active:scale-95 shadow-md mt-1">Iniciar Sesión</button>
                     </form>
 

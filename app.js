@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, linkWithCredential, EmailAuthProvider, signOut, signInWithCustomToken, signInAnonymously, setPersistence, browserLocalPersistence, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, linkWithCredential, EmailAuthProvider, signOut, signInWithCustomToken, signInAnonymously, setPersistence, browserLocalPersistence, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, collection, doc, setDoc, getDoc, addDoc, getDocs, serverTimestamp, onSnapshot, deleteDoc, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 // =========================================================================================
@@ -1549,6 +1549,78 @@ window.loginConEmail = async function () {
         }
         const btn = document.getElementById('btn-login-email');
         if (btn) { btn.textContent = "Iniciar Sesión"; btn.disabled = false; }
+    }
+};
+
+window.recuperarPassword = async function () {
+    window.vibrate(20);
+    if (!auth) { window.showToast("Base de datos no configurada."); return; }
+    
+    const emailInput = document.getElementById('auth-email-login');
+    const email = emailInput ? emailInput.value.trim() : '';
+    const err = document.getElementById('auth-error');
+
+    if (!email) {
+        if (err) {
+            err.textContent = "Ingresa tu correo en el campo de arriba para restablecer la contraseña.";
+            err.className = "mt-3 text-xs font-bold text-pink bg-pink/10 border border-pink/30 p-2.5 rounded-lg text-center leading-tight";
+            err.classList.remove('hidden');
+        } else {
+            window.showToast("Ingresa tu correo para restablecer la contraseña.", "error");
+        }
+        if (emailInput) emailInput.focus();
+        return;
+    }
+
+    try {
+        if (err) err.classList.add('hidden');
+        const btn = document.activeElement;
+        const originalText = btn && btn.tagName === 'BUTTON' ? btn.innerHTML : '¿Olvidaste tu contraseña?';
+        
+        if (btn && btn.tagName === 'BUTTON') { 
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-3 h-3 animate-spin inline mr-1"></i>Enviando...'; 
+            btn.disabled = true; 
+            window.refreshIcons?.();
+        }
+
+        await sendPasswordResetEmail(auth, email);
+
+        if (err) {
+            err.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 inline mr-1 text-green-dark"></i> Te enviamos un enlace para restablecer tu contraseña. Revisa tu correo.`;
+            err.className = "mt-3 text-xs font-bold text-purple-dark bg-green/20 border border-green/30 p-2.5 rounded-lg text-center leading-tight flex justify-center items-center";
+            err.classList.remove('hidden');
+            window.refreshIcons?.();
+        } else {
+            window.showToast("Enlace enviado. Revisa tu correo.", "success");
+        }
+
+        if (btn && btn.tagName === 'BUTTON') {
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }, 500);
+        }
+    } catch (error) {
+        console.warn('Error al recuperar contraseña:', error);
+        
+        let mensaje = "No se pudo enviar el enlace. Verifica que el correo esté bien escrito.";
+        if (error.code === 'auth/invalid-email') {
+            mensaje = "El formato del correo no es válido.";
+        }
+        
+        if (err) {
+            err.textContent = mensaje;
+            err.className = "mt-3 text-xs font-bold text-pink bg-pink/10 border border-pink/30 p-2.5 rounded-lg text-center leading-tight";
+            err.classList.remove('hidden');
+        } else {
+            window.showToast(mensaje, "error");
+        }
+        
+        const btn = document.activeElement;
+        if (btn && btn.tagName === 'BUTTON') {
+            btn.innerHTML = "¿Olvidaste tu contraseña?";
+            btn.disabled = false;
+        }
     }
 };
 
