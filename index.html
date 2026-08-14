@@ -1483,6 +1483,30 @@
         </div>
     </div>
 
+    <!-- MODAL NUEVA CONTRASEÑA -->
+    <div id="modal-reset-password" class="fixed inset-0 z-[1002] bg-black/60 backdrop-blur-sm hidden items-center justify-center opacity-0 transition-opacity duration-300 p-4">
+        <div id="modal-reset-password-box" class="bg-white dark:bg-darkcard w-full max-w-sm rounded-[2rem] shadow-2xl p-6 relative text-center border border-purple-border/30 dark:border-purple/20 pointer-events-auto flex flex-col transform scale-95 transition-transform duration-300">
+            <button id="btn-cerrar-modal-reset" onclick="window.cerrarModalResetPassword()" class="absolute top-5 right-5 text-gray-400 hover:text-pink transition-colors z-20"><i data-lucide="x" class="w-5 h-5"></i></button>
+            
+            <div class="shrink-0 mb-4">
+                <div class="w-14 h-14 bg-green/10 rounded-full flex items-center justify-center text-green-dark dark:text-green mx-auto mb-2">
+                    <i data-lucide="key" class="w-7 h-7"></i>
+                </div>
+                <h3 class="text-xl font-black text-purple-dark dark:text-white leading-tight">Nueva Contraseña</h3>
+                <p class="text-[10px] text-gray-500 font-medium leading-relaxed mt-1">Crea una nueva contraseña segura.</p>
+            </div>
+            
+            <form id="form-reset-password" onsubmit="event.preventDefault();" class="space-y-3 mb-2 text-left">
+                <input type="password" id="reset-new-pass" placeholder="Nueva contraseña (min. 6)" autocomplete="new-password" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left milkarf-input-focus">
+                <input type="password" id="reset-confirm-pass" placeholder="Confirmar nueva contraseña" autocomplete="new-password" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple text-left milkarf-input-focus">
+                
+                <div id="reset-error" class="hidden mt-2 mb-2 text-xs font-bold text-pink bg-pink/10 border border-pink/20 p-2.5 rounded-lg text-center leading-tight"></div>
+                
+                <button id="btn-save-new-pass" onclick="window.guardarNuevaPassword()" type="button" class="w-full bg-green text-purple-dark hover:bg-[#a6b621] font-extrabold text-sm py-3.5 rounded-xl transition-all active:scale-95 shadow-md mt-2">Guardar Contraseña</button>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL DE BIENVENIDA -->
     <div id="modal-bienvenida" class="fixed inset-0 z-[1001] bg-black/60 backdrop-blur-sm hidden items-center justify-center opacity-0 transition-opacity duration-500 p-4">
         <div id="modal-bienvenida-box" class="bg-white dark:bg-darkcard w-full max-w-sm rounded-[2rem] shadow-2xl p-8 transform scale-95 transition-transform duration-500 relative overflow-hidden text-center border border-purple-border/30 dark:border-purple/20 flex flex-col">

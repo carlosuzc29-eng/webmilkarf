@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, linkWithCredential, EmailAuthProvider, signOut, signInWithCustomToken, signInAnonymously, setPersistence, browserLocalPersistence, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, linkWithCredential, EmailAuthProvider, signOut, signInWithCustomToken, signInAnonymously, setPersistence, browserLocalPersistence, updateProfile, sendPasswordResetEmail, verifyPasswordResetCode, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, collection, doc, setDoc, getDoc, addDoc, getDocs, serverTimestamp, onSnapshot, deleteDoc, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 // =========================================================================================
@@ -1583,7 +1583,11 @@ window.recuperarPassword = async function () {
             window.refreshIcons?.();
         }
 
-        await sendPasswordResetEmail(auth, email);
+        const actionCodeSettings = {
+            url: window.location.origin + window.location.pathname,
+            handleCodeInApp: false
+        };
+        await sendPasswordResetEmail(auth, email, actionCodeSettings);
 
         if (err) {
             err.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 inline mr-1 text-green-dark"></i> Te enviamos un enlace para restablecer tu contraseña. Revisa tu correo.`;
@@ -1621,6 +1625,107 @@ window.recuperarPassword = async function () {
             btn.innerHTML = "¿Olvidaste tu contraseña?";
             btn.disabled = false;
         }
+    }
+};
+
+window.currentOobCode = null;
+
+window.handleResetPasswordUrl = async function() {
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get('mode');
+    const oobCode = params.get('oobCode');
+
+    if (mode === 'resetPassword' && oobCode) {
+        window.currentOobCode = oobCode;
+        window.showToast("Verificando enlace...", "success");
+        try {
+            await verifyPasswordResetCode(auth, oobCode);
+            // Open modal
+            const modal = document.getElementById('modal-reset-password');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    const box = document.getElementById('modal-reset-password-box');
+                    if (box) box.classList.remove('scale-95');
+                }, 10);
+            }
+            // Clean url so it doesn't stay there if user reloads
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (error) {
+            window.showToast("El enlace es inválido o ha expirado. Solicita uno nuevo.", "error");
+        }
+    }
+};
+
+window.cerrarModalResetPassword = function() {
+    const modal = document.getElementById('modal-reset-password');
+    const box = document.getElementById('modal-reset-password-box');
+    if (modal) {
+        modal.classList.add('opacity-0');
+        if (box) box.classList.add('scale-95');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            window.currentOobCode = null;
+        }, 300);
+    }
+};
+
+window.guardarNuevaPassword = async function() {
+    window.vibrate(20);
+    const pass = document.getElementById('reset-new-pass')?.value;
+    const confirm = document.getElementById('reset-confirm-pass')?.value;
+    const err = document.getElementById('reset-error');
+
+    if (!pass || pass.length < 6) {
+        if (err) { err.textContent = "La contraseña debe tener al menos 6 caracteres."; err.classList.remove('hidden'); }
+        return;
+    }
+    if (pass !== confirm) {
+        if (err) { err.textContent = "Las contraseñas no coinciden."; err.classList.remove('hidden'); }
+        return;
+    }
+
+    try {
+        if (err) err.classList.add('hidden');
+        const btn = document.getElementById('btn-save-new-pass');
+        const originalText = btn ? btn.innerHTML : 'Guardar Contraseña';
+        if (btn) { btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline mr-1"></i> Guardando...'; btn.disabled = true; window.refreshIcons?.(); }
+
+        await confirmPasswordReset(auth, window.currentOobCode, pass);
+
+        window.showToast("Contraseña actualizada con éxito. Ya puedes iniciar sesión.", "success");
+        window.cerrarModalResetPassword();
+        
+        // Open the login modal
+        const loginModal = document.getElementById('modal-auth');
+        if (loginModal) {
+            loginModal.classList.remove('hidden');
+            loginModal.classList.add('flex');
+            setTimeout(() => {
+                loginModal.classList.remove('opacity-0');
+                const box = document.getElementById('modal-auth-box');
+                if (box) box.classList.remove('scale-95');
+                window.switchAuthTab?.('login');
+            }, 10);
+        }
+        
+        if (btn) {
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }, 500);
+        }
+    } catch (error) {
+        console.warn(error);
+        if (err) {
+            err.textContent = "Ocurrió un error. El enlace puede haber expirado.";
+            err.classList.remove('hidden');
+        }
+        const btn = document.getElementById('btn-save-new-pass');
+        if (btn) { btn.innerHTML = 'Guardar Contraseña'; btn.disabled = false; }
     }
 };
 
@@ -7425,6 +7530,7 @@ document.addEventListener('visibilitychange', () => {
 
 const runInitAndRedirect = () => {
     window.handleGoogleRedirectResult?.();
+    window.handleResetPasswordUrl?.();
     if (typeof window.refreshIcons === 'function') window.refreshIcons();
     window.setMaxBirthdayDates();
     initApp();
