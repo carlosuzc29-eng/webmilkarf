@@ -1,9 +1,32 @@
-/* Estilos visuales extraídos de index.html */
+/* Estilos visuales extraídos de index.html - Milkarf 2.0 */
+:root {
+    --color-purple: #421d8e;
+    --color-purple-dark: #2e1060;
+    --color-purple-light: #faf8ff;
+    --color-purple-border: #e8e0f0;
+    --color-green: #b9cb25;
+    --color-green-dark: #829112;
+    --color-green-light: #f7fae6;
+    --color-pink: #d72b8f;
+    --color-pink-dark: #b31c71;
+    --color-pink-light: #fff0f5;
+    --color-cream: #faf7f2;
+    --color-darkbg: #0d0718;
+    --color-darkcard: #180e29;
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+}
+
 html, body {
     width: 100%; height: 100dvh; margin: 0; padding: 0; overflow: hidden; overscroll-behavior-y: none;
 }
-body { position: relative; background-color: #f5f0e8; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { position: relative; background-color: #faf7f2; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 @media (prefers-color-scheme: dark) { body { background-color: #0d0718; } }
+
+/* Desactivar huellas flotantes que compiten visualmente con el alimento */
+#paws-container { display: none !important; }
 
 /* FIX DE COMPATIBILIDAD DE CSS */
 input[type=number]::-webkit-inner-spin-button, 
@@ -23,18 +46,18 @@ input[type=number], input[type=text], input[type=tel], input[type=email], input[
 .view {
     position: absolute; inset: 0; display: block;
     overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; 
-    transition: transform 0.55s cubic-bezier(0.25, 1, 0.3, 1), opacity 0.38s ease; opacity: 0; pointer-events: none;
+    transition: transform 0.45s cubic-bezier(0.25, 1, 0.3, 1), opacity 0.32s ease; opacity: 0; pointer-events: none;
     backface-visibility: hidden; transform: translateZ(0);
 }
 .view-wrapper {
-    width: 100%; min-height: 100%; display: flex; flex-direction: column; align-items: center; padding: 80px 24px 160px;
+    width: 100%; min-height: 100%; display: flex; flex-direction: column; align-items: center; padding: 74px 18px 120px;
 }
 .view.active { opacity: 1; transform: translate3d(0, 0, 0) scale(1); pointer-events: auto; z-index: 10; will-change: transform, opacity; }
-.view.next { opacity: 0; transform: translate3d(36%, 0, -120px) rotateY(-7deg) scale(0.96); z-index: 5; }
-.view.prev { opacity: 0; transform: translate3d(-28%, 0, 120px) rotateY(7deg) scale(1.04); z-index: 15; }
+.view.next { opacity: 0; transform: translate3d(24%, 0, -60px) scale(0.98); z-index: 5; }
+.view.prev { opacity: 0; transform: translate3d(-20%, 0, 60px) scale(1.02); z-index: 15; }
 .view::-webkit-scrollbar { width: 4px; }
 .view::-webkit-scrollbar-track { background: transparent; }
-.view::-webkit-scrollbar-thumb { background: rgba(185, 203, 37, 0.5); border-radius: 99px; }
+.view::-webkit-scrollbar-thumb { background: rgba(66, 29, 142, 0.25); border-radius: 99px; }
 
 /* Scroll customizado para forms internos */
 .custom-scroll::-webkit-scrollbar { width: 4px; }
@@ -42,23 +65,46 @@ input[type=number], input[type=text], input[type=tel], input[type=email], input[
 .custom-scroll::-webkit-scrollbar-thumb { background: rgba(66, 29, 142, 0.2); border-radius: 99px; }
 
 .btn-opt {
-    padding: 12px 16px; border-radius: 14px; border: 2px solid #e8e0f0; cursor: pointer;
-    font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 700; opacity: 0.6; transition: all 0.2s ease; transform: translateZ(0);
+    padding: 10px 14px; border-radius: 12px; border: 1.5px solid #e8e0f0; cursor: pointer;
+    font-family: inherit; font-size: 12px; font-weight: 600; opacity: 0.75; transition: all 0.18s ease; transform: translateZ(0);
 }
-.btn-opt.active { background-color: #421d8e !important; border-color: #421d8e !important; color: #ffffff !important; opacity: 1 !important; box-shadow: 0 4px 12px rgba(66,29,142,0.3) !important; }
+.btn-opt.active { background-color: #421d8e !important; border-color: #421d8e !important; color: #ffffff !important; opacity: 1 !important; box-shadow: 0 4px 12px rgba(66,29,142,0.2) !important; }
 @media (prefers-color-scheme: dark) {
-    .btn-opt.active { background-color: #b9cb25 !important; border-color: #b9cb25 !important; color: #2e1060 !important; box-shadow: 0 4px 12px rgba(185,203,37,0.2) !important; }
+    .btn-opt.active { background-color: #b9cb25 !important; border-color: #b9cb25 !important; color: #2e1060 !important; box-shadow: 0 4px 12px rgba(185,203,37,0.15) !important; }
 }
-
 
 .weight-size-btn {
-    transition: all 0.2s ease;
-    box-shadow: none;
+    transition: all 0.18s ease-out;
+    border: 1.5px solid rgba(66, 29, 142, 0.15);
+    background-color: #ffffff;
+    color: #2e1060;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+@media (prefers-color-scheme: dark) {
+    .weight-size-btn {
+        background-color: #180e29;
+        border-color: rgba(66, 29, 142, 0.35);
+        color: #f3effb;
+    }
+}
+.weight-size-btn:hover {
+    border-color: rgba(66, 29, 142, 0.4);
+    background-color: #faf8ff;
+}
+@media (prefers-color-scheme: dark) {
+    .weight-size-btn:hover {
+        background-color: #23143c;
+    }
 }
 .weight-size-btn.weight-active {
+    background-color: #421d8e !important;
+    border-color: #421d8e !important;
+    color: #ffffff !important;
     opacity: 1 !important;
     transform: translateY(-1px);
-    box-shadow: 0 8px 18px rgba(66, 29, 142, 0.18);
+    box-shadow: 0 4px 14px rgba(66, 29, 142, 0.22) !important;
 }
 .nutrition-table {
     width: 100%;
@@ -118,15 +164,15 @@ input[type=number], input[type=text], input[type=tel], input[type=email], input[
     left: -99999px;
     top: 0;
     width: 1080px;
-    background: #f5f0e8;
+    background: #faf7f2;
     z-index: -1;
     pointer-events: none;
 }
 
 .delivery-capture-card {
     width: 800px;
-    background: #f5f0e8;
-    font-family: 'Montserrat', sans-serif;
+    background: #faf7f2;
+    font-family: 'Plus Jakarta Sans', 'Montserrat', sans-serif;
     color: #421d8e;
     padding: 40px;
     box-sizing: border-box;
@@ -269,29 +315,55 @@ input[type=number], input[type=text], input[type=tel], input[type=email], input[
 }
 
 .premium-card {
-    transition: all 0.35s cubic-bezier(0.25, 1, 0.3, 1);
+    transition: all 0.25s cubic-bezier(0.25, 1, 0.3, 1);
 }
 @media (hover: hover) and (pointer: fine) {
     .premium-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 20px 40px -15px rgba(66, 29, 142, 0.18);
+        transform: translateY(-3px);
+        box-shadow: 0 14px 28px -8px rgba(46, 16, 96, 0.08);
     }
 }
 @media (prefers-color-scheme: dark) and (hover: hover) and (pointer: fine) {
     .premium-card:hover {
-        box-shadow: 0 20px 40px -15px rgba(185, 203, 37, 0.12);
+        box-shadow: 0 14px 28px -8px rgba(0, 0, 0, 0.4);
     }
 }
 
-/* Sombra resplandeciente moderna (Glow Effect) */
-.shadow-glow-purple {
-    box-shadow: 0 10px 30px -5px rgba(66, 29, 142, 0.4);
+/* Sombras suaves y balanceadas (sin degradados saturados) */
+.shadow-soft {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 6px 16px -2px rgba(46, 16, 96, 0.05);
 }
-.shadow-glow-green {
-    box-shadow: 0 10px 30px -5px rgba(185, 203, 37, 0.4);
+.shadow-soft-lg {
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.04), 0 16px 32px -4px rgba(46, 16, 96, 0.07);
 }
-.shadow-glow-pink {
-    box-shadow: 0 10px 30px -5px rgba(215, 43, 143, 0.4);
+
+/* Toast de confirmación al añadir producto */
+#cart-toast {
+    position: fixed;
+    bottom: 84px;
+    left: 50%;
+    transform: translateX(-50%) translateY(16px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 99999;
+}
+#cart-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+}
+@media (min-width: 768px) {
+    #cart-toast {
+        top: 90px;
+        bottom: auto;
+        right: 28px;
+        left: auto;
+        transform: translateY(-10px);
+    }
+    #cart-toast.show {
+        transform: translateY(0);
+    }
 }
 
 /* Mejor ergonomía táctil móvil (>44px de target) */
@@ -337,4 +409,111 @@ input, select, textarea {
     *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
     .view { transition: opacity 0.01ms linear !important; transform: none !important; }
     .view.next, .view.prev, .view.active { transform: none !important; }
+}
+
+/* ==========================================================================
+   DESKTOP HEADER & GLOBAL NAVIGATION SYSTEM (MILKARF 2.0)
+   ========================================================================== */
+@media (min-width: 768px) {
+    .view-wrapper {
+        padding-top: 106px;
+        padding-bottom: 90px;
+    }
+}
+
+.milkarf-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 76px;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(232, 224, 240, 0.7);
+    box-shadow: 0 4px 20px -2px rgba(66, 29, 142, 0.06);
+    transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+    .milkarf-header {
+        background: rgba(13, 7, 24, 0.88);
+        border-bottom: 1px solid rgba(66, 29, 142, 0.35);
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+    }
+}
+
+.milkarf-nav-link {
+    position: relative;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #2e1060;
+    transition: all 0.2s ease;
+    padding: 8px 14px;
+    border-radius: 9999px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+@media (prefers-color-scheme: dark) {
+    .milkarf-nav-link {
+        color: #e8e0f0;
+    }
+}
+
+.milkarf-nav-link:hover {
+    color: #d72b8f;
+    background: rgba(66, 29, 142, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+    .milkarf-nav-link:hover {
+        color: #b9cb25;
+        background: rgba(185, 203, 37, 0.08);
+    }
+}
+
+.milkarf-nav-link.active {
+    color: #421d8e;
+    background: rgba(66, 29, 142, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+    .milkarf-nav-link.active {
+        color: #b9cb25;
+        background: rgba(185, 203, 37, 0.12);
+    }
+}
+
+/* Accordion animado para guías y preguntas frecuentes */
+.edu-accordion summary::-webkit-details-marker {
+    display: none;
+}
+.edu-accordion summary {
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+}
+.edu-accordion summary .chevron-icon {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.edu-accordion[open] summary .chevron-icon {
+    transform: rotate(180deg);
+}
+
+/* Tipografía de display con personalidad (Bone Appetit style) */
+.font-display {
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif !important;
+}
+
+/* Elevación y suavizado de sombras para tarjetas de producto */
+.hero-product-card {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+}
+.hero-product-card:hover {
+    transform: translateY(-4px);
 }

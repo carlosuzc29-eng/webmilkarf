@@ -312,10 +312,241 @@ window.normalizeUserProfileForWrite = function (data = {}) {
 // LÓGICA DE INTERFAZ Y NAVEGACIÓN
 // =========================================================================================
 window.WA_NUMBER = '584121791137';
-window.PRICES_POLLO = { '250gr': '$2.50', '550gr': '$5.00', '850gr': '$7.00' };
-window.PRICES_RES = { '250gr': '$3.50', '550gr': '$7.00', '850gr': '$10.00' };
+window.PRICES_POLLO = { '250gr': '$2.50', '500gr': '$5.00' };
+window.PRICES_RES = { '250gr': '$3.50', '500gr': '$7.00' };
 
-window.state = { nombreMascota: '', etapa: null, cachorroEdad: null, actividad: null };
+window.MILKARF_CONFIG = {
+    calcEngineVersion: 'v2.0_plan_based_low_activity',
+    catalog: {
+        pollo: {
+            id: 'pollo',
+            name: 'Pollo con Zanahoria',
+            shortName: 'Pollo',
+            emoji: '🍗',
+            available: true,
+            presentations: [
+                { size: '250gr', grams: 250, price: 2.50, available: true },
+                { size: '500gr', grams: 500, price: 5.00, available: true }
+            ]
+        },
+        res: {
+            id: 'res',
+            name: 'Carne de Res con Calabacín',
+            shortName: 'Res',
+            emoji: '🥩',
+            available: true,
+            presentations: [
+                { size: '250gr', grams: 250, price: 3.50, available: true },
+                { size: '500gr', grams: 500, price: 7.00, available: true }
+            ]
+        }
+    },
+    planDiscounts: {
+        7: { days: 7, label: 'Plan semanal', discountPct: 0.05, tag: '7 días de alimentación' },
+        15: { days: 15, label: 'Plan quincenal', discountPct: 0.075, tag: '15 días de alimentación' },
+        30: { days: 30, label: 'Plan mensual', discountPct: 0.10, tag: 'Mayor ahorro' }
+    },
+    welcomeDiscountPct: 0.20
+};
+
+// Algoritmo de optimización de bolsas para fórmula individual
+window.optimizeBagsSingle = function (formula, requiredGrams) {
+    const prod = window.MILKARF_CONFIG.catalog[formula];
+    if (!prod || !prod.available) throw new Error(`Fórmula ${formula} no disponible.`);
+    const activePres = prod.presentations.filter(p => p.available);
+    if (!activePres.length) throw new Error(`No hay presentaciones activas para ${formula}`);
+
+    const pres = [...activePres].sort((a, b) => b.grams - a.grams);
+    const validCombinations = [];
+
+    if (pres.length === 2) {
+        const [p1, p2] = pres;
+        const maxP1 = Math.ceil(requiredGrams / p1.grams) + 1;
+        for (let c1 = 0; c1 <= maxP1; c1++) {
+            const rem = Math.max(0, requiredGrams - (c1 * p1.grams));
+            const c2 = Math.ceil(rem / p2.grams);
+            const totalGrams = (c1 * p1.grams) + (c2 * p2.grams);
+            if (totalGrams >= requiredGrams) {
+                validCombinations.push({
+                    bags: [
+                        ...(c1 > 0 ? [{ formula, formulaName: prod.name, size: p1.size, weight: p1.size, grams: p1.grams, qty: c1, unitPrice: p1.price }] : []),
+                        ...(c2 > 0 ? [{ formula, formulaName: prod.name, size: p2.size, weight: p2.size, grams: p2.grams, qty: c2, unitPrice: p2.price }] : [])
+                    ],
+                    totalGrams,
+                    surplus: totalGrams - requiredGrams,
+                    cost: (c1 * p1.price) + (c2 * p2.price),
+                    totalBags: c1 + c2
+                });
+            }
+        }
+    } else {
+        function search(idx, currentGrams, currentCost, currentBags) {
+            if (idx === pres.length) {
+                if (currentGrams >= requiredGrams) {
+                    validCombinations.push({
+                        bags: currentBags.filter(b => b.qty > 0),
+                        totalGrams: currentGrams,
+                        surplus: currentGrams - requiredGrams,
+                        cost: currentCost,
+                        totalBags: currentBags.reduce((s, b) => s + b.qty, 0)
+                    });
+                }
+                return;
+            }
+            const p = pres[idx];
+            const maxNeeded = Math.ceil(Math.max(0, requiredGrams - currentGrams) / p.grams) + 1;
+            for (let q = 0; q <= maxNeeded; q++) {
+                currentBags.push({ formula, formulaName: prod.name, size: p.size, weight: p.size, grams: p.grams, qty: q, unitPrice: p.price });
+                search(idx + 1, currentGrams + (q * p.grams), currentCost + (q * p.price), currentBags);
+                currentBags.pop();
+            }
+        }
+        search(0, 0, 0, []);
+    }
+
+    if (!validCombinations.length) throw new Error("No se pudo generar combinación de bolsas.");
+
+    validCombinations.sort((a, b) => {
+        if (a.surplus !== b.surplus) return a.surplus - b.surplus;
+        if (Math.abs(a.cost - b.cost) > 0.001) return a.cost - b.cost;
+        return a.totalBags - b.totalBags;
+    });
+
+    return validCombinations[0];
+};
+
+// Algoritmo de optimización de bolsas para fórmula mixta (Pollo + Res ~50/50 minimizando excedente)
+window.optimizeBagsMixed = function (requiredGrams) {
+    const polloProd = window.MILKARF_CONFIG.catalog.pollo;
+    const resProd = window.MILKARF_CONFIG.catalog.res;
+
+    function getBestBagsForGrams(formula, targetGrams) {
+        const prod = window.MILKARF_CONFIG.catalog[formula];
+        const [p1, p2] = prod.presentations.sort((a, b) => b.grams - a.grams);
+        const combos = [];
+        const maxP1 = Math.floor(targetGrams / p1.grams);
+        for (let c1 = 0; c1 <= maxP1; c1++) {
+            const rem = targetGrams - (c1 * p1.grams);
+            if (rem % p2.grams === 0) {
+                const c2 = rem / p2.grams;
+                combos.push({
+                    bags: [
+                        ...(c1 > 0 ? [{ formula, formulaName: prod.name, size: p1.size, weight: p1.size, grams: p1.grams, qty: c1, unitPrice: p1.price }] : []),
+                        ...(c2 > 0 ? [{ formula, formulaName: prod.name, size: p2.size, weight: p2.size, grams: p2.grams, qty: c2, unitPrice: p2.price }] : [])
+                    ],
+                    totalGrams: targetGrams,
+                    cost: (c1 * p1.price) + (c2 * p2.price),
+                    totalBags: c1 + c2
+                });
+            }
+        }
+        combos.sort((a, b) => {
+            if (Math.abs(a.cost - b.cost) > 0.001) return a.cost - b.cost;
+            return a.totalBags - b.totalBags;
+        });
+        return combos[0] || null;
+    }
+
+    const validMixed = [];
+    const minGrams = Math.min(250, requiredGrams);
+    for (let gPollo = 250; gPollo <= requiredGrams; gPollo += 250) {
+        const minGRes = Math.max(250, Math.ceil((requiredGrams - gPollo) / 250) * 250);
+        for (let gRes = minGRes; gRes <= minGRes + 500; gRes += 250) {
+            const totalGrams = gPollo + gRes;
+            if (totalGrams >= requiredGrams) {
+                const polloOpt = getBestBagsForGrams('pollo', gPollo);
+                const resOpt = getBestBagsForGrams('res', gRes);
+                if (polloOpt && resOpt) {
+                    const surplus = totalGrams - requiredGrams;
+                    const diffFromHalf = Math.abs(gPollo - gRes);
+                    const cost = polloOpt.cost + resOpt.cost;
+                    const totalBags = polloOpt.totalBags + resOpt.totalBags;
+                    validMixed.push({
+                        bags: [...polloOpt.bags, ...resOpt.bags],
+                        totalGrams,
+                        surplus,
+                        diffFromHalf,
+                        cost,
+                        totalBags,
+                        split: {
+                            polloGrams: gPollo,
+                            resGrams: gRes,
+                            polloPct: Math.round((gPollo / totalGrams) * 100),
+                            resPct: Math.round((gRes / totalGrams) * 100)
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    if (!validMixed.length) throw new Error("No se pudo generar combinación mixta.");
+
+    validMixed.sort((a, b) => {
+        if (a.surplus !== b.surplus) return a.surplus - b.surplus;
+        if (a.diffFromHalf !== b.diffFromHalf) return a.diffFromHalf - b.diffFromHalf;
+        if (Math.abs(a.cost - b.cost) > 0.001) return a.cost - b.cost;
+        return a.totalBags - b.totalBags;
+    });
+
+    return validMixed[0];
+};
+
+window.buildFeedingPlan = function (dailyGrams, days, formula, petName = '') {
+    const requiredGrams = Number(dailyGrams) * Number(days);
+    const opt = formula === 'mixto' ? window.optimizeBagsMixed(requiredGrams) : window.optimizeBagsSingle(formula, requiredGrams);
+    const discountInfo = window.MILKARF_CONFIG.planDiscounts[days] || { discountPct: 0, label: `Plan ${days} días`, tag: '' };
+
+    const originalPrice = Math.round(opt.cost * 100) / 100;
+    const discountAmount = Math.round(originalPrice * discountInfo.discountPct * 100) / 100;
+    const finalPrice = Math.round((originalPrice - discountAmount) * 100) / 100;
+    const costPerDay = Math.round((finalPrice / days) * 100) / 100;
+
+    const formulaLabel = formula === 'pollo' ? 'Pollo con Zanahoria' : (formula === 'res' ? 'Carne de Res con Calabacín' : 'Plan Mixto (Pollo y Res)');
+    const discountPercent = Math.round(discountInfo.discountPct * 100);
+
+    return {
+        id: 'plan_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        petName: petName || window.state.nombreMascota || 'Tu perro',
+        petId: window.state.petId || null,
+        calcVersion: window.MILKARF_CONFIG.calcEngineVersion,
+        days,
+        durationDays: days,
+        label: discountInfo.label,
+        tag: discountInfo.tag,
+        formula,
+        formulaLabel,
+        formulaName: formulaLabel,
+        dailyGrams,
+        requiredGrams,
+        totalGramsRequired: requiredGrams,
+        requiredKg: (requiredGrams / 1000).toFixed(2),
+        includedGrams: opt.totalGrams,
+        totalGramsProvided: opt.totalGrams,
+        includedKg: (opt.totalGrams / 1000).toFixed(2),
+        surplusGrams: opt.surplus,
+        surplusKg: (opt.surplus / 1000).toFixed(2),
+        bags: opt.bags,
+        split: opt.split || null,
+        originalPrice,
+        originalSubtotal: originalPrice,
+        discountPct: discountInfo.discountPct,
+        discountPercent,
+        discountAmount,
+        finalPrice,
+        price: finalPrice,
+        savings: discountAmount,
+        costPerDay,
+        createdAt: new Date().toISOString()
+    };
+};
+
+window.generateFeedingPlans = function (dailyGrams, formula = 'pollo', petName = '') {
+    return [7, 15, 30].map(days => window.buildFeedingPlan(dailyGrams, days, formula, petName));
+};
+
+window.state = { nombreMascota: '', etapa: null, cachorroEdad: null, actividad: 'bajo' };
+window.activePlanFormula = 'pollo';
 window.currentWeightPollo = '250gr';
 window.currentWeightRes = '250gr';
 window.menuOpen = false;
@@ -538,71 +769,105 @@ window.getWhatsAppTemplate = function (type = 'general', data = {}) {
         case 'general':
             return `Hola, equipo Milkarf.
 
-Me gustaría recibir información sobre la alimentación natural para mi mascota.
+Me gustaría recibir información sobre la alimentación fisiológica para mi mascota.
 
-Quisiera conocer las opciones disponibles, presentaciones, disponibilidad y la forma recomendada para iniciar una transición adecuada.`;
+Quisiera conocer las fórmulas disponibles, presentaciones recomendadas y los pasos adecuados para iniciar la transición.`;
 
         case 'quickHelp':
             return `Hola, equipo Milkarf.
 
-Estoy revisando la web y necesito ayuda antes de completar mi pedido.
+Estoy revisando su tienda web y deseo orientación antes de completar mi pedido.
 
-Quisiera confirmar recomendaciones, disponibilidad, costo de delivery y próximos pasos.`;
+Quisiera confirmar recomendaciones de fórmulas, disponibilidad, costo de entrega y siguientes pasos.`;
 
         case 'newOrder': {
-            const items = Array.isArray(data.items) ? data.items.map((i, index) => {
-                const pet = i.forPet ? ` - Para ${i.forPet}` : '';
-                return `${index + 1}. ${Number(i.qty || 0)} x ${i.name || 'Producto'} (${i.weight || 'presentación'})${pet}`;
-            }).join('\n') : 'Pedido Milkarf';
+            const hasFeedingPlans = Array.isArray(data.items) && data.items.some(i => i.type === 'feeding_plan');
+
+            let itemsFormatted = '';
+            if (hasFeedingPlans) {
+                itemsFormatted = data.items.map((i, index) => {
+                    if (i.type === 'feeding_plan') {
+                        const bagsText = Array.isArray(i.bags) ? i.bags.map(b => `${b.qty}x ${b.weight}`).join(' + ') : '';
+                        const reqKg = (Number(i.totalGramsRequired || 0) / 1000).toFixed(2);
+                        const provKg = (Number(i.totalGramsProvided || 0) / 1000).toFixed(2);
+                        const surplus = Number(i.surplusGrams || 0);
+                        return `${index + 1}. *Plan para ${i.petName || i.forPet || 'Mascota'}*
+   • Porción: ${i.dailyGrams || 0} g/día
+   • Duración: ${i.durationDays || 7} días (${i.formulaName || 'Fórmula'})
+   • Bolsas: ${bagsText}
+   • Alimento: ${reqKg} kg requeridos / ${provKg} kg provistos (+${surplus}g excedente)
+   • Subtotal plan: ${currency(i.originalSubtotal || i.price)} (Ahorro: -${currency(i.discountAmount || 0)})
+   • Total plan: ${currency(i.finalPrice || i.price)}`;
+                    }
+                    const pet = i.forPet ? ` - Para ${i.forPet}` : '';
+                    return `${index + 1}. ${Number(i.qty || 1)}x ${i.name || 'Fórmula'} (${i.weight || ''})${pet} - ${currency((i.price || 0) * (i.qty || 1))}`;
+                }).join('\n\n');
+            } else if (Array.isArray(data.items)) {
+                itemsFormatted = data.items.map((i, index) => {
+                    const pet = i.forPet ? ` - Para ${i.forPet}` : '';
+                    return `${index + 1}. ${Number(i.qty || 0)}x ${i.name || 'Fórmula'} (${i.weight || 'presentación'})${pet}`;
+                }).join('\n');
+            } else {
+                itemsFormatted = 'Pedido Milkarf';
+            }
+
             let msg = `Hola, equipo Milkarf.
 
-Quisiera hacer este pedido para mi mascota. Les comparto el detalle para que me ayuden a confirmar disponibilidad, delivery y forma de pago.
+Quisiera confirmar mi pedido ${hasFeedingPlans ? 'de planes de alimentación' : ''} para mi mascota:
 
-Mi pedido:
-${items}
+👤 *Tutor:* ${userName}${data.contactPhone ? `\n📱 *Teléfono:* ${data.contactPhone}` : ''}
 
-Resumen:
-Subtotal: ${currency(data.subtotal)}`;
-            if (data.discountApplied) {
-                msg += `\nDescuento de bienvenida: -${currency(data.discountAmount)}\nTotal de productos: ${currency(data.finalTotal)}\n\nEl descuento de primera compra fue aplicado desde la web.`;
-            } else {
-                msg += `\nTotal de productos: ${currency(data.finalTotal)}`;
+📦 *DETALLE DEL PEDIDO:*
+${itemsFormatted}
+
+💵 *RESUMEN DE COMPRA:*
+• Subtotal: ${currency(data.subtotal)}`;
+
+            if (data.discountAmount > 0) {
+                const label = data.discountLabel || (data.discountType === 'welcome' ? 'Descuento de bienvenida (-20%)' : 'Descuento de plan');
+                msg += `\n• ${label}: -${currency(data.discountAmount)}`;
             }
+            msg += `\n• *TOTAL FÓRMULAS:* ${currency(data.finalTotal)}`;
+            msg += `\n• *Costo de entrega:* Pendiente por cotizar según zona`;
+
             if (data.location) {
-                msg += `\n\nUbicación para delivery:\n${data.location}`;
+                msg += `\n\n📍 *Ubicación para la entrega:*\n${data.location}`;
             }
-            msg += `\n\nQuedo atento/a para continuar por aquí. Gracias.`;
+            if (data.orderId) {
+                msg += `\n\n🔖 *Ref pedido web:* #${data.orderId}`;
+            }
+            msg += `\n\nQuedo atento/a para coordinar la confirmación y entrega. ¡Muchas gracias!`;
             return msg;
         }
 
         case 'userRedeem':
             return `Hola, equipo Milkarf.
 
-Quiero solicitar el canje de mis puntos.
+Deseo solicitar el canje de mis puntos acumulados.
 
 Beneficio: ${data.itemName || 'Beneficio Milkarf'}
 Detalle: ${data.benefit || 'Beneficio disponible'}
-Puntos descontados: ${Number(data.points || 0)} ptos
-Usuario: ${userName}
+Puntos a descontar: ${Number(data.points || 0)} puntos
+Tutor: ${userName}
 
-Por favor, confirmen disponibilidad y próximos pasos para coordinar la entrega.`;
+Por favor, confirmen disponibilidad para coordinar la entrega.`;
 
         case 'adminOrderContact':
             return `Hola, te escribimos de Milkarf para confirmar tu pedido.
 
-Ya recibimos tu solicitud y estamos revisando disponibilidad, total final con delivery y forma de pago.
+Recibimos tu solicitud y estamos revisando disponibilidad, costo de entrega según tu zona y formas de pago.
 
-Por favor, indícanos si deseas continuar con la confirmación del pedido.`;
+Por favor, indícanos si deseas proceder con la confirmación.`;
 
         case 'adminOrderContactFallback':
             return `Hola, equipo Milkarf.
 
-Este pedido no tiene un número de WhatsApp válido registrado para contactar directamente al cliente.
+Este pedido no cuenta con un número de WhatsApp registrado para contactar directamente al tutor.
 
-Cliente: ${data.userName || data.email || 'Usuario'}
+Tutor: ${data.userName || data.email || 'Usuario'}
 Pedido: ${data.orderId || 'sin referencia visible'}
 
-Revisar el pedido desde el panel administrador para continuar la atención.`;
+Por favor, revisar el pedido desde el panel de administración.`;
 
         case 'deliveryNote': {
             const order = data.order || {};
@@ -610,37 +875,37 @@ Revisar el pedido desde el panel administrador para continuar la atención.`;
             const productTotal = Number(data.productTotal ?? order.total ?? 0);
             const deliveryCost = Number(data.deliveryCost || 0);
             const finalTotal = Number(data.finalTotal ?? (productTotal + deliveryCost));
-            const clientName = window.capitalizeName(data.clientName || order.userName || order.nombre || order.email || 'cliente Milkarf');
-            const petName = data.petName || order.selectedPet || (noteItems.find(i => i.forPet)?.forPet) || 'tu peludo';
-            const petText = petName !== 'tu mascota' && petName !== 'tu peludo' ? petName : 'tu peludo';
+            const clientName = window.capitalizeName(data.clientName || order.userName || order.nombre || order.email || 'Tutor Milkarf');
+            const petName = data.petName || order.selectedPet || (noteItems.find(i => i.forPet)?.forPet) || 'tu mascota';
+            const petText = petName && petName !== 'tu mascota' ? petName : 'tu mascota';
             const deliveryDate = data.deliveryDateLabel || 'Por confirmar';
             const orderIdShort = order.id ? `#${String(order.id).slice(-8).toUpperCase()}` : '#PEDIDO';
             const direccion = order.direccion || order.address || order.dir || 'A convenir';
             const ptsSumados = Number(order.pointsAwarded || order.pointsGranted || Math.floor(finalTotal));
 
-            return `¡Hola, ${clientName}! 🐾 Gracias por tu compra en Milkarf. 💜
+            return `Hola, ${clientName}. Te compartimos la nota de entrega correspondiente a tu pedido en Milkarf para ${petText}.
 
-Te adjuntamos tu Nota de Entrega con el detalle de tu pedido para ${petText}. 🖼️✨
+Total a pagar: $${finalTotal.toFixed(2)}
+Fecha de entrega: ${deliveryDate}
+Puntos acumulados: +${ptsSumados} puntos
 
-💰 Total a pagar: $${finalTotal.toFixed(2)}
-📅 Fecha de entrega: ${deliveryDate}
-🌟 Puntos sumados: +${ptsSumados} ptos`;
+Adjuntamos el resumen detallado para su verificación. Si tienes alguna duda, estamos a tu disposición.`;
         }
 
         case 'birthday':
             return `Hola, te escribimos de Milkarf.
 
-Vimos que se acerca el cumpleaños de ${data.petName || 'tu mascota'} y queremos ayudarte a consentirlo con una opción especial de nuestra alimentación natural.
+Sabemos que se acerca el cumpleaños de ${data.petName || 'tu mascota'} y queremos acompañarte a celebrarlo con una alternativa especial de nutrición natural.
 
-Si deseas, podemos orientarte con recomendaciones según su perfil.`;
+Si lo deseas, podemos brindarte recomendaciones personalizadas según su perfil.`;
 
         case 'adminRedeemContact':
-            return `Hola, te escribimos de Milkarf sobre tu solicitud de canje.
+            return `Hola, te escribimos de Milkarf respecto a tu solicitud de canje.
 
 Beneficio solicitado: ${data.itemName || data.benefit || 'Beneficio Milkarf'}
-Puntos utilizados: ${Number(data.points || 0)} ptos
+Puntos aplicados: ${Number(data.points || 0)} puntos
 
-Queremos confirmar disponibilidad y coordinar la entrega.`;
+Nos comunicamos para validar disponibilidad y coordinar la entrega.`;
 
         default:
             return window.getWhatsAppTemplate('general', data);
@@ -1075,7 +1340,7 @@ window.buildDashboardPetCard = function (p = {}, idx = 0) {
                 </div>
                 <p class="text-[9px] text-gray-400 font-bold mt-2">Último cálculo: ${calc.calculatedAt ? new Date(calc.calculatedAt).toLocaleDateString('es-VE') : 'guardado'}</p>` : `
                 <div class="mt-3 bg-purple-light dark:bg-[#0d0718] rounded-xl p-3 border border-purple-border/30">
-                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold">Aún no tienes una ración guardada para ${safeName}. Puedes calcularla y guardarla en el perfil.</p>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold">Aún no tienes una porción orientativa guardada para ${safeName}. Puedes calcularla y guardarla en su perfil.</p>
                 </div>`;
     return `
                 <div class="rounded-2xl border ${selected ? 'border-green shadow-md shadow-green/10 bg-green/5 dark:bg-green/10' : 'border-purple-border/30 dark:border-purple/20 bg-white dark:bg-darkcard'} p-4 relative overflow-hidden">
@@ -1146,12 +1411,12 @@ window.resetPetProfileFormForMode = function (mode = 'add') {
     if (err) { err.classList.add('hidden'); err.textContent = ''; }
     if (mode === 'edit') {
         if (title) title.textContent = 'Modificar mascota';
-        if (desc) desc.textContent = 'Actualiza la información de tu mascota para mantener sus raciones y pedidos personalizados.';
+        if (desc) desc.textContent = 'Actualiza la información de tu mascota para mantener sus porciones orientativas y pedidos personalizados.';
         if (btn) btn.textContent = 'Guardar cambios';
     } else {
-        if (title) title.textContent = '¡Último paso!';
-        if (desc) desc.textContent = 'Completa los datos de tu peludo para brindarle atención personalizada y finalizar tu registro.';
-        if (btn) btn.textContent = 'Guardar y Finalizar';
+        if (title) title.textContent = 'Datos de tu mascota';
+        if (desc) desc.textContent = 'Completa los datos de tu mascota para calcular sus porciones orientativas y asociarla a tus pedidos.';
+        if (btn) btn.textContent = 'Guardar perfil y continuar';
     }
 };
 
@@ -1332,12 +1597,12 @@ window.switchAuthTab = function (tab) {
 
 window.traductorErrores = function (code) {
     switch (code) {
-        case 'auth/email-already-in-use': return "Este correo ya tiene una cuenta. Ingresa en la otra pestaña.";
-        case 'auth/invalid-email': return "El formato del correo es inválido.";
+        case 'auth/email-already-in-use': return "Este correo ya se encuentra registrado. Inicia sesión en la pestaña Ingresar.";
+        case 'auth/invalid-email': return "Ingresa un correo electrónico válido.";
         case 'auth/weak-password': return "La contraseña debe tener al menos 6 caracteres.";
         case 'auth/user-not-found':
-        case 'auth/wrong-password': return "El correo o la contraseña son incorrectos.";
-        default: return "Hubo un error de conexión. Inténtalo de nuevo.";
+        case 'auth/wrong-password': return "El correo electrónico o la contraseña son incorrectos.";
+        default: return "Ocurrió un error al procesar la solicitud. Por favor, intenta de nuevo.";
     }
 };
 
@@ -1352,6 +1617,10 @@ window.actualizarUIAuth = function () {
     const topPetsIcons = document.getElementById('top-pets-icons');
     const topLoggedOut = document.getElementById('top-auth-logged-out');
     const topLoggedIn = document.getElementById('top-auth-logged-in');
+    const dText = document.getElementById('desktop-auth-text');
+    const dPts = document.getElementById('desktop-auth-pts');
+    const dLoggedOut = document.getElementById('desktop-auth-logged-out');
+    const dLoggedIn = document.getElementById('desktop-auth-logged-in');
 
     if (window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email)) {
 
@@ -1361,6 +1630,9 @@ window.actualizarUIAuth = function () {
             if (topLoggedIn) topLoggedIn.classList.remove('hidden');
             if (loggedOutMenu) loggedOutMenu.classList.add('hidden');
             if (loggedInMenu) loggedInMenu.classList.add('hidden');
+            if (dText) dText.textContent = 'Admin';
+            if (dLoggedOut) dLoggedOut.classList.add('hidden');
+            if (dLoggedIn) dLoggedIn.classList.remove('hidden');
             return;
         }
 
@@ -1376,13 +1648,19 @@ window.actualizarUIAuth = function () {
 
         if (topLoggedOut) topLoggedOut.classList.add('hidden');
         if (topLoggedIn) topLoggedIn.classList.remove('hidden');
+        if (dLoggedOut) dLoggedOut.classList.add('hidden');
+        if (dLoggedIn) dLoggedIn.classList.remove('hidden');
 
         if (dropName) dropName.textContent = primerNombre;
         if (topText) topText.textContent = primerNombre;
+        if (dText) dText.textContent = primerNombre;
 
         if (topPts) {
             topPts.textContent = puntosDisp + ' ptos';
             topPts.classList.remove('hidden');
+        }
+        if (dPts) {
+            dPts.textContent = puntosDisp + ' pts';
         }
 
         if (topPetsIcons) {
@@ -1450,6 +1728,8 @@ window.actualizarUIAuth = function () {
         if (loggedInMenu) loggedInMenu.classList.add('hidden');
         if (topLoggedOut) topLoggedOut.classList.remove('hidden');
         if (topLoggedIn) topLoggedIn.classList.add('hidden');
+        if (dLoggedOut) dLoggedOut.classList.remove('hidden');
+        if (dLoggedIn) dLoggedIn.classList.add('hidden');
 
         const benUserName = document.getElementById('ben-user-name');
         if (benUserName) benUserName.textContent = 'Usuario Invitado';
@@ -1755,7 +2035,7 @@ window.registrarYGuardarMascota = async function () {
 
     if (!email || pass.length < 6 || !nombre || !edad || !peso) {
         if (err) {
-            err.textContent = "Completa los datos requeridos de tu mascota y cuenta (contraseña mín. 6).";
+            err.textContent = "Completa los campos obligatorios: correo, contraseña (mínimo 6 caracteres), nombre, edad y peso de tu mascota.";
             err.classList.remove('hidden');
         }
         return;
@@ -1763,7 +2043,7 @@ window.registrarYGuardarMascota = async function () {
 
     if (cumple && window.isFutureBirthday(cumple)) {
         if (err) {
-            err.textContent = "La fecha de nacimiento no puede ser futura.";
+            err.textContent = "La fecha de cumpleaños no puede ser una fecha futura.";
             err.classList.remove('hidden');
         }
         return;
@@ -1772,7 +2052,7 @@ window.registrarYGuardarMascota = async function () {
     try {
         if (err) err.classList.add('hidden');
         const btn = document.getElementById('btn-reg-email');
-        if (btn) { btn.textContent = "Registrando..."; btn.disabled = true; }
+        if (btn) { btn.textContent = "Creando cuenta..."; btn.disabled = true; }
 
         // 1. Crear cuenta
         const cred = await createUserWithEmailAndPassword(auth, email, pass);
@@ -1808,16 +2088,16 @@ window.registrarYGuardarMascota = async function () {
         if (razaEl) razaEl.value = '';
         if (cumpleEl) cumpleEl.value = '';
 
-        window.showToast("¡Cuenta y mascota creadas exitosamente!", 'success');
+        window.showToast("Cuenta creada y mascota registrada con éxito.", 'success');
         window.cerrarModalAuth();
-        if (btn) { btn.textContent = "Crear Cuenta y Entrar"; btn.disabled = false; }
+        if (btn) { btn.textContent = "Crear cuenta"; btn.disabled = false; }
     } catch (error) {
         if (err) {
             err.textContent = window.traductorErrores(error.code);
             err.classList.remove('hidden');
         }
         const btn = document.getElementById('btn-reg-email');
-        if (btn) { btn.textContent = "Crear Cuenta y Entrar"; btn.disabled = false; }
+        if (btn) { btn.textContent = "Crear cuenta"; btn.disabled = false; }
     }
 };
 
@@ -1925,25 +2205,25 @@ window.guardarPerfilMascota = async function () {
     const cumple = cumpleEl ? cumpleEl.value : '';
 
     if (!contactName) {
-        err.textContent = "Agrega tu nombre para personalizar pedidos y notas de entrega.";
+        err.textContent = "Ingresa tu nombre para personalizar tus pedidos y notas de entrega.";
         err.classList.remove('hidden');
         return;
     }
 
     if (!phone || phone.length < 10) {
-        err.textContent = "Agrega un número de WhatsApp válido para poder confirmar pedidos y notas de entrega.";
+        err.textContent = "Ingresa un número de WhatsApp válido para coordinar pedidos y notas de entrega.";
         err.classList.remove('hidden');
         return;
     }
 
     if (!nombre || !edad || !peso) {
-        err.textContent = "Por favor completa el nombre, edad y peso para finalizar.";
+        err.textContent = "Completa el nombre, edad y peso de tu mascota para continuar.";
         err.classList.remove('hidden');
         return;
     }
 
     if (cumple && window.isFutureBirthday(cumple)) {
-        err.textContent = "La fecha de nacimiento no puede ser futura.";
+        err.textContent = "La fecha de cumpleaños no puede ser una fecha futura.";
         err.classList.remove('hidden');
         return;
     }
@@ -1997,12 +2277,12 @@ window.guardarPerfilMascota = async function () {
         window.showToast(editIndex !== null ? 'Información de mascota actualizada con éxito.' : 'Datos de contacto y mascota guardados con éxito.', 'success');
         window.editingPetIndex = null;
 
-        if (btn) { btn.textContent = (editIndex !== null ? 'Guardar cambios' : 'Guardar y Finalizar'); btn.disabled = false; }
+        if (btn) { btn.textContent = (editIndex !== null ? 'Guardar cambios' : 'Guardar perfil y continuar'); btn.disabled = false; }
     } catch (e) {
         err.textContent = "Error al guardar perfil. Intenta de nuevo.";
         err.classList.remove('hidden');
         const btn = document.getElementById('btn-guardar-perfil');
-        if (btn) { btn.textContent = (Number.isInteger(window.editingPetIndex) ? 'Guardar cambios' : 'Guardar y Finalizar'); btn.disabled = false; }
+        if (btn) { btn.textContent = (Number.isInteger(window.editingPetIndex) ? 'Guardar cambios' : 'Guardar perfil y continuar'); btn.disabled = false; }
     }
 };
 
@@ -2014,8 +2294,8 @@ window.updateCalcSaveCTA = function () {
     const hasResult = !!window.lastCalcResult;
     if (!hasResult) {
         title.textContent = 'Guarda esta referencia';
-        text.textContent = 'Calcula la ración para poder guardarla en tu perfil.';
-        btn.textContent = 'Guardar datos';
+        text.textContent = 'Calcula la porción orientativa para guardarla en el perfil de tu mascota.';
+        btn.textContent = 'Guardar referencia';
         btn.disabled = true;
         btn.classList.add('opacity-60', 'cursor-not-allowed');
         return;
@@ -2024,8 +2304,8 @@ window.updateCalcSaveCTA = function () {
     btn.classList.remove('opacity-60', 'cursor-not-allowed');
     if (window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email) && !window.isAdmin) {
         title.textContent = 'Guardar en mi perfil';
-        text.textContent = `Guarda los datos de ${window.lastCalcResult.nombre} y consulta su ración recomendada cuando lo necesites.`;
-        btn.textContent = 'Guardar datos';
+        text.textContent = `Guarda los datos de ${window.lastCalcResult.nombre} y consulta su porción orientativa cuando lo necesites.`;
+        btn.textContent = 'Guardar referencia';
     } else if (window.isAdmin) {
         title.textContent = 'Resultado listo';
         text.textContent = 'El administrador puede usar la calculadora como referencia sin guardar datos en un perfil.';
@@ -2033,8 +2313,8 @@ window.updateCalcSaveCTA = function () {
         btn.disabled = true;
         btn.classList.add('opacity-60', 'cursor-not-allowed');
     } else {
-        title.textContent = 'Crea tu cuenta y guarda esta ración';
-        text.textContent = `Guarda los datos de ${window.lastCalcResult.nombre}, acumula puntos y reclama tu 20% de bienvenida.`;
+        title.textContent = 'Crea tu cuenta y guarda esta porción';
+        text.textContent = `Guarda los datos de ${window.lastCalcResult.nombre}, acumula puntos y valida tu 20% de descuento de bienvenida.`;
         btn.textContent = 'Crear cuenta';
     }
 };
@@ -2054,7 +2334,7 @@ window.prefillRegisterFromCalc = function () {
 window.guardarMascotaDesdeCalculadora = async function () {
     window.vibrate(20);
     if (!window.lastCalcResult) {
-        window.showToast('Primero calcula la ración de tu mascota.');
+        window.showToast('Primero calcula la porción orientativa de tu mascota.');
         return;
     }
     if (window.isAdmin) {
@@ -2066,7 +2346,7 @@ window.guardarMascotaDesdeCalculadora = async function () {
         window.abrirModalAuth();
         window.switchAuthTab('register');
         window.prefillRegisterFromCalc();
-        window.showAuthInfo('Crea tu cuenta para guardar la ración de tu mascota y reclamar tu <b>20% de bienvenida</b>.');
+        window.showAuthInfo('Crea tu cuenta para guardar la porción orientativa de tu mascota y validar tu <b>20% de descuento</b>.');
         return;
     }
     if (!db) {
@@ -2116,7 +2396,7 @@ window.guardarMascotaDesdeCalculadora = async function () {
     const text = document.getElementById('calc-save-text');
     const btn = document.getElementById('btn-save-calc-pet');
     if (title) title.textContent = 'Datos guardados con éxito';
-    if (text) text.textContent = `La ración de ${r.nombre} ya está guardada en tu perfil.`;
+    if (text) text.textContent = `La porción orientativa de ${r.nombre} ya está guardada en tu perfil.`;
     if (btn) btn.textContent = 'Ver en mi perfil';
 
     try { window.actualizarUIAuth?.(); } catch (uiError) { console.warn('La mascota se guardó, pero hubo un aviso actualizando el perfil:', uiError); }
@@ -2167,7 +2447,7 @@ window.entendidoBienvenida = function () {
         }
         window.abrirModalAuth();
         window.switchAuthTab('register');
-        window.showAuthInfo('Crea tu cuenta para reclamar tu <b>20% de descuento</b> en tu primera compra.');
+        window.showAuthInfo('Crea tu cuenta para validar tu <b>20% de descuento</b> en tu primer pedido de fórmulas.');
     }, 520);
 };
 
@@ -2179,7 +2459,7 @@ window.abrirModalDescuento = function () {
         window.switchAuthTab('register');
         const err = document.getElementById('auth-error');
         if (err) {
-            err.innerHTML = "¡Crea una cuenta para reclamar tu <b>20% de descuento</b> exclusivo!";
+            err.innerHTML = "Crea tu cuenta para validar tu <b>20% de descuento</b> en tu primer pedido.";
             err.className = "mt-4 text-xs font-bold text-purple-dark bg-green/20 border border-green/30 p-2.5 rounded-lg text-center leading-tight";
             err.classList.remove('hidden');
         }
@@ -2187,7 +2467,7 @@ window.abrirModalDescuento = function () {
     }
 
     if (window.currentUser.data && window.currentUser.data.descuento_usado) {
-        window.showToast("Tu cuenta ya ha utilizado el descuento de primera compra.");
+        window.showToast("Tu cuenta ya utilizó el descuento de bienvenida.");
         return;
     }
 
@@ -2254,7 +2534,7 @@ window.verificarDescuento = async function () {
     inputMascota.classList.remove('border-pink', 'border-2');
 
     if (!nombre || !telefono || !mascota) {
-        err.textContent = "Debes llenar todas las casillas para continuar.";
+        err.textContent = "Completa todos los campos para validar el descuento.";
         err.classList.remove('hidden');
         if (!nombre) inputNombre.classList.add('border-pink', 'border-2');
         if (!telefono) inputTelefono.classList.add('border-pink', 'border-2');
@@ -2269,7 +2549,7 @@ window.verificarDescuento = async function () {
     }
 
     if (window.currentUser.data?.descuento_usado) {
-        err.textContent = "Tu cuenta ya ha utilizado el descuento de primera compra.";
+        err.textContent = "Tu cuenta ya utilizó el descuento de bienvenida.";
         err.classList.remove('hidden');
         return;
     }
@@ -2287,7 +2567,7 @@ window.verificarDescuento = async function () {
         try {
             const docSnap = await getDoc(window.getUserPath(uid));
             if (docSnap.exists() && docSnap.data().descuento_usado) {
-                err.textContent = "Tu cuenta ya ha utilizado el descuento de primera compra.";
+                err.textContent = "Tu cuenta ya utilizó el descuento de bienvenida.";
                 err.classList.remove('hidden');
                 if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
                 return;
@@ -2314,7 +2594,7 @@ window.verificarDescuento = async function () {
     }
     window.cerrarModalDescuento();
     const banner = document.getElementById('descuento-banner');
-    if (banner) banner.innerHTML = `<div class="bg-green/20 text-green-dark p-3 rounded-lg text-center text-xs font-black flex items-center justify-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> ¡Descuento aplicado con éxito!</div>`;
+    if (banner) banner.innerHTML = `<div class="bg-green/20 text-green-dark p-3 rounded-lg text-center text-xs font-black flex items-center justify-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> Descuento del 20% aplicado al pedido</div>`;
     if (typeof window.refreshIcons === 'function') window.refreshIcons();
     window.updateCartUI();
 
@@ -2832,14 +3112,39 @@ window.renderAdminOrders = function (orders) {
             }
         }
         const safeUser = window.escapeHTML(o.userName || 'Usuario');
-        const safeItems = Array.isArray(o.items) ? o.items.map(i => `<li><span class="font-bold text-purple-dark dark:text-gray-300">${Number(i.qty || 0)}x</span> ${window.escapeHTML(i.name || 'Producto')} (${window.escapeHTML(i.weight || '')}) ${i.forPet ? `<span class="opacity-60 italic">- ${window.escapeHTML(i.forPet)}</span>` : ''}</li>`).join('') : '<li>Pedido sin detalle</li>';
+        const isFeedingPlanOrder = o.orderType === 'feeding_plan_order' || (Array.isArray(o.items) && o.items.some(i => i.type === 'feeding_plan'));
+        const safeItems = Array.isArray(o.items) ? o.items.map(i => {
+            if (i.type === 'feeding_plan') {
+                const bagsText = Array.isArray(i.bags) ? i.bags.map(b => `${b.qty}x ${b.weight}`).join(' + ') : '';
+                const reqKg = (Number(i.totalGramsRequired || 0) / 1000).toFixed(2);
+                const provKg = (Number(i.totalGramsProvided || 0) / 1000).toFixed(2);
+                const surplus = Number(i.surplusGrams || 0);
+                return `
+                    <li class="py-1">
+                        <div class="font-bold text-purple-dark dark:text-white">🐾 Plan ${i.durationDays || 7} días para ${window.escapeHTML(i.petName || i.forPet || 'Mascota')} - ${window.escapeHTML(i.formulaName || i.name)}</div>
+                        <div class="text-[11px] text-gray-500 dark:text-gray-400">
+                            Ración: <span class="font-semibold text-purple">${i.dailyGrams || 0} g/día</span> · Bolsas: <span class="font-semibold">${window.escapeHTML(bagsText)}</span>
+                        </div>
+                        <div class="text-[11px] text-gray-500 dark:text-gray-400">
+                            Alimento: ${reqKg} kg req / ${provKg} kg prov (+${surplus}g excedente) · Subtotal: $${Number(i.finalPrice || i.price || 0).toFixed(2)} ${i.discountAmount > 0 ? `(Ahorro: -$${Number(i.discountAmount).toFixed(2)})` : ''}
+                        </div>
+                    </li>
+                `;
+            }
+            return `<li><span class="font-bold text-purple-dark dark:text-gray-300">${Number(i.qty || 0)}x</span> ${window.escapeHTML(i.name || 'Producto')} (${window.escapeHTML(i.weight || '')}) ${i.forPet ? `<span class="opacity-60 italic">- ${window.escapeHTML(i.forPet)}</span>` : ''}</li>`;
+        }).join('') : '<li>Pedido sin detalle</li>';
         const totalNumber = Number(o.total || 0);
         return `
                 <div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left relative overflow-hidden transition-all">
                     <div class="absolute top-0 left-0 w-1 h-full ${statusInfo.bar}"></div>
                     <div class="flex justify-between items-start mb-3 pl-1 gap-2">
                         <div class="min-w-0 flex-1 pr-2">
-                            <h4 class="font-black text-purple-dark dark:text-white text-sm md:text-base leading-tight break-words">${safeUser}</h4>
+                            <div class="flex items-center gap-2 flex-wrap mb-1">
+                                <h4 class="font-black text-purple-dark dark:text-white text-sm md:text-base leading-tight break-words">${safeUser}</h4>
+                                <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${isFeedingPlanOrder ? 'bg-purple/10 text-purple-dark dark:text-purple-light border border-purple/20' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'}">
+                                    ${isFeedingPlanOrder ? 'Plan de alimentación' : 'Pedido de catálogo'}
+                                </span>
+                            </div>
                             <p class="text-[10px] text-purple/50 dark:text-gray-500 font-bold mt-0.5">${date}</p>
                         </div>
                         <span class="px-2.5 py-1 rounded-md border text-[9px] font-black uppercase tracking-widest shrink-0 ${statusInfo.classes}">
@@ -2855,6 +3160,7 @@ window.renderAdminOrders = function (orders) {
                         <div>
                             <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest block leading-tight">Total Cobrado</span>
                             <span class="font-black text-purple dark:text-white text-lg">$${totalNumber.toFixed(2)}</span>
+                            ${o.descuentoAplicado ? `<span class="ml-2 text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-2 py-0.5 rounded-md">Descuento aplicado</span>` : ''}
                         </div>
                         <div class="flex items-center gap-2 flex-wrap">
                             ${actionButton}
@@ -4236,7 +4542,7 @@ window.buildAdminUserCard = function (u) {
     const pets = Array.isArray(u.mascotas) ? u.mascotas : [];
     const mascotas = pets.map(m => {
         const calc = window.getPetCalcData ? window.getPetCalcData(m) : null;
-        return `<div class="bg-purple/5 dark:bg-purple/10 p-3 rounded-xl border border-purple/10"><p class="font-black text-purple-dark dark:text-white text-xs">${m.tipo === 'gato' ? '🐱' : '🐶'} ${window.escapeHTML(m.nombre || 'Mascota')}</p><p class="text-[10px] text-gray-500 font-bold mt-1">${window.escapeHTML(m.peso || '-')}kg · ${window.escapeHTML(m.edad || m.etapa || 'Sin etapa')} ${m.cumple ? `· Nac: ${window.escapeHTML(m.cumple)}` : ''}</p>${calc ? `<p class="text-[10px] text-green-dark dark:text-green font-black mt-2">Ración: ${Number(calc.gramos || 0)}g/día · ${Number(calc.comidas || 0)} comidas</p>` : ''}</div>`;
+        return `<div class="bg-purple/5 dark:bg-purple/10 p-3 rounded-xl border border-purple/10"><p class="font-black text-purple-dark dark:text-white text-xs">${m.tipo === 'gato' ? '🐱' : '🐶'} ${window.escapeHTML(m.nombre || 'Mascota')}</p><p class="text-[10px] text-gray-500 font-bold mt-1">${window.escapeHTML(m.peso || '-')}kg · ${window.escapeHTML(m.edad || m.etapa || 'Sin etapa')} ${m.cumple ? `· Nac: ${window.escapeHTML(m.cumple)}` : ''}</p>${calc ? `<p class="text-[10px] text-green-dark dark:text-green font-black mt-2">Porción orientativa: ${Number(calc.gramos || 0)}g/día · ${Number(calc.comidas || 0)} comidas</p>` : ''}</div>`;
     }).join('');
     return `<div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left">
                 <div class="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
@@ -4476,7 +4782,7 @@ window.loadAdminCalculadora = function () {
             </div>
 
             <button id="btn-calcular-racion" onclick="window.calcularRacion()" class="w-full p-5 bg-gradient-to-r from-purple-dark to-purple dark:from-[#2e1060] dark:to-[#421d8e] text-white font-extrabold text-sm tracking-wide rounded-2xl shadow-lg shadow-purple/30 transition-all flex items-center justify-center gap-2 select-none">
-                <i data-lucide="sparkles" class="w-5 h-5 text-green"></i> Calcular Ración
+                <i data-lucide="sparkles" class="w-5 h-5 text-green"></i> Calcular Porción Orientativa
             </button>
 
             <div id="errorMsg" class="error-msg text-left"></div>
@@ -4484,7 +4790,7 @@ window.loadAdminCalculadora = function () {
             <div id="tu-resultado" class="result text-left">
                 <div class="bg-purple-light dark:bg-[#0d0718] rounded-[24px] border border-purple-border/30 dark:border-purple/20 overflow-hidden shadow-xl">
                     <div id="result-top" class="p-6 text-center text-white">
-                        <div id="result-title-name" class="text-[10px] font-extrabold tracking-widest uppercase mb-1 opacity-80">Debe comer diariamente</div>
+                        <div id="result-title-name" class="text-[10px] font-extrabold tracking-widest uppercase mb-1 opacity-80">Porción diaria orientativa</div>
                         <div id="result-grams" class="text-6xl font-black tracking-tight select-all">0</div>
                         <div class="text-sm font-extrabold uppercase tracking-wider opacity-70 mt-1">gramos al día</div>
                         <div id="result-subtitle-pet" class="text-xs font-semibold opacity-80 mt-2"></div>
@@ -4506,18 +4812,14 @@ window.loadAdminCalculadora = function () {
 
                         <div class="bg-purple-border/15 dark:bg-purple/10 rounded-2xl p-5 space-y-3 border border-purple-border/30 dark:border-purple/20">
                             <div class="text-[9px] font-black tracking-widest text-purple/60 dark:text-gray-400 uppercase">Equivalencia diaria</div>
-                            <div class="grid grid-cols-3 gap-3">
+                            <div class="grid grid-cols-2 gap-3">
                                 <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-xl p-3 text-center shadow-sm">
                                     <div class="text-lg font-black text-purple dark:text-white" id="b-250">0</div>
                                     <div class="text-[9px] font-bold text-purple/40 dark:text-gray-500 uppercase mt-1">Bolsas 250g</div>
                                 </div>
                                 <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-xl p-3 text-center shadow-sm">
-                                    <div class="text-lg font-black text-purple dark:text-white" id="b-550">0</div>
-                                    <div class="text-[9px] font-bold text-purple/40 dark:text-gray-500 uppercase mt-1">Bolsas 550g</div>
-                                </div>
-                                <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-xl p-3 text-center shadow-sm">
-                                    <div class="text-lg font-black text-purple dark:text-white" id="b-850">0</div>
-                                    <div class="text-[9px] font-bold text-purple/40 dark:text-gray-500 uppercase mt-1">Bolsas 850g</div>
+                                    <div class="text-lg font-black text-purple dark:text-white" id="b-500">0</div>
+                                    <div class="text-[9px] font-bold text-purple/40 dark:text-gray-500 uppercase mt-1">Bolsas 500g</div>
                                 </div>
                             </div>
                         </div>
@@ -4537,18 +4839,14 @@ window.loadAdminCalculadora = function () {
                                 </div>
                             </div>
                             <div class="text-[8px] font-black tracking-widest text-purple/40 dark:text-gray-500 uppercase">Bolsas para todo el mes:</div>
-                            <div class="grid grid-cols-3 gap-2">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div class="bg-white dark:bg-darkcard rounded-xl p-2 text-center shadow-sm border border-green/10">
                                     <div class="text-sm font-black text-purple dark:text-white leading-none" id="plan-b250-mes">0</div>
                                     <div class="text-[7px] font-bold text-purple/45 dark:text-gray-500 uppercase mt-1 leading-tight">Bolsas<br>250g</div>
                                 </div>
                                 <div class="bg-white dark:bg-darkcard rounded-xl p-2 text-center shadow-sm border border-green/10">
-                                    <div class="text-sm font-black text-purple dark:text-white leading-none" id="plan-b550-mes">0</div>
-                                    <div class="text-[7px] font-bold text-purple/45 dark:text-gray-500 uppercase mt-1 leading-tight">Bolsas<br>550g</div>
-                                </div>
-                                <div class="bg-white dark:bg-darkcard rounded-xl p-2 text-center shadow-sm border border-green/10">
-                                    <div class="text-sm font-black text-purple dark:text-white leading-none" id="plan-b850-mes">0</div>
-                                    <div class="text-[7px] font-bold text-purple/45 dark:text-gray-500 uppercase mt-1 leading-tight">Bolsas<br>850g</div>
+                                    <div class="text-sm font-black text-purple dark:text-white leading-none" id="plan-b500-mes">0</div>
+                                    <div class="text-[7px] font-bold text-purple/45 dark:text-gray-500 uppercase mt-1 leading-tight">Bolsas<br>500g</div>
                                 </div>
                             </div>
                         </div>
@@ -4586,17 +4884,19 @@ window.loadAdminCalculadora = function () {
 
 window.selectEtapa = function (v, btn) {
     window.vibrate(20);
-    btn.parentElement.querySelectorAll('button').forEach(b => { b.classList.remove('active'); b.classList.add('opacity-60') });
+    btn.parentElement.querySelectorAll('button').forEach(b => { b.classList.remove('active'); b.classList.add('opacity-60'); });
     btn.classList.add('active'); btn.classList.remove('opacity-60');
-    window.state.etapa = v; window.state.cachorroEdad = null; window.state.actividad = null;
+    window.state.etapa = v;
+    window.state.cachorroEdad = null;
+    window.state.actividad = 'bajo'; // Fijo internamente en "Poco activo"
 
     const sCachorro = document.getElementById('sub-cachorro');
     if (sCachorro) sCachorro.classList.toggle('hidden', v !== 'cachorro');
 
     const sAct = document.getElementById('sub-actividad');
-    if (sAct) sAct.classList.toggle('hidden', v === 'cachorro');
+    if (sAct) sAct.classList.add('hidden');
 
-    document.querySelectorAll('#sub-cachorro button, #sub-actividad button').forEach(b => {
+    document.querySelectorAll('#sub-cachorro button').forEach(b => {
         b.classList.remove('active'); b.classList.add('opacity-60');
     });
 
@@ -4609,7 +4909,7 @@ window.selectEtapa = function (v, btn) {
 
 window.selectSubOpt = function (field, v, btn) {
     window.vibrate(20);
-    btn.parentElement.querySelectorAll('button').forEach(b => { b.classList.remove('active'); b.classList.add('opacity-60') });
+    btn.parentElement.querySelectorAll('button').forEach(b => { b.classList.remove('active'); b.classList.add('opacity-60'); });
     btn.classList.add('active'); btn.classList.remove('opacity-60');
     window.state[field] = v;
 
@@ -4620,12 +4920,251 @@ window.selectSubOpt = function (field, v, btn) {
     if (eMsg) eMsg.classList.remove('visible');
 };
 
-
 window.getBagRecommendation = function (grams = 0) {
     const g = Number(grams) || 0;
-    if (g <= 250) return { size: '250g', label: '250g', text: 'Presentación sugerida: 250g para prueba inicial, razas pequeñas o porciones bajas.' };
-    if (g <= 550) return { size: '550g', label: '550g', text: 'Presentación sugerida: 550g para razas medianas o consumo moderado.' };
-    return { size: '850g', label: '850g', text: 'Presentación sugerida: 850g para razas grandes, hogares con varias mascotas o pedidos mensuales.' };
+    if (g <= 300) return { size: '250g', label: '250g', text: 'Presentación sugerida: 250 g para prueba inicial, razas pequeñas o consumo moderado.' };
+    return { size: '500g', label: '500g', text: 'Presentación sugerida: 500 g para perros medianos, grandes o planificación regular de raciones.' };
+};
+
+window.updateFlowStepper = function (currentStep) {
+    for (let s = 1; s <= 4; s++) {
+        const btn = document.getElementById(`step-btn-${s}`);
+        if (!btn) continue;
+        if (s <= currentStep) {
+            btn.removeAttribute('disabled');
+            btn.classList.remove('opacity-60');
+        }
+        if (s === currentStep) {
+            btn.classList.add('bg-purple', 'text-white', 'border-purple');
+            btn.classList.remove('bg-white', 'dark:bg-darkcard', 'text-purple/60', 'dark:text-gray-400');
+            const numSpan = btn.querySelector('span:first-child');
+            if (numSpan) {
+                numSpan.className = 'w-5 h-5 rounded-full bg-white text-purple text-[10px] font-black flex items-center justify-center shadow-sm';
+            }
+        } else {
+            btn.classList.remove('bg-purple', 'text-white', 'border-purple');
+            btn.classList.add('bg-white', 'dark:bg-darkcard', 'text-purple/60', 'dark:text-gray-400');
+            const numSpan = btn.querySelector('span:first-child');
+            if (numSpan) {
+                numSpan.className = 'w-5 h-5 rounded-full bg-purple/10 dark:bg-purple/20 text-purple dark:text-white text-[10px] font-black flex items-center justify-center';
+            }
+        }
+    }
+};
+
+window.goToFlowStep = function (step) {
+    window.vibrate?.(20);
+    if (step === 1) {
+        window.navigateTo('view-calc');
+        const card = document.getElementById('calc-step-card');
+        if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.updateFlowStepper(1);
+    } else if (step === 2) {
+        if (!window.lastCalcResult?.gramos) {
+            window.showToast?.('Ingresa primero los datos de tu perro.');
+            return;
+        }
+        window.navigateTo('view-calc');
+        const tuRes = document.getElementById('tu-resultado');
+        if (tuRes) tuRes.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.updateFlowStepper(2);
+    } else if (step === 3) {
+        if (!window.lastCalcResult?.gramos) {
+            window.showToast?.('Calcula primero la porción de tu perro.');
+            return;
+        }
+        window.navigateTo('view-calc');
+        const planSection = document.getElementById('feeding-plans-section');
+        if (planSection) planSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.updateFlowStepper(3);
+    } else if (step === 4) {
+        window.navigateTo('view-cart');
+        window.updateFlowStepper(4);
+    }
+};
+
+window.cambiarFormulaPlan = function (formula) {
+    window.vibrate?.(20);
+    window.activePlanFormula = formula;
+
+    const btns = {
+        pollo: document.getElementById('formula-btn-pollo'),
+        res: document.getElementById('formula-btn-res'),
+        mixto: document.getElementById('formula-btn-mixto')
+    };
+
+    ['pollo', 'res', 'mixto'].forEach(f => {
+        const btn = btns[f];
+        if (!btn) return;
+        const isSelected = f === formula;
+        if (isSelected) {
+            btn.className = 'plan-formula-btn p-3 rounded-xl border flex items-center gap-2.5 font-bold text-xs transition-all bg-white text-purple-dark border-white shadow-sm';
+            const sub = btn.querySelector('.text-[9px]');
+            if (sub) sub.className = 'text-[9px] font-medium text-gray-500';
+        } else {
+            btn.className = 'plan-formula-btn p-3 rounded-xl border flex items-center gap-2.5 font-bold text-xs transition-all bg-white/10 text-white border-white/20 hover:bg-white/20';
+            const sub = btn.querySelector('.text-[9px]');
+            if (sub) sub.className = 'text-[9px] font-medium text-white/70';
+        }
+    });
+
+    window.renderActiveFeedingPlans();
+};
+
+window.renderActiveFeedingPlans = function () {
+    const grid = document.getElementById('feeding-plans-cards-grid');
+    if (!grid) return;
+
+    const dailyGrams = Number(window.lastCalcResult?.gramos) || 0;
+    if (!dailyGrams) return;
+
+    const formula = window.activePlanFormula || 'pollo';
+    const petName = window.state.nombreMascota || 'tu perro';
+    const plans = window.generateFeedingPlans(dailyGrams, formula, petName);
+
+    grid.innerHTML = plans.map(plan => {
+        const isMonthly = plan.days === 30;
+        const splitText = plan.split ? `<span class="text-[10px] font-bold text-pink block mt-1">Composición: ${plan.split.polloPct}% Pollo y ${plan.split.resPct}% Res</span>` : '';
+        const surplusBadge = plan.surplusGrams > 0 
+            ? `<div class="text-[11px] font-bold text-purple/80 dark:text-gray-300 border-t border-purple-border/30 dark:border-purple/20 pt-2 flex items-center gap-1.5">
+                   <i data-lucide="info" class="w-3.5 h-3.5 text-green-dark dark:text-green shrink-0"></i>
+                   <span>Quedan aprox. <b>${plan.surplusGrams} g adicionales</b> (${plan.surplusKg} kg) según las presentaciones disponibles.</span>
+               </div>` 
+            : '';
+
+        return `
+        <div class="feeding-plan-card bg-white dark:bg-darkcard rounded-3xl p-5 md:p-6 border ${isMonthly ? 'border-2 border-pink shadow-soft-lg' : 'border border-purple-border/50 dark:border-purple/20 shadow-sm'} text-left relative overflow-hidden flex flex-col justify-between transition-all">
+            <div>
+                <div class="flex items-center justify-between gap-2 mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full ${isMonthly ? 'bg-pink text-white shadow-sm' : 'bg-green/20 text-green-dark dark:text-green'}">
+                            ${plan.tag || `${plan.days} días`}
+                        </span>
+                        ${isMonthly ? '<span class="text-[9px] font-extrabold uppercase tracking-widest text-pink">Recomendado</span>' : ''}
+                    </div>
+                    <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-purple-light dark:bg-purple/20 text-purple dark:text-white border border-purple-border/60 dark:border-purple/30">
+                        ${plan.discountPct * 100}% dcto.
+                    </span>
+                </div>
+
+                <div class="flex items-baseline justify-between gap-2">
+                    <h4 class="text-2xl font-black text-purple-dark dark:text-white tracking-tight">${plan.label}</h4>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 font-semibold">${plan.days} días de alimento</span>
+                </div>
+                ${splitText}
+
+                <div class="mt-4 p-4 bg-purple-light/70 dark:bg-[#0d0718] rounded-2xl border border-purple-border/40 dark:border-purple/20 space-y-2.5 text-xs">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 dark:text-gray-400 font-medium">Cantidad necesaria para ${plan.days} días:</span>
+                        <span class="font-bold text-purple-dark dark:text-white">${plan.requiredKg} kg (${plan.requiredGrams} g)</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 dark:text-gray-400 font-medium">Cantidad total incluida en bolsas:</span>
+                        <span class="font-black text-green-dark dark:text-green">${plan.includedKg} kg (${plan.includedGrams} g)</span>
+                    </div>
+                    ${surplusBadge}
+                </div>
+
+                <div class="mt-4">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-purple/50 dark:text-gray-400 block mb-2">Bolsas calculadas para este plan:</span>
+                    <ul class="text-xs space-y-1.5 text-gray-700 dark:text-gray-300 font-semibold">
+                        ${plan.bags.map(b => `<li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-pink shrink-0"></span><span><b>${b.qty}x</b> presentación de ${b.size.replace('gr', ' g')} (${b.formulaName || b.formula})</span></li>`).join('')}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-purple-border/30 dark:border-purple/20 space-y-3">
+                <div class="flex items-baseline justify-between">
+                    <div>
+                        <span class="text-xs text-gray-400 line-through font-bold mr-2">$${plan.originalPrice.toFixed(2)}</span>
+                        <span class="text-3xl font-black text-purple-dark dark:text-white tracking-tight">$${plan.finalPrice.toFixed(2)}</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-black text-green-dark dark:text-green block">Ahorras $${plan.savings.toFixed(2)}</span>
+                        <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">~$${plan.costPerDay.toFixed(2)} / día</span>
+                    </div>
+                </div>
+
+                <button type="button" onclick="window.seleccionarPlan(${plan.days})" class="w-full py-4 rounded-xl font-bold text-xs uppercase tracking-wider text-white ${isMonthly ? 'bg-pink hover:bg-pink-dark shadow-soft-lg' : 'bg-purple hover:bg-purple-dark'} transition-all active:scale-[0.98] flex items-center justify-center gap-2 touch-target-safe">
+                    <i data-lucide="check" class="w-4 h-4 text-white"></i>
+                    <span>Elegir ${plan.label.toLowerCase()}</span>
+                </button>
+            </div>
+        </div>
+        `;
+    }).join('');
+
+    if (window.lucide) window.lucide.createIcons({ root: grid });
+};
+
+window.seleccionarPlan = function (days) {
+    window.vibrate?.([30, 50]);
+    if (!window.lastCalcResult?.gramos) {
+        window.showToast?.('Calcula primero la porción de tu perro.');
+        return;
+    }
+
+    const formula = window.activePlanFormula || 'pollo';
+    const petName = window.state.nombreMascota || 'tu perro';
+    const plan = window.buildFeedingPlan(window.lastCalcResult.gramos, days, formula, petName);
+
+    window.addFeedingPlanToCart(plan);
+    window.updateFlowStepper(4);
+    window.navigateTo('view-cart');
+};
+
+window.addFeedingPlanToCart = function (plan) {
+    if (!window.cart) window.cart = [];
+
+    // Formatear como item de plan de alimentación
+    const planItem = {
+        ...plan,
+        type: 'feeding_plan',
+        id: 'plan_' + Date.now()
+    };
+
+    // Si ya existe un plan para esta misma mascota, se actualiza
+    const existingIndex = window.cart.findIndex(i => i.type === 'feeding_plan' && (i.petName || '').toLowerCase() === (plan.petName || '').toLowerCase());
+    if (existingIndex >= 0) {
+        window.cart[existingIndex] = planItem;
+        window.showToast?.(`Plan actualizado para ${plan.petName}.`, 'success');
+    } else {
+        window.cart.push(planItem);
+        window.showToast?.(`Plan para ${plan.petName} agregado al pedido.`, 'success');
+    }
+
+    window.updateCartUI();
+    window.saveCartToStorage?.();
+};
+
+window.removePlanFromCart = function (planId) {
+    window.vibrate?.(20);
+    window.cart = window.cart.filter(i => i.id !== planId);
+    window.updateCartUI();
+    window.saveCartToStorage?.();
+    window.showToast?.('Plan eliminado del pedido.');
+};
+
+window.updatePlanDuration = function (planId, newDays) {
+    window.vibrate?.(20);
+    const plan = window.cart.find(i => i.id === planId);
+    if (!plan) return;
+    const updated = window.buildFeedingPlan(plan.dailyGrams, newDays, plan.formula, plan.petName);
+    Object.assign(plan, updated);
+    window.updateCartUI();
+    window.saveCartToStorage?.();
+    window.showToast?.(`Plan cambiado a ${newDays} días.`, 'success');
+};
+
+window.updatePlanFormula = function (planId, newFormula) {
+    window.vibrate?.(20);
+    const plan = window.cart.find(i => i.id === planId);
+    if (!plan) return;
+    const updated = window.buildFeedingPlan(plan.dailyGrams, plan.days, newFormula, plan.petName);
+    Object.assign(plan, updated);
+    window.updateCartUI();
+    window.saveCartToStorage?.();
+    window.showToast?.(`Fórmula actualizada.`, 'success');
 };
 
 window.calcularRacion = function () {
@@ -4642,7 +5181,7 @@ window.calcularRacion = function () {
     const rawPesoText = String(pesoInputEl.value || '').trim();
     if (/[a-zA-Z@]/.test(rawPesoText)) {
         pesoInputEl.value = '';
-        err.textContent = "Ingresa el peso en kg, solo números.";
+        err.textContent = "Ingresa el peso en kg (solo números mayores a 0).";
         err.classList.add('visible');
         const tRes = document.getElementById('tu-resultado');
         if (tRes) tRes.classList.remove('visible', 'show');
@@ -4653,48 +5192,36 @@ window.calcularRacion = function () {
     const peso = parseFloat(pesoText);
 
     if (!window.state.nombreMascota) {
-        err.textContent = "Por favor, ingresa el nombre de tu mascota en el Paso 1.";
+        err.textContent = "Ingresa el nombre de tu perro en el Paso 1 para continuar.";
         err.classList.add('visible');
-
         const tRes = document.getElementById('tu-resultado');
         if (tRes) tRes.classList.remove('visible', 'show');
-
         calcNombreInput.focus();
         return;
     }
 
-    if (!window.state.etapa || (window.state.etapa === 'cachorro' && !window.state.cachorroEdad) || (window.state.etapa !== 'cachorro' && !window.state.actividad) || !peso || peso <= 0) {
-        err.textContent = "Completa todos los pasos y el peso correctamente para continuar.";
-        err.classList.add('visible');
+    window.state.actividad = 'bajo'; // Fijo internamente en "Poco activo"
 
+    if (!window.state.etapa || (window.state.etapa === 'cachorro' && !window.state.cachorroEdad) || !peso || peso <= 0) {
+        err.textContent = "Completa la etapa de vida y el peso de tu perro para calcular su porción orientativa.";
+        err.classList.add('visible');
         const tRes = document.getElementById('tu-resultado');
         if (tRes) tRes.classList.remove('visible', 'show');
         return;
     }
     err.classList.remove('visible');
 
-    const factor = window.state.etapa === 'cachorro' ? ({ '2-4': 3, '4-6': 2.5, '6-9': 2, '9-12': 1.8 }[window.state.cachorroEdad]) : (window.state.etapa === 'adulto' ? { esterilizado_bajo: 1.2, bajo: 1.4, normal: 1.6, alto: 2 }[window.state.actividad] : { esterilizado_bajo: 1.1, bajo: 1.2, normal: 1.4, alto: 1.6 }[window.state.actividad]);
+    // Factor fijado internamente según "Poco activo" (bajo)
+    const factor = window.state.etapa === 'cachorro' ? ({ '2-4': 3, '4-6': 2.5, '6-9': 2, '9-12': 1.8 }[window.state.cachorroEdad] || 2) : (window.state.etapa === 'adulto' ? 1.4 : 1.2);
     const gramos = Math.round((70 * Math.pow(peso, 0.75) * factor) / 1.25);
-    const comidas = window.state.etapa === 'cachorro' ? (['2-4', '4-6'].includes(window.state.cachorroEdad) ? 4 : 3) : (['bajo', 'esterilizado_bajo'].includes(window.state.actividad) ? 2 : 3);
-
-    let actLabel = '';
-    if (window.state.etapa === 'cachorro') {
-        actLabel = window.state.cachorroEdad + ' meses';
-    } else {
-        const labels = {
-            'esterilizado_bajo': 'Esterilizado/Bajo',
-            'bajo': 'Poco activo',
-            'normal': 'Activo (Normal)',
-            'alto': 'Muy activo'
-        };
-        actLabel = labels[window.state.actividad];
-    }
+    const comidas = window.state.etapa === 'cachorro' ? (['2-4', '4-6'].includes(window.state.cachorroEdad) ? 4 : 3) : 2;
 
     const titleName = document.getElementById('result-title-name');
-    if (titleName) titleName.textContent = `Sugerencia para ${window.state.nombreMascota}`;
+    if (titleName) titleName.textContent = `Porción orientativa para ${window.state.nombreMascota}`;
 
     const subtitlePet = document.getElementById('result-subtitle-pet');
-    if (subtitlePet) subtitlePet.textContent = `${window.state.etapa.toUpperCase()} · ${peso}kg · ${actLabel}`;
+    const etapaLabel = window.state.etapa === 'cachorro' ? `Cachorro (${window.state.cachorroEdad} meses)` : (window.state.etapa === 'senior' ? 'Senior' : 'Adulto');
+    if (subtitlePet) subtitlePet.textContent = `${etapaLabel} · ${peso} kg`;
 
     const rGrams = document.getElementById('result-grams');
     if (rGrams) rGrams.textContent = gramos;
@@ -4709,15 +5236,13 @@ window.calcularRacion = function () {
     if (rPorComida) rPorComida.textContent = Math.round(gramos / comidas) + "g";
 
     const b250 = document.getElementById('b-250'); if (b250) b250.textContent = (Math.round((gramos / 250) * 10) / 10).toFixed(1);
-    const b550 = document.getElementById('b-550'); if (b550) b550.textContent = (Math.round((gramos / 550) * 10) / 10).toFixed(1);
-    const b850 = document.getElementById('b-850'); if (b850) b850.textContent = (Math.round((gramos / 850) * 10) / 10).toFixed(1);
+    const b500 = document.getElementById('b-500'); if (b500) b500.textContent = (Math.round((gramos / 500) * 10) / 10).toFixed(1);
 
     const totalGMes = gramos * 30;
     const pKilosMes = document.getElementById('plan-kilos-mes'); if (pKilosMes) pKilosMes.textContent = (totalGMes / 1000).toFixed(1) + ' kg';
     const pPorciones = document.getElementById('plan-porciones-mes'); if (pPorciones) pPorciones.textContent = (comidas * 30);
     const p250m = document.getElementById('plan-b250-mes'); if (p250m) p250m.textContent = Math.ceil(totalGMes / 250);
-    const p550m = document.getElementById('plan-b550-mes'); if (p550m) p550m.textContent = Math.ceil(totalGMes / 550);
-    const p850m = document.getElementById('plan-b850-mes'); if (p850m) p850m.textContent = Math.ceil(totalGMes / 850);
+    const p500m = document.getElementById('plan-b500-mes'); if (p500m) p500m.textContent = Math.ceil(totalGMes / 500);
 
     const top = document.getElementById('result-top');
     if (top && rGrams) {
@@ -4736,19 +5261,12 @@ window.calcularRacion = function () {
     const noteEl = document.getElementById('r-note');
     if (noteEl) {
         if (window.state.etapa === 'cachorro') {
-            noteEl.innerHTML = '<b>Tip cachorro:</b> Ajusta la edad cada pocos meses — sus necesidades cambian rápido. Los cachorros pequeños comen proporcionalmente más que los adultos.';
-        } else if (window.state.actividad === 'alto') {
-            noteEl.innerHTML = '<b>Perro muy activo:</b> Si sigue perdiendo peso tras 2 semanas, aumenta la porción un 10%.';
+            noteEl.innerHTML = '<b>Recomendación para cachorros:</b> Revisa su edad periódicamente, ya que sus requerimientos nutricionales cambian durante el crecimiento.';
         } else if (window.state.etapa === 'senior') {
-            noteEl.innerHTML = '<b>Senior:</b> Divide en ' + ((['bajo', 'esterilizado_bajo'].includes(window.state.actividad)) ? 2 : 3) + ' comidas para mejor digestión. Ajusta si hay heces blandas.';
+            noteEl.innerHTML = '<b>Perro senior:</b> Distribuye la porción en 2 comidas al día para favorecer una digestión ligera.';
         } else {
-            noteEl.innerHTML = '<b>Observa:</b> Costillas no visibles pero sí palpables = condición corporal ideal.';
+            noteEl.innerHTML = '<b>Condición corporal orientativa:</b> Esta porción es un punto de partida para tu perro con actividad moderada o habitual en casa.';
         }
-    }
-
-    const bagReco = window.getBagRecommendation?.(gramos);
-    if (noteEl && bagReco) {
-        noteEl.innerHTML += '<br><br><b>' + bagReco.text + '</b>';
     }
 
     window.lastCalcResult = {
@@ -4756,22 +5274,25 @@ window.calcularRacion = function () {
         tipo: 'perro',
         etapa: window.state.etapa,
         cachorroEdad: window.state.cachorroEdad,
-        actividad: window.state.actividad,
+        actividad: 'bajo',
         peso,
         gramos,
         comidas,
         porComida: Math.round(gramos / comidas),
-        actLabel,
+        calcVersion: window.MILKARF_CONFIG.calcEngineVersion,
         calculatedAt: new Date().toISOString()
     };
     window.updateCalcSaveCTA?.();
+
+    // Actualizar stepper y renderizar los planes correspondientes
+    window.updateFlowStepper(2);
+    window.renderActiveFeedingPlans();
 
     const tuRes = document.getElementById('tu-resultado');
     if (tuRes) {
         tuRes.classList.add('show');
         setTimeout(() => {
             tuRes.classList.add('visible');
-
             setTimeout(() => {
                 const scrollContainer = document.getElementById('view-calc');
                 if (scrollContainer) {
@@ -4784,6 +5305,16 @@ window.calcularRacion = function () {
                 }
             }, 350);
         }, 20);
+    }
+};
+
+window.handleDesktopAuthClick = function () {
+    window.vibrate?.(20);
+    const isLoggedIn = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
+    if (isLoggedIn) {
+        window.navigateTo('view-dashboard');
+    } else {
+        window.abrirModalAuth();
     }
 };
 
@@ -4842,8 +5373,7 @@ window.applyWeightButtonStyle = function (groupId, selectedButton, weight) {
 
     const styles = {
         '250gr': { bg: '#421d8e', border: '#421d8e', color: '#ffffff', shadow: '0 8px 18px rgba(66,29,142,0.25)' },
-        '550gr': { bg: '#d72b8f', border: '#d72b8f', color: '#ffffff', shadow: '0 8px 18px rgba(215,43,143,0.25)' },
-        '850gr': { bg: '#b9cb25', border: '#b9cb25', color: '#2e1060', shadow: '0 8px 18px rgba(185,203,37,0.25)' }
+        '500gr': { bg: '#d72b8f', border: '#d72b8f', color: '#ffffff', shadow: '0 8px 18px rgba(215,43,143,0.25)' }
     };
     const s = styles[weight] || styles['250gr'];
     selectedButton.style.backgroundColor = s.bg;
@@ -4894,42 +5424,145 @@ window.addToCart = function (prod) {
     window.updateCartUI();
     window.saveCartToStorage();
 
-    const t = document.createElement('div');
-    t.className = 'fixed top-10 left-1/2 -translate-x-1/2 z-[9999] bg-green text-purple-dark text-sm font-black px-6 py-3 rounded-full shadow-2xl shadow-green/30 flex items-center gap-2 transform transition-all translate-y-[-20px] opacity-0';
-    t.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i> Agregado: ${qty}x ${name}`;
-    document.body.appendChild(t);
-    if (window.lucide) window.lucide.createIcons({ root: t });
-
-    requestAnimationFrame(() => {
-        t.classList.remove('translate-y-[-20px]', 'opacity-0');
-        t.classList.add('translate-y-0', 'opacity-100');
-    });
-    setTimeout(() => {
-        t.classList.add('translate-y-[-20px]', 'opacity-0');
-        setTimeout(() => t.remove(), 300);
-    }, 2000);
+    const toastEl = document.getElementById('cart-toast');
+    const toastMsg = document.getElementById('cart-toast-msg');
+    if (toastEl && toastMsg) {
+        toastMsg.textContent = `Agregado: ${qty}x ${name} (${weight})`;
+        toastEl.classList.add('show');
+        if (window.__cartToastTimeout) clearTimeout(window.__cartToastTimeout);
+        window.__cartToastTimeout = setTimeout(() => {
+            toastEl.classList.remove('show');
+        }, 2800);
+        if (window.lucide) window.lucide.createIcons({ root: toastEl });
+    } else {
+        const t = document.createElement('div');
+        t.className = 'fixed top-6 right-6 z-[9999] bg-[#1e1035] text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2 transition-all';
+        t.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-green"></i> Agregado: ${qty}x ${name} (${weight})`;
+        document.body.appendChild(t);
+        if (window.lucide) window.lucide.createIcons({ root: t });
+        setTimeout(() => { t.remove(); }, 2500);
+    }
 
     window.qtys[prod] = 0;
     const qtyProd = document.getElementById(`qty-${prod}`);
     if (qtyProd) qtyProd.value = '0';
 };
 
-window.updateCartUI = function () {
-    window.cart.forEach(i => { i.qty = Math.max(1, parseInt(i.qty, 10) || 1); });
-    const tItems = window.cart.reduce((s, i) => s + i.qty, 0);
-    const tPrice = window.cart.reduce((s, i) => s + (i.price * i.qty), 0);
+window.agregarPlanOtraMascota = function () {
+    window.vibrate?.(20);
+    const nombreInput = document.getElementById('calc-nombre');
+    const pesoInput = document.getElementById('pesoInput');
+    if (nombreInput) nombreInput.value = '';
+    if (pesoInput) pesoInput.value = '';
+    const resSec = document.getElementById('tu-resultado');
+    if (resSec) resSec.classList.remove('visible', 'show');
+    const plansSec = document.getElementById('feeding-plans-section');
+    if (plansSec) plansSec.classList.add('hidden');
+    window.updateFlowStepper(1);
+    window.navigateTo('view-calc');
+    setTimeout(() => {
+        if (nombreInput) nombreInput.focus();
+    }, 250);
+};
 
+window.armarPlanDesdeCatalogo = function (formula = 'pollo') {
+    window.vibrate?.(20);
+    window.activePlanFormula = formula;
+    const nombreInput = document.getElementById('calc-nombre');
+    const pesoInput = document.getElementById('pesoInput');
+    
+    // Si ya se calculó una porción previamente, actualizamos los planes con la fórmula elegida
+    if (window.state?.porcionesRecomendadas?.perro) {
+        window.cambiarFormulaPlan(formula);
+        window.navigateTo('view-calc');
+        setTimeout(() => {
+            const plansSec = document.getElementById('feeding-plans-section');
+            if (plansSec) plansSec.scrollIntoView({ behavior: 'smooth' });
+        }, 200);
+    } else {
+        window.updateFlowStepper(1);
+        window.navigateTo('view-calc');
+        setTimeout(() => {
+            if (nombreInput) nombreInput.focus();
+        }, 250);
+    }
+};
+
+window.updateCartUI = function () {
+    if (!window.cart) window.cart = [];
+    
+    // Normalizar items estándar
+    window.cart.forEach(i => {
+        if (i.type !== 'feeding_plan') {
+            i.qty = Math.max(1, parseInt(i.qty, 10) || 1);
+        }
+    });
+
+    const tItems = window.cart.length; // Cada plan cuenta como 1 item de suscripción/pedido
+    
+    // Calcular subtotal original acumulado
+    const totalOriginalSubtotal = window.cart.reduce((s, i) => {
+        if (i.type === 'feeding_plan') {
+            return s + (Number(i.originalSubtotal) || (Number(i.price || 0) * Number(i.qty || 1)));
+        }
+        return s + (Number(i.price || 0) * Number(i.qty || 1));
+    }, 0);
+
+    // Calcular descuento acumulado de los planes
+    const totalPlanDiscount = window.cart.reduce((s, i) => {
+        if (i.type === 'feeding_plan') {
+            return s + (Number(i.discountAmount) || 0);
+        }
+        return s;
+    }, 0);
+
+    // Validar estado del cupón de bienvenida
+    if (window.descuentoAplicado) {
+        const isLoggedUser = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
+        const alreadyUsed = window.currentUser?.data?.descuento_usado === true;
+        if (!isLoggedUser || alreadyUsed) {
+            window.descuentoAplicado = false;
+        }
+    }
+
+    // Regla de no acumulación: aplicar el mayor beneficio económico
+    const totalWelcomeDiscount = window.descuentoAplicado ? (totalOriginalSubtotal * 0.20) : 0;
+    let appliedDiscountType = 'none';
+    let finalDiscountAmount = 0;
+
+    if (window.descuentoAplicado) {
+        if (totalWelcomeDiscount > totalPlanDiscount) {
+            appliedDiscountType = 'welcome';
+            finalDiscountAmount = totalWelcomeDiscount;
+        } else {
+            appliedDiscountType = totalPlanDiscount > 0 ? 'plan' : 'welcome';
+            finalDiscountAmount = Math.max(totalPlanDiscount, totalWelcomeDiscount);
+        }
+    } else {
+        if (totalPlanDiscount > 0) {
+            appliedDiscountType = 'plan';
+            finalDiscountAmount = totalPlanDiscount;
+        }
+    }
+
+    const finalTotal = Math.max(0, totalOriginalSubtotal - finalDiscountAmount);
+
+    // Badges y Floating Action Button
     const fab = document.getElementById('cart-fab');
     const cartBadge = document.getElementById('cart-badge');
+    const dBadge = document.getElementById('desktop-cart-badge');
+
     if (tItems > 0) {
         if (fab) {
             fab.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
             fab.classList.remove('pop'); void fab.offsetWidth; fab.classList.add('pop');
         }
         if (cartBadge) cartBadge.textContent = tItems;
+        if (dBadge) dBadge.textContent = tItems;
     } else {
         if (fab) fab.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
         if (cartBadge) cartBadge.textContent = '0';
+        if (dBadge) dBadge.textContent = '0';
     }
 
     const empty = document.getElementById('cart-empty');
@@ -4944,16 +5577,17 @@ window.updateCartUI = function () {
         if (post) post.classList.remove('hidden');
         const cartTitle = document.getElementById('cart-title');
         const cartBackBtn = document.getElementById('cart-back-shop-btn');
-        if (cartTitle) cartTitle.textContent = 'Pedido en proceso';
+        if (cartTitle) cartTitle.textContent = 'Pedido preparado para enviar por WhatsApp';
         if (cartBackBtn) cartBackBtn.classList.add('hidden');
         if (fab) fab.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
         if (cartBadge) cartBadge.textContent = '0';
         return;
     }
+
     if (post) post.classList.add('hidden');
     const cartTitle = document.getElementById('cart-title');
     const cartBackBtn = document.getElementById('cart-back-shop-btn');
-    if (cartTitle) cartTitle.textContent = 'Tu Carrito';
+    if (cartTitle) cartTitle.textContent = 'Revisa tu pedido';
     if (cartBackBtn) cartBackBtn.classList.remove('hidden');
 
     if (window.cart.length === 0) {
@@ -4967,60 +5601,204 @@ window.updateCartUI = function () {
     if (cont) cont.classList.remove('hidden');
     if (sum) sum.classList.remove('hidden');
 
+    // Renderizar tarjetas de carrito (Planes y legacy)
     if (cont) {
-        cont.innerHTML = window.cart.map((i, idx) => `
-                    <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/40 dark:border-purple/25 p-5 shadow-md transition-all premium-card">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="flex-1 min-w-0 text-left">
-                                <div class="font-black text-base text-purple-dark dark:text-white truncate">${window.escapeHTML(i.name)}</div>
-                                <div class="flex flex-wrap items-center gap-2 mt-1.5">
-                                    <span class="bg-purple/10 dark:bg-purple/20 text-purple-dark dark:text-purple-light text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">${window.escapeHTML(i.weight)}</span>
-                                    ${i.forPet ? `<span class="bg-pink/15 text-pink text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider inline-flex items-center gap-1"><i data-lucide="heart" class="w-2.5 h-2.5 fill-current"></i> Para ${window.escapeHTML(i.forPet)}</span>` : ''}
+        const itemsHTML = window.cart.map((i, idx) => {
+            if (i.type === 'feeding_plan') {
+                const kgReq = (Number(i.totalGramsRequired || 0) / 1000).toFixed(2);
+                const kgProv = (Number(i.totalGramsProvided || 0) / 1000).toFixed(2);
+                const surplusG = Number(i.surplusGrams || 0);
+                const bagsDesc = Array.isArray(i.bags) ? i.bags.map(b => `${b.qty}x ${b.weight}`).join(' + ') : '';
+                const petDisplay = i.petName || 'Tu perro';
+                const curDays = Number(i.durationDays || 7);
+                const curFormula = i.formula || 'pollo';
+
+                return `
+                    <div class="bg-white dark:bg-darkcard rounded-3xl border-2 border-purple/20 dark:border-purple/30 p-5 sm:p-6 shadow-md transition-all text-left relative overflow-hidden mb-4">
+                        <!-- Cabecera del plan -->
+                        <div class="flex items-start justify-between gap-3 pb-3 border-b border-purple-border/30 dark:border-purple/20">
+                            <div>
+                                <div class="inline-flex items-center gap-1.5 bg-purple/10 dark:bg-purple/25 text-purple-dark dark:text-purple-light text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider mb-1.5">
+                                    🐾 Plan para ${window.escapeHTML(petDisplay)}
                                 </div>
+                                <h3 class="font-black text-lg sm:text-xl text-purple-dark dark:text-white leading-tight">
+                                    ${window.escapeHTML(i.formulaName || 'Fórmula Milkarf')}
+                                </h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-0.5">
+                                    Ración: <span class="text-purple font-black">${i.dailyGrams} g/día</span> · Duración: <span class="font-bold text-pink">${curDays} días</span>
+                                </p>
                             </div>
-                            <button onclick="window.removeFromCartAt(${idx})" class="w-10 h-10 bg-pink/10 hover:bg-pink text-pink hover:text-white rounded-2xl flex items-center justify-center transition-all active:scale-90 shrink-0 touch-target-safe shadow-sm" aria-label="Eliminar producto">
+                            <button onclick="window.removeFromCartAt(${idx})" class="w-10 h-10 bg-pink/10 hover:bg-pink text-pink hover:text-white rounded-2xl flex items-center justify-center transition-all active:scale-90 shrink-0 touch-target-safe shadow-sm" aria-label="Eliminar plan">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>
-                        <div class="flex items-center justify-between gap-3 mt-4 pt-4 border-t border-purple-border/25 dark:border-purple/20">
-                            <div class="flex items-center gap-1 bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl p-1 shadow-inner">
-                                <button type="button" onclick="window.changeCartQty(${idx}, -1)" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm active:scale-95 touch-target-safe">−</button>
-                                <input type="number" min="1" value="${i.qty}" oninput="window.setCartQty(${idx}, this.value)" class="w-12 h-10 text-center font-black text-purple dark:text-white text-sm bg-transparent outline-none" aria-label="Cantidad en carrito">
-                                <button type="button" onclick="window.changeCartQty(${idx}, 1)" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm active:scale-95 touch-target-safe">+</button>
+
+                        <!-- Selector inline de duración y fórmula -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 my-4 bg-purple-light/50 dark:bg-[#0d0718] p-3.5 rounded-2xl border border-purple-border/30 dark:border-purple/20">
+                            <div>
+                                <span class="text-[10px] font-black uppercase tracking-wider text-purple/60 dark:text-gray-400 block mb-1.5">Duración del plan:</span>
+                                <div class="grid grid-cols-3 gap-1.5">
+                                    <button type="button" onclick="window.updatePlanDuration('${i.id}', 7)" class="py-1.5 px-2 text-[11px] font-black rounded-xl border transition-all ${curDays === 7 ? 'bg-purple text-white border-purple shadow-sm' : 'bg-white dark:bg-darkbg text-purple-dark dark:text-white border-purple/20 hover:border-purple/50'}">
+                                        7d <span class="text-[9px] opacity-80 block">-5%</span>
+                                    </button>
+                                    <button type="button" onclick="window.updatePlanDuration('${i.id}', 15)" class="py-1.5 px-2 text-[11px] font-black rounded-xl border transition-all ${curDays === 15 ? 'bg-purple text-white border-purple shadow-sm' : 'bg-white dark:bg-darkbg text-purple-dark dark:text-white border-purple/20 hover:border-purple/50'}">
+                                        15d <span class="text-[9px] opacity-80 block">-7.5%</span>
+                                    </button>
+                                    <button type="button" onclick="window.updatePlanDuration('${i.id}', 30)" class="py-1.5 px-2 text-[11px] font-black rounded-xl border transition-all ${curDays === 30 ? 'bg-purple text-white border-purple shadow-sm' : 'bg-white dark:bg-darkbg text-purple-dark dark:text-white border-purple/20 hover:border-purple/50'}">
+                                        30d <span class="text-[9px] opacity-80 block">-10%</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-black uppercase tracking-wider text-purple/60 dark:text-gray-400 block mb-1.5">Fórmula:</span>
+                                <div class="grid grid-cols-3 gap-1.5">
+                                    <button type="button" onclick="window.updatePlanFormula('${i.id}', 'pollo')" class="py-1.5 px-2 text-[11px] font-black rounded-xl border transition-all ${curFormula === 'pollo' ? 'bg-pink text-white border-pink shadow-sm' : 'bg-white dark:bg-darkbg text-purple-dark dark:text-white border-purple/20 hover:border-purple/50'}">
+                                        Pollo
+                                    </button>
+                                    <button type="button" onclick="window.updatePlanFormula('${i.id}', 'res')" class="py-1.5 px-2 text-[11px] font-black rounded-xl border transition-all ${curFormula === 'res' ? 'bg-pink text-white border-pink shadow-sm' : 'bg-white dark:bg-darkbg text-purple-dark dark:text-white border-purple/20 hover:border-purple/50'}">
+                                        Res
+                                    </button>
+                                    <button type="button" onclick="window.updatePlanFormula('${i.id}', 'mixto')" class="py-1.5 px-2 text-[11px] font-black rounded-xl border transition-all ${curFormula === 'mixto' ? 'bg-pink text-white border-pink shadow-sm' : 'bg-white dark:bg-darkbg text-purple-dark dark:text-white border-purple/20 hover:border-purple/50'}">
+                                        Mixto
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detalle de porciones y excedente -->
+                        <div class="space-y-2 text-xs text-gray-600 dark:text-gray-300 font-medium mb-4">
+                            <div class="flex items-center justify-between">
+                                <span class="flex items-center gap-1.5"><i data-lucide="package" class="w-3.5 h-3.5 text-purple"></i> Desglose de bolsas:</span>
+                                <span class="font-bold text-purple-dark dark:text-white">${window.escapeHTML(bagsDesc)}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Alimento requerido:</span>
+                                <span class="font-bold text-purple-dark dark:text-white">${kgReq} kg (${i.durationDays} días × ${i.dailyGrams}g)</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Total incluido:</span>
+                                <span class="font-bold text-emerald-600 dark:text-emerald-400">${kgProv} kg ${surplusG > 0 ? `(+${surplusG}g sin costo adicional)` : ''}</span>
+                            </div>
+                        </div>
+
+                        <!-- Precios y ahorro del plan -->
+                        <div class="flex items-center justify-between pt-3 border-t border-purple-border/30 dark:border-purple/20">
+                            <div>
+                                <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider line-through">Subtotal: $${Number(i.originalSubtotal || 0).toFixed(2)}</div>
+                                <div class="text-[11px] text-emerald-600 dark:text-emerald-400 font-black">Ahorro: -$${Number(i.discountAmount || 0).toFixed(2)} (${i.discountPercent}%)</div>
                             </div>
                             <div class="text-right">
-                                <div class="font-black text-pink text-lg tracking-tight">$${(i.price * i.qty).toFixed(2)}</div>
-                                <div class="text-[10px] text-gray-400 font-bold">$${i.price.toFixed(2)} c/u</div>
+                                <div class="text-[10px] text-purple/60 dark:text-gray-400 font-bold uppercase">Total del plan</div>
+                                <div class="font-black text-pink text-xl sm:text-2xl tracking-tight">$${Number(i.finalPrice || 0).toFixed(2)}</div>
                             </div>
                         </div>
                     </div>
-                `).join('');
+                `;
+            }
+
+            // Legacy individual item rendering
+            return `
+                <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/40 dark:border-purple/25 p-5 shadow-md transition-all premium-card mb-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex-1 min-w-0 text-left">
+                            <div class="font-black text-base text-purple-dark dark:text-white truncate">${window.escapeHTML(i.name)}</div>
+                            <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                                <span class="bg-purple/10 dark:bg-purple/20 text-purple-dark dark:text-purple-light text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">${window.escapeHTML(i.weight)}</span>
+                                ${i.forPet ? `<span class="bg-pink/15 text-pink text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider inline-flex items-center gap-1"><i data-lucide="heart" class="w-2.5 h-2.5 fill-current"></i> Para ${window.escapeHTML(i.forPet)}</span>` : ''}
+                            </div>
+                        </div>
+                        <button onclick="window.removeFromCartAt(${idx})" class="w-10 h-10 bg-pink/10 hover:bg-pink text-pink hover:text-white rounded-2xl flex items-center justify-center transition-all active:scale-90 shrink-0 touch-target-safe shadow-sm" aria-label="Eliminar producto">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between gap-3 mt-4 pt-4 border-t border-purple-border/25 dark:border-purple/20">
+                        <div class="flex items-center gap-1 bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl p-1 shadow-inner">
+                            <button type="button" onclick="window.changeCartQty(${idx}, -1)" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm active:scale-95 touch-target-safe">−</button>
+                            <input type="number" min="1" value="${i.qty}" oninput="window.setCartQty(${idx}, this.value)" class="w-12 h-10 text-center font-black text-purple dark:text-white text-sm bg-transparent outline-none" aria-label="Cantidad en carrito">
+                            <button type="button" onclick="window.changeCartQty(${idx}, 1)" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-darkcard text-purple dark:text-white font-black text-lg hover:bg-purple hover:text-white transition-all shadow-sm active:scale-95 touch-target-safe">+</button>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-black text-pink text-lg tracking-tight">$${(i.price * i.qty).toFixed(2)}</div>
+                            <div class="text-[10px] text-gray-400 font-bold">$${i.price.toFixed(2)} c/u</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Botón para agregar plan de otra mascota
+        const addAnotherPetBtn = `
+            <div class="pt-2">
+                <button type="button" onclick="window.agregarPlanOtraMascota()" class="w-full py-3.5 px-4 bg-purple-light/70 dark:bg-purple/15 hover:bg-purple hover:text-white text-purple-dark dark:text-purple-light font-black rounded-2xl flex items-center justify-center gap-2 border-2 border-dashed border-purple/30 dark:border-purple/30 transition-all active:scale-[0.98] shadow-sm">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    <span>+ Calcular y agregar plan para otra mascota</span>
+                </button>
+            </div>
+        `;
+
+        cont.innerHTML = itemsHTML + addAnotherPetBtn;
         if (window.lucide) window.lucide.createIcons({ root: cont });
     }
 
+    // Líneas del resumen de compra
     const cLines = document.getElementById('cart-summary-lines');
     if (cLines) {
-        cLines.innerHTML = window.cart.map(i => `
-                    <div class="flex justify-between gap-3 font-medium">
-                        <span class="text-purple/70 dark:text-gray-300">${i.qty}x ${window.escapeHTML(i.name)} (${window.escapeHTML(i.weight)}) ${i.forPet ? `<span class="opacity-60 text-xs">· ${window.escapeHTML(i.forPet)}</span>` : ''}</span>
-                        <span class="text-purple-dark dark:text-white font-bold shrink-0">$${(i.price * i.qty).toFixed(2)}</span>
+        cLines.innerHTML = window.cart.map(i => {
+            if (i.type === 'feeding_plan') {
+                return `
+                    <div class="flex justify-between items-start gap-3 py-1 font-medium text-xs">
+                        <div class="text-left">
+                            <span class="text-purple-dark dark:text-white font-bold block">Plan ${i.durationDays}d · ${window.escapeHTML(i.formulaName)}</span>
+                            <span class="text-purple/60 dark:text-gray-400 text-[11px]">🐾 Para ${window.escapeHTML(i.petName || 'Mascota')} · ${i.bags ? i.bags.map(b => `${b.qty}x ${b.weight}`).join(', ') : ''}</span>
+                        </div>
+                        <span class="text-purple-dark dark:text-white font-bold shrink-0">$${Number(i.originalSubtotal || i.price).toFixed(2)}</span>
                     </div>
-                `).join('');
-    }
+                `;
+            }
+            return `
+                <div class="flex justify-between gap-3 font-medium text-xs py-1">
+                    <span class="text-purple/70 dark:text-gray-300">${i.qty}x ${window.escapeHTML(i.name)} (${window.escapeHTML(i.weight)}) ${i.forPet ? `<span class="opacity-60 text-xs">· ${window.escapeHTML(i.forPet)}</span>` : ''}</span>
+                    <span class="text-purple-dark dark:text-white font-bold shrink-0">$${(i.price * i.qty).toFixed(2)}</span>
+                </div>
+            `;
+        }).join('');
 
-    if (window.descuentoAplicado) {
-        const isLoggedUser = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
-        const alreadyUsed = window.currentUser?.data?.descuento_usado === true;
-        if (!isLoggedUser || alreadyUsed) {
-            window.descuentoAplicado = false;
+        // Fila informativa del delivery
+        cLines.innerHTML += `
+            <div class="flex justify-between items-center text-xs py-1.5 border-t border-purple-border/30 dark:border-purple/20 mt-1 text-purple/70 dark:text-gray-300">
+                <span class="flex items-center gap-1"><i data-lucide="truck" class="w-3.5 h-3.5 text-pink"></i> Entrega a domicilio:</span>
+                <span class="font-bold text-pink text-[11px] uppercase tracking-wider">Por cotizar según zona</span>
+            </div>
+        `;
+
+        // Notificación de beneficio / resolución de descuento
+        if (appliedDiscountType === 'welcome') {
+            cLines.innerHTML += `
+                <div class="mt-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 p-2.5 rounded-xl text-[11px] font-bold text-left flex items-start gap-2">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"></i>
+                    <div>
+                        <span>Cupón de bienvenida (-20%) aplicado: Te otorga un mayor ahorro ($${totalWelcomeDiscount.toFixed(2)} vs $${totalPlanDiscount.toFixed(2)} del plan).</span>
+                    </div>
+                </div>
+            `;
+        } else if (appliedDiscountType === 'plan' && window.descuentoAplicado) {
+            cLines.innerHTML += `
+                <div class="mt-2 bg-purple/10 border border-purple/20 text-purple-dark dark:text-purple-light p-2.5 rounded-xl text-[11px] font-bold text-left flex items-start gap-2">
+                    <i data-lucide="info" class="w-4 h-4 text-purple shrink-0 mt-0.5"></i>
+                    <div>
+                        <span>Descuento de plan aplicado: Te otorga un mayor ahorro ($${totalPlanDiscount.toFixed(2)} vs $${totalWelcomeDiscount.toFixed(2)} del cupón de bienvenida). No son acumulables.</span>
+                    </div>
+                </div>
+            `;
         }
+        if (window.lucide) window.lucide.createIcons({ root: cLines });
     }
-    const finalPrice = window.descuentoAplicado ? tPrice * 0.8 : tPrice;
-    const cOriginal = document.getElementById('cart-total-original');
 
-    if (window.descuentoAplicado) {
+    // Mostrar tachado y total
+    const cOriginal = document.getElementById('cart-total-original');
+    if (finalDiscountAmount > 0) {
         if (cOriginal) {
-            cOriginal.textContent = `$${tPrice.toFixed(2)}`;
+            cOriginal.textContent = `$${totalOriginalSubtotal.toFixed(2)}`;
             cOriginal.classList.remove('hidden');
         }
     } else {
@@ -5028,11 +5806,11 @@ window.updateCartUI = function () {
     }
 
     const cTotal = document.getElementById('cart-total');
-    if (cTotal) cTotal.textContent = `$${finalPrice.toFixed(2)}`;
+    if (cTotal) cTotal.textContent = `$${finalTotal.toFixed(2)}`;
 };
 
 window.changeCartQty = function (index, delta) {
-    window.vibrate(15);
+    window.vibrate?.(15);
     if (!window.cart[index]) return;
     window.cart[index].qty = Math.max(1, (parseInt(window.cart[index].qty, 10) || 1) + delta);
     window.updateCartUI();
@@ -5048,14 +5826,14 @@ window.setCartQty = function (index, value) {
 };
 
 window.removeFromCartAt = function (index) {
-    window.vibrate(20);
+    window.vibrate?.(20);
     if (window.cart[index]) window.cart.splice(index, 1);
     window.updateCartUI();
     window.saveCartToStorage();
 };
 
 window.removeFromCart = function (k, p) {
-    window.vibrate(20);
+    window.vibrate?.(20);
     const idx = window.cart.findIndex(i => i.key === k && (i.forPet || '') === p);
     if (idx !== -1) window.cart.splice(idx, 1);
     window.updateCartUI();
@@ -5179,7 +5957,7 @@ window.hideCartPostOrderState = function () {
     const title = document.getElementById('cart-title');
     const backBtn = document.getElementById('cart-back-shop-btn');
     if (post) post.classList.add('hidden');
-    if (title) title.textContent = 'Tu Carrito';
+    if (title) title.textContent = 'Revisa tu pedido';
     if (backBtn) backBtn.classList.remove('hidden');
     window.updateCartUI?.();
 };
@@ -5209,10 +5987,12 @@ window.showCartPostOrderState = function (orderId = null, options = {}) {
     if (cont) { cont.classList.add('hidden'); cont.innerHTML = ''; }
     if (sum) sum.classList.add('hidden');
     if (post) post.classList.remove('hidden');
-    if (title) title.textContent = 'Pedido en proceso';
+    if (title) title.textContent = 'Pedido preparado para enviar por WhatsApp';
     if (backBtn) backBtn.classList.add('hidden');
     if (fab) fab.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
     if (badge) badge.textContent = '0';
+    const postDBadge = document.getElementById('desktop-cart-badge');
+    if (postDBadge) postDBadge.textContent = '0';
     window.refreshCheckoutWhatsAppLink?.();
     window.refreshIcons?.();
 };
@@ -5329,30 +6109,8 @@ function initApp() {
     window.applyWeightButtonStyle('weight-group-res', document.querySelector('#weight-group-res button'), window.currentWeightRes);
     window.resetMenuQuantities?.();
 
-    // Iniciar Paws
-    const frag = document.createDocumentFragment();
-    const colors = ['#421d8e', '#b9cb25', '#d72b8f', '#2e1060'];
-    const count = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : (window.innerWidth < 768 ? 4 : 10);
-
-    for (let i = 0; i < count; i++) {
-        const size = 30 + Math.random() * 20;
-        const delay = Math.random() * 5;
-        const dur = 14 + Math.random() * 12;
-        const el = document.createElement('div');
-
-        el.innerHTML = `<svg viewBox="0 0 100 100" fill="${colors[i % colors.length]}" class="w-full h-full opacity-10"><path d="M50 88 C33 88 18 76 18 62 C18 50 32 42 50 42 C68 42 82 50 82 62 C82 76 67 88 50 88Z"/><ellipse cx="23" cy="35" rx="10.5" ry="13.5" transform="rotate(-28,23,35)"/><ellipse cx="38" cy="24" rx="10.5" ry="13.5" transform="rotate(-10,38,24)"/><ellipse cx="58" cy="24" rx="10.5" ry="13.5" transform="rotate(10,58,24)"/><ellipse cx="75" cy="35" rx="10.5" ry="13.5" transform="rotate(28,75,35)"/></svg>`;
-        el.style.cssText = `position:absolute; width:${size}px; height:${size}px; left:${Math.random() * 100}%; top:${100 + Math.random() * 50}%; transform: rotate(${Math.random() * 360}deg); animation: floatUp ${dur}s ${delay}s linear infinite;`;
-        frag.appendChild(el);
-    }
-    const pawsContainer = document.getElementById('paws-container');
-    if (pawsContainer) pawsContainer.appendChild(frag);
-
-    if (!document.getElementById('paw-style')) {
-        const style = document.createElement('style');
-        style.id = 'paw-style';
-        style.textContent = `@keyframes floatUp { 0% { transform: translateY(0) rotate(0deg); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-150vh) rotate(180deg); opacity: 0; } }`;
-        document.head.appendChild(style);
-    }
+    // Paws generation disabled for cleaner, modern performance-conscious UI
+    // (Container is also hidden via CSS #paws-container { display: none !important; })
 
     // Restore Global Listeners for Menu Links and Accordions
     document.querySelectorAll('.nav-link, .nav-btn, .nav-card').forEach(el => {
@@ -5571,8 +6329,8 @@ window.renderMenuPetSelector = function () {
     const active = pets[window.selectedDashboardPetIndex];
     const calc = window.getPetCalcData ? window.getPetCalcData(active) : null;
     if (hint) hint.innerHTML = calc
-        ? `<b>${window.escapeHTML(active.nombre || 'Mascota')}</b> tiene ración guardada: <b>${Number(calc.gramos || 0)}g/día</b>. El carrito quedará personalizado para esta mascota.`
-        : `<b>${window.escapeHTML(active.nombre || 'Mascota')}</b> será la mascota asociada al pedido. Puedes calcular su ración desde el perfil o la calculadora.`;
+        ? `<b>${window.escapeHTML(active.nombre || 'Mascota')}</b> tiene porción orientativa registrada: <b>${Number(calc.gramos || 0)}g/día</b>. El pedido quedará asociado a esta mascota.`
+        : `<b>${window.escapeHTML(active.nombre || 'Mascota')}</b> será la mascota asociada al pedido. Puedes calcular su porción orientativa desde la calculadora o su perfil.`;
     window.refreshIcons?.(wrap);
 };
 
@@ -6092,6 +6850,9 @@ window.startUserOrdersListener = function (forceNavigate = false) {
 window.refreshMobileBottomNav = function (targetId) {
     document.querySelectorAll('#mobile-bottom-nav button').forEach(btn => {
         btn.classList.toggle('active-mobile-nav', btn.getAttribute('data-target') === targetId);
+    });
+    document.querySelectorAll('.milkarf-header .milkarf-nav-link').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-target') === targetId);
     });
 };
 
@@ -6749,7 +7510,23 @@ window.openWhatsAppMessage = function (message, phone = window.WA_NUMBER, option
 window.prepareOrderForCheckout = function () {
     if (!window.cart || !window.cart.length) return null;
 
-    const subtotal = window.cart.reduce((s, i) => s + (Number(i.price || 0) * Number(i.qty || 0)), 0);
+    // Calcular subtotal original total
+    const totalOriginalSubtotal = window.cart.reduce((s, i) => {
+        if (i.type === 'feeding_plan') {
+            return s + (Number(i.originalSubtotal) || (Number(i.price || 0) * Number(i.qty || 1)));
+        }
+        return s + (Number(i.price || 0) * Number(i.qty || 1));
+    }, 0);
+
+    // Calcular descuento acumulado de planes
+    const totalPlanDiscount = window.cart.reduce((s, i) => {
+        if (i.type === 'feeding_plan') {
+            return s + (Number(i.discountAmount) || 0);
+        }
+        return s;
+    }, 0);
+
+    // Validar si el cupón de bienvenida es aplicable
     if (window.descuentoAplicado) {
         const isLoggedUser = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
         const alreadyUsed = window.currentUser?.data?.descuento_usado === true;
@@ -6757,33 +7534,96 @@ window.prepareOrderForCheckout = function () {
             window.descuentoAplicado = false;
         }
     }
-    const discountApplied = !!window.descuentoAplicado;
-    const finalTotal = discountApplied ? subtotal * 0.8 : subtotal;
+
+    const welcomeSavings = window.descuentoAplicado ? (totalOriginalSubtotal * 0.20) : 0;
+    let discountType = 'none';
+    let discountAmount = 0;
+    let discountLabel = '';
+
+    if (window.descuentoAplicado) {
+        if (welcomeSavings > totalPlanDiscount) {
+            discountType = 'welcome';
+            discountAmount = welcomeSavings;
+            discountLabel = 'Descuento de bienvenida (-20%)';
+        } else {
+            discountType = totalPlanDiscount > 0 ? 'plan' : 'welcome';
+            discountAmount = Math.max(totalPlanDiscount, welcomeSavings);
+            discountLabel = totalPlanDiscount > 0 ? 'Descuento por plan' : 'Descuento de bienvenida (-20%)';
+        }
+    } else if (totalPlanDiscount > 0) {
+        discountType = 'plan';
+        discountAmount = totalPlanDiscount;
+        discountLabel = 'Descuento por plan';
+    }
+
+    const discountApplied = discountAmount > 0;
+    const finalTotal = Math.max(0, totalOriginalSubtotal - discountAmount);
+
     const clientToken = window.getClientToken?.() || '';
     const isLogged = !!(window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email));
     const contactPhone = window.normalizePhone?.(window.currentUser?.data?.telefono || window.currentUser?.data?.phone || window.currentUser?.data?.whatsapp || (() => { try { return localStorage.getItem('milkarf_contact_phone') || ''; } catch (e) { return ''; } })()) || '';
     const clientNameForOrder = (window.currentUser?.data?.nombre || window.currentUser?.data?.nombre_persona || window.currentUser?.data?.userName || window.currentUser?.displayName || window.currentUser?.email || '').trim();
     const sessionUid = auth?.currentUser?.uid || window.currentUser?.uid || 'anonimo';
-    const items = window.cart.map(i => ({
-        name: i.name,
-        weight: i.weight,
-        qty: Math.max(1, Number(i.qty || 1)),
-        price: Number(i.price || 0),
-        forPet: i.forPet || ''
-    }));
+
+    const hasFeedingPlans = window.cart.some(i => i.type === 'feeding_plan');
+    const orderType = hasFeedingPlans ? 'feeding_plan_order' : 'legacy_product_order';
+
+    const items = window.cart.map(i => {
+        if (i.type === 'feeding_plan') {
+            return {
+                type: 'feeding_plan',
+                name: `Plan ${i.durationDays}d - ${i.formulaName || 'Fórmula'}`,
+                weight: `${(Number(i.totalGramsProvided || 0)/1000).toFixed(2)} kg`,
+                qty: 1,
+                price: Number(i.finalPrice || i.price || 0),
+                originalSubtotal: Number(i.originalSubtotal || 0),
+                discountPercent: Number(i.discountPercent || 0),
+                discountAmount: Number(i.discountAmount || 0),
+                finalPrice: Number(i.finalPrice || 0),
+                forPet: i.petName || i.forPet || '',
+                petName: i.petName || '',
+                dailyGrams: Number(i.dailyGrams || 0),
+                durationDays: Number(i.durationDays || 7),
+                formula: i.formula || 'pollo',
+                formulaName: i.formulaName || '',
+                totalGramsRequired: Number(i.totalGramsRequired || 0),
+                totalGramsProvided: Number(i.totalGramsProvided || 0),
+                surplusGrams: Number(i.surplusGrams || 0),
+                bags: i.bags || [],
+                presentationBreakdown: i.presentationBreakdown || {}
+            };
+        }
+        return {
+            name: i.name,
+            weight: i.weight,
+            qty: Math.max(1, Number(i.qty || 1)),
+            price: Number(i.price || 0),
+            forPet: i.forPet || ''
+        };
+    });
+
     const createdAt = new Date().toISOString();
     const localOrderId = 'local_' + Date.now();
     const msg = window.getWhatsAppTemplate('newOrder', {
-        items: items.map(i => ({ name: i.name, weight: i.weight, qty: i.qty, forPet: i.forPet || '' })),
-        subtotal,
+        items,
+        subtotal: totalOriginalSubtotal,
         discountApplied,
-        discountAmount: discountApplied ? (subtotal * 0.2) : 0,
+        discountType,
+        discountAmount,
+        discountLabel,
         finalTotal,
+        contactPhone,
+        userName: clientNameForOrder,
+        orderId: localOrderId,
         location: window.userLocation || ''
     });
     const url = window.getCheckoutWhatsAppUrl(msg, window.WA_NUMBER);
+
+    const primaryPet = items.find(i => i.petName)?.petName || window.state?.nombreMascota || '';
+
     const pendingOrder = {
         id: localOrderId,
+        orderType,
         uid: isLogged ? window.currentUser.uid : sessionUid,
         clientToken,
         registeredUser: !!isLogged,
@@ -6795,25 +7635,28 @@ window.prepareOrderForCheckout = function () {
         telefono: contactPhone,
         whatsapp: contactPhone,
         items,
+        subtotal: totalOriginalSubtotal,
         total: finalTotal,
         descuentoAplicado: discountApplied,
+        discountType,
+        discountAmount,
         status: 'en_proceso',
         estado: 'en_proceso',
         pointsBase: Math.floor(finalTotal),
-        selectedPet: window.state?.nombreMascota || '',
+        selectedPet: primaryPet,
         createdAt,
         localOnly: true
     };
 
-    return { subtotal, finalTotal, discountApplied, clientToken, isLogged, contactPhone, clientNameForOrder, sessionUid, items, createdAt, localOrderId, msg, url, pendingOrder };
+    return { subtotal: totalOriginalSubtotal, finalTotal, discountApplied, discountType, discountAmount, orderType, clientToken, isLogged, contactPhone, clientNameForOrder, sessionUid, items, createdAt, localOrderId, msg, url, pendingOrder };
 };
 
 window.savePreparedOrderNonBlocking = function (prepared) {
     if (!prepared) return;
     void (async () => {
         try {
-            const { pendingOrder, isLogged, clientNameForOrder, contactPhone, clientToken, items, finalTotal, discountApplied, localOrderId, createdAt } = prepared;
-            if (discountApplied && isLogged) {
+            const { pendingOrder, isLogged, clientNameForOrder, contactPhone, clientToken, items, finalTotal, discountApplied, discountType, discountAmount, orderType, localOrderId, createdAt } = prepared;
+            if (discountApplied && discountType === 'welcome' && isLogged) {
                 try {
                     let reclamados = [];
                     try { reclamados = JSON.parse(localStorage.getItem('milkarf_descuentos_uids') || '[]'); } catch (e) { }
@@ -6848,8 +7691,11 @@ window.savePreparedOrderNonBlocking = function (prepared) {
             }
             if (!writeUid) throw new Error('No hay sesión autenticada para registrar el pedido.');
 
+            const primaryPet = items.find(i => i.petName)?.petName || window.state?.nombreMascota || '';
+
             const orderData = {
                 uid: isLogged ? window.currentUser.uid : writeUid,
+                orderType: orderType || 'feeding_plan_order',
                 registeredUser: !!isLogged,
                 clientToken,
                 userName: isLogged ? (clientNameForOrder || window.currentUser.email) : 'Usuario Invitado',
@@ -6862,10 +7708,12 @@ window.savePreparedOrderNonBlocking = function (prepared) {
                 items,
                 total: finalTotal,
                 descuentoAplicado: discountApplied,
+                discountType: discountType || 'none',
+                discountAmount: discountAmount || 0,
                 status: 'en_proceso',
                 estado: 'en_proceso',
                 pointsBase: Math.floor(finalTotal),
-                selectedPet: window.state?.nombreMascota || '',
+                selectedPet: primaryPet,
                 createdAt
             };
 
@@ -7045,13 +7893,13 @@ window.traductorErrores = function (code) {
     switch (String(code || '')) {
         case 'auth/email-already-in-use':
         case 'auth/credential-already-in-use':
-            return 'Este correo ya tiene una cuenta. Intenta iniciar sesión o usa otro correo.';
-        case 'auth/invalid-email': return 'El formato del correo es inválido.';
+            return 'Este correo ya se encuentra registrado. Inicia sesión o utiliza otro correo electrónico.';
+        case 'auth/invalid-email': return 'Ingresa un correo electrónico válido.';
         case 'auth/weak-password': return 'La contraseña debe tener al menos 6 caracteres.';
-        case 'auth/missing-password': return 'Ingresa una contraseña.';
+        case 'auth/missing-password': return 'Ingresa una contraseña para continuar.';
         case 'auth/user-not-found':
         case 'auth/wrong-password':
-        case 'auth/invalid-credential': return 'El correo o la contraseña son incorrectos.';
+        case 'auth/invalid-credential': return 'El correo electrónico o la contraseña son incorrectos.';
         case 'auth/popup-blocked': return 'El navegador bloqueó la ventana de Google. Se intentará abrir con redirección.';
         case 'auth/popup-closed-by-user':
         case 'auth/cancelled-popup-request': return 'El inicio con Google fue cancelado antes de completarse.';
@@ -7412,7 +8260,7 @@ window.forceClearCartAfterWhatsAppOrder = function (prepared = null, options = {
     }
     if (sum) sum.classList.add('hidden');
     if (post) post.classList.remove('hidden');
-    if (title) title.textContent = 'Pedido en proceso';
+    if (title) title.textContent = 'Pedido preparado para enviar por WhatsApp';
     if (backBtn) backBtn.classList.add('hidden');
     if (fab) fab.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
     if (badge) badge.textContent = '0';
@@ -7426,14 +8274,14 @@ window.forceClearCartAfterWhatsAppOrder = function (prepared = null, options = {
         locationStatus.textContent = '';
         locationStatus.classList.add('hidden');
     }
-    if (locationText) locationText.textContent = 'Marcar mi ubicación en el mapa';
+    if (locationText) locationText.textContent = 'Compartir ubicación para coordinar entrega';
 
     try { window.refreshIcons?.(); } catch (error) { }
 
     if (prepared) {
         try { window.renderUserOrders?.(window.getLocalUserOrders?.() || [prepared.pendingOrder]); } catch (error) { }
         try { window.actualizarUIAuth?.(); } catch (error) { }
-        if (opts.toast) window.showToast?.('Tu pedido está en proceso. Continúa por WhatsApp para confirmar disponibilidad y entrega.', 'success');
+        if (opts.toast) window.showToast?.('Pedido preparado. Continuemos por WhatsApp para confirmar disponibilidad y entrega.', 'success');
     }
 };
 
