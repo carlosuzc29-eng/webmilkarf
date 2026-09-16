@@ -860,6 +860,10 @@ dialog#plan-modal {
 /* Asegurar que las tarjetas en grid ocupen la misma altura */
 #feeding-plans-cards-grid > * { display: flex; }
 
+/* Forzar estiramiento de celdas en grid y mantener igual altura */
+#feeding-plans-cards-grid { align-items: stretch; }
+#feeding-plans-cards-grid > * { align-self: stretch; }
+
 /* Estado visual de tarjeta seleccionada (sugerida o elegida) */
 .feeding-plan-card.selected {
     border-color: #421d8e !important;

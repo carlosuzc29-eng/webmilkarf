@@ -5427,8 +5427,27 @@ window.renderActiveFeedingPlans = function () {
         </div>
         `;
     }).join('');
-
     if (window.lucide) window.lucide.createIcons({ root: grid });
+
+    // Asegurar visualmente la selección: aplicar la clase selected a los elementos renderizados
+    try {
+        const cardEls = Array.from(grid.querySelectorAll('.feeding-plan-card'));
+        cardEls.forEach(el => el.classList.remove('selected'));
+        const petName = String(window.state.nombreMascota || 'tu perro');
+        const anyPlanForPet = !!(window.cart || []).find(i => i.type === 'feeding_plan' && ((i.petName || '').toLowerCase() === (petName || '').toLowerCase()));
+        // Recalcular plan recomendado
+        const plansForRecommend = window.generateFeedingPlans(window.lastCalcResult?.gramos || 0, window.activePlanFormula || 'pollo', petName) || [];
+        const recommended = plansForRecommend.reduce((best, p) => ((p.discountPct || 0) > (best.discountPct || 0) ? p : best), plansForRecommend[0] || null);
+        const recommendedDays = recommended ? recommended.days : null;
+        cardEls.forEach(el => {
+            const days = Number(el.getAttribute('data-plan-days'));
+            const isSelectedInCart = !!(window.cart || []).find(i => i.type === 'feeding_plan' && i.days === days && ((i.petName || '').toLowerCase() === (petName || '').toLowerCase()));
+            const shouldSelect = isSelectedInCart || (!anyPlanForPet && days === recommendedDays);
+            if (shouldSelect) el.classList.add('selected'); else el.classList.remove('selected');
+            el.setAttribute('aria-pressed', shouldSelect ? 'true' : 'false');
+        });
+    } catch (e) { console.warn('Error aplicando selección visual a tarjetas:', e); }
+
     window.renderPresentationSelector?.();
 };
 
