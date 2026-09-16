@@ -842,6 +842,18 @@ dialog#plan-modal {
 /* Asegurar que las tarjetas en grid ocupen la misma altura */
 #feeding-plans-cards-grid > * { display: flex; }
 
+/* Estado visual de tarjeta seleccionada (sugerida o elegida) */
+.feeding-plan-card.selected {
+    border-color: rgba(66,29,142,0.18) !important;
+    box-shadow: 0 10px 30px rgba(66,29,142,0.06);
+}
+.feeding-plan-card .plan-selected-label {
+    margin-top: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #421d8e;
+}
+
 /* Badge "Mayor descuento" compacta y no superpuesta */
 .badge-major-discount {
     padding: 6px 10px;

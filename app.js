@@ -5201,7 +5201,12 @@ window.renderActiveFeedingPlans = function () {
         const petName = String(plan.petName || window.state.nombreMascota || 'tu perro');
 
         // Detectar si este plan ya está seleccionado en el carrito (misma mascota y duración)
-        const isSelected = !!(window.cart || []).find(i => i.type === 'feeding_plan' && i.days === plan.days && ((i.petName || '').toLowerCase() === (petName || '').toLowerCase()));
+        const isSelectedInCart = !!(window.cart || []).find(i => i.type === 'feeding_plan' && i.days === plan.days && ((i.petName || '').toLowerCase() === (petName || '').toLowerCase()));
+        // Si no hay plan en el carrito para esta mascota, sugerir el plan recomendado (mayor descuento)
+        const plansForRecommend = window.generateFeedingPlans(window.lastCalcResult?.gramos || 0, window.activePlanFormula || 'pollo', petName);
+        const recommendedPlanDays = (plansForRecommend || []).reduce((best, p) => ((p.discountPct || 0) > (best.discountPct || 0) ? p : best), plansForRecommend[0] || {}).days;
+        const anyPlanForPet = !!(window.cart || []).find(i => i.type === 'feeding_plan' && ((i.petName || '').toLowerCase() === (petName || '').toLowerCase()));
+        const isSelected = isSelectedInCart || (!anyPlanForPet && plan.days === recommendedPlanDays);
 
         return `
         <div role="button" tabindex="0" aria-pressed="false" data-plan-days="${plan.days}" class="feeding-plan-card bg-white dark:bg-darkcard rounded-2xl p-4 border border-purple-border/50 dark:border-purple/20 shadow-sm text-center flex flex-col justify-between transition-all cursor-pointer hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple" onclick="window.openPlanModal(${plan.days})" onkeydown="if(event.key==='Enter' || event.key===' ') { event.preventDefault(); window.openPlanModal(${plan.days}); }">
