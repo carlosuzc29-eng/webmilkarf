@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+/*
+ * Tokens de marca Milkarf (mismos valores que el config de Tailwind del sitio legacy).
+ * darkMode: media -> el modo oscuro sigue la preferencia del sistema, igual que hoy.
+ */
+@custom-variant dark (@media (prefers-color-scheme: dark));
+
+@theme {
+    --color-purple: #421d8e;
+    --color-purple-dark: #2e1060;
+    --color-purple-light: #faf8ff;
+    --color-purple-border: #e8e0f0;
+
+    --color-green: #b9cb25;
+    --color-green-dark: #829112;
+    --color-green-light: #f7fae6;
+
+    --color-pink: #d72b8f;
+    --color-pink-dark: #b31c71;
+    --color-pink-light: #fff0f5;
+
+    --color-cream: #faf7f2;
+    --color-darkbg: #0d0718;
+    --color-darkcard: #180e29;
+
+    --font-sans: "Plus Jakarta Sans", "Montserrat", ui-sans-serif, system-ui, sans-serif;
+    --font-display: "Outfit", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    @apply bg-cream text-gray-800 antialiased transition-colors duration-500;
+    @apply dark:bg-darkbg dark:text-gray-200;
+    font-family: var(--font-sans);
+}
+
+/* Controles del planificador */
+.opt-btn {
+    @apply cursor-pointer select-none border rounded-xl px-3 py-2.5 text-sm font-bold transition-all active:scale-[0.98];
+    @apply bg-cream text-purple-dark border-purple-border;
+    @apply dark:bg-[#0d0718] dark:text-white dark:border-purple/30;
+}
+
+.opt-btn[aria-pressed="true"] {
+    @apply border-purple bg-purple text-white shadow-sm;
+    @apply dark:bg-purple dark:text-white dark:border-purple;
+}
+
+.opt-btn-pill {
+    @apply cursor-pointer select-none border rounded-full px-3 py-2 text-xs font-bold transition-all active:scale-[0.98];
+    @apply bg-cream text-purple-dark border-purple-border;
+    @apply dark:bg-[#0d0718] dark:text-white dark:border-purple/30;
+}
+
+.opt-btn-pill[aria-pressed="true"] {
+    @apply bg-purple border-purple text-white shadow-sm;
+    @apply dark:bg-purple;
+}
+
+.pres-radio {
+    @apply cursor-pointer select-none relative rounded-xl border text-left p-3 transition-all;
+    @apply border-purple-border bg-cream text-purple-dark;
+    @apply dark:border-purple/25 dark:bg-[#0d0718] dark:text-white;
+}
+
+.pres-radio:has(input:checked) {
+    @apply border-purple ring-1 ring-purple/40 shadow-sm;
+    @apply dark:border-green/60 dark:ring-green/30;
+}
+
+.pres-radio input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.plan-card {
+    @apply relative overflow-hidden flex flex-col justify-between rounded-3xl border p-5 text-left transition-all;
+    @apply bg-white border-purple-border/50 shadow-sm text-purple-dark;
+    @apply dark:bg-darkcard dark:border-purple/20;
+}
+
+.plan-card.recommended {
+    @apply border-2 border-pink shadow-soft-lg;
+}
+
+@utility shadow-soft {
+    box-shadow: 0 2px 8px -2px rgba(66, 29, 142, 0.18);
+}
+
+@utility shadow-soft-lg {
+    box-shadow: 0 16px 40px -12px rgba(66, 29, 142, 0.35);
+}
+
+input[type="radio"] {
+    accent-color: var(--color-purple);
+}
+
+@media (prefers-color-scheme: dark) {
+    input[type="radio"] {
+        accent-color: var(--color-green);
+    }
+}
+
+/* Navegación del header (layout estático) */
+.mka-nav-a {
+    @apply rounded-full px-3 py-1.5 text-xs font-bold text-purple-dark transition-colors hover:bg-white/80 hover:text-pink;
+    @apply dark:text-white dark:hover:bg-purple/20 dark:hover:text-green;
+}
+
+.mka-nav-overlay-a {
+    @apply text-2xl font-extrabold uppercase tracking-wider text-white hover:text-green;
+}
+
+.mka-burger {
+    @apply flex h-11 w-11 flex-col items-center justify-center gap-1.5 rounded-full border bg-white/90 shadow-lg dark:bg-darkcard/90;
+    @apply border-purple-border/40 dark:border-purple/30;
+}
+
+.mka-burger span {
+    @apply block h-1 w-5 rounded-full bg-purple dark:bg-green;
+}
