@@ -5209,7 +5209,7 @@ window.renderActiveFeedingPlans = function () {
         const isSelected = isSelectedInCart || (!anyPlanForPet && plan.days === recommendedPlanDays);
 
         return `
-        <div role="button" tabindex="0" aria-pressed="false" data-plan-days="${plan.days}" class="feeding-plan-card bg-white dark:bg-darkcard rounded-2xl p-4 border border-purple-border/50 dark:border-purple/20 shadow-sm text-center flex flex-col justify-between transition-all cursor-pointer hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple" onclick="window.openPlanModal(${plan.days})" onkeydown="if(event.key==='Enter' || event.key===' ') { event.preventDefault(); window.openPlanModal(${plan.days}); }">
+        <div role="button" tabindex="0" aria-pressed="${isSelected ? 'true' : 'false'}" data-plan-days="${plan.days}" class="feeding-plan-card ${isSelected ? 'selected' : ''} bg-white dark:bg-darkcard rounded-2xl p-4 border border-purple-border/50 dark:border-purple/20 shadow-sm text-center flex flex-col justify-between transition-all cursor-pointer hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple" onclick="window.openPlanModal(${plan.days})" onkeydown="if(event.key==='Enter' || event.key===' ') { event.preventDefault(); window.openPlanModal(${plan.days}); }">
 
             <div class="flex items-start justify-between gap-3">
                 <div class="text-left flex-1">
@@ -5219,7 +5219,7 @@ window.renderActiveFeedingPlans = function () {
                 </div>
                 <div class="shrink-0 text-right">
                     ${isMonthly ? `<div class="badge-major-discount text-[11px] font-bold text-white bg-pink px-3 py-1 rounded-md">Mayor descuento</div>` : ''}
-                    ${isSelected ? `<div class="mt-2 text-[11px] font-black text-purple-dark uppercase">Plan seleccionado</div>` : ''}
+                    ${isSelected ? `<div class="plan-selected-label mt-2">${isSelectedInCart ? 'Plan seleccionado' : 'Recomendado'}</div>` : ''}
                 </div>
             </div>
 
