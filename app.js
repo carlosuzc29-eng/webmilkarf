@@ -5290,16 +5290,16 @@ window.renderBagAnimationSVG = function (dailyGrams, presentationGrams, { isComp
     const pG = Number(presentationGrams) > 0 ? Number(presentationGrams) : 500;
 
     if (dG === 0) {
-        return `<div aria-hidden="true" class="text-xs text-gray-400 font-medium">0 g / ${pG} g</div>`;
+        return `<div aria-hidden="true" class="text-xs text-gray-400 font-medium select-none">0 g / ${pG} g</div>`;
     }
 
     const fullBags = Math.floor(dG / pG);
     const remGrams = Math.round((dG % pG) * 10) / 10;
-    const remPct = remGrams > 0 ? Math.min(100, Math.round((remGrams / pG) * 100)) : 0;
+    const remPct = remGrams > 0 ? Math.min(100, Math.round((remGrams / pG) * 100 * 10) / 10) : 0;
 
     const showBags = [];
     if (dG <= pG) {
-        const pct = Math.min(100, Math.round((dG / pG) * 100));
+        const pct = Math.min(100, Math.round((dG / pG) * 100 * 10) / 10);
         showBags.push({ fillPct: pct });
     } else {
         showBags.push({ fillPct: 100 });
@@ -5308,41 +5308,46 @@ window.renderBagAnimationSVG = function (dailyGrams, presentationGrams, { isComp
         }
     }
 
-    const w = isCompact ? 36 : 52;
-    const h = isCompact ? 50 : 74;
+    // Proporción exterior 1:1 cuadrada (Tarjetas: 56x56 px | Modal: 80x80 px)
+    const sizePx = isCompact ? 56 : 80;
 
     const bagsSVG = showBags.map((b, idx) => {
-        // En viewBox 0 0 60 84, el cuerpo del envase abarca de y=12 a y=78 (66px de altura)
-        const fillHeight = Math.round((66 * b.fillPct) / 100);
-        const fillY = 78 - fillHeight;
-        const clipId = `pouch-clip-${Math.random().toString(36).slice(2, 7)}-${idx}`;
+        // En viewBox 0 0 80 80, el área útil de alimento abarca de y=16 a y=74 (58px de altura útil)
+        const fillHeight = Math.round((58 * b.fillPct) / 100 * 10) / 10;
+        const fillY = 74 - fillHeight;
+        const clipId = `sq-pouch-clip-${Math.random().toString(36).slice(2, 7)}-${idx}`;
         return `
         <div class="relative inline-flex flex-col items-center">
-            <svg width="${w}" height="${h}" viewBox="0 0 60 84" class="overflow-visible select-none shrink-0" aria-hidden="true">
+            <svg width="${sizePx}" height="${sizePx}" viewBox="0 0 80 80" class="overflow-visible select-none shrink-0" aria-hidden="true">
                 <defs>
                     <clipPath id="${clipId}">
-                        <path d="M 12 14 Q 12 12 14 12 L 46 12 Q 48 12 48 14 L 46 72 Q 45 78 30 78 Q 15 78 14 72 Z" />
+                        <rect x="6" y="16" width="68" height="58" rx="10" ry="10" />
                     </clipPath>
-                    <linearGradient id="pouchFillGrad_${idx}" x1="0" y1="1" x2="0" y2="0">
+                    <linearGradient id="sqPouchGrad_${idx}" x1="0" y1="1" x2="0" y2="0">
                         <stop offset="0%" stop-color="#C4B5FD" />
                         <stop offset="100%" stop-color="#8B5CF6" />
                     </linearGradient>
                 </defs>
 
-                <!-- Fondo del envase (Lavanda claro) -->
-                <path d="M 12 14 Q 12 12 14 12 L 46 12 Q 48 12 48 14 L 46 72 Q 45 78 30 78 Q 15 78 14 72 Z" fill="#F3EEFF" stroke="#A78BDA" stroke-width="1.8" class="dark:fill-[#1f1338] dark:stroke-[#8B5CF6]" />
+                <!-- Silueta cuadrada exterior de la bolsa (1:1 con esquinas redondeadas) -->
+                <rect x="6" y="6" width="68" height="68" rx="12" ry="12" fill="#F3EEFF" stroke="#A78BDA" stroke-width="1.8" class="dark:fill-[#1f1338] dark:stroke-[#8B5CF6]" />
 
-                <!-- Sellado superior fino -->
-                <path d="M 10 16 L 50 16" stroke="#A78BDA" stroke-width="1.5" stroke-linecap="round" class="dark:stroke-[#8B5CF6]" />
-                <path d="M 12 19 L 48 19" stroke="#A78BDA" stroke-width="1" stroke-linecap="round" opacity="0.6" class="dark:stroke-[#8B5CF6]" />
+                <!-- Sellado superior discreto e integrado -->
+                <path d="M 6 16 L 74 16" stroke="#A78BDA" stroke-width="1.5" opacity="0.8" class="dark:stroke-[#8B5CF6]" />
+                <path d="M 8 19 L 72 19" stroke="#A78BDA" stroke-width="1" stroke-dasharray="2 2" opacity="0.5" class="dark:stroke-[#8B5CF6]" />
 
-                <!-- Relleno animado vertical -->
+                <!-- Relleno animado vertical recortado exactamente en el contorno -->
                 <g clip-path="url(#${clipId})">
-                    <rect class="bag-fill-anim" x="0" y="${fillY}" width="60" height="${fillHeight}" fill="url(#pouchFillGrad_${idx})" style="transition: y 450ms ease-out, height 450ms ease-out;" />
+                    <rect class="bag-fill-anim" x="6" y="${fillY}" width="68" height="${fillHeight}" fill="url(#sqPouchGrad_${idx})" style="transition: y 450ms ease-out, height 450ms ease-out;" />
                 </g>
 
-                <!-- Detalle discreto de huella -->
-                <g transform="translate(30, 46) scale(0.65)" opacity="0.35" fill="#A78BDA" class="dark:fill-[#C4B5FD]">
+                <!-- 4 divisiones iguales (3 líneas horizontales en 25%, 50% y 75% del área útil) -->
+                <path d="M 6 59.5 L 74 59.5" stroke="#A78BDA" stroke-width="1" opacity="0.45" class="dark:stroke-[#8B5CF6]" />
+                <path d="M 6 45.0 L 74 45.0" stroke="#A78BDA" stroke-width="1.4" opacity="0.75" class="dark:stroke-[#8B5CF6]" />
+                <path d="M 6 30.5 L 74 30.5" stroke="#A78BDA" stroke-width="1" opacity="0.45" class="dark:stroke-[#8B5CF6]" />
+
+                <!-- Detalle discreto de huella central -->
+                <g transform="translate(40, 45) scale(0.7)" opacity="0.3" fill="#A78BDA" class="dark:fill-[#C4B5FD]">
                     <ellipse cx="0" cy="4" rx="4" ry="3" />
                     <circle cx="-5" cy="-2" r="1.8" />
                     <circle cx="-1.8" cy="-5" r="1.8" />
@@ -5350,8 +5355,8 @@ window.renderBagAnimationSVG = function (dailyGrams, presentationGrams, { isComp
                     <circle cx="5" cy="-2" r="1.8" />
                 </g>
 
-                <!-- Contorno exterior para nitidez de bordes -->
-                <path d="M 12 14 Q 12 12 14 12 L 46 12 Q 48 12 48 14 L 46 72 Q 45 78 30 78 Q 15 78 14 72 Z" fill="none" stroke="#A78BDA" stroke-width="1.8" class="dark:stroke-[#8B5CF6]" />
+                <!-- Contorno exterior para bordes limpios -->
+                <rect x="6" y="6" width="68" height="68" rx="12" ry="12" fill="none" stroke="#A78BDA" stroke-width="1.8" class="dark:stroke-[#8B5CF6]" />
             </svg>
         </div>
         `;
@@ -5359,7 +5364,7 @@ window.renderBagAnimationSVG = function (dailyGrams, presentationGrams, { isComp
 
     let textSummary = '';
     if (dG <= pG) {
-        textSummary = `Porción diaria: ${dG} g en presentación de ${pG} g`;
+        textSummary = `Porción diaria: ${dG} g en bolsa de ${pG} g (${Math.round((dG / pG) * 100)}%)`;
     } else {
         textSummary = `Porción diaria: ${fullBags} ${fullBags === 1 ? 'bolsa completa' : 'bolsas completas'}${remGrams > 0 ? ` + ${remGrams} g de otra` : ''}`;
     }
@@ -5367,7 +5372,7 @@ window.renderBagAnimationSVG = function (dailyGrams, presentationGrams, { isComp
     return `
     <div class="bag-animation-container inline-flex items-center justify-center select-none" aria-hidden="true">
         <div class="sr-only">${textSummary}</div>
-        <div class="flex items-end justify-center gap-1.5" aria-hidden="true">
+        <div class="flex items-center justify-center gap-2" aria-hidden="true">
             ${bagsSVG}
         </div>
     </div>
@@ -5411,7 +5416,7 @@ window.renderActiveFeedingPlans = function () {
                 <span class="text-[9px] text-gray-500 font-medium mt-0.5">${plan.days} días</span>
             </div>
 
-            <!-- Animación de bolsa en versión compacta -->
+            <!-- Animación de bolsa en versión compacta cuadrada (56x56 px) -->
             ${window.renderBagAnimationSVG(plan.dailyGrams, plan.presentationGrams, { isCompact: true })}
 
             <div class="mt-2 w-full">
@@ -5487,18 +5492,75 @@ window.openPlanModal = function (days) {
     </div>` : '';
 
     body.innerHTML = `
-        <!-- Fila Compacta: Porción Diaria a la izquierda + Envase Ilustrado a la derecha -->
+        <!-- Fila Compacta: Porción Diaria a la izquierda + Bolsa Cuadrada 1:1 (80x80px) a la derecha -->
         <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-2xl bg-purple-light/40 dark:bg-purple/10 border border-purple-border/30 dark:border-purple/20 select-none">
             <div class="text-left">
                 <span class="text-[10px] uppercase font-bold text-purple/60 dark:text-gray-400 tracking-wider block mb-0.5">Porción diaria</span>
                 <div class="text-2xl sm:text-3xl font-black text-purple-dark dark:text-white leading-none">${plan.dailyGrams} g</div>
-                <span class="text-xs text-gray-500 dark:text-gray-300 font-medium mt-1 leading-tight block">Presentación recomendada: ${plan.presentation.replace('gr', ' g')}</span>
+                <span class="text-xs text-gray-500 dark:text-gray-300 font-medium mt-1 leading-tight block">${plan.dailyGrams} g de una bolsa de ${plan.presentation.replace('gr', ' g')}</span>
                 ${plan.dailyGrams > plan.presentationGrams ? `<span class="text-[10px] text-purple dark:text-green font-bold block mt-1">(${Math.floor(plan.dailyGrams / plan.presentationGrams)} ${Math.floor(plan.dailyGrams / plan.presentationGrams) === 1 ? 'bolsa completa' : 'bolsas completas'}${plan.dailyGrams % plan.presentationGrams > 0 ? ` + ${Math.round(plan.dailyGrams % plan.presentationGrams)} g` : ''})</span>` : ''}
             </div>
             <div class="shrink-0 flex items-center justify-end">
                 ${window.renderBagAnimationSVG(plan.dailyGrams, plan.presentationGrams, { isCompact: false })}
             </div>
         </div>
+
+        <!-- Precio destacado -->
+        <div class="rounded-2xl bg-gradient-to-r from-purple-dark to-purple p-4 text-white flex items-center justify-between shadow-md">
+            <div>
+                <span class="text-[10px] text-green-light font-bold uppercase block mb-0.5">Precio total del plan</span>
+                <span class="text-3xl font-black text-white leading-none">$${Number(plan.finalPrice).toFixed(2)}</span>
+                <span class="block text-[11px] text-white/60 line-through mt-1">Antes: $${Number(plan.originalPrice).toFixed(2)}</span>
+            </div>
+            <div class="text-right">
+                <span class="inline-block bg-green text-purple-dark text-xs font-black px-3 py-1.5 rounded-xl shadow-sm">
+                    Ahorras $${Number(plan.savings).toFixed(2)} (-${plan.discountPercent}%)
+                </span>
+                <div class="text-[11px] text-white/80 mt-1.5 font-medium">~$${plan.costPerDay.toFixed(2)} / día</div>
+            </div>
+        </div>
+
+        <!-- Detalle de cantidades y conservación -->
+        <div class="rounded-2xl border border-purple-border/30 dark:border-purple/20 p-4 space-y-2.5 text-xs sm:text-sm bg-white dark:bg-darkcard">
+            <div class="flex justify-between items-center pb-2 border-b border-purple-border/20">
+                <span class="text-gray-500 font-medium">Mascota</span>
+                <span class="font-black text-purple-dark dark:text-white">${window.escapeHTML(petNameDisplay)}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-500 font-medium">Porción diaria</span>
+                <span class="font-black text-purple-dark dark:text-white">${plan.dailyGrams} g/día</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-500 font-medium">Presentación asignada</span>
+                <span class="font-bold text-purple-dark dark:text-white">${plan.presentation.replace('gr',' g')}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-500 font-medium">Alimento requerido (${plan.days} días)</span>
+                <span class="font-bold text-purple-dark dark:text-white">${(plan.requiredGrams / 1000).toFixed(2)} kg (${plan.requiredGrams} g)</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-500 font-medium">Bolsas incluidas</span>
+                <span class="font-black text-purple-dark dark:text-white">${plan.bagsCount} bolsa(s)</span>
+            </div>
+            ${splitLine}
+            <div class="flex justify-between items-center pt-2 border-t border-purple-border/20">
+                <span class="text-gray-500 font-medium">Peso total comprado</span>
+                <span class="font-black text-green-dark dark:text-green">${(plan.totalGramsProvided / 1000).toFixed(2)} kg</span>
+            </div>
+            ${plan.surplusGrams > 0 ? `
+            <div class="flex justify-between items-center text-pink font-semibold">
+                <span>Sobrante descartado por conservación</span>
+                <span>${plan.surplusGrams} g</span>
+            </div>` : ''}
+
+            <!-- Base de estimación de bolsas -->
+            <div class="mt-3 pt-2.5 border-t border-purple-border/20 text-[11px] leading-relaxed text-purple-dark/80 dark:text-gray-300 bg-purple-light/50 dark:bg-purple/10 p-3 rounded-xl">
+                <div class="font-bold mb-0.5 text-purple dark:text-green">💡 Base de estimación:</div>
+                <p>${plan.basisText || 'Estimación con apertura diaria; puede generar sobrantes.'}</p>
+                ${plan.wasteExplanation ? `<p class="mt-1 text-gray-500 dark:text-gray-400">${plan.wasteExplanation}</p>` : ''}
+            </div>
+        </div>
+    `;
 
         <!-- Precio destacado -->
         <div class="rounded-2xl bg-gradient-to-r from-purple-dark to-purple p-4 text-white flex items-center justify-between shadow-md">
