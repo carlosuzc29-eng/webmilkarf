@@ -5191,73 +5191,164 @@ window.renderActiveFeedingPlans = function () {
     const petName = window.state.nombreMascota || 'tu perro';
     const plans = window.generateFeedingPlans(dailyGrams, formula, petName);
 
+    // Render cards compactas y uniformes. La tarjeta es toda pulsable y abre un modal.
     grid.innerHTML = plans.map(plan => {
         const isMonthly = plan.days === 30;
-        const splitText = plan.split ? `<span class="text-[10px] font-bold text-pink block mt-1">Composición: ${plan.split.polloPct}% Pollo y ${plan.split.resPct}% Res</span>` : '';
-        const presText = plan.presentation ? `<span class="text-[10px] font-bold text-purple-dark dark:text-white block mt-0.5">Presentación: <b>${plan.presentation.replace('gr', ' g')}</b> · $${Number(plan.presentationPrice || 0).toFixed(2)} c/u · ${plan.bagsCount || 0} bolsa(s)</span>` : '';
-        const surplusBadge = plan.surplusGrams > 0 
-            ? `<div class="text-[11px] font-bold text-purple/80 dark:text-gray-300 border-t border-purple-border/30 dark:border-purple/20 pt-2 flex items-center gap-1.5">
-                   <i data-lucide="info" class="w-3.5 h-3.5 text-green-dark dark:text-green shrink-0"></i>
-                   <span>Recibirás <b>${plan.bagsCount} bolsa(s) de ${plan.presentation.replace('gr', ' g')}</b> = ${plan.includedKg} kg (${plan.includedGrams} g), con <b>${plan.surplusGrams} g adicionales</b> (${plan.surplusKg} kg) sin costo.</span>
-               </div>` 
-            : `<div class="text-[11px] font-bold text-green-dark dark:text-green border-t border-purple-border/30 dark:border-purple/20 pt-2 flex items-center gap-1.5">
-                   <i data-lucide="check-circle" class="w-3.5 h-3.5 shrink-0"></i>
-                   <span>Recibirás <b>${plan.bagsCount} bolsa(s) de ${plan.presentation.replace('gr', ' g')}</b> = ${plan.includedKg} kg, sin excedente.</span>
-               </div>`;
+        const discountPct = (plan.discountPct * 100).toFixed(1).replace('.0','').replace('.', ',');
+        const shortName = plan.label.replace(/Plan\s*/i, '').trim();
+        const petName = String(plan.petName || window.state.nombreMascota || 'tu perro');
+
+        // Detectar si este plan ya está seleccionado en el carrito (misma mascota y duración)
+        const isSelected = !!(window.cart || []).find(i => i.type === 'feeding_plan' && i.days === plan.days && ((i.petName || '').toLowerCase() === (petName || '').toLowerCase()));
 
         return `
-        <div class="feeding-plan-card bg-white dark:bg-darkcard rounded-2xl p-3 md:p-4 border ${isMonthly ? 'border-2 border-pink shadow-soft-md' : 'border border-purple-border/50 dark:border-purple/20 shadow-sm'} text-center relative flex flex-col justify-start transition-all cursor-pointer hover:-translate-y-1 hover:shadow-md" onclick="const d=this.querySelector('.plan-details-container'); d.classList.toggle('hidden');">
-            
-            ${isMonthly ? '<div class="absolute top-0 left-0 right-0 bg-pink text-white text-[8px] sm:text-[9px] font-black uppercase py-0.5 tracking-widest">Recomendado</div>' : ''}
-            
-            <div class="${isMonthly ? 'mt-3' : ''}">
-                <span class="inline-block px-2 py-0.5 rounded-lg text-[9px] font-black bg-purple-light dark:bg-purple/20 text-purple dark:text-white mb-2">
-                    ${plan.discountPct * 100}% dcto.
-                </span>
-                
-                <h4 class="text-sm sm:text-lg font-black text-purple-dark dark:text-white tracking-tight leading-none">${plan.label.replace('Plan ', '')}</h4>
-                <span class="text-[9px] sm:text-xs text-gray-500 font-medium block mt-1">${plan.days} días</span>
+        <div role="button" tabindex="0" aria-pressed="false" data-plan-days="${plan.days}" class="feeding-plan-card bg-white dark:bg-darkcard rounded-2xl p-4 border border-purple-border/50 dark:border-purple/20 shadow-sm text-center flex flex-col justify-between transition-all cursor-pointer hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple" onclick="window.openPlanModal(${plan.days})" onkeydown="if(event.key==='Enter' || event.key===' ') { event.preventDefault(); window.openPlanModal(${plan.days}); }">
+
+            <div class="flex items-start justify-between gap-3">
+                <div class="text-left flex-1">
+                    <div class="inline-block px-2 py-0.5 rounded-md text-[11px] font-black bg-purple-light text-purple mb-2">${discountPct}%</div>
+                    <h4 class="text-sm font-black text-purple-dark dark:text-white tracking-tight leading-tight">${shortName}</h4>
+                    <div class="text-[11px] text-gray-500 font-medium mt-1">${plan.days} días</div>
+                </div>
+                <div class="shrink-0 text-right">
+                    ${isMonthly ? `<div class="badge-major-discount text-[11px] font-bold text-white bg-pink px-3 py-1 rounded-md">Mayor descuento</div>` : ''}
+                    ${isSelected ? `<div class="mt-2 text-[11px] font-black text-purple-dark uppercase">Plan seleccionado</div>` : ''}
+                </div>
             </div>
 
             <div class="mt-3">
-                <span class="text-lg sm:text-2xl font-black text-purple-dark dark:text-white tracking-tight leading-none block">$${plan.finalPrice.toFixed(2)}</span>
-                <span class="text-[9px] sm:text-xs font-black text-green-dark block mt-1">Ahorras $${plan.savings.toFixed(2)}</span>
+                <div class="text-lg font-black text-purple-dark dark:text-white">Ahorras $${Number(plan.savings || 0).toFixed(2)}</div>
+                <div class="text-[12px] text-gray-500 font-semibold mt-1">Ver detalle</div>
             </div>
 
-            <!-- Contenedor Desplegable -->
-            <div class="plan-details-container hidden mt-4 pt-4 border-t border-purple-border/20 text-left">
-                <div class="space-y-1 mb-3">
-                    <span class="text-[10px] text-gray-400 line-through font-bold block">Original: $${plan.originalPrice.toFixed(2)}</span>
-                    <span class="text-[10px] font-semibold text-gray-500">~$${plan.costPerDay.toFixed(2)} / día</span>
-                </div>
-
-                ${splitText}
-                ${presText}
-
-                <div class="mt-3 bg-purple-light/70 dark:bg-white/5 rounded-xl p-2 space-y-1 text-[9px]">
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-500 font-medium">Requerido:</span>
-                        <span class="font-bold text-purple-dark dark:text-white">${plan.requiredKg}kg</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-500 font-medium">Incluido:</span>
-                        <span class="font-black text-green-dark dark:text-green">${plan.includedKg}kg</span>
-                    </div>
-                </div>
-
-                <div class="mt-4">
-                    <button type="button" onclick="event.stopPropagation(); window.seleccionarPlan(${plan.days})" class="w-full py-2.5 rounded-lg font-bold text-[10px] sm:text-xs uppercase tracking-wider text-white ${isMonthly ? 'bg-pink hover:bg-pink-dark shadow-sm' : 'bg-purple hover:bg-purple-dark'} transition-all active:scale-95 flex items-center justify-center gap-1.5 touch-target-safe">
-                        <i data-lucide="check" class="w-3.5 h-3.5 text-white"></i>
-                        <span>Elegir</span>
-                    </button>
-                </div>
-            </div>
         </div>
         `;
     }).join('');
 
     if (window.lucide) window.lucide.createIcons({ root: grid });
     window.renderPresentationSelector?.();
+};
+
+// Modal accesible de detalle de plan
+window._lastFocusBeforeModal = null;
+window.openPlanModal = function (days) {
+    window.vibrate?.(20);
+    if (!window.lastCalcResult?.gramos) {
+        window.showToast?.('Calcula primero la porción de tu perro.');
+        return;
+    }
+    const dailyGrams = window.lastCalcResult.gramos;
+    const formula = window.activePlanFormula || 'pollo';
+    const petName = window.state.nombreMascota || 'tu perro';
+    const plans = window.generateFeedingPlans(dailyGrams, formula, petName);
+    const plan = plans.find(p => p.days === Number(days));
+    if (!plan) return;
+
+    let dlg = document.getElementById('plan-modal');
+    if (!dlg) {
+        dlg = document.createElement('dialog');
+        dlg.id = 'plan-modal';
+        dlg.className = 'plan-modal rounded-xl p-0 border-0 shadow-2xl';
+        dlg.setAttribute('aria-labelledby', 'plan-modal-title');
+        dlg.setAttribute('aria-modal', 'true');
+        dlg.innerHTML = `
+            <div class="modal-inner max-w-[880px] w-full mx-auto md:flex md:gap-6">
+                <div class="modal-content flex-1 p-5 md:p-6 overflow-auto">
+                    <header class="flex items-start justify-between gap-4">
+                        <div>
+                            <h2 id="plan-modal-title" class="text-xl font-black text-purple-dark">Plan</h2>
+                            <div id="plan-modal-subtitle" class="text-sm text-gray-500 mt-1"></div>
+                        </div>
+                        <div class="ml-3">
+                            <button aria-label="Cerrar" id="plan-modal-close" class="text-gray-500 hover:text-pink bg-transparent border-0 text-[18px]">✕</button>
+                        </div>
+                    </header>
+
+                    <div id="plan-modal-body" class="mt-4 space-y-4"></div>
+                </div>
+                <aside class="modal-side w-full md:w-64 p-5 md:p-6 bg-purple-light/5 border-l border-purple-border/20">
+                    <div id="plan-modal-summary"></div>
+                </aside>
+            </div>
+        `;
+        document.body.appendChild(dlg);
+
+        dlg.querySelector('#plan-modal-close').addEventListener('click', () => window.closePlanModal());
+        dlg.addEventListener('cancel', (e) => { e.preventDefault(); window.closePlanModal(); });
+        dlg.addEventListener('click', (e) => { if (e.target === dlg) window.closePlanModal(); });
+    }
+
+    const body = dlg.querySelector('#plan-modal-body');
+    const summary = dlg.querySelector('#plan-modal-summary');
+    const title = dlg.querySelector('#plan-modal-title');
+    const subtitle = dlg.querySelector('#plan-modal-subtitle');
+
+    title.textContent = `${plan.label.replace('Plan ', '')} · ${plan.days} días`;
+    subtitle.textContent = `${plan.formulaLabel} · Presentación ${plan.presentation.replace('gr',' g')}`;
+
+    const petNameDisplay = plan.petName || window.state.nombreMascota || 'tu perro';
+
+    body.innerHTML = `
+        <div class="text-sm text-gray-700 dark:text-gray-200">
+            <p class="font-semibold">Mascota: <span class="font-black">${window.escapeHTML(petNameDisplay)}</span></p>
+            <p class="mt-2">Porción diaria: <span class="font-black">${plan.dailyGrams || window.lastCalcResult?.gramos} g</span></p>
+            <hr class="my-3" />
+            <h3 class="font-bold">Composición y cantidades</h3>
+            <div class="mt-2 text-[13px]">
+                <p>Fórmula: <b>${plan.formulaLabel}</b></p>
+                <p>Presentación: <b>${plan.presentation.replace('gr',' g')}</b></p>
+                <p>Cantidad de bolsas: <b>${plan.bagsCount}</b></p>
+                ${plan.split ? `<p>Distribución: <b>${plan.split.polloPct}% Pollo / ${plan.split.resPct}% Res</b></p>` : ''}
+                <p>Requerido: <b>${plan.requiredKg} kg</b></p>
+                <p>Incluido: <b>${plan.includedKg} kg</b></p>
+                <p>Excedente por redondeo: <b>${plan.surplusKg} kg</b></p>
+            </div>
+            <hr class="my-3" />
+            <div class="text-sm">
+                <p>Subtotal: <b>$${Number(plan.originalPrice || plan.subtotal).toFixed(2)}</b></p>
+                <p>Descuento: <b>${Math.round((plan.discountPct || 0)*100)}%</b></p>
+                <p>Ahorro: <b>$${Number(plan.savings || plan.discountAmount || 0).toFixed(2)}</b></p>
+                <p class="mt-2 text-lg font-black">Total del plan: <b>$${Number(plan.finalPrice).toFixed(2)}</b></p>
+            </div>
+        `;
+
+    summary.innerHTML = `
+        <div class="text-sm">
+            <p class="text-[11px] text-gray-500">Acción</p>
+            <button id="plan-modal-choose" class="mt-3 w-full bg-purple hover:bg-purple-dark text-white font-black py-3 rounded-xl">Elegir plan ${String(plan.label.replace('Plan ', '')).toLowerCase()}</button>
+        </div>
+    `;
+
+    summary.querySelector('#plan-modal-choose').addEventListener('click', (e) => { e.stopPropagation(); window.selectPlanFromModal(plan.days); });
+
+    window._lastFocusBeforeModal = document.activeElement;
+    try { if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open',''); } catch (e) { dlg.setAttribute('open',''); }
+
+    const focusable = dlg.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (focusable) focusable.focus();
+
+    window._planModalKeyHandler = function (ev) { if (ev.key === 'Escape') { window.closePlanModal(); } };
+    document.addEventListener('keydown', window._planModalKeyHandler);
+};
+
+window.closePlanModal = function () {
+    const dlg = document.getElementById('plan-modal');
+    if (!dlg) return;
+    try { if (typeof dlg.close === 'function') dlg.close(); else dlg.removeAttribute('open'); } catch (e) { dlg.removeAttribute('open'); }
+    document.removeEventListener('keydown', window._planModalKeyHandler);
+    if (window._lastFocusBeforeModal && typeof window._lastFocusBeforeModal.focus === 'function') window._lastFocusBeforeModal.focus();
+    window._lastFocusBeforeModal = null;
+};
+
+window.selectPlanFromModal = function (days) {
+    if (!window.lastCalcResult?.gramos) { window.showToast?.('Calcula primero la porción de tu perro.'); return; }
+    const formula = window.activePlanFormula || 'pollo';
+    const petName = window.state.nombreMascota || 'tu perro';
+    const plan = window.buildFeedingPlan(window.lastCalcResult.gramos, days, formula, petName, window.activePlanPresentation);
+    window.addFeedingPlanToCart(plan);
+    window.renderActiveFeedingPlans();
+    window.closePlanModal();
+    window.showToast?.('Plan seleccionado. Revisa el resumen del pedido.', 'success');
 };
 
 window.selectPlanPresentation = function (size) {

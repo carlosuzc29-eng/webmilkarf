@@ -781,6 +781,54 @@ textarea {
     }
 }
 
+/* Estilos para las tarjetas de planes compactas y el modal */
+.feeding-plan-card {
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    -webkit-tap-highlight-color: transparent;
+}
+.feeding-plan-card:focus {
+    outline: none;
+}
+.feeding-plan-card:focus-visible {
+    box-shadow: 0 6px 18px rgba(66,29,142,0.12);
+    transform: translateY(-2px);
+}
+.badge-major-discount {
+    display: inline-block;
+    font-size: 11px;
+}
+
+/* Modal (dialog) básico y accesible */
+dialog#plan-modal::backdrop {
+    background: rgba(10,10,10,0.55);
+}
+dialog#plan-modal {
+    border: none;
+    padding: 0;
+    background: transparent;
+}
+.plan-modal .modal-inner {
+    background: var(--card-bg, #fff);
+    border-radius: 12px;
+    overflow: hidden;
+}
+.plan-modal .modal-content {
+    max-height: calc(100vh - 120px);
+}
+.plan-modal .modal-side {
+    border-left: 1px solid rgba(66,29,142,0.06);
+}
+
+@media (max-width: 767px) {
+    .feeding-plan-card { min-height: 110px; }
+    dialog#plan-modal { width: calc(100% - 32px); margin: 0 16px; }
+    .plan-modal .modal-inner { flex-direction: column; }
+    .plan-modal .modal-side { border-left: none; border-top: 1px solid rgba(66,29,142,0.06); }
+}
+
 /* ==========================================================================
    DESKTOP HEADER & GLOBAL NAVIGATION SYSTEM (MILKARF 2.0)
    ========================================================================== */
