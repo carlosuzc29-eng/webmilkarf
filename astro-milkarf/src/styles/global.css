@@ -45,6 +45,10 @@ body {
     @apply dark:bg-[#0d0718] dark:text-white dark:border-purple/30;
 }
 
+.opt-btn:focus-visible {
+    @apply outline-2 outline-offset-2 outline-green;
+}
+
 .opt-btn[aria-pressed="true"] {
     @apply border-purple bg-purple text-white shadow-sm;
     @apply dark:bg-purple dark:text-white dark:border-purple;
@@ -65,6 +69,11 @@ body {
     @apply cursor-pointer select-none relative rounded-xl border text-left p-3 transition-all;
     @apply border-purple-border bg-cream text-purple-dark;
     @apply dark:border-purple/25 dark:bg-[#0d0718] dark:text-white;
+}
+
+.pres-radio:focus-visible,
+.pres-radio:focus-within {
+    @apply outline-2 outline-offset-2 outline-green;
 }
 
 .pres-radio:has(input:checked) {

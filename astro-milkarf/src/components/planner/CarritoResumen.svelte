@@ -63,7 +63,7 @@
                     <div class="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-purple-border/30 dark:border-purple/20 flex items-center justify-between text-xs sm:text-sm">
                         <span class="text-[10px] sm:text-xs font-bold text-gray-500 dark:text-gray-400">
                             Subtotal <span class="line-through">{HELPERS.money(item.originalSubtotal)}</span>
-                            <span class="ml-1 text-green">−{item.discountPercent}%</span>
+                            <span class="ml-1 text-green">−{(item.discountPct || 0) * 100}%</span>
                         </span>
                         <span class="font-black text-purple-dark dark:text-white text-sm sm:text-base">{HELPERS.money(item.finalPrice)}</span>
                     </div>

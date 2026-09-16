@@ -73,7 +73,7 @@
                         Ahorras {HELPERS.money(plan.savings)}
                     </span>
                     <span class="text-[8px] sm:text-[9px] font-bold text-purple/50 dark:text-gray-500 mt-0.5">
-                        {plan.discountPercent}% dcto.
+                        {(plan.discountPct || 0) * 100}% dcto.
                     </span>
                 {:else}
                     <span class="text-[9px] sm:text-[10px] font-bold text-purple/40 dark:text-gray-500 mt-1">{discPct}% dcto.</span>
@@ -97,7 +97,7 @@
                     <p class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-semibold">{plan.days} días de alimento</p>
                 </div>
                 <span class="px-2 py-1 rounded-lg text-[10px] sm:text-xs font-black bg-purple-light dark:bg-purple/20 text-purple dark:text-white border border-purple-border/60 dark:border-purple/30 shrink-0">
-                    {plan.discountPercent}% dcto.
+                    {(plan.discountPct || 0) * 100}% dcto.
                 </span>
             </div>
 
@@ -143,7 +143,7 @@
                     <span class="font-bold text-gray-400 line-through">{HELPERS.money(plan.originalPrice)}</span>
                 </div>
                 <div class="flex justify-between items-center">
-                    <span class="text-gray-500 dark:text-gray-400 font-medium">Ahorro ({plan.discountPercent}%)</span>
+                    <span class="text-gray-500 dark:text-gray-400 font-medium">Ahorro ({(plan.discountPct || 0) * 100}%)</span>
                     <span class="font-black text-green-dark dark:text-green">−{HELPERS.money(plan.savings)}</span>
                 </div>
                 <div class="flex justify-between items-center pt-1.5 border-t border-purple-border/30 dark:border-purple/20">
@@ -188,7 +188,7 @@
                 {#each formulas as f}
                     {@const isSelected = planner.activeFormula === f.id}
                     <label
-                        class="relative flex items-center gap-1.5 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl border cursor-pointer transition-all min-h-[44px] select-none
+                        class="relative flex items-center gap-1.5 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl border cursor-pointer transition-all min-h-[44px] select-none focus-within:ring-2 focus-within:ring-white/70
                             {isSelected
                                 ? 'bg-green/90 text-purple-dark border-green shadow-md ring-1 ring-green/50'
                                 : 'bg-white/10 text-white border-white/20 hover:bg-white/20'}"
@@ -220,7 +220,7 @@
             <div class="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Presentación de bolsa del plan">
                 {#each presList as size}
                     {@const isSelected = planner.activePresentation === size}
-                    <label class="relative cursor-pointer select-none rounded-xl border text-left p-2.5 sm:p-3 transition-all flex items-center gap-2 font-bold text-[11px] sm:text-xs min-h-[44px]
+                    <label class="relative cursor-pointer select-none rounded-xl border text-left p-2.5 sm:p-3 transition-all flex items-center gap-2 font-bold text-[11px] sm:text-xs min-h-[44px] focus-within:ring-2 focus-within:ring-white/70
                         {isSelected ? 'bg-white/25 border-white/60 text-white' : 'border-white/20 text-white hover:bg-white/20'}">
                         <input
                             type="radio"

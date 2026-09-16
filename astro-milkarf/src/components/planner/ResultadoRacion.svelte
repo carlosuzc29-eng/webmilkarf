@@ -46,18 +46,22 @@
                 <span class="text-[8px] sm:text-[9px] font-black tracking-widest text-purple/60 dark:text-gray-400 uppercase block text-left mb-1.5 sm:mb-2">Equivalencia en presentaciones Milkarf (elige la del plan)</span>
                 <div class="grid grid-cols-2 gap-2 sm:gap-3">
                     {#each [['250gr', eqDia?.b250], ['500gr', eqDia?.b500]] as [size, valor]}
-                        <button
-                            type="button"
-                            aria-pressed={planner.activePresentation === size}
-                            onclick={() => selectPresentation(size as '250gr' | '500gr')}
-                            class="pres-radio min-h-[44px]"
-                        >
-                            <span class="block text-base sm:text-lg font-black leading-none">{valor || '0'}</span>
+                        {@const isSelected = planner.activePresentation === size}
+                        <label class="pres-radio focus-within:ring-2 focus-within:ring-purple/60 dark:focus-within:ring-green/50 min-h-[44px]">
+                            <input
+                                type="radio"
+                                name="astro-presentacion-racion"
+                                value={size}
+                                checked={isSelected}
+                                onchange={() => selectPresentation(size as '250gr' | '500gr')}
+                                class="sr-only"
+                            />
+                            <span class="block text-base sm:text-lg font-black leading-none text-purple-dark dark:text-white">{valor || '0'}</span>
                             <span class="block text-[8px] sm:text-[9px] font-bold opacity-60 uppercase mt-0.5">Presentación {size.replace('gr', ' g')}</span>
-                            {#if planner.activePresentation === size}
-                                <span class="block text-[9px] sm:text-[10px] font-black text-green dark:text-green mt-0.5">✓ Elegida para el plan</span>
+                            {#if isSelected}
+                                <span class="block text-[9px] sm:text-[10px] font-black text-green-dark dark:text-green mt-0.5">✓ Elegida para el plan</span>
                             {/if}
-                        </button>
+                        </label>
                     {/each}
                 </div>
             </div>

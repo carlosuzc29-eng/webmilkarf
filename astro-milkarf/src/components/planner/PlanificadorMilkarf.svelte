@@ -3,8 +3,6 @@
     import ResultadoRacion from './ResultadoRacion.svelte';
     import PlanCards from './PlanCards.svelte';
     import CarritoResumen from './CarritoResumen.svelte';
-    import ConfirmarPedidoModal from './ConfirmarPedidoModal.svelte';
-
     import { planner, calcular, choosePlan, recomputePlans } from '../../stores/planner.svelte';
 
     let plans = $derived(recomputePlans());
@@ -97,8 +95,6 @@
 
     <!-- Paso 4: pedido -->
     <CarritoResumen bind:element={cartSection} {showCart} />
-
-    <ConfirmarPedidoModal />
 </div>
 
 <div aria-live="polite" class="fixed top-10 left-1/2 -translate-x-1/2 z-[9999] pointer-events-none">

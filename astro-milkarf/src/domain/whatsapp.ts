@@ -110,6 +110,7 @@ Quisiera confirmar recomendaciones de fórmulas, disponibilidad, costo de entreg
                         const bagsCount = Number(i.bagsCount) || (Array.isArray(i.bags) ? i.bags.reduce((s: number, b: any) => s + (Number(b.qty) || 0), 0) : 0);
                         const subtotalNum = Number(i.originalSubtotal || i.price);
                         const discNum = Number(i.discountAmount || 0);
+                        const discPctNum = Number(i.discountPct || 0) * 100;
                         const totalNum = Number(i.finalPrice || i.price);
                         const excedente = surplus > 0 ? ` (+${surplus} g adicionales por redondeo)` : '';
                         return `${index + 1}. *Plan para ${i.petName || i.forPet || 'Mascota'}*${petWeight}
@@ -117,7 +118,7 @@ Quisiera confirmar recomendaciones de fórmulas, disponibilidad, costo de entreg
    • Fórmula: ${i.formulaName || 'Fórmula'} · Plan ${Number(i.durationDays) || 7} días
    • Presentación: ${presText || '500 g'} · Bolsas: ${bagsText || bagsCount + ' bolsa(s)'}
    • Alimento: ${reqKg} kg requeridos / ${provKg} kg provistos${excedente}
-   • Subtotal: ${currency(subtotalNum)} · Descuento (-${Number(i.discountPercent) || 0}%): -${currency(discNum)}
+   • Subtotal: ${currency(subtotalNum)} · Descuento (-${discPctNum}%): -${currency(discNum)}
    • Total plan: ${currency(totalNum)}`;
                     }
                     const pet = i.forPet ? ` - Para ${i.forPet}` : '';
