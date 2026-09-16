@@ -789,6 +789,7 @@ textarea {
     justify-content: space-between;
     -webkit-tap-highlight-color: transparent;
 }
+.feeding-plan-card { height: 100%; }
 .feeding-plan-card:focus {
     outline: none;
 }
@@ -820,6 +821,32 @@ dialog#plan-modal {
 }
 .plan-modal .modal-side {
     border-left: 1px solid rgba(66,29,142,0.06);
+}
+
+/* Ajustes visuales para uniformidad */
+.feeding-plan-card {
+    padding: 18px !important;
+    border-radius: 14px !important;
+    border: 1px solid rgba(66,29,142,0.06) !important;
+}
+.feeding-plan-card .discount-pill {
+    background: rgba(235,230,245,0.9);
+    color: #421d8e;
+    border-radius: 10px;
+    padding: 4px 8px;
+    display: inline-block;
+}
+.feeding-plan-card .plan-title { text-transform: capitalize; font-size: 16px; }
+.feeding-plan-card .text-lg { font-size: 20px; }
+
+/* Asegurar que las tarjetas en grid ocupen la misma altura */
+#feeding-plans-cards-grid > * { display: flex; }
+
+/* Badge "Mayor descuento" compacta y no superpuesta */
+.badge-major-discount {
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 12px;
 }
 
 @media (max-width: 767px) {

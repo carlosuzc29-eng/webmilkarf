@@ -5194,8 +5194,10 @@ window.renderActiveFeedingPlans = function () {
     // Render cards compactas y uniformes. La tarjeta es toda pulsable y abre un modal.
     grid.innerHTML = plans.map(plan => {
         const isMonthly = plan.days === 30;
-        const discountPct = (plan.discountPct * 100).toFixed(1).replace('.0','').replace('.', ',');
-        const shortName = plan.label.replace(/Plan\s*/i, '').trim();
+        const rawPct = (plan.discountPct * 100);
+        const discountPct = Number.isInteger(rawPct) ? String(rawPct).replace('.', ',') + '%' : String(rawPct).replace('.', ',') + '%';
+        // Normalizar nombres: Semanal, Quincenal, Mensual
+        const shortName = plan.days === 7 ? 'Semanal' : (plan.days === 15 ? 'Quincenal' : 'Mensual');
         const petName = String(plan.petName || window.state.nombreMascota || 'tu perro');
 
         // Detectar si este plan ya está seleccionado en el carrito (misma mascota y duración)
@@ -5206,8 +5208,8 @@ window.renderActiveFeedingPlans = function () {
 
             <div class="flex items-start justify-between gap-3">
                 <div class="text-left flex-1">
-                    <div class="inline-block px-2 py-0.5 rounded-md text-[11px] font-black bg-purple-light text-purple mb-2">${discountPct}%</div>
-                    <h4 class="text-sm font-black text-purple-dark dark:text-white tracking-tight leading-tight">${shortName}</h4>
+                    <div class="discount-pill inline-block px-2 py-0.5 rounded-md text-[11px] font-black bg-purple-light text-purple mb-2">${discountPct}</div>
+                    <h4 class="plan-title text-sm font-black text-purple-dark dark:text-white tracking-tight leading-tight">${shortName}</h4>
                     <div class="text-[11px] text-gray-500 font-medium mt-1">${plan.days} días</div>
                 </div>
                 <div class="shrink-0 text-right">
