@@ -5168,11 +5168,11 @@ window.cambiarFormulaPlan = function (formula) {
         const isSelected = f === formula;
         if (isSelected) {
             btn.className = 'plan-formula-btn p-3 rounded-xl border flex items-center gap-2.5 font-bold text-xs transition-all bg-white text-purple-dark border-white shadow-sm';
-            const sub = btn.querySelector('.text-[9px]');
+            const sub = btn.querySelector('div > span:last-child');
             if (sub) sub.className = 'text-[9px] font-medium text-gray-500';
         } else {
             btn.className = 'plan-formula-btn p-3 rounded-xl border flex items-center gap-2.5 font-bold text-xs transition-all bg-white/10 text-white border-white/20 hover:bg-white/20';
-            const sub = btn.querySelector('.text-[9px]');
+            const sub = btn.querySelector('div > span:last-child');
             if (sub) sub.className = 'text-[9px] font-medium text-white/70';
         }
     });
@@ -5206,63 +5206,51 @@ window.renderActiveFeedingPlans = function () {
                </div>`;
 
         return `
-        <div class="feeding-plan-card bg-white dark:bg-darkcard rounded-3xl p-5 md:p-6 border ${isMonthly ? 'border-2 border-pink shadow-soft-lg' : 'border border-purple-border/50 dark:border-purple/20 shadow-sm'} text-left relative overflow-hidden flex flex-col justify-between transition-all">
-            <div>
-                <div class="flex items-center justify-between gap-2 mb-3">
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full ${isMonthly ? 'bg-pink text-white shadow-sm' : 'bg-green/20 text-green-dark dark:text-green'}">
-                            ${plan.tag || `${plan.days} días`}
-                        </span>
-                        ${isMonthly ? '<span class="text-[9px] font-extrabold uppercase tracking-widest text-pink">Recomendado</span>' : ''}
-                    </div>
-                    <span class="px-2.5 py-1 rounded-xl text-xs font-black bg-purple-light dark:bg-purple/20 text-purple dark:text-white border border-purple-border/60 dark:border-purple/30">
-                        ${plan.discountPct * 100}% dcto.
-                    </span>
+        <div class="feeding-plan-card bg-white dark:bg-darkcard rounded-2xl p-3 md:p-4 border ${isMonthly ? 'border-2 border-pink shadow-soft-md' : 'border border-purple-border/50 dark:border-purple/20 shadow-sm'} text-center relative flex flex-col justify-start transition-all cursor-pointer hover:-translate-y-1 hover:shadow-md" onclick="const d=this.querySelector('.plan-details-container'); d.classList.toggle('hidden');">
+            
+            ${isMonthly ? '<div class="absolute top-0 left-0 right-0 bg-pink text-white text-[8px] sm:text-[9px] font-black uppercase py-0.5 tracking-widest">Recomendado</div>' : ''}
+            
+            <div class="${isMonthly ? 'mt-3' : ''}">
+                <span class="inline-block px-2 py-0.5 rounded-lg text-[9px] font-black bg-purple-light dark:bg-purple/20 text-purple dark:text-white mb-2">
+                    ${plan.discountPct * 100}% dcto.
+                </span>
+                
+                <h4 class="text-sm sm:text-lg font-black text-purple-dark dark:text-white tracking-tight leading-none">${plan.label.replace('Plan ', '')}</h4>
+                <span class="text-[9px] sm:text-xs text-gray-500 font-medium block mt-1">${plan.days} días</span>
+            </div>
+
+            <div class="mt-3">
+                <span class="text-lg sm:text-2xl font-black text-purple-dark dark:text-white tracking-tight leading-none block">$${plan.finalPrice.toFixed(2)}</span>
+                <span class="text-[9px] sm:text-xs font-black text-green-dark block mt-1">Ahorras $${plan.savings.toFixed(2)}</span>
+            </div>
+
+            <!-- Contenedor Desplegable -->
+            <div class="plan-details-container hidden mt-4 pt-4 border-t border-purple-border/20 text-left">
+                <div class="space-y-1 mb-3">
+                    <span class="text-[10px] text-gray-400 line-through font-bold block">Original: $${plan.originalPrice.toFixed(2)}</span>
+                    <span class="text-[10px] font-semibold text-gray-500">~$${plan.costPerDay.toFixed(2)} / día</span>
                 </div>
 
-                <div class="flex items-baseline justify-between gap-2">
-                    <h4 class="text-2xl font-black text-purple-dark dark:text-white tracking-tight">${plan.label}</h4>
-                    <span class="text-xs text-gray-500 dark:text-gray-400 font-semibold">${plan.days} días de alimento</span>
-                </div>
                 ${splitText}
                 ${presText}
 
-                <div class="mt-4 p-4 bg-purple-light/70 dark:bg-[#0d0718] rounded-2xl border border-purple-border/40 dark:border-purple/20 space-y-2.5 text-xs">
+                <div class="mt-3 bg-purple-light/70 dark:bg-white/5 rounded-xl p-2 space-y-1 text-[9px]">
                     <div class="flex justify-between items-center">
-                        <span class="text-gray-500 dark:text-gray-400 font-medium">Cantidad necesaria para ${plan.days} días:</span>
-                        <span class="font-bold text-purple-dark dark:text-white">${plan.requiredKg} kg (${plan.requiredGrams} g)</span>
+                        <span class="text-gray-500 font-medium">Requerido:</span>
+                        <span class="font-bold text-purple-dark dark:text-white">${plan.requiredKg}kg</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-gray-500 dark:text-gray-400 font-medium">Cantidad total incluida en bolsas:</span>
-                        <span class="font-black text-green-dark dark:text-green">${plan.includedKg} kg (${plan.includedGrams} g)</span>
+                        <span class="text-gray-500 font-medium">Incluido:</span>
+                        <span class="font-black text-green-dark dark:text-green">${plan.includedKg}kg</span>
                     </div>
-                    ${surplusBadge}
                 </div>
 
                 <div class="mt-4">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-purple/50 dark:text-gray-400 block mb-2">Bolsas calculadas para este plan:</span>
-                    <ul class="text-xs space-y-1.5 text-gray-700 dark:text-gray-300 font-semibold">
-                        ${plan.bags.map(b => `<li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-pink shrink-0"></span><span><b>${b.qty}x</b> presentación de ${b.size.replace('gr', ' g')} (${b.formulaName || b.formula})</span></li>`).join('')}
-                    </ul>
+                    <button type="button" onclick="event.stopPropagation(); window.seleccionarPlan(${plan.days})" class="w-full py-2.5 rounded-lg font-bold text-[10px] sm:text-xs uppercase tracking-wider text-white ${isMonthly ? 'bg-pink hover:bg-pink-dark shadow-sm' : 'bg-purple hover:bg-purple-dark'} transition-all active:scale-95 flex items-center justify-center gap-1.5 touch-target-safe">
+                        <i data-lucide="check" class="w-3.5 h-3.5 text-white"></i>
+                        <span>Elegir</span>
+                    </button>
                 </div>
-            </div>
-
-            <div class="mt-6 pt-4 border-t border-purple-border/30 dark:border-purple/20 space-y-3">
-                <div class="flex items-baseline justify-between">
-                    <div>
-                        <span class="text-xs text-gray-400 line-through font-bold mr-2">$${plan.originalPrice.toFixed(2)}</span>
-                        <span class="text-3xl font-black text-purple-dark dark:text-white tracking-tight">$${plan.finalPrice.toFixed(2)}</span>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-xs font-black text-green-dark dark:text-green block">Ahorras $${plan.savings.toFixed(2)}</span>
-                        <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">~$${plan.costPerDay.toFixed(2)} / día</span>
-                    </div>
-                </div>
-
-                <button type="button" onclick="window.seleccionarPlan(${plan.days})" class="w-full py-4 rounded-xl font-bold text-xs uppercase tracking-wider text-white ${isMonthly ? 'bg-pink hover:bg-pink-dark shadow-soft-lg' : 'bg-purple hover:bg-purple-dark'} transition-all active:scale-[0.98] flex items-center justify-center gap-2 touch-target-safe">
-                    <i data-lucide="check" class="w-4 h-4 text-white"></i>
-                    <span>Elegir ${plan.label.toLowerCase()}</span>
-                </button>
             </div>
         </div>
         `;
