@@ -88,6 +88,28 @@ body {
     @apply border-2 border-pink shadow-soft-lg;
 }
 
+/* Cabecera de plan en el accordion (Paso 3) */
+.plan-header-card {
+    @apply relative cursor-pointer select-none shadow-sm;
+}
+
+.plan-header-card:focus-visible {
+    @apply outline-2 outline-offset-2 outline-green;
+}
+
+.plan-header-card:focus-visible,
+.plan-header-card[aria-expanded="true"] {
+    box-shadow: 0 0 0 2px rgba(185, 203, 37, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .plan-header-card,
+    .plan-header-card *, 
+    .plan-header-card span {
+        transition: none !important;
+    }
+}
+
 @utility shadow-soft {
     box-shadow: 0 2px 8px -2px rgba(66, 29, 142, 0.18);
 }
