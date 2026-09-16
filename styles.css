@@ -802,32 +802,51 @@ textarea {
     font-size: 11px;
 }
 
-/* Modal (dialog) básico y accesible */
+/* Modal de plan — burbuja cuadrada superposicionada */
 dialog#plan-modal::backdrop {
-    background: rgba(10,10,10,0.55);
+    background: rgba(10, 8, 24, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
 }
 dialog#plan-modal {
     border: none;
     padding: 0;
     background: transparent;
+    max-width: 340px;
+    width: calc(100% - 48px);
+    /* Forzar cuadrado: aspect-ratio via max-height igual al width */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    animation: modal-pop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes modal-pop {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.85); }
+    to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 .plan-modal .modal-inner {
-    background: var(--card-bg, #fff);
-    border-radius: 12px;
+    background: #fff;
+    border-radius: 24px;
     overflow: hidden;
+    box-shadow: 0 24px 80px rgba(66, 29, 142, 0.22), 0 4px 16px rgba(0,0,0,0.12);
 }
 .plan-modal .modal-content {
-    max-height: calc(100vh - 120px);
+    max-height: 80vh;
+    overflow-y: auto;
+    scrollbar-width: none;
 }
-.plan-modal .modal-side {
-    border-left: 1px solid rgba(66,29,142,0.06);
-}
+.plan-modal .modal-content::-webkit-scrollbar { display: none; }
+.plan-modal .modal-side { display: none; }
 
-/* Ajustes visuales para uniformidad */
+/* Micro-tarjetas de plan — sin overrides de padding */
 .feeding-plan-card {
-    padding: 18px !important;
     border-radius: 14px !important;
-    border: 1px solid rgba(66,29,142,0.06) !important;
+    border: 1px solid rgba(66,29,142,0.10) !important;
+    min-height: 0 !important;
+    overflow: hidden;
+    position: relative;
 }
 .feeding-plan-card .discount-pill {
     background: rgba(235,230,245,0.9);
@@ -836,16 +855,15 @@ dialog#plan-modal {
     padding: 4px 8px;
     display: inline-block;
 }
-.feeding-plan-card .plan-title { text-transform: capitalize; font-size: 16px; }
-.feeding-plan-card .text-lg { font-size: 20px; }
+.feeding-plan-card .plan-title { text-transform: capitalize; font-size: 14px; }
 
 /* Asegurar que las tarjetas en grid ocupen la misma altura */
 #feeding-plans-cards-grid > * { display: flex; }
 
 /* Estado visual de tarjeta seleccionada (sugerida o elegida) */
 .feeding-plan-card.selected {
-    border-color: rgba(66,29,142,0.18) !important;
-    box-shadow: 0 10px 30px rgba(66,29,142,0.06);
+    border-color: #421d8e !important;
+    box-shadow: 0 0 0 2px rgba(66,29,142,0.18);
 }
 .feeding-plan-card .plan-selected-label {
     margin-top: 8px;
@@ -854,18 +872,16 @@ dialog#plan-modal {
     color: #421d8e;
 }
 
-/* Badge "Mayor descuento" compacta y no superpuesta */
+/* Badge "Mayor descuento" */
 .badge-major-discount {
-    padding: 6px 10px;
-    border-radius: 10px;
-    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 11px;
 }
 
 @media (max-width: 767px) {
-    .feeding-plan-card { min-height: 110px; }
-    dialog#plan-modal { width: calc(100% - 32px); margin: 0 16px; }
-    .plan-modal .modal-inner { flex-direction: column; }
-    .plan-modal .modal-side { border-left: none; border-top: 1px solid rgba(66,29,142,0.06); }
+    .feeding-plan-card { min-height: 100px; }
+    dialog#plan-modal { max-width: calc(100% - 40px); }
 }
 
 /* ==========================================================================
@@ -1517,8 +1533,9 @@ dialog#plan-modal {
 
     .plan-pres-btn,
     .plan-pres-btn .plan-pres-check,
-    #tu-resultado [data-pres-box] {
-        transition: none;
+    #tu-resultado [data-pres-box],
+    .bag-fill-anim {
+        transition: none !important;
         transform: none !important;
     }
 }

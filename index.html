@@ -752,66 +752,32 @@
                                     <div id="result-grams" class="text-6xl font-black tracking-tight select-all">0</div>
                                     <div class="text-sm font-extrabold uppercase tracking-wider opacity-70 mt-1">gramos al día</div>
                                     <div id="result-subtitle-pet" class="text-xs font-semibold opacity-80 mt-2"></div>
+                                    <div id="r-note" class="text-xs text-white/90 font-medium mt-3 pt-2.5 border-t border-white/20">Porción orientativa. Las necesidades de tu perro pueden variar.</div>
                                 </div>
 
-                                <div class="p-6 space-y-4">
-                                    <div class="flex justify-between items-center pb-3 border-b border-purple-border/30 dark:border-purple/20 text-xs md:text-sm">
+                                <div class="p-5 space-y-3 bg-white dark:bg-darkcard text-left">
+                                    <div class="flex justify-between items-center pb-2 border-b border-purple-border/20 text-xs md:text-sm">
                                         <span class="font-semibold text-purple/65 dark:text-gray-400">Energía diaria estimada (DER)</span>
                                         <span class="font-black text-purple dark:text-white" id="r-kcal">0 kcal/día</span>
                                     </div>
-                                    <div class="flex justify-between items-center pb-3 border-b border-purple-border/30 dark:border-purple/20 text-xs md:text-sm">
+                                    <div class="flex justify-between items-center pb-2 border-b border-purple-border/20 text-xs md:text-sm">
                                         <span class="font-semibold text-purple/65 dark:text-gray-400">Frecuencia recomendada</span>
                                         <span class="font-black text-purple dark:text-white" id="r-comidas">0 veces</span>
                                     </div>
-                                    <div class="flex justify-between items-center pb-3 border-b border-purple-border/30 dark:border-purple/20 text-xs md:text-sm">
+                                    <div class="flex justify-between items-center pb-3 border-b border-purple-border/20 text-xs md:text-sm">
                                         <span class="font-semibold text-purple/65 dark:text-gray-400">Porción por comida</span>
                                         <span class="font-black text-purple dark:text-white" id="r-por-comida">0g</span>
                                     </div>
 
-                                    <div class="bg-purple-border/15 dark:bg-purple/10 rounded-2xl p-5 space-y-3 border border-purple-border/30 dark:border-purple/20">
-                                        <div class="text-[9px] font-black tracking-widest text-purple/60 dark:text-gray-400 uppercase">Equivalencia en presentaciones Milkarf <span class="font-medium normal-case">(toca para elegir la del plan)</span></div>
-                                        <div class="grid grid-cols-2 gap-3">
-                                            <button type="button" data-pres-box="250gr" onclick="window.selectPlanPresentation('250gr')" aria-pressed="false" class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-xl p-3 text-center shadow-sm transition-all cursor-pointer hover:border-purple/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple">
-                                                <div class="text-lg font-black text-purple dark:text-white" id="b-250">0</div>
-                                                <div class="text-[9px] font-bold text-purple/40 dark:text-gray-500 uppercase mt-1">Presentación 250 g</div>
-                                                <div data-pres-box-check class="hidden text-[10px] font-black text-green-dark dark:text-green mt-1">✓ Elegida para el plan</div>
-                                            </button>
-                                            <button type="button" data-pres-box="500gr" onclick="window.selectPlanPresentation('500gr')" aria-pressed="false" class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-xl p-3 text-center shadow-sm transition-all cursor-pointer hover:border-purple/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple">
-                                                <div class="text-lg font-black text-purple dark:text-white" id="b-500">0</div>
-                                                <div class="text-[9px] font-bold text-purple/40 dark:text-gray-500 uppercase mt-1">Presentación 500 g</div>
-                                                <div data-pres-box-check class="hidden text-[10px] font-black text-green-dark dark:text-green mt-1">✓ Elegida para el plan</div>
-                                            </button>
+                                    <!-- Presentación asignada automáticamente + Explicación -->
+                                    <div class="bg-purple-light/50 dark:bg-purple/10 rounded-2xl p-4 border border-purple-border/30 dark:border-purple/20">
+                                        <div class="inline-flex items-center gap-2 text-purple-dark dark:text-white font-black text-xs sm:text-sm">
+                                            <span>📦 Presentación recomendada: <strong id="rec-pres-size-text" class="text-pink">250 g</strong></span>
                                         </div>
+                                        <p id="rec-pres-explanation" class="text-xs text-purple-dark/80 dark:text-gray-300 font-medium mt-1.5 leading-relaxed">
+                                            La elegimos según su porción diaria y el tiempo de conservación después de abrirla.
+                                        </p>
                                     </div>
-
-                                    <div class="bg-green/10 dark:bg-green/5 rounded-2xl p-4 space-y-3 border border-green/20 dark:border-green/10">
-                                        <div class="text-[9px] font-black tracking-widest text-green-dark dark:text-green uppercase flex items-center gap-2">
-                                            <i data-lucide="calendar" class="w-3.5 h-3.5 shrink-0"></i> Estimación mensual de consumo
-                                        </div>
-                                        <div class="grid grid-cols-2 gap-2 text-left">
-                                            <div class="bg-white dark:bg-darkcard rounded-xl p-3 shadow-sm border border-green/10 min-w-0">
-                                                <span class="text-[9px] font-bold text-purple/40 dark:text-gray-500 uppercase block leading-tight mb-1">Kilos al mes</span>
-                                                <span class="text-base font-black text-purple-dark dark:text-white leading-none" id="plan-kilos-mes">0.0 kg</span>
-                                            </div>
-                                            <div class="bg-white dark:bg-darkcard rounded-xl p-3 shadow-sm border border-green/10 min-w-0">
-                                                <span class="text-[9px] font-bold text-purple/40 dark:text-gray-500 uppercase block leading-tight mb-1">Porciones al mes</span>
-                                                <span class="text-base font-black text-purple-dark dark:text-white leading-none" id="plan-porciones-mes">0</span>
-                                            </div>
-                                        </div>
-                                        <div class="text-[8px] font-black tracking-widest text-purple/40 dark:text-gray-500 uppercase">Presentaciones estimadas para 30 días:</div>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <div class="bg-white dark:bg-darkcard rounded-xl p-2 text-center shadow-sm border border-green/10">
-                                                <div class="text-sm font-black text-purple dark:text-white leading-none" id="plan-b250-mes">0</div>
-                                                <div class="text-[7px] font-bold text-purple/45 dark:text-gray-500 uppercase mt-1 leading-tight">De 250 g</div>
-                                            </div>
-                                            <div class="bg-white dark:bg-darkcard rounded-xl p-2 text-center shadow-sm border border-green/10">
-                                                <div class="text-sm font-black text-purple dark:text-white leading-none" id="plan-b500-mes">0</div>
-                                                <div class="text-[7px] font-bold text-purple/45 dark:text-gray-500 uppercase mt-1 leading-tight">De 500 g</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div id="r-note" class="bg-green-light dark:bg-green/10 border-l-4 border-green text-[10px] leading-relaxed text-purple-dark/85 dark:text-gray-300 font-medium p-4 rounded-r-xl"></div>
                                 </div>
                             </div>
 
@@ -823,7 +789,7 @@
                                     </div>
                                     <h3 class="text-xl md:text-2xl font-black text-white tracking-tight">Elige la fórmula y duración para tu perro</h3>
                                     <p class="text-xs text-white/80 font-medium mt-1 leading-relaxed">
-                                        Elige la presentación (250 g o 500 g) y el sistema calculará las bolsas redondeando hacia arriba para cubrir la porción sin faltantes. También puedes elegir la presentación al tocar las cajitas del resultado del Paso 2.
+                                        Calculamos automáticamente las bolsas necesarias para cada plan respetando la conservación de 24 horas tras abrir cada bolsa.
                                     </p>
 
                                     <!-- Selector de fórmula -->
@@ -852,28 +818,6 @@
                                                 </div>
                                             </button>
                                         </div>
-                                    </div>
-
-                                    <!-- Selector de presentación (250 g / 500 g) -->
-                                    <div class="mt-3 bg-white/10 backdrop-blur-md rounded-2xl p-3.5 border border-white/15" role="radiogroup" id="plan-presentation-selector" aria-label="Elige la presentación de bolsa del plan">
-                                        <span class="text-[10px] font-black uppercase tracking-widest text-green-light block mb-2">Elige la presentación de bolsa:</span>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <button type="button" role="radio" aria-checked="false" data-size="250gr" onclick="window.selectPlanPresentation('250gr')" class="plan-pres-btn bg-white/10 border border-white/20 text-white hover:bg-white/20 text-left p-3 rounded-xl transition-all flex items-center gap-2 font-bold text-xs">
-                                                <span class="plan-pres-check w-6 h-6 rounded-full border border-white/40 flex items-center justify-center text-[11px] font-black text-white shrink-0" data-pres-check></span>
-                                                <span class="leading-tight">
-                                                    <span class="block font-black">250 g</span>
-                                                    <span class="text-[9px] font-medium text-white/70 block">Precio: <span class="presentation-price font-bold">$2.50</span> c/u</span>
-                                                </span>
-                                            </button>
-                                            <button type="button" role="radio" aria-checked="true" data-size="500gr" onclick="window.selectPlanPresentation('500gr')" class="plan-pres-btn bg-white/10 border border-white/20 text-white hover:bg-white/20 text-left p-3 rounded-xl transition-all flex items-center gap-2 font-bold text-xs">
-                                                <span class="plan-pres-check w-6 h-6 rounded-full border border-white/40 flex items-center justify-center text-[11px] font-black text-white shrink-0" data-pres-check></span>
-                                                <span class="leading-tight">
-                                                    <span class="block font-black">500 g</span>
-                                                    <span class="text-[9px] font-medium text-white/70 block">Precio: <span class="presentation-price font-bold">$5.00</span> c/u</span>
-                                                </span>
-                                            </button>
-                                        </div>
-                                        <p class="text-[9px] text-white/70 font-medium mt-2 leading-relaxed">Los planes se calculan redondeando a la presentación elegida: recibirás la cantidad necesaria sin faltantes.</p>
                                     </div>
                                 </div>
 
