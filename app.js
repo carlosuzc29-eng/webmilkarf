@@ -5416,8 +5416,15 @@ window.renderActiveFeedingPlans = function () {
                 <span class="text-[9px] text-gray-500 font-medium mt-0.5">${plan.days} días</span>
             </div>
 
-            <!-- Animación de bolsa en versión compacta cuadrada (56x56 px) -->
-            ${window.renderBagAnimationSVG(plan.dailyGrams, plan.presentationGrams, { isCompact: true })}
+            <!-- Animación de bolsas en versión compacta: mostrar 250g y 500g por separado -->
+            <div class="flex items-center justify-center gap-3 mt-1">
+                <div data-pres-size="250" class="plan-card-pres" title="Equivalencia en 250 g">
+                    ${window.renderBagAnimationSVG(plan.dailyGrams, 250, { isCompact: true })}
+                </div>
+                <div data-pres-size="500" class="plan-card-pres" title="Equivalencia en 500 g">
+                    ${window.renderBagAnimationSVG(plan.dailyGrams, 500, { isCompact: true })}
+                </div>
+            </div>
 
             <div class="mt-2 w-full">
                 <span class="text-lg sm:text-xl font-black text-purple-dark dark:text-white tracking-tight leading-none block">$${plan.finalPrice.toFixed(2)}</span>

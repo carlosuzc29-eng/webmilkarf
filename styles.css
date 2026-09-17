@@ -888,6 +888,11 @@ dialog#plan-modal {
     color: #421d8e;
 }
 
+/* Small container styles for pair of compact presentations inside plan card */
+.plan-card-pres { width: 56px; height: 56px; display: inline-block; }
+.plan-card-pres svg { width: 56px; height: 56px; }
+.plan-card-pres:hover { transform: translateY(-3px); }
+
 /* Badge "Mayor descuento" */
 .badge-major-discount {
     padding: 4px 8px;
