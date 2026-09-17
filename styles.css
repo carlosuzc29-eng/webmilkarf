@@ -269,6 +269,18 @@ input[type=date] {
     pointer-events: auto;
 }
 
+/* Restaurar fondo y contraste del encabezado de resultado por defecto */
+#result-top {
+    background: linear-gradient(135deg,#32147a,#421d8e);
+    color: #fff !important;
+}
+#result-top .text-[10px],
+#result-top .text-sm,
+#result-top .text-xs,
+#result-top .text-6xl {
+    color: inherit !important;
+}
+
 .error-msg {
     background: #fff0f5;
     border-left: 3px solid #d72b8f;
