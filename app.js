@@ -5404,7 +5404,7 @@ window.renderActiveFeedingPlans = function () {
         const isSelected = isSelectedInCart || (!anyPlanForPet && plan.days === recommendedPlanDays);
 
         return `
-        <div role="button" tabindex="0" aria-pressed="${isSelected ? 'true' : 'false'}" data-plan-days="${plan.days}" class="feeding-plan-card ${isSelected ? 'selected' : ''} bg-white dark:bg-darkcard rounded-2xl p-3 border border-purple-border/50 dark:border-purple/20 shadow-sm text-center flex flex-col justify-between items-center transition-all cursor-pointer hover:-translate-y-1 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple relative" onclick="window.openPlanModal(${plan.days})" onkeydown="if(event.key==='Enter' || event.key===' ') { event.preventDefault(); window.openPlanModal(${plan.days}); }">
+        <div role="button" tabindex="0" aria-pressed="${isSelected ? 'true' : 'false'}" data-plan-days="${plan.days}" data-selected-pres="${plan.presentationGrams}" class="feeding-plan-card ${isSelected ? 'selected' : ''} bg-white dark:bg-darkcard rounded-2xl p-3 border border-purple-border/50 dark:border-purple/20 shadow-sm text-center flex flex-col justify-between items-center transition-all cursor-pointer hover:-translate-y-1 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple relative" onclick="window.openPlanModal(${plan.days})" onkeydown="if(event.key==='Enter' || event.key===' ') { event.preventDefault(); window.openPlanModal(${plan.days}); }">
             
             ${isMonthly ? '<div class="absolute top-0 left-0 right-0 bg-pink text-white text-[9px] font-black uppercase py-0.5 tracking-widest rounded-t-xl">Recomendado</div>' : ''}
 
@@ -5427,8 +5427,8 @@ window.renderActiveFeedingPlans = function () {
             </div>
 
             <div class="mt-2 w-full">
-                <span class="text-lg sm:text-xl font-black text-purple-dark dark:text-white tracking-tight leading-none block">$${plan.finalPrice.toFixed(2)}</span>
-                <span class="text-[9px] font-black text-green-dark block mt-0.5">Ahorras $${plan.savings.toFixed(2)}</span>
+                <span class="plan-price text-lg sm:text-xl font-black text-purple-dark dark:text-white tracking-tight leading-none block">$${plan.finalPrice.toFixed(2)}</span>
+                <span class="plan-savings text-[9px] font-black text-green-dark block mt-0.5">Ahorras $${plan.savings.toFixed(2)}</span>
                 <button type="button" class="mt-2 w-full py-1 px-2 bg-purple/10 dark:bg-purple/20 text-purple dark:text-white hover:bg-purple hover:text-white text-[10px] font-bold rounded-lg transition-all">Ver mi plan</button>
             </div>
         </div>
@@ -5456,6 +5456,41 @@ window.renderActiveFeedingPlans = function () {
     } catch (e) { console.warn('Error aplicando selección visual a tarjetas:', e); }
 
     window.renderPresentationSelector?.();
+
+    // Hacer que cada icono de presentación dentro de la tarjeta sea interactivo
+    try {
+        const cardEls2 = Array.from(grid.querySelectorAll('.feeding-plan-card'));
+        cardEls2.forEach(card => {
+            const pres250 = card.querySelector('.plan-card-pres[data-pres-size="250"]');
+            const pres500 = card.querySelector('.plan-card-pres[data-pres-size="500"]');
+            const priceEl = card.querySelector('.plan-price');
+            const savingsEl = card.querySelector('.plan-savings');
+            const days = Number(card.getAttribute('data-plan-days')) || 7;
+            const formula = window.activePlanFormula || 'pollo';
+
+            const applyPres = (size) => {
+                // compute pricing for this card using chosen presentation
+                const sizing = size + 'gr';
+                const pricing = window.calculatePlanConsumption(window.lastCalcResult?.gramos || 0, days, formula, sizing);
+                if (!pricing) return;
+                // set selected attribute on card
+                card.setAttribute('data-selected-pres', pricing.presentationGrams || size);
+                // update displayed price/savings
+                if (priceEl) priceEl.textContent = `$${(pricing.finalPrice || pricing.subtotal || 0).toFixed(2)}`;
+                if (savingsEl) savingsEl.textContent = `Ahorras $${(pricing.discountAmount || 0).toFixed(2)}`;
+                // visual highlight
+                if (pres250) pres250.classList.toggle('pres-active', Number(size) === 250);
+                if (pres500) pres500.classList.toggle('pres-active', Number(size) === 500);
+            };
+
+            if (pres250) pres250.addEventListener('click', (ev) => { ev.stopPropagation(); applyPres(250); });
+            if (pres500) pres500.addEventListener('click', (ev) => { ev.stopPropagation(); applyPres(500); });
+
+            // initialize visuals based on data-selected-pres
+            const initial = Number(card.getAttribute('data-selected-pres')) || Number(window.recommendPresentation(window.lastCalcResult?.gramos || 0, formula).size) || 500;
+            applyPres(initial === 500 ? 500 : 250);
+        });
+    } catch (e) { console.warn('Error setting up per-card presentation handlers', e); }
 };
 
 // Modal accesible de detalle de plan
