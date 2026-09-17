@@ -5581,63 +5581,6 @@ window.openPlanModal = function (days) {
         </div>
     `;
 
-        <!-- Precio destacado -->
-        <div class="rounded-2xl bg-gradient-to-r from-purple-dark to-purple p-4 text-white flex items-center justify-between shadow-md">
-            <div>
-                <span class="text-[10px] text-green-light font-bold uppercase block mb-0.5">Precio total del plan</span>
-                <span class="text-3xl font-black text-white leading-none">$${Number(plan.finalPrice).toFixed(2)}</span>
-                <span class="block text-[11px] text-white/60 line-through mt-1">Antes: $${Number(plan.originalPrice).toFixed(2)}</span>
-            </div>
-            <div class="text-right">
-                <span class="inline-block bg-green text-purple-dark text-xs font-black px-3 py-1.5 rounded-xl shadow-sm">
-                    Ahorras $${Number(plan.savings).toFixed(2)} (-${plan.discountPercent}%)
-                </span>
-                <div class="text-[11px] text-white/80 mt-1.5 font-medium">~$${plan.costPerDay.toFixed(2)} / día</div>
-            </div>
-        </div>
-
-        <!-- Detalle de cantidades y conservación -->
-        <div class="rounded-2xl border border-purple-border/30 dark:border-purple/20 p-4 space-y-2.5 text-xs sm:text-sm bg-white dark:bg-darkcard">
-            <div class="flex justify-between items-center pb-2 border-b border-purple-border/20">
-                <span class="text-gray-500 font-medium">Mascota</span>
-                <span class="font-black text-purple-dark dark:text-white">${window.escapeHTML(petNameDisplay)}</span>
-            </div>
-            <div class="flex justify-between items-center">
-                <span class="text-gray-500 font-medium">Porción diaria</span>
-                <span class="font-black text-purple-dark dark:text-white">${plan.dailyGrams} g/día</span>
-            </div>
-            <div class="flex justify-between items-center">
-                <span class="text-gray-500 font-medium">Presentación asignada</span>
-                <span class="font-bold text-purple-dark dark:text-white">${plan.presentation.replace('gr',' g')}</span>
-            </div>
-            <div class="flex justify-between items-center">
-                <span class="text-gray-500 font-medium">Alimento requerido (${plan.days} días)</span>
-                <span class="font-bold text-purple-dark dark:text-white">${(plan.requiredGrams / 1000).toFixed(2)} kg (${plan.requiredGrams} g)</span>
-            </div>
-            <div class="flex justify-between items-center">
-                <span class="text-gray-500 font-medium">Bolsas incluidas</span>
-                <span class="font-black text-purple-dark dark:text-white">${plan.bagsCount} bolsa(s)</span>
-            </div>
-            ${splitLine}
-            <div class="flex justify-between items-center pt-2 border-t border-purple-border/20">
-                <span class="text-gray-500 font-medium">Peso total comprado</span>
-                <span class="font-black text-green-dark dark:text-green">${(plan.totalGramsProvided / 1000).toFixed(2)} kg</span>
-            </div>
-            ${plan.surplusGrams > 0 ? `
-            <div class="flex justify-between items-center text-pink font-semibold">
-                <span>Sobrante descartado por conservación</span>
-                <span>${plan.surplusGrams} g</span>
-            </div>` : ''}
-
-            <!-- Base de estimación de bolsas -->
-            <div class="mt-3 pt-2.5 border-t border-purple-border/20 text-[11px] leading-relaxed text-purple-dark/80 dark:text-gray-300 bg-purple-light/50 dark:bg-purple/10 p-3 rounded-xl">
-                <div class="font-bold mb-0.5 text-purple dark:text-green">💡 Base de estimación:</div>
-                <p>${plan.basisText || 'Estimación con apertura diaria; puede generar sobrantes.'}</p>
-                ${plan.wasteExplanation ? `<p class="mt-1 text-gray-500 dark:text-gray-400">${plan.wasteExplanation}</p>` : ''}
-            </div>
-        </div>
-    `;
-
     summary.innerHTML = `
         <button id="plan-modal-choose" class="w-full ${isMonthlyModal ? 'bg-pink hover:bg-pink-dark' : 'bg-purple hover:bg-purple-dark'} text-white font-black py-4 rounded-xl text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
