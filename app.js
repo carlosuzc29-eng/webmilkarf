@@ -5523,6 +5523,14 @@ window.renderActiveFeedingPlans = function () {
                 // visual highlight
                 if (pres250) pres250.classList.toggle('pres-active', Number(size) === 250);
                 if (pres500) pres500.classList.toggle('pres-active', Number(size) === 500);
+                // update bag visual (will animate on replace)
+                try {
+                    const bagEl = card.querySelector('.plan-bag-visual');
+                    if (bagEl) {
+                        const newHtml = window.renderBagModern(window.lastCalcResult?.gramos || 0, pricing.presentationGrams || size, { size: 72 });
+                        bagEl.outerHTML = newHtml;
+                    }
+                } catch (e) { console.warn('Error updating bag visual on card', e); }
             };
 
             if (pres250) pres250.addEventListener('click', (ev) => { ev.stopPropagation(); applyPres(250); });
@@ -5719,6 +5727,14 @@ window.openPlanModal = function (days) {
                         const pres500 = cardEl.querySelector('.plan-card-pres[data-pres-size="500"]');
                         if (pres250) pres250.classList.toggle('pres-active', Number(choice) === 250);
                         if (pres500) pres500.classList.toggle('pres-active', Number(choice) === 500);
+                        // update bag visual on card
+                        try {
+                            const bagEl = cardEl.querySelector('.plan-bag-visual');
+                            if (bagEl) {
+                                const newHtml = window.renderBagModern(plan.dailyGrams, pricing.presentationGrams || choice, { size: 72 });
+                                bagEl.outerHTML = newHtml;
+                            }
+                        } catch (e) { console.warn('Error updating bag visual from modal selection', e); }
                     }
                 }
             };
