@@ -5309,7 +5309,8 @@ window.renderBagAnimationSVG = function (dailyGrams, presentationGrams, { isComp
     }
 
     // Proporción exterior 1:1 cuadrada (Tarjetas: 56x56 px | Modal: 80x80 px)
-    const sizePx = isCompact ? 56 : 80;
+    const sizePx = isCompact ? 64 : 96;
+    const variant = (arguments[2] && arguments[2].variant) || (arguments[2] && arguments[2].variant === undefined ? 'default' : 'default');
 
     const bagsSVG = showBags.map((b, idx) => {
         // En viewBox 0 0 80 80, el área útil de alimento abarca de y=16 a y=74 (58px de altura útil)
@@ -5379,6 +5380,52 @@ window.renderBagAnimationSVG = function (dailyGrams, presentationGrams, { isComp
     `;
 };
 
+// Enhanced modern single-bag visual helper
+window.renderBagModern = function (dailyGrams, presentationGrams, { size = 72 } = {}) {
+        const dG = Math.max(0, Number(dailyGrams) || 0);
+        const pG = Number(presentationGrams) > 0 ? Number(presentationGrams) : 500;
+        const pct = pG > 0 ? Math.min(100, Math.round((dG / pG) * 100 * 10) / 10) : 0;
+        const full = dG >= pG ? Math.floor(dG / pG) : 0;
+        const rem = dG % pG;
+
+        const svg = `
+        <div class="plan-bag-visual" aria-hidden="true">
+            <svg width="${size}" height="${size}" viewBox="0 0 120 120" class="block">
+                <defs>
+                    <linearGradient id="bagGrad" x1="0" x2="0" y1="1" y2="0">
+                        <stop offset="0%" stop-color="#A78BDA" />
+                        <stop offset="100%" stop-color="#7C3AED" />
+                    </linearGradient>
+                    <linearGradient id="fillGrad" x1="0" x2="0" y1="1" y2="0">
+                        <stop offset="0%" stop-color="#E9D8FD" />
+                        <stop offset="100%" stop-color="#C4B5FD" />
+                    </linearGradient>
+                    <clipPath id="bagClip">
+                        <path d="M20 18 h80 a8 8 0 0 1 8 8 v70 a14 14 0 0 1 -14 14 h-68 a14 14 0 0 1 -14 -14 v-70 a8 8 0 0 1 8 -8 z" />
+                    </clipPath>
+                </defs>
+
+                <!-- outer bag shape -->
+                <path d="M20 18 h80 a8 8 0 0 1 8 8 v70 a14 14 0 0 1 -14 14 h-68 a14 14 0 0 1 -14 -14 v-70 a8 8 0 0 1 8 -8 z" fill="url(#bagGrad)" opacity="0.95" />
+
+                <!-- inner fill clipped -->
+                <g clip-path="url(#bagClip)">
+                    <rect x="20" y="${20 + (1 - pct / 100) * 70}" width="80" height="${(pct / 100) * 70}" fill="url(#fillGrad)" />
+                </g>
+
+                <!-- subtle shine -->
+                <path d="M30 30 c10 -6 30 -6 50 0" stroke="#fff" stroke-width="1.2" opacity="0.12" fill="none" />
+
+                <!-- percentage label circle -->
+                <circle cx="100" cy="20" r="14" fill="#fff" opacity="0.96" />
+                <text x="100" y="24" font-size="10" font-weight="800" text-anchor="middle" fill="#4C1D95">${pct}%</text>
+            </svg>
+            <div class="plan-bag-caption text-xs text-gray-600 mt-1">${full > 0 ? full + ' bolsa(s) + ' + (rem > 0 ? rem + ' g' : '') : pct + '% de 1 bolsa'}</div>
+        </div>`;
+
+        return svg;
+};
+
 window.renderActiveFeedingPlans = function () {
     const grid = document.getElementById('feeding-plans-cards-grid');
     if (!grid) return;
@@ -5417,13 +5464,8 @@ window.renderActiveFeedingPlans = function () {
             </div>
 
             <!-- Animación de bolsas en versión compacta: mostrar 250g y 500g por separado -->
-            <div class="flex items-center justify-center gap-3 mt-1">
-                <div data-pres-size="250" class="plan-card-pres" title="Equivalencia en 250 g">
-                    ${window.renderBagAnimationSVG(plan.dailyGrams, 250, { isCompact: true })}
-                </div>
-                <div data-pres-size="500" class="plan-card-pres" title="Equivalencia en 500 g">
-                    ${window.renderBagAnimationSVG(plan.dailyGrams, 500, { isCompact: true })}
-                </div>
+            <div class="mt-1">
+                ${window.renderBagModern(plan.dailyGrams, plan.presentationGrams, { size: 72 })}
             </div>
 
             <div class="mt-2 w-full">

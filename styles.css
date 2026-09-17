@@ -889,9 +889,11 @@ dialog#plan-modal {
 }
 
 /* Small container styles for pair of compact presentations inside plan card */
-.plan-card-pres { width: 56px; height: 56px; display: inline-block; }
-.plan-card-pres svg { width: 56px; height: 56px; }
-.plan-card-pres:hover { transform: translateY(-3px); }
+.plan-bag-visual { display:flex; align-items:center; justify-content:center; flex-direction:column; }
+.plan-bag-visual svg { border-radius: 14px; box-shadow: 0 8px 20px rgba(124,58,237,0.12); transition: transform 220ms ease, box-shadow 220ms ease; }
+.feeding-plan-card:hover .plan-bag-visual svg { transform: translateY(-6px) scale(1.02); box-shadow: 0 16px 36px rgba(124,58,237,0.16); }
+.plan-bag-caption { color: #6b7280; font-weight:600; }
+.pres-active { box-shadow: 0 0 0 3px rgba(124,58,237,0.12); border-radius: 12px; }
 
 /* Badge "Mayor descuento" */
 .badge-major-discount {
