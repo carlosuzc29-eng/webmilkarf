@@ -5552,13 +5552,17 @@ window.openPlanModal = function (days) {
         <span class="font-bold text-purple-dark">${plan.split.polloPct}% Pollo / ${plan.split.resPct}% Res</span>
     </div>` : '';
 
+    // prepare pricing for both presentations so modal can show boxes
+    const pricing250 = window.calculatePlanConsumption(plan.dailyGrams, plan.days, plan.formula, '250gr');
+    const pricing500 = window.calculatePlanConsumption(plan.dailyGrams, plan.days, plan.formula, '500gr');
+
     body.innerHTML = `
-        <!-- Fila Compacta: Porción Diaria a la izquierda + Bolsa Cuadrada 1:1 (80x80px) a la derecha -->
+        <!-- Fila Compacta: Porción Diaria + Bolsa  -->
         <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-2xl bg-purple-light/40 dark:bg-purple/10 border border-purple-border/30 dark:border-purple/20 select-none">
             <div class="text-left">
                 <span class="text-[10px] uppercase font-bold text-purple/60 dark:text-gray-400 tracking-wider block mb-0.5">Porción diaria</span>
                 <div class="text-2xl sm:text-3xl font-black text-purple-dark dark:text-white leading-none">${plan.dailyGrams} g</div>
-                <span class="text-xs text-gray-500 dark:text-gray-300 font-medium mt-1 leading-tight block">${plan.dailyGrams} g de una bolsa de ${plan.presentation.replace('gr', ' g')}</span>
+                <span class="text-xs text-gray-500 dark:text-gray-300 font-medium mt-1 leading-tight block">${plan.dailyGrams} g de una bolsa de referencia</span>
                 ${plan.dailyGrams > plan.presentationGrams ? `<span class="text-[10px] text-purple dark:text-green font-bold block mt-1">(${Math.floor(plan.dailyGrams / plan.presentationGrams)} ${Math.floor(plan.dailyGrams / plan.presentationGrams) === 1 ? 'bolsa completa' : 'bolsas completas'}${plan.dailyGrams % plan.presentationGrams > 0 ? ` + ${Math.round(plan.dailyGrams % plan.presentationGrams)} g` : ''})</span>` : ''}
             </div>
             <div class="shrink-0 flex items-center justify-end">
@@ -5566,18 +5570,32 @@ window.openPlanModal = function (days) {
             </div>
         </div>
 
+        <!-- Selector de presentación (sincronizable con tarjeta) -->
+        <div class="mt-3 grid grid-cols-2 gap-3">
+            <div class="p-3 rounded-2xl border border-purple-border/20 text-center cursor-pointer ${plan.presentationGrams === 250 ? 'pres-active' : ''}" data-pres-select="250">
+                <div class="text-xs font-black text-purple-dark">250 g</div>
+                <div class="text-sm font-bold mt-2 modal-presentation-price">$${pricing250 ? (pricing250.finalPrice || pricing250.subtotal || 0).toFixed(2) : '—'}</div>
+                <div class="text-[11px] text-gray-500 mt-1 modal-presentation-qty">${pricing250 ? pricing250.totalBags + ' bolsa(s)' : ''}</div>
+            </div>
+            <div class="p-3 rounded-2xl border border-purple-border/20 text-center cursor-pointer ${plan.presentationGrams === 500 ? 'pres-active' : ''}" data-pres-select="500">
+                <div class="text-xs font-black text-purple-dark">500 g</div>
+                <div class="text-sm font-bold mt-2 modal-presentation-price">$${pricing500 ? (pricing500.finalPrice || pricing500.subtotal || 0).toFixed(2) : '—'}</div>
+                <div class="text-[11px] text-gray-500 mt-1 modal-presentation-qty">${pricing500 ? pricing500.totalBags + ' bolsa(s)' : ''}</div>
+            </div>
+        </div>
+
         <!-- Precio destacado -->
-        <div class="rounded-2xl bg-gradient-to-r from-purple-dark to-purple p-4 text-white flex items-center justify-between shadow-md">
+        <div class="rounded-2xl bg-gradient-to-r from-purple-dark to-purple p-4 text-white flex items-center justify-between shadow-md mt-4">
             <div>
                 <span class="text-[10px] text-green-light font-bold uppercase block mb-0.5">Precio total del plan</span>
-                <span class="text-3xl font-black text-white leading-none">$${Number(plan.finalPrice).toFixed(2)}</span>
-                <span class="block text-[11px] text-white/60 line-through mt-1">Antes: $${Number(plan.originalPrice).toFixed(2)}</span>
+                <span class="text-3xl font-black text-white leading-none modal-selected-price">$${Number(plan.finalPrice).toFixed(2)}</span>
+                <span class="block text-[11px] text-white/60 line-through mt-1 modal-original-price">Antes: $${Number(plan.originalPrice).toFixed(2)}</span>
             </div>
             <div class="text-right">
-                <span class="inline-block bg-green text-purple-dark text-xs font-black px-3 py-1.5 rounded-xl shadow-sm">
+                <span class="inline-block bg-green text-purple-dark text-xs font-black px-3 py-1.5 rounded-xl shadow-sm modal-selected-savings">
                     Ahorras $${Number(plan.savings).toFixed(2)} (-${plan.discountPercent}%)
                 </span>
-                <div class="text-[11px] text-white/80 mt-1.5 font-medium">~$${plan.costPerDay.toFixed(2)} / día</div>
+                <div class="text-[11px] text-white/80 mt-1.5 font-medium modal-cost-per-day">~$${plan.costPerDay.toFixed(2)} / día</div>
             </div>
         </div>
 
@@ -5631,6 +5649,49 @@ window.openPlanModal = function (days) {
     `;
 
     summary.querySelector('#plan-modal-choose').addEventListener('click', (e) => { e.stopPropagation(); window.selectPlanFromModal(plan.days); });
+
+    // Sincronizar selección entre modal y tarjeta
+    setTimeout(() => {
+        try {
+            const dlgEl = dlg;
+            const modalBoxes = Array.from(dlgEl.querySelectorAll('[data-pres-select]'));
+            const cardEl = document.querySelector(`.feeding-plan-card[data-plan-days="${plan.days}"]`);
+            const cardPrice = cardEl ? cardEl.querySelector('.plan-price') : null;
+            const cardSavings = cardEl ? cardEl.querySelector('.plan-savings') : null;
+
+            const applyModalChoice = (choice) => {
+                modalBoxes.forEach(b => b.classList.toggle('pres-active', b.getAttribute('data-pres-select') === String(choice)));
+                const pricing = window.calculatePlanConsumption(plan.dailyGrams, plan.days, plan.formula, choice + 'gr');
+                if (pricing) {
+                    const selPrice = dlgEl.querySelector('.modal-selected-price');
+                    const selSavings = dlgEl.querySelector('.modal-selected-savings');
+                    if (selPrice) selPrice.textContent = `$${(pricing.finalPrice || pricing.subtotal || 0).toFixed(2)}`;
+                    if (selSavings) selSavings.textContent = `Ahorras $${(pricing.discountAmount || 0).toFixed(2)} (-${pricing.discountPercent || 0}%)`;
+                    // update card visuals too
+                    if (cardEl) {
+                        cardEl.setAttribute('data-selected-pres', pricing.presentationGrams || choice);
+                        if (cardPrice) cardPrice.textContent = `$${(pricing.finalPrice || pricing.subtotal || 0).toFixed(2)}`;
+                        if (cardSavings) cardSavings.textContent = `Ahorras $${(pricing.discountAmount || 0).toFixed(2)}`;
+                        // highlight pres boxes on card
+                        const pres250 = cardEl.querySelector('.plan-card-pres[data-pres-size="250"]');
+                        const pres500 = cardEl.querySelector('.plan-card-pres[data-pres-size="500"]');
+                        if (pres250) pres250.classList.toggle('pres-active', Number(choice) === 250);
+                        if (pres500) pres500.classList.toggle('pres-active', Number(choice) === 500);
+                    }
+                }
+            };
+
+            modalBoxes.forEach(b => b.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                const choice = Number(b.getAttribute('data-pres-select')) || 500;
+                applyModalChoice(choice);
+            }));
+
+            // initialize modal selection from card or plan
+            const initial = cardEl ? Number(cardEl.getAttribute('data-selected-pres')) || plan.presentationGrams : plan.presentationGrams;
+            applyModalChoice(initial || 500);
+        } catch (e) { console.warn('Error sincronizando modal y tarjeta', e); }
+    }, 50);
 
     window._lastFocusBeforeModal = document.activeElement;
     try { if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open',''); } catch (e) { dlg.setAttribute('open',''); }
