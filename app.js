@@ -5716,7 +5716,24 @@ window.selectPlanFromModal = function (days) {
     if (!window.lastCalcResult?.gramos) { window.showToast?.('Calcula primero la porción de tu perro.'); return; }
     const formula = window.activePlanFormula || 'pollo';
     const petName = window.state.nombreMascota || 'tu perro';
-    const plan = window.buildFeedingPlan(window.lastCalcResult.gramos, days, formula, petName, window.activePlanPresentation);
+    // Prefer presentation selected in the modal (data-pres-select .pres-active), then card, then global
+    let chosenPresentation = window.activePlanPresentation || '500gr';
+    try {
+        const dlg = document.getElementById('plan-modal');
+        if (dlg) {
+            const sel = dlg.querySelector('[data-pres-select].pres-active');
+            if (sel) chosenPresentation = (Number(sel.getAttribute('data-pres-select')) || 500) + 'gr';
+        }
+        if (!dlg) {
+            const card = document.querySelector(`.feeding-plan-card[data-plan-days="${days}"]`);
+            if (card) {
+                const selCard = Number(card.getAttribute('data-selected-pres')) || null;
+                if (selCard) chosenPresentation = selCard + 'gr';
+            }
+        }
+    } catch (e) { console.warn('Error reading selected presentation for plan:', e); }
+
+    const plan = window.buildFeedingPlan(window.lastCalcResult.gramos, days, formula, petName, chosenPresentation);
     window.addFeedingPlanToCart(plan);
     window.renderActiveFeedingPlans();
     window.closePlanModal();
