@@ -9,11 +9,13 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="faviconn.png">
 
-<!-- Preconnect (CDNs de terceros) -->
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://unpkg.com">
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
-    <!-- Tipografías locales (Montserrat WOFF2 declarada en styles.css) -->
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -28,9 +30,9 @@
                         purple: { DEFAULT: '#421d8e', dark: '#2e1060', light: '#faf8ff', border: '#e8e0f0' },
                         green: { DEFAULT: '#b9cb25', dark: '#829112', light: '#f7fae6' },
                         pink: { DEFAULT: '#d72b8f', dark: '#b31c71', light: '#fff0f5' },
-                        cream: '#faf7f2', darkbg: '#0d0718', darkcard: '#180e29'
+                        cream: '#f5f0e8', darkbg: '#0d0718', darkcard: '#180e29'
                     },
-                    fontFamily: { sans: ['Montserrat', 'system-ui', 'sans-serif'] }
+                    fontFamily: { sans: ['Montserrat', 'sans-serif'] }
                 }
             }
         }
@@ -38,10 +40,10 @@
 
     <link rel="stylesheet" href="styles.css">
 </head>
-<body class="text-gray-800 dark:text-gray-200 antialiased font-sans transition-colors duration-500 bg-[#faf7f2] dark:bg-darkbg">
+<body class="text-gray-800 dark:text-gray-200 antialiased font-sans transition-colors duration-500 bg-[#f5f0e8] dark:bg-darkbg">
 
     <!-- PANTALLA DE CARGA (PRELOADER) -->
-    <div id="preloader" class="fixed inset-0 z-[99999] bg-[#faf7f2] dark:bg-darkbg flex flex-col items-center justify-center transition-opacity duration-300">
+    <div id="preloader" class="fixed inset-0 z-[99999] bg-[#f5f0e8] dark:bg-darkbg flex flex-col items-center justify-center transition-opacity duration-300">
         <div class="mb-4">
             <img decoding="async" src="logo.png" fetchpriority="high" alt="Milkarf Logo" class="w-24 h-24 object-contain animate-bounce" onerror="this.outerHTML='<div class=\'w-16 h-16 bg-purple dark:bg-darkcard rounded-3xl flex items-center justify-center shadow-lg text-white dark:border dark:border-purple/30 animate-bounce\'><i data-lucide=\'shield-check\' class=\'w-9 h-9 text-green\'></i></div>'">
         </div>
@@ -350,7 +352,8 @@
     <div id="delivery-note-capture" class="fixed left-[-9999px] top-0 w-[600px] pointer-events-none z-[-1]"></div>
 
     <!-- SCRIPTS MODULARES Y LÓGICA DE LA APLICACIÓN -->
-    <script src="https://unpkg.com/lucide@1.47.0"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script type="module" src="app.js"></script>
 
     <script>
