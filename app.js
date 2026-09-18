@@ -18,7 +18,7 @@ import { getFirestore, collection, doc, setDoc, getDoc, addDoc, getDocs, serverT
                     <div class="plan-savings text-xs text-green-dark">Ahorras $${plan.savings.toFixed(2)}</div>
                 </div>
 
-                <button type="button" class="mt-2 w-full py-2 px-3 bg-purple/10 dark:bg-purple/20 text-purple dark:text-white hover:bg-purple hover:text-white text-[12px] font-bold rounded-xl transition-all">Ver mi plan</button>
+                <button type="button" onclick="event.stopPropagation(); window.openPlanModal(${plan.days});" onkeydown="if(event.key==='Enter' || event.key===' ') { event.preventDefault(); event.stopPropagation(); window.openPlanModal(${plan.days}); }" class="mt-2 w-full py-2 px-3 bg-purple/10 dark:bg-purple/20 text-purple dark:text-white hover:bg-purple hover:text-white text-[12px] font-bold rounded-xl transition-all">Ver mi plan</button>
             </div>
 
         </div>
