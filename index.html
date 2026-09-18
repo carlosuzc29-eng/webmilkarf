@@ -9,13 +9,11 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="faviconn.png">
 
-    <!-- Preconnect -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Preconnect (CDNs de terceros) -->
     <link rel="preconnect" href="https://unpkg.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Tipografías locales (Eloura Sans + Montserrat WOFF2 declaradas en styles.css) -->
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -34,8 +32,8 @@
                         cream: '#faf7f2', darkbg: '#0d0718', darkcard: '#180e29'
                     },
                     fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'Montserrat', 'sans-serif'],
-                        display: ['"Outfit"', '"Plus Jakarta Sans"', 'sans-serif']
+                        sans: ['Montserrat', 'system-ui', 'sans-serif'],
+                        display: ['"Eloura Sans"', 'Montserrat', 'sans-serif']
                     }
                 }
             }
@@ -774,6 +772,7 @@
                                         <div class="inline-flex items-center gap-2 text-purple-dark dark:text-white font-black text-xs sm:text-sm">
                                             <span>📦 Presentación recomendada: <strong id="rec-pres-size-text" class="text-pink">250 g</strong></span>
                                         </div>
+                                        <div id="rec-pres-bag" class="mt-3"></div>
                                         <p id="rec-pres-explanation" class="text-xs text-purple-dark/80 dark:text-gray-300 font-medium mt-1.5 leading-relaxed">
                                             La elegimos según su porción diaria y el tiempo de conservación después de abrirla.
                                         </p>

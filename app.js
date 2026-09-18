@@ -5122,6 +5122,7 @@ window.loadAdminCalculadora = function () {
                             <div class="inline-flex items-center gap-2 text-purple-dark dark:text-white font-black text-xs sm:text-sm">
                                 <span>📦 Presentación recomendada: <strong id="rec-pres-size-text" class="text-pink">250 g</strong></span>
                             </div>
+                            <div id="rec-pres-bag" class="mt-3"></div>
                             <p id="rec-pres-explanation" class="text-xs text-purple-dark/80 dark:text-gray-300 font-medium mt-1.5 leading-relaxed">
                                 La elegimos según su porción diaria y el tiempo de conservación después de abrirla.
                             </p>
@@ -5285,145 +5286,136 @@ window.cambiarFormulaPlan = function (formula) {
     window.renderActiveFeedingPlans();
 };
 
-window.renderBagAnimationSVG = function (dailyGrams, presentationGrams, { isCompact = false } = {}) {
+// =========================================================================
+// COMPONENTE DE BOLSA MILKARF 2.0 (SVG reutilizable)
+// -------------------------------------------------------------------------
+// Silueta rectangular vertical (ancho/alto ≈ 0.72) con esquinas redondeadas,
+// sellado superior fino, base discreta y 3 líneas que dividen el área útil en
+// 4 intervalos iguales. El relleno sube desde la base y su nivel equivale a
+// porcion diaria / capacidad de presentación (nunca supera el 100%).
+// Los textos (porción, capacidad) viven fuera del SVG.
+// -------------------------------------------------------------------------
+
+window._bagUidCounter = 0;
+window._bagAnimByAnchor = new Map();
+
+window.animateProvisionBags = function (root, { force = false } = {}) {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const blocks = root ? root.querySelectorAll('.mka-portion-block') : document.querySelectorAll('.mka-portion-block');
+    blocks.forEach(block => {
+        const anchor = block.dataset.anchor || '';
+        const key = block.dataset.animKey || '';
+        const prev = window._bagAnimByAnchor.get(anchor);
+        const animate = force && prev !== key && !reduce;
+        window._bagAnimByAnchor.set(anchor, key);
+        block.querySelectorAll('.mka-bag-fill').forEach(rect => {
+            const lv = Math.min(1, Math.max(0, Number(rect.dataset.level) || 0));
+            if (animate) {
+                rect.style.transform = 'scaleY(0)';
+                void rect.getBoundingClientRect();
+                rect.style.transform = `scaleY(${lv})`;
+            } else {
+                rect.style.transform = `scaleY(${lv})`;
+            }
+        });
+    });
+};
+
+window.renderPortionBag = function (dailyGrams, presentationGrams, opts) {
+    const o = opts || {};
     const dG = Math.max(0, Number(dailyGrams) || 0);
     const pG = Number(presentationGrams) > 0 ? Number(presentationGrams) : 500;
+    const variant = o.variant === 'modal' ? 'modal' : 'card';
+    const uid = 'mka' + Date.now().toString(36) + (++window._bagUidCounter).toString(36);
+    const anchor = o.anchor || uid;
 
     if (dG === 0) {
-        return `<div aria-hidden="true" class="text-xs text-gray-400 font-medium select-none">0 g / ${pG} g</div>`;
+        return `<div class="text-xs text-gray-400 font-medium select-none" data-anchor="${anchor}">0 g / ${pG} g</div>`;
     }
 
-    const fullBags = Math.floor(dG / pG);
-    const remGrams = Math.round((dG % pG) * 10) / 10;
-    const remPct = remGrams > 0 ? Math.min(100, Math.round((remGrams / pG) * 100 * 10) / 10) : 0;
+    const ratio = dG / pG;
+    const level01 = Math.min(1, ratio);
+    const fullBags = Math.floor(ratio);
+    const remGrams = Math.round(((ratio - fullBags) * pG) * 10) / 10;
+    const remLevel = ratio - fullBags;
+    const animKey = `${dG}|${pG}|${variant}`;
 
-    const showBags = [];
-    if (dG <= pG) {
-        const pct = Math.min(100, Math.round((dG / pG) * 100 * 10) / 10);
-        showBags.push({ fillPct: pct });
-    } else {
-        showBags.push({ fillPct: 100 });
-        if (remGrams > 0) {
-            showBags.push({ fillPct: remPct });
-        }
-    }
+    // Tamaños por variante (la bolsa mide ~0.72·alto dentro del viewBox 0.811)
+    const single = variant === 'modal' ? { w: 68, h: 83 } : { w: 50, h: 61 };
+    const pair = variant === 'modal' ? { w: 44, h: 55 } : { w: 34, h: 43 };
 
-    // Proporción exterior 1:1 cuadrada (Tarjetas: 56x56 px | Modal: 80x80 px)
-    const sizePx = isCompact ? 64 : 96;
-    const variant = (arguments[2] && arguments[2].variant) || (arguments[2] && arguments[2].variant === undefined ? 'default' : 'default');
-
-    const bagsSVG = showBags.map((b, idx) => {
-        // En viewBox 0 0 80 80, el área útil de alimento abarca de y=16 a y=74 (58px de altura útil)
-        const fillHeight = Math.round((58 * b.fillPct) / 100 * 10) / 10;
-        const fillY = 74 - fillHeight;
-        const clipId = `sq-pouch-clip-${Math.random().toString(36).slice(2, 7)}-${idx}`;
+    const bag = (level, bagUid, wh) => {
+        const lv = Math.min(1, Math.max(0, Number(level) || 0));
         return `
-        <div class="relative inline-flex flex-col items-center">
-            <svg width="${sizePx}" height="${sizePx}" viewBox="0 0 80 80" class="overflow-visible select-none shrink-0" aria-hidden="true">
-                <defs>
-                    <clipPath id="${clipId}">
-                        <rect x="6" y="16" width="68" height="58" rx="10" ry="10" />
-                    </clipPath>
-                    <linearGradient id="sqPouchGrad_${idx}" x1="0" y1="1" x2="0" y2="0">
-                        <stop offset="0%" stop-color="#C4B5FD" />
-                        <stop offset="100%" stop-color="#8B5CF6" />
-                    </linearGradient>
-                </defs>
+        <svg class="mka-bag-svg" width="${wh.w}" height="${wh.h}" viewBox="0 0 86 106" aria-hidden="true">
+            <defs>
+                <clipPath id="${bagUid}-clip"><rect x="7" y="4" width="64" height="98" rx="7"/></clipPath>
+                <linearGradient id="${bagUid}-fill" x1="0" y1="1" x2="0" y2="0">
+                    <stop offset="0%" stop-color="var(--bag-fill-bottom)"/>
+                    <stop offset="100%" stop-color="var(--bag-fill-top)"/>
+                </linearGradient>
+            </defs>
+            <!-- Contorno + interior lavanda -->
+            <rect x="7" y="4" width="64" height="98" rx="7" fill="var(--bag-interior)" stroke="var(--bag-stroke)" stroke-width="1.2"/>
+            <!-- Sellado superior fino -->
+            <rect x="12" y="8" width="56" height="5" rx="2" fill="var(--bag-seal)"/>
+            <path class="mka-bag-line" d="M12 15.5 H68"/>
+            <!-- Relleno continuo recortado al contorno (origen en la base) -->
+            <g clip-path="url(#${bagUid}-clip)">
+                <rect class="mka-bag-fill" data-level="${lv.toFixed(4)}" x="8" y="16" width="62" height="76" fill="url(#${bagUid}-fill)" style="transform-box:view-box;transform-origin:39px 92px;transform:scaleY(${lv});"/>
+            </g>
+            <!-- Cuatro divisiones iguales (25 / 50 / 75 % del área útil) -->
+            <path class="mka-bag-line" d="M12 35 H68"/>
+            <path class="mka-bag-line-strong" d="M12 54 H68"/>
+            <path class="mka-bag-line" d="M12 73 H68"/>
+            <!-- Base discretamente definida -->
+            <rect x="12" y="95" width="56" height="4.5" rx="2" fill="var(--bag-seal)" opacity="0.7"/>
+            <path class="mka-bag-line" d="M12 94.5 H68" opacity="0.5"/>
+        </svg>`;
+    };
 
-                <!-- Silueta cuadrada exterior de la bolsa (1:1 con esquinas redondeadas) -->
-                <rect x="6" y="6" width="68" height="68" rx="12" ry="12" fill="#F3EEFF" stroke="#A78BDA" stroke-width="1.8" class="dark:fill-[#1f1338] dark:stroke-[#8B5CF6]" />
-
-                <!-- Sellado superior discreto e integrado -->
-                <path d="M 6 16 L 74 16" stroke="#A78BDA" stroke-width="1.5" opacity="0.8" class="dark:stroke-[#8B5CF6]" />
-                <path d="M 8 19 L 72 19" stroke="#A78BDA" stroke-width="1" stroke-dasharray="2 2" opacity="0.5" class="dark:stroke-[#8B5CF6]" />
-
-                <!-- Relleno animado vertical recortado exactamente en el contorno -->
-                <g clip-path="url(#${clipId})">
-                    <rect class="bag-fill-anim" x="6" y="${fillY}" width="68" height="${fillHeight}" fill="url(#sqPouchGrad_${idx})" style="transition: y 450ms ease-out, height 450ms ease-out;" />
-                </g>
-
-                <!-- 4 divisiones iguales (3 líneas horizontales en 25%, 50% y 75% del área útil) -->
-                <path d="M 6 59.5 L 74 59.5" stroke="#A78BDA" stroke-width="1" opacity="0.45" class="dark:stroke-[#8B5CF6]" />
-                <path d="M 6 45.0 L 74 45.0" stroke="#A78BDA" stroke-width="1.4" opacity="0.75" class="dark:stroke-[#8B5CF6]" />
-                <path d="M 6 30.5 L 74 30.5" stroke="#A78BDA" stroke-width="1" opacity="0.45" class="dark:stroke-[#8B5CF6]" />
-
-                <!-- Detalle discreto de huella central -->
-                <g transform="translate(40, 45) scale(0.7)" opacity="0.3" fill="#A78BDA" class="dark:fill-[#C4B5FD]">
-                    <ellipse cx="0" cy="4" rx="4" ry="3" />
-                    <circle cx="-5" cy="-2" r="1.8" />
-                    <circle cx="-1.8" cy="-5" r="1.8" />
-                    <circle cx="1.8" cy="-5" r="1.8" />
-                    <circle cx="5" cy="-2" r="1.8" />
-                </g>
-
-                <!-- Contorno exterior para bordes limpios -->
-                <rect x="6" y="6" width="68" height="68" rx="12" ry="12" fill="none" stroke="#A78BDA" stroke-width="1.8" class="dark:stroke-[#8B5CF6]" />
-            </svg>
-        </div>
-        `;
-    }).join('');
-
-    let textSummary = '';
-    if (dG <= pG) {
-        textSummary = `Porción diaria: ${dG} g en bolsa de ${pG} g (${Math.round((dG / pG) * 100)}%)`;
+    let cap;
+    const bagWord = (n) => (n === 1 ? 'bolsa' : 'bolsas');
+    if (ratio <= 1) {
+        cap = `De una bolsa de ${pG} g`;
+    } else if (remGrams > 0) {
+        cap = `${fullBags} ${bagWord(fullBags)} de ${pG} g + ${remGrams} g`;
     } else {
-        textSummary = `Porción diaria: ${fullBags} ${fullBags === 1 ? 'bolsa completa' : 'bolsas completas'}${remGrams > 0 ? ` + ${remGrams} g de otra` : ''}`;
+        cap = `${fullBags} ${bagWord(fullBags)} de ${pG} g`;
+    }
+
+    let bagsHtml;
+    if (ratio <= 1) {
+        bagsHtml = `<div class="mka-portion-bag">${bag(level01, uid, single)}</div>`;
+    } else {
+        bagsHtml = `
+        <div class="mka-portion-bag-stack">
+            <div class="mka-portion-bag">
+                ${bag(1, uid + 'f', pair)}
+                ${fullBags > 1 ? `<span class="mka-bag-multiplier">×${fullBags}</span>` : ''}
+            </div>
+            ${remLevel > 0.01 ? `<div class="mka-portion-bag">${bag(remLevel, uid + 'r', pair)}</div>` : ''}
+        </div>`;
     }
 
     return `
-    <div class="bag-animation-container inline-flex items-center justify-center select-none" aria-hidden="true">
-        <div class="sr-only">${textSummary}</div>
-        <div class="flex items-center justify-center gap-2" aria-hidden="true">
-            ${bagsSVG}
+    <div class="mka-portion-block ${variant}" data-anchor="${anchor}" data-anim-key="${animKey}">
+        <div class="mka-portion-info min-w-0">
+            <span class="mka-portion-label">Porción diaria</span>
+            <strong class="mka-portion-grams">${dG} g</strong>
+            <span class="mka-portion-cap">${cap}</span>
         </div>
-    </div>
-    `;
+        ${bagsHtml}
+    </div>`;
 };
 
-// Enhanced modern single-bag visual helper
-window.renderBagModern = function (dailyGrams, presentationGrams, { size = 72 } = {}) {
-        const dG = Math.max(0, Number(dailyGrams) || 0);
-        const pG = Number(presentationGrams) > 0 ? Number(presentationGrams) : 500;
-        const pct = pG > 0 ? Math.min(100, Math.round((dG / pG) * 100 * 10) / 10) : 0;
-        const full = dG >= pG ? Math.floor(dG / pG) : 0;
-        const rem = dG % pG;
+// Alias hacia el componente unificado (por compatibilidad de llamadas previas)
+window.renderBagAnimationSVG = function (dailyGrams, presentationGrams, opts) {
+    return window.renderPortionBag(dailyGrams, presentationGrams, Object.assign({}, opts || {}, { variant: 'modal' }));
+};
 
-        const svg = `
-        <div class="plan-bag-visual" aria-hidden="true">
-            <svg width="${size}" height="${size}" viewBox="0 0 120 120" class="block">
-                <defs>
-                    <linearGradient id="bagGrad" x1="0" x2="0" y1="1" y2="0">
-                        <stop offset="0%" stop-color="#A78BDA" />
-                        <stop offset="100%" stop-color="#7C3AED" />
-                    </linearGradient>
-                    <linearGradient id="fillGrad" x1="0" x2="0" y1="1" y2="0">
-                        <stop offset="0%" stop-color="#E9D8FD" />
-                        <stop offset="100%" stop-color="#C4B5FD" />
-                    </linearGradient>
-                    <clipPath id="bagClip">
-                        <path d="M20 18 h80 a8 8 0 0 1 8 8 v70 a14 14 0 0 1 -14 14 h-68 a14 14 0 0 1 -14 -14 v-70 a8 8 0 0 1 8 -8 z" />
-                    </clipPath>
-                </defs>
-
-                <!-- outer bag shape -->
-                <path d="M20 18 h80 a8 8 0 0 1 8 8 v70 a14 14 0 0 1 -14 14 h-68 a14 14 0 0 1 -14 -14 v-70 a8 8 0 0 1 8 -8 z" fill="url(#bagGrad)" opacity="0.95" />
-
-                <!-- inner fill clipped -->
-                <g clip-path="url(#bagClip)">
-                    <rect x="20" y="${20 + (1 - pct / 100) * 70}" width="80" height="${(pct / 100) * 70}" fill="url(#fillGrad)" />
-                </g>
-
-                <!-- subtle shine -->
-                <path d="M30 30 c10 -6 30 -6 50 0" stroke="#fff" stroke-width="1.2" opacity="0.12" fill="none" />
-
-                <!-- percentage label circle -->
-                <circle cx="100" cy="20" r="14" fill="#fff" opacity="0.96" />
-                <text x="100" y="24" font-size="10" font-weight="800" text-anchor="middle" fill="#4C1D95">${pct}%</text>
-            </svg>
-            <div class="plan-bag-caption text-xs text-gray-600 mt-1">${full > 0 ? full + ' bolsa(s) + ' + (rem > 0 ? rem + ' g' : '') : pct + '% de 1 bolsa'}</div>
-        </div>`;
-
-        return svg;
+window.renderBagModern = function (dailyGrams, presentationGrams, opts) {
+    return window.renderPortionBag(dailyGrams, presentationGrams, Object.assign({}, opts || {}, { variant: 'card' }));
 };
 
 window.renderActiveFeedingPlans = function () {
@@ -5451,32 +5443,33 @@ window.renderActiveFeedingPlans = function () {
         const isSelected = isSelectedInCart || (!anyPlanForPet && plan.days === recommendedPlanDays);
 
         return `
-        <div role="button" tabindex="0" aria-pressed="${isSelected ? 'true' : 'false'}" data-plan-days="${plan.days}" data-selected-pres="${plan.presentationGrams}" class="feeding-plan-card ${isSelected ? 'selected' : ''} bg-white dark:bg-darkcard rounded-2xl p-3 border border-purple-border/50 dark:border-purple/20 shadow-sm text-center flex flex-col justify-between items-center transition-all cursor-pointer hover:-translate-y-1 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple relative" onclick="window.openPlanModal(${plan.days})" onkeydown="if(event.key==='Enter' || event.key===' ') { event.preventDefault(); window.openPlanModal(${plan.days}); }">
-            
-            ${isMonthly ? '<div class="absolute top-0 left-0 right-0 bg-pink text-white text-[9px] font-black uppercase py-0.5 tracking-widest rounded-t-xl">Recomendado</div>' : ''}
+        <div role="button" tabindex="0" aria-pressed="${isSelected ? 'true' : 'false'}" data-plan-days="${plan.days}" data-selected-pres="${plan.presentationGrams}" class="feeding-plan-card ${isSelected ? 'selected' : ''} bg-white dark:bg-darkcard rounded-2xl p-3 border border-purple-border/50 dark:border-purple/20 shadow-sm text-left flex flex-col transition-all cursor-pointer hover:-translate-y-1 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple relative" onclick="window.openPlanModal(${plan.days})" onkeydown="if(event.key==='Enter' || event.key===' ') { event.preventDefault(); window.openPlanModal(${plan.days}); }">
 
-            <div class="flex flex-col items-center mt-3 mb-1">
-                <span class="inline-block px-2 py-0.5 rounded-lg text-[10px] font-black bg-purple-light dark:bg-purple/20 text-purple dark:text-white mb-1">
-                    ${discountPct} dcto.
-                </span>
-                <h4 class="text-xs sm:text-sm font-black text-purple-dark dark:text-white tracking-tight leading-none">${shortName}</h4>
-                <span class="text-[9px] text-gray-500 font-medium mt-0.5">${plan.days} días</span>
+            ${isMonthly ? '<div class="absolute top-0 left-0 right-0 bg-pink text-white text-[8px] font-black uppercase pt-1 pb-0.5 px-3 tracking-widest" style="border-radius:14px 14px 0 0">Recomendado</div>' : ''}
+
+            <div class="flex items-start justify-between gap-2 ${isMonthly ? 'mt-6' : 'mt-0.5'}">
+                <div class="min-w-0">
+                    <h4 class="plan-card-name text-sm sm:text-base text-purple-dark dark:text-white leading-tight">${shortName}</h4>
+                    <span class="plan-card-days text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">${plan.days} días</span>
+                </div>
+                <span class="inline-flex shrink-0 items-center px-1.5 py-1 rounded-md text-[10px] font-bold bg-purple-light dark:bg-purple/20 text-purple dark:text-white">${discountPct} dcto.</span>
             </div>
 
-            <!-- Animación de bolsas en versión compacta: mostrar 250g y 500g por separado -->
-            <div class="mt-1">
-                ${window.renderBagModern(plan.dailyGrams, plan.presentationGrams, { size: 72 })}
-            </div>
+            <!-- Porción diaria + ilustración de bolsa (bolsa a la derecha, sin marco decorativo) -->
+            ${window.renderPortionBag(plan.dailyGrams, plan.presentationGrams, { variant: 'card', anchor: 'card-' + plan.days })}
 
-            <div class="mt-2 w-full">
-                <span class="plan-price text-lg sm:text-xl font-black text-purple-dark dark:text-white tracking-tight leading-none block">$${plan.finalPrice.toFixed(2)}</span>
-                <span class="plan-savings text-[9px] font-black text-green-dark block mt-0.5">Ahorras $${plan.savings.toFixed(2)}</span>
-                <button type="button" class="mt-2 w-full py-1 px-2 bg-purple/10 dark:bg-purple/20 text-purple dark:text-white hover:bg-purple hover:text-white text-[10px] font-bold rounded-lg transition-all">Ver mi plan</button>
+            <div class="mt-2 flex items-end justify-between gap-2 w-full">
+                <div class="min-w-0">
+                    <span class="plan-price text-lg font-black text-purple-dark dark:text-white tracking-tight leading-none block">$${plan.finalPrice.toFixed(2)}</span>
+                    <span class="plan-savings text-[10px] font-bold text-green-dark dark:text-green block mt-1">Ahorras $${plan.savings.toFixed(2)}</span>
+                </div>
+                <button type="button" class="shrink-0 py-2 px-3 bg-purple/10 dark:bg-purple/20 text-purple dark:text-white hover:bg-purple hover:text-white text-[11px] font-bold rounded-lg transition-all">Ver mi plan</button>
             </div>
         </div>
         `;
     }).join('');
     if (window.lucide) window.lucide.createIcons({ root: grid });
+    window.animateProvisionBags(grid, { force: true });
 
     // Asegurar visualmente la selección: aplicar la clase selected a los elementos renderizados
     try {
@@ -5499,7 +5492,7 @@ window.renderActiveFeedingPlans = function () {
 
     window.renderPresentationSelector?.();
 
-    // Hacer que cada icono de presentación dentro de la tarjeta sea interactivo
+    // Mantener sincronizada la presentación de cada tarjeta con su bolsa
     try {
         const cardEls2 = Array.from(grid.querySelectorAll('.feeding-plan-card'));
         cardEls2.forEach(card => {
@@ -5523,20 +5516,19 @@ window.renderActiveFeedingPlans = function () {
                 // visual highlight
                 if (pres250) pres250.classList.toggle('pres-active', Number(size) === 250);
                 if (pres500) pres500.classList.toggle('pres-active', Number(size) === 500);
-                // update bag visual (will animate on replace)
+                // update bag visual (animará solo si cambia el nivel)
                 try {
-                    const bagEl = card.querySelector('.plan-bag-visual');
-                    if (bagEl) {
-                        const newHtml = window.renderBagModern(window.lastCalcResult?.gramos || 0, pricing.presentationGrams || size, { size: 72 });
-                        bagEl.outerHTML = newHtml;
+                    const block = card.querySelector('.mka-portion-block');
+                    if (block) {
+                        const newHtml = window.renderPortionBag(window.lastCalcResult?.gramos || 0, pricing.presentationGrams || size, { variant: 'card', anchor: 'card-' + days });
+                        block.outerHTML = newHtml;
+                        window.animateProvisionBags(card, { force: true });
                     }
                 } catch (e) { console.warn('Error updating bag visual on card', e); }
             };
 
-            if (pres250) pres250.addEventListener('click', (ev) => { ev.stopPropagation(); applyPres(250); });
-            if (pres500) pres500.addEventListener('click', (ev) => { ev.stopPropagation(); applyPres(500); });
-
-            // initialize visuals based on data-selected-pres
+            // initialize visuals based on data-selected-pres (la presentación
+            // sugerida ya viene del plan; aquí se sincroniza precio y nivel)
             const initial = Number(card.getAttribute('data-selected-pres')) || Number(window.recommendPresentation(window.lastCalcResult?.gramos || 0, formula).size) || 500;
             applyPres(initial === 500 ? 500 : 250);
         });
@@ -5607,17 +5599,9 @@ window.openPlanModal = function (days) {
     const pricing500 = window.calculatePlanConsumption(plan.dailyGrams, plan.days, plan.formula, '500gr');
 
     body.innerHTML = `
-        <!-- Fila Compacta: Porción Diaria + Bolsa  -->
-        <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-2xl bg-purple-light/40 dark:bg-purple/10 border border-purple-border/30 dark:border-purple/20 select-none">
-            <div class="text-left">
-                <span class="text-[10px] uppercase font-bold text-purple/60 dark:text-gray-400 tracking-wider block mb-0.5">Porción diaria</span>
-                <div class="text-2xl sm:text-3xl font-black text-purple-dark dark:text-white leading-none">${plan.dailyGrams} g</div>
-                <span class="text-xs text-gray-500 dark:text-gray-300 font-medium mt-1 leading-tight block">${plan.dailyGrams} g de una bolsa de referencia</span>
-                ${plan.dailyGrams > plan.presentationGrams ? `<span class="text-[10px] text-purple dark:text-green font-bold block mt-1">(${Math.floor(plan.dailyGrams / plan.presentationGrams)} ${Math.floor(plan.dailyGrams / plan.presentationGrams) === 1 ? 'bolsa completa' : 'bolsas completas'}${plan.dailyGrams % plan.presentationGrams > 0 ? ` + ${Math.round(plan.dailyGrams % plan.presentationGrams)} g` : ''})</span>` : ''}
-            </div>
-            <div class="shrink-0 flex items-center justify-end">
-                ${window.renderBagAnimationSVG(plan.dailyGrams, plan.presentationGrams, { isCompact: false })}
-            </div>
+        <!-- Fila Compacta: Porción Diaria + Bolsa (ilustración lateral, sin marco decorativo) -->
+        <div class="rounded-2xl bg-purple-light/40 dark:bg-purple/10 border border-purple-border/30 dark:border-purple/20 p-3.5 sm:p-4 select-none">
+            ${window.renderPortionBag(plan.dailyGrams, plan.presentationGrams, { variant: 'modal', anchor: 'plan-modal' })}
         </div>
 
         <!-- Selector de presentación (sincronizable con tarjeta) -->
@@ -5690,6 +5674,7 @@ window.openPlanModal = function (days) {
             </div>
         </div>
     `;
+    window.animateProvisionBags(body, { force: true });
 
     summary.innerHTML = `
         <button id="plan-modal-choose" class="w-full ${isMonthlyModal ? 'bg-pink hover:bg-pink-dark' : 'bg-purple hover:bg-purple-dark'} text-white font-black py-4 rounded-xl text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg">
@@ -5717,6 +5702,14 @@ window.openPlanModal = function (days) {
                     const selSavings = dlgEl.querySelector('.modal-selected-savings');
                     if (selPrice) selPrice.textContent = `$${(pricing.finalPrice || pricing.subtotal || 0).toFixed(2)}`;
                     if (selSavings) selSavings.textContent = `Ahorras $${(pricing.discountAmount || 0).toFixed(2)} (-${pricing.discountPercent || 0}%)`;
+                    // update bag visuals (modal y tarjeta) con la presentación elegida
+                    const presGrams = pricing.presentationGrams || choice;
+                    try {
+                        const modalBlock = dlgEl.querySelector('.mka-portion-block[data-anchor="plan-modal"]');
+                        if (modalBlock) {
+                            modalBlock.outerHTML = window.renderPortionBag(plan.dailyGrams, presGrams, { variant: 'modal', anchor: 'plan-modal' });
+                        }
+                    } catch (e) { console.warn('Error updating bag visual in modal', e); }
                     // update card visuals too
                     if (cardEl) {
                         cardEl.setAttribute('data-selected-pres', pricing.presentationGrams || choice);
@@ -5729,13 +5722,14 @@ window.openPlanModal = function (days) {
                         if (pres500) pres500.classList.toggle('pres-active', Number(choice) === 500);
                         // update bag visual on card
                         try {
-                            const bagEl = cardEl.querySelector('.plan-bag-visual');
-                            if (bagEl) {
-                                const newHtml = window.renderBagModern(plan.dailyGrams, pricing.presentationGrams || choice, { size: 72 });
-                                bagEl.outerHTML = newHtml;
+                            const block = cardEl.querySelector('.mka-portion-block');
+                            if (block) {
+                                block.outerHTML = window.renderPortionBag(plan.dailyGrams, presGrams, { variant: 'card', anchor: 'card-' + plan.days });
                             }
                         } catch (e) { console.warn('Error updating bag visual from modal selection', e); }
                     }
+                    // Animamos todos los bloques recién renderizados (modal + tarjeta)
+                    window.animateProvisionBags(document, { force: true });
                 }
             };
 
@@ -6002,6 +5996,12 @@ window.calcularRacion = function () {
     const rec = window.recommendPresentation(gramos, window.activePlanFormula || 'pollo');
     const recTextEl = document.getElementById('rec-pres-size-text');
     if (recTextEl) recTextEl.textContent = rec.label;
+    // Ilustración de bolsa en el resultado (porción vs presentación recomendada)
+    const recBagEl = document.getElementById('rec-pres-bag');
+    if (recBagEl) {
+        recBagEl.innerHTML = window.renderPortionBag(gramos, rec.grams, { variant: 'card', anchor: 'calc-result' });
+        window.animateProvisionBags(recBagEl, { force: true });
+    }
     const recExpEl = document.getElementById('rec-pres-explanation');
     if (recExpEl) {
         if (rec.available) {

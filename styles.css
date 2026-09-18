@@ -1,4 +1,65 @@
 /* Estilos visuales extraídos de index.html - Milkarf 2.0 */
+
+/* ==========================================================================
+   TIPOGRAFÍA MILKARF 2.0 — Eloura Sans (títulos) + Montserrat (interfaz)
+   Las fuentes WOFF2 se sirven localmente desde /fonts/
+   ========================================================================== */
+@font-face {
+    font-family: 'Eloura Sans';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('fonts/eloura-sans.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('fonts/montserrat-400.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('fonts/montserrat-500.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('fonts/montserrat-600.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('fonts/montserrat-700.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('fonts/montserrat-800.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 900;
+    font-display: swap;
+    src: url('fonts/montserrat-900.woff2') format('woff2');
+}
+
 :root {
     --color-purple: #421d8e;
     --color-purple-dark: #2e1060;
@@ -17,6 +78,18 @@
     --radius-md: 14px;
     --radius-lg: 20px;
     --radius-xl: 28px;
+
+    /* Tokens de tipografía */
+    --font-heading: 'Eloura Sans', 'Montserrat', system-ui, sans-serif;
+    --font-body: 'Montserrat', system-ui, -apple-system, sans-serif;
+
+    /* Escala responsive (se ajusta según la forma real de Eloura Sans) */
+    --text-hero: clamp(28px, 6.4vw, 46px);
+    --text-title: clamp(24px, 4.6vw, 34px);
+    --text-section: clamp(22px, 3.6vw, 28px);
+    --text-card: clamp(18px, 2.6vw, 22px);
+    --text-body: 15px;
+    --text-small: 13px;
 }
 
 html,
@@ -32,6 +105,7 @@ body {
 body {
     position: relative;
     background-color: #faf7f2;
+    font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -350,7 +424,7 @@ input[type=date] {
 .delivery-capture-card {
     width: 800px;
     background: #faf7f2;
-    font-family: 'Plus Jakarta Sans', 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     color: #421d8e;
     padding: 40px;
     box-sizing: border-box;
@@ -888,11 +962,186 @@ dialog#plan-modal {
     color: #421d8e;
 }
 
-/* Small container styles for pair of compact presentations inside plan card */
-.plan-bag-visual { display:flex; align-items:center; justify-content:center; flex-direction:column; }
-.plan-bag-visual svg { border-radius: 14px; box-shadow: 0 8px 20px rgba(124,58,237,0.12); transition: transform 220ms ease, box-shadow 220ms ease; }
-.feeding-plan-card:hover .plan-bag-visual svg { transform: translateY(-6px) scale(1.02); box-shadow: 0 16px 36px rgba(124,58,237,0.16); }
-.plan-bag-caption { color: #6b7280; font-weight:600; }
+/* Tarjetas de planes 2.0 — tipografía y jerarquía coherentes */
+.feeding-plan-card .plan-card-name {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    letter-spacing: 0;
+}
+.feeding-plan-card .plan-card-days {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+.feeding-plan-card .plan-price,
+.feeding-plan-card .plan-savings {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   ILUSTRACIÓN DE BOLSA MILKARF 2.0 — silueta rectangular 0.72
+   Componente SVG reutilizable (renderizado por renderPortionBag en app.js)
+   ========================================================================== */
+
+/* Tokens de color de la bolsa (convención: fondo claro / oscuro del sistema) */
+.mka-portion-block {
+    --bag-interior: #f5f0fc;            /* lavanda muy claro (área vacía) */
+    --bag-stroke: #b39ade;              /* contorno violeta suave */
+    --bag-fill-top: #b48fe8;            /* morado moderado (tope) */
+    --bag-fill-bottom: #8050cf;         /* morado moderado (base) */
+    --bag-seal: #e6dcf6;                /* sellados superior e inferior */
+    --bag-line: rgba(74, 42, 150, 0.32);
+    --bag-line-mid: rgba(74, 42, 150, 0.46);
+    --bag-line-over: rgba(255, 255, 255, 0.38);
+    --bag-shade: rgba(66, 29, 142, 0.16);
+}
+
+@media (prefers-color-scheme: dark) {
+    .mka-portion-block {
+        --bag-interior: #201232;
+        --bag-stroke: #9681cc;
+        --bag-fill-top: #9d7ad6;
+        --bag-fill-bottom: #6f44bf;
+        --bag-seal: #2c1b47;
+        --bag-line: rgba(196, 178, 236, 0.30);
+        --bag-line-mid: rgba(210, 194, 242, 0.45);
+        --bag-line-over: rgba(40, 20, 66, 0.35);
+        --bag-shade: rgba(0, 0, 0, 0.35);
+    }
+}
+
+.mka-bag-svg {
+    display: block;
+    filter: drop-shadow(0 1px 2px var(--bag-shade));
+    overflow: visible;
+}
+
+/* Nivel de llenado: animación suave del tope con origen en la base.
+   La geometría se anima vía transform para máxima compatibilidad. */
+.mka-bag-fill {
+    transform-box: view-box;
+    transform-origin: 39px 92px;
+    transition: transform 450ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+}
+
+/* Líneas divisorias: discretas, visibles sobre vacío y lleno */
+.mka-bag-line {
+    stroke: var(--bag-line);
+    stroke-width: 0.9;
+    stroke-linecap: round;
+}
+.mka-bag-line-strong {
+    stroke: var(--bag-line-mid);
+    stroke-width: 1.1;
+    stroke-linecap: round;
+}
+.mka-bag-line-over {
+    stroke: var(--bag-line-over);
+    stroke-width: 0.9;
+    stroke-linecap: round;
+}
+
+/* Envoltura del bloque porción + bolsa (tarjeta y modal) */
+.mka-portion-block {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    min-width: 0;
+}
+.mka-portion-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(66, 29, 142, 0.62);
+    margin-bottom: 3px;
+}
+@media (prefers-color-scheme: dark) {
+    .mka-portion-label { color: rgba(224, 214, 244, 0.7); }
+}
+.mka-portion-grams {
+    display: block;
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1;
+    color: #421d8e;
+    font-variant-numeric: tabular-nums;
+}
+@media (prefers-color-scheme: dark) {
+    .mka-portion-grams { color: #ffffff; }
+}
+/* Compacto para tarjetas: texto algo menor, misma jerarquía */
+.mka-portion-block.card .mka-portion-label { font-size: 9px; }
+.mka-portion-block.card .mka-portion-grams { font-size: 21px; }
+.mka-portion-block.card .mka-portion-cap { font-size: 10.5px; margin-top: 3px; }
+.mka-portion-cap {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.35;
+    color: rgba(60, 50, 90, 0.7);
+}
+@media (prefers-color-scheme: dark) {
+    .mka-portion-cap { color: rgba(216, 205, 236, 0.75); }
+}
+.mka-portion-bag {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    flex-shrink: 0;
+}
+.mka-portion-bag-stack {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+}
+.mka-bag-multiplier {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: #421d8e;
+    background: rgba(66, 29, 142, 0.10);
+    line-height: 1;
+}
+@media (prefers-color-scheme: dark) {
+    .mka-bag-multiplier {
+        color: #e5dbf6;
+        background: rgba(165, 140, 220, 0.22);
+    }
+}
+
+/* Cifras tabulares para importes y cantidades */
+.tnum {
+    font-variant-numeric: tabular-nums;
+}
+
+.tnum-normal {
+    font-variant-numeric: normal;
+}
+
+/* Reemplaza el contenedor decorativo cuadrado anterior */
+.plan-bag-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.plan-bag-visual svg {
+    box-shadow: none;
+}
+.plan-bag-caption { display: none; }
 .pres-active { box-shadow: 0 0 0 3px rgba(124,58,237,0.12); border-radius: 12px; }
 
 /* Badge "Mayor descuento" */
@@ -1004,9 +1253,13 @@ dialog#plan-modal {
     transform: rotate(180deg);
 }
 
-/* Tipografía de display con personalidad (Bone Appetit style) */
+/* Tipografía de display con personalidad (Eloura Sans — única variante Regular
+   disponible). Mantenemos el peso real de la fuente para evitar negritas
+   sintéticas; la jerarquía se apoya en tamaño, color y espaciado. */
 .font-display {
-    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif !important;
+    font-family: var(--font-heading) !important;
+    font-weight: 400 !important;
+    letter-spacing: -0.015em;
 }
 
 /* Elevación y suavizado de sombras para tarjetas de producto */
@@ -1557,7 +1810,8 @@ dialog#plan-modal {
     .plan-pres-btn,
     .plan-pres-btn .plan-pres-check,
     #tu-resultado [data-pres-box],
-    .bag-fill-anim {
+    .bag-fill-anim,
+    .mka-bag-fill {
         transition: none !important;
         transform: none !important;
     }
