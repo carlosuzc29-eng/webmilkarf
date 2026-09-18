@@ -1,30 +1,28 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, linkWithCredential, EmailAuthProvider, signOut, signInWithCustomToken, signInAnonymously, setPersistence, browserLocalPersistence, updateProfile, sendPasswordResetEmail, verifyPasswordResetCode, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, collection, doc, setDoc, getDoc, addDoc, getDocs, serverTimestamp, onSnapshot, deleteDoc, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        return `
+        <div role="button" tabindex="0" aria-pressed="${isSelected ? 'true' : 'false'}" data-plan-days="${plan.days}" data-selected-pres="${plan.presentationGrams}" class="feeding-plan-card compact-plan ${isSelected ? 'selected' : ''} bg-white dark:bg-darkcard rounded-2xl p-3 border border-purple-border/50 dark:border-purple/20 shadow-sm text-center transition-all cursor-pointer hover:-translate-y-1 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple relative" onclick="window.openPlanModal(${plan.days})" onkeydown="if(event.key==='Enter' || event.key===' ') { event.preventDefault(); window.openPlanModal(${plan.days}); }">
 
-// =========================================================================================
-// CONFIGURACIÓN FIREBASE
-// =========================================================================================
-const manualConfig = {
-    apiKey: "AIzaSyAeojblQAbiM6mo6H6KsNNdJE_00LQIKTE",
-    authDomain: "milkarf-app.firebaseapp.com",
-    projectId: "milkarf-app",
-    storageBucket: "milkarf-app.firebasestorage.app",
-    messagingSenderId: "679165501514",
-    appId: "1:679165501514:web:4f43bf63d6945f9c9806b3"
-};
+            ${isMonthly ? '<div class="absolute top-0 left-0 right-0 bg-pink text-white text-[9px] font-black uppercase py-0.5 tracking-widest rounded-t-xl">Recomendado</div>' : ''}
 
-const configToUse = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : manualConfig;
-let db = null;
-let auth = null;
-let appId = typeof __app_id !== 'undefined' ? __app_id : 'milkarf-app';
-const ADMIN_EMAILS = [
-    'milkarffood@gmail.com',
-    'carlosauv11@gmail.com'
-];
-window.ADMIN_EMAILS = ADMIN_EMAILS;
+            <div class="compact-plan-inner flex flex-col items-center gap-2 py-2">
+                <span class="discount-pill">${discountPct} dcto.</span>
+                <div class="plan-card-name text-sm font-black text-purple-dark dark:text-white">${shortName}</div>
+                <div class="plan-card-days text-[11px] text-gray-500">${plan.days} días</div>
 
-window.checkIsAdminDynamic = async function(email) {
+                <div class="mt-1">${window.renderBagModern(plan.dailyGrams, plan.presentationGrams, { size: 64 })}</div>
+
+                <div class="mt-1">
+                    <div class="plan-price text-2xl font-extrabold text-purple-dark dark:text-white">$${plan.finalPrice.toFixed(2)}</div>
+                    <div class="plan-savings text-xs text-green-dark">Ahorras $${plan.savings.toFixed(2)}</div>
+                </div>
+
+                <button type="button" class="mt-2 w-full py-2 px-3 bg-purple/10 dark:bg-purple/20 text-purple dark:text-white hover:bg-purple hover:text-white text-[12px] font-bold rounded-xl transition-all">Ver mi plan</button>
+            </div>
+
+        </div>
+        `;
     if (!email) return false;
     if (ADMIN_EMAILS.includes(email)) return true;
     if (!db) return false;

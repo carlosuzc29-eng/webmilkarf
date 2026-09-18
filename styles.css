@@ -1144,6 +1144,18 @@ dialog#plan-modal {
 .plan-bag-caption { display: none; }
 .pres-active { box-shadow: 0 0 0 3px rgba(124,58,237,0.12); border-radius: 12px; }
 
+/* Compact plan card overrides to ensure small consistent tiles */
+.feeding-plan-card.compact-plan { max-width: 220px; min-width: 180px; padding: 12px; }
+.feeding-plan-card.compact-plan .compact-plan-inner { padding: 6px 4px; }
+.feeding-plan-card.compact-plan .plan-price { font-size: 1.25rem; line-height: 1; }
+.feeding-plan-card.compact-plan .plan-savings { font-size: 0.8rem; }
+.feeding-plan-card.compact-plan .plan-card-name { font-size: 0.95rem; }
+.feeding-plan-card.compact-plan .plan-card-days { font-size: 0.8rem; color: #6b7280; }
+.feeding-plan-card.compact-plan .discount-pill { display: inline-block; padding: 4px 8px; border-radius: 999px; background: rgba(235,230,245,0.95); font-weight:800; color:#421d8e; font-size:0.75rem; }
+
+/* Ensure compact cards don't inherit problematic wrapping rules */
+.feeding-plan-card.compact-plan * { white-space: normal; word-break: normal; }
+
 /* Badge "Mayor descuento" */
 .badge-major-discount {
     padding: 4px 8px;
