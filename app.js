@@ -9191,3 +9191,35 @@ if (document.readyState !== 'loading') {
 } else {
     window.addEventListener('DOMContentLoaded', runInitAndRedirect);
 }
+
+// Fallback: ensure icons and basic delegated actions are available even if some init steps fail
+window.initFallbackEventDelegation = function () {
+    try {
+        // Ensure lucide icons are rendered
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+            try { window.lucide.createIcons(); } catch (e) { console.warn('lucide.createIcons failed', e); }
+        }
+        if (typeof window.refreshIcons === 'function') window.refreshIcons();
+
+        // Delegate simple data-action clicks to existing handlers (safe, idempotent)
+        if (!document._milkarf_delegation_ready) {
+            document._milkarf_delegation_ready = true;
+            document.addEventListener('click', function (ev) {
+                const btn = ev.target.closest && ev.target.closest('[data-action]');
+                if (!btn) return;
+                const act = btn.getAttribute('data-action');
+                if (!act) return;
+                ev.preventDefault(); ev.stopPropagation();
+                try {
+                    if (act === 'open-login') return window.abrirModalAuth?.('login');
+                    if (act === 'open-register') return window.abrirModalAuth?.('register');
+                    if (act === 'go-dashboard') return window.navigateTo?.('view-dashboard');
+                    if (act === 'logout') return window.cerrarSesion?.();
+                } catch (e) { console.warn('delegated action error', act, e); }
+            }, { capture: false, passive: false });
+        }
+    } catch (e) { console.warn('initFallbackEventDelegation failed', e); }
+};
+
+// Run the fallback shortly after init to recover icons/listeners if something blocked earlier
+setTimeout(() => { try { window.initFallbackEventDelegation(); } catch (e) {} }, 600);
