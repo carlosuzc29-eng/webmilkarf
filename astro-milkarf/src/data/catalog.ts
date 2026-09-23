@@ -1,4 +1,4 @@
-export type PresentationSize = '250gr' | '500gr';
+export type PresentationSize = '250gr' | '550gr';
 export type FormulaId = 'pollo' | 'res';
 
 export interface Presentation {
@@ -33,8 +33,8 @@ export interface MilkarfConfig {
 
 export const WA_NUMBER = '584121791137';
 
-export const PRICES_POLLO: Record<PresentationSize, string> = { '250gr': '$2.50', '500gr': '$5.00' };
-export const PRICES_RES: Record<PresentationSize, string> = { '250gr': '$3.50', '500gr': '$7.00' };
+export const PRICES_POLLO: Record<PresentationSize, string> = { '250gr': '$2.50', '550gr': '$5.50' };
+export const PRICES_RES: Record<PresentationSize, string> = { '250gr': '$3.50', '550gr': '$7.70' };
 
 export const MILKARF_CONFIG: MilkarfConfig = {
     calcEngineVersion: 'v2.0_plan_based_low_activity',
@@ -47,7 +47,7 @@ export const MILKARF_CONFIG: MilkarfConfig = {
             available: true,
             presentations: [
                 { size: '250gr', grams: 250, price: 2.5, available: true },
-                { size: '500gr', grams: 500, price: 5.0, available: true }
+                { size: '550gr', grams: 550, price: 5.5, available: true }
             ]
         },
         res: {
@@ -58,7 +58,7 @@ export const MILKARF_CONFIG: MilkarfConfig = {
             available: true,
             presentations: [
                 { size: '250gr', grams: 250, price: 3.5, available: true },
-                { size: '500gr', grams: 500, price: 7.0, available: true }
+                { size: '550gr', grams: 550, price: 7.7, available: true }
             ]
         }
     },

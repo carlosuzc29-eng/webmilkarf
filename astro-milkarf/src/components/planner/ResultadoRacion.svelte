@@ -53,7 +53,7 @@
                                 name="astro-presentacion-racion"
                                 value={size}
                                 checked={isSelected}
-                                onchange={() => selectPresentation(size as '250gr' | '500gr')}
+                                onchange={() => selectPresentation(size as '250gr' | '550gr')}
                                 class="sr-only"
                             />
                             <span class="block text-base sm:text-lg font-black leading-none text-purple-dark dark:text-white">{valor || '0'}</span>
@@ -65,32 +65,6 @@
                     {/each}
                 </div>
             </div>
-
-            {#if planner.equivalencia}
-                <div class="bg-green/10 dark:bg-green/5 rounded-2xl p-3 sm:p-4 space-y-2 sm:space-y-3 border border-green/20 dark:border-green/10">
-                    <div class="text-[8px] sm:text-[9px] font-black tracking-widest text-green-dark dark:text-green uppercase flex items-center gap-2">📅 Estimación mensual de consumo</div>
-                    <div class="grid grid-cols-2 gap-2 text-left">
-                        <div class="bg-white dark:bg-darkcard rounded-xl p-2.5 sm:p-3 shadow-sm border border-green/10">
-                            <span class="text-[8px] sm:text-[9px] font-bold text-purple/40 dark:text-gray-500 uppercase block leading-tight mb-0.5">Kilos al mes</span>
-                            <span class="text-sm sm:text-base font-black text-purple-dark dark:text-white leading-none">{planner.equivalencia.kilosMes}</span>
-                        </div>
-                        <div class="bg-white dark:bg-darkcard rounded-xl p-2.5 sm:p-3 shadow-sm border border-green/10">
-                            <span class="text-[8px] sm:text-[9px] font-bold text-purple/40 dark:text-gray-500 uppercase block leading-tight mb-0.5">Porciones al mes</span>
-                            <span class="text-sm sm:text-base font-black text-purple-dark dark:text-white leading-none">{planner.equivalencia.porcionesMes}</span>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="bg-white dark:bg-darkcard rounded-xl p-1.5 sm:p-2 text-center shadow-sm border border-green/10">
-                            <div class="text-sm sm:text-base font-black text-purple dark:text-white leading-none">{planner.equivalencia.bolsas250Mes}</div>
-                            <div class="text-[7px] sm:text-[8px] font-bold text-purple/45 dark:text-gray-500 uppercase mt-0.5 leading-tight">De 250 g</div>
-                        </div>
-                        <div class="bg-white dark:bg-darkcard rounded-xl p-1.5 sm:p-2 text-center shadow-sm border border-green/10">
-                            <div class="text-sm sm:text-base font-black text-purple dark:text-white leading-none">{planner.equivalencia.bolsas500Mes}</div>
-                            <div class="text-[7px] sm:text-[8px] font-bold text-purple/45 dark:text-gray-500 uppercase mt-0.5 leading-tight">De 500 g</div>
-                        </div>
-                    </div>
-                </div>
-            {/if}
 
             <div class="bg-green-light dark:bg-green/10 border-l-4 border-green text-[9px] sm:text-[10px] leading-relaxed text-purple-dark/85 dark:text-gray-300 font-medium p-3 sm:p-4 rounded-r-xl text-left">
                 {notaResultado()}

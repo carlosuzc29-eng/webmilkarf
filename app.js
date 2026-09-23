@@ -317,8 +317,9 @@ window.normalizeUserProfileForWrite = function (data = {}) {
 // LÓGICA DE INTERFAZ Y NAVEGACIÓN
 // =========================================================================================
 window.WA_NUMBER = '584121791137';
-window.PRICES_POLLO = { '250gr': '$2.50', '500gr': '$5.00' };
-window.PRICES_RES = { '250gr': '$3.50', '500gr': '$7.00' };
+window.WA_NUMBER = '584121791137';
+window.PRICES_POLLO = { '250gr': '$2.50', '550gr': '$5.50' };
+window.PRICES_RES = { '250gr': '$3.50', '550gr': '$7.70' };
 
 window.MILKARF_CONFIG = {
     calcEngineVersion: 'v2.0_plan_based_low_activity',
@@ -329,9 +330,10 @@ window.MILKARF_CONFIG = {
             shortName: 'Pollo',
             emoji: '🍗',
             available: true,
+            caloricDensity: 1.25,
             presentations: [
                 { size: '250gr', grams: 250, price: 2.50, available: true },
-                { size: '500gr', grams: 500, price: 5.00, available: true }
+                { size: '550gr', grams: 550, price: 5.50, available: true }
             ]
         },
         res: {
@@ -340,9 +342,10 @@ window.MILKARF_CONFIG = {
             shortName: 'Res',
             emoji: '🥩',
             available: true,
+            caloricDensity: 1.25,
             presentations: [
                 { size: '250gr', grams: 250, price: 3.50, available: true },
-                { size: '500gr', grams: 500, price: 7.00, available: true }
+                { size: '550gr', grams: 550, price: 7.70, available: true }
             ]
         }
     },
@@ -354,161 +357,166 @@ window.MILKARF_CONFIG = {
     welcomeDiscountPct: 0.20
 };
 
-// Algoritmo de optimización de bolsas para fórmula individual
-window.optimizeBagsSingle = function (formula, requiredGrams) {
-    const prod = window.MILKARF_CONFIG.catalog[formula];
-    if (!prod || !prod.available) throw new Error(`Fórmula ${formula} no disponible.`);
-    const activePres = prod.presentations.filter(p => p.available);
-    if (!activePres.length) throw new Error(`No hay presentaciones activas para ${formula}`);
+// Algoritmo de optimización de bolsas verificable (conservación 24h tras apertura)
+window.optimizeBagsForFormula = function (formula, dailyGrams, days, forcedSize = null) {
+    const dG = Math.max(0, Number(dailyGrams) || 0);
+    const pts = Math.max(1, Number(days) || 7);
+    const prod = window.MILKARF_CONFIG?.catalog?.[formula] || window.MILKARF_CONFIG?.catalog?.pollo;
+    const name = prod?.name || (formula === 'res' ? 'Carne de Res con Calabacín' : 'Pollo con Zanahoria');
 
-    const pres = [...activePres].sort((a, b) => b.grams - a.grams);
-    const validCombinations = [];
+    const pres250 = window.getPresentationBySize(formula, '250gr') || { price: formula === 'res' ? 3.50 : 2.50, grams: 250 };
+    const pres550 = window.getPresentationBySize(formula, '550gr') || { price: formula === 'res' ? 7.70 : 5.50, grams: 550 };
 
-    if (pres.length === 2) {
-        const [p1, p2] = pres;
-        const maxP1 = Math.ceil(requiredGrams / p1.grams) + 1;
-        for (let c1 = 0; c1 <= maxP1; c1++) {
-            const rem = Math.max(0, requiredGrams - (c1 * p1.grams));
-            const c2 = Math.ceil(rem / p2.grams);
-            const totalGrams = (c1 * p1.grams) + (c2 * p2.grams);
-            if (totalGrams >= requiredGrams) {
-                validCombinations.push({
-                    bags: [
-                        ...(c1 > 0 ? [{ formula, formulaName: prod.name, size: p1.size, weight: p1.size, grams: p1.grams, qty: c1, unitPrice: p1.price }] : []),
-                        ...(c2 > 0 ? [{ formula, formulaName: prod.name, size: p2.size, weight: p2.size, grams: p2.grams, qty: c2, unitPrice: p2.price }] : [])
-                    ],
-                    totalGrams,
-                    surplus: totalGrams - requiredGrams,
-                    cost: (c1 * p1.price) + (c2 * p2.price),
-                    totalBags: c1 + c2
-                });
-            }
-        }
-    } else {
-        function search(idx, currentGrams, currentCost, currentBags) {
-            if (idx === pres.length) {
-                if (currentGrams >= requiredGrams) {
-                    validCombinations.push({
-                        bags: currentBags.filter(b => b.qty > 0),
-                        totalGrams: currentGrams,
-                        surplus: currentGrams - requiredGrams,
-                        cost: currentCost,
-                        totalBags: currentBags.reduce((s, b) => s + b.qty, 0)
-                    });
-                }
-                return;
-            }
-            const p = pres[idx];
-            const maxNeeded = Math.ceil(Math.max(0, requiredGrams - currentGrams) / p.grams) + 1;
-            for (let q = 0; q <= maxNeeded; q++) {
-                currentBags.push({ formula, formulaName: prod.name, size: p.size, weight: p.size, grams: p.grams, qty: q, unitPrice: p.price });
-                search(idx + 1, currentGrams + (q * p.grams), currentCost + (q * p.price), currentBags);
-                currentBags.pop();
-            }
-        }
-        search(0, 0, 0, []);
+    if (dG <= 0) {
+        return { bags: [], totalBags: 0, totalGrams: 0, cost: 0 };
     }
 
-    if (!validCombinations.length) throw new Error("No se pudo generar combinación de bolsas.");
+    if (forcedSize === '250gr') {
+        const perDay = Math.ceil(dG / 250);
+        const qty = perDay * pts;
+        const totalGrams = qty * 250;
+        const cost = qty * pres250.price;
+        return {
+            bags: [{ formula, formulaName: name, size: '250gr', weight: '250 g', grams: 250, qty, unitPrice: pres250.price }],
+            totalBags: qty,
+            totalGrams,
+            cost
+        };
+    }
 
-    validCombinations.sort((a, b) => {
-        if (a.surplus !== b.surplus) return a.surplus - b.surplus;
+    if (forcedSize === '550gr' || forcedSize === '500gr') {
+        const bagG = forcedSize === '500gr' ? 500 : 550;
+        const unitP = forcedSize === '500gr' ? (formula === 'res' ? 7.00 : 5.00) : pres550.price;
+        const perDay = Math.ceil(dG / bagG);
+        const qty = perDay * pts;
+        const totalGrams = qty * bagG;
+        const cost = qty * unitP;
+        return {
+            bags: [{ formula, formulaName: name, size: forcedSize === '500gr' ? '500gr' : '550gr', weight: `${bagG} g`, grams: bagG, qty, unitPrice: unitP }],
+            totalBags: qty,
+            totalGrams,
+            cost
+        };
+    }
+
+    // Selección automática considerando la regla de 24 horas tras apertura:
+    // Evalúa las combinaciones enteras por día (c550, c250) que cubren la ración diaria
+    const candidates = [];
+    const max550 = Math.ceil(dG / 550) + 1;
+    for (let c550 = 0; c550 <= max550; c550++) {
+        const rem = Math.max(0, dG - (c550 * 550));
+        const c250 = Math.ceil(rem / 250);
+        const providedDay = (c550 * 550) + (c250 * 250);
+        if (providedDay >= dG) {
+            // Descartar si sobra una bolsa entera de 550 o de 250
+            if (c550 > 0 && ((c550 - 1) * 550 + c250 * 250) >= dG) continue;
+            if (c250 > 0 && (c550 * 550 + (c250 - 1) * 250) >= dG) continue;
+
+            const total550 = c550 * pts;
+            const total250 = c250 * pts;
+            const totalBags = total550 + total250;
+            const totalGrams = (total550 * 550) + (total250 * 250);
+            const cost = (total550 * pres550.price) + (total250 * pres250.price);
+            const surplus = totalGrams - (dG * pts);
+
+            candidates.push({
+                c550,
+                c250,
+                total550,
+                total250,
+                totalBags,
+                totalGrams,
+                cost,
+                surplus
+            });
+        }
+    }
+
+    // Jerarquía de decisión: 1) Costo total, 2) Menor excedente, 3) Menos bolsas
+    candidates.sort((a, b) => {
         if (Math.abs(a.cost - b.cost) > 0.001) return a.cost - b.cost;
+        if (a.surplus !== b.surplus) return a.surplus - b.surplus;
         return a.totalBags - b.totalBags;
     });
 
-    return validCombinations[0];
+    const best = candidates[0] || {
+        total550: 0,
+        total250: Math.ceil((dG * pts) / 250),
+        totalBags: Math.ceil((dG * pts) / 250),
+        totalGrams: Math.ceil((dG * pts) / 250) * 250,
+        cost: Math.ceil((dG * pts) / 250) * pres250.price
+    };
+
+    const bags = [];
+    if (best.total550 > 0) {
+        bags.push({ formula, formulaName: name, size: '550gr', weight: '550 g', grams: 550, qty: best.total550, unitPrice: pres550.price });
+    }
+    if (best.total250 > 0) {
+        bags.push({ formula, formulaName: name, size: '250gr', weight: '250 g', grams: 250, qty: best.total250, unitPrice: pres250.price });
+    }
+
+    return {
+        bags,
+        totalBags: best.totalBags,
+        totalGrams: best.totalGrams,
+        cost: best.cost
+    };
 };
 
-// Algoritmo de optimización de bolsas para fórmula mixta (Pollo + Res ~50/50 minimizando excedente)
+window.optimizeBagsSingle = function (formula, requiredGrams) {
+    const daily = requiredGrams / 7;
+    const res = window.optimizeBagsForFormula(formula, daily, 7);
+    return {
+        bags: res.bags,
+        totalGrams: res.totalGrams,
+        surplus: Math.max(0, res.totalGrams - requiredGrams),
+        cost: res.cost,
+        totalBags: res.totalBags
+    };
+};
+
 window.optimizeBagsMixed = function (requiredGrams) {
-    const polloProd = window.MILKARF_CONFIG.catalog.pollo;
-    const resProd = window.MILKARF_CONFIG.catalog.res;
-
-    function getBestBagsForGrams(formula, targetGrams) {
-        const prod = window.MILKARF_CONFIG.catalog[formula];
-        const [p1, p2] = prod.presentations.sort((a, b) => b.grams - a.grams);
-        const combos = [];
-        const maxP1 = Math.floor(targetGrams / p1.grams);
-        for (let c1 = 0; c1 <= maxP1; c1++) {
-            const rem = targetGrams - (c1 * p1.grams);
-            if (rem % p2.grams === 0) {
-                const c2 = rem / p2.grams;
-                combos.push({
-                    bags: [
-                        ...(c1 > 0 ? [{ formula, formulaName: prod.name, size: p1.size, weight: p1.size, grams: p1.grams, qty: c1, unitPrice: p1.price }] : []),
-                        ...(c2 > 0 ? [{ formula, formulaName: prod.name, size: p2.size, weight: p2.size, grams: p2.grams, qty: c2, unitPrice: p2.price }] : [])
-                    ],
-                    totalGrams: targetGrams,
-                    cost: (c1 * p1.price) + (c2 * p2.price),
-                    totalBags: c1 + c2
-                });
-            }
+    const daily = requiredGrams / 7;
+    const half = daily / 2;
+    const optPollo = window.optimizeBagsForFormula('pollo', half, 7);
+    const optRes = window.optimizeBagsForFormula('res', half, 7);
+    const totalGrams = optPollo.totalGrams + optRes.totalGrams;
+    return {
+        bags: [...optPollo.bags, ...optRes.bags],
+        totalGrams,
+        surplus: Math.max(0, totalGrams - requiredGrams),
+        diffFromHalf: Math.abs(optPollo.totalGrams - optRes.totalGrams),
+        cost: optPollo.cost + optRes.cost,
+        totalBags: optPollo.totalBags + optRes.totalBags,
+        split: {
+            polloGrams: optPollo.totalGrams,
+            resGrams: optRes.totalGrams,
+            polloPct: Math.round((optPollo.totalGrams / totalGrams) * 100),
+            resPct: Math.round((optRes.totalGrams / totalGrams) * 100)
         }
-        combos.sort((a, b) => {
-            if (Math.abs(a.cost - b.cost) > 0.001) return a.cost - b.cost;
-            return a.totalBags - b.totalBags;
-        });
-        return combos[0] || null;
-    }
-
-    const validMixed = [];
-    const minGrams = Math.min(250, requiredGrams);
-    for (let gPollo = 250; gPollo <= requiredGrams; gPollo += 250) {
-        const minGRes = Math.max(250, Math.ceil((requiredGrams - gPollo) / 250) * 250);
-        for (let gRes = minGRes; gRes <= minGRes + 500; gRes += 250) {
-            const totalGrams = gPollo + gRes;
-            if (totalGrams >= requiredGrams) {
-                const polloOpt = getBestBagsForGrams('pollo', gPollo);
-                const resOpt = getBestBagsForGrams('res', gRes);
-                if (polloOpt && resOpt) {
-                    const surplus = totalGrams - requiredGrams;
-                    const diffFromHalf = Math.abs(gPollo - gRes);
-                    const cost = polloOpt.cost + resOpt.cost;
-                    const totalBags = polloOpt.totalBags + resOpt.totalBags;
-                    validMixed.push({
-                        bags: [...polloOpt.bags, ...resOpt.bags],
-                        totalGrams,
-                        surplus,
-                        diffFromHalf,
-                        cost,
-                        totalBags,
-                        split: {
-                            polloGrams: gPollo,
-                            resGrams: gRes,
-                            polloPct: Math.round((gPollo / totalGrams) * 100),
-                            resPct: Math.round((gRes / totalGrams) * 100)
-                        }
-                    });
-                }
-            }
-        }
-    }
-
-    if (!validMixed.length) throw new Error("No se pudo generar combinación mixta.");
-
-    validMixed.sort((a, b) => {
-        if (a.surplus !== b.surplus) return a.surplus - b.surplus;
-        if (a.diffFromHalf !== b.diffFromHalf) return a.diffFromHalf - b.diffFromHalf;
-        if (Math.abs(a.cost - b.cost) > 0.001) return a.cost - b.cost;
-        return a.totalBags - b.totalBags;
-    });
-
-    return validMixed[0];
+    };
 };
 
 window.recommendPresentation = function (dailyGrams, formula = 'pollo') {
     const dG = Math.max(0, Number(dailyGrams) || 0);
-    const recSize = (dG > 0 && dG <= 250) ? '250gr' : '500gr';
+    // Para porciones diarias <= 250g recomendamos 250g; para consumos mayores, 550g
+    const recSize = (dG > 0 && dG <= 250) ? '250gr' : '550gr';
     const pres = window.getPresentationBySize(formula, recSize);
-    const available = !!(pres && (window.MILKARF_CONFIG?.catalog?.[formula]?.available !== false));
+    let available = true;
+    if (formula === 'mixto') {
+        const pPollo = window.getPresentationBySize('pollo', recSize);
+        const pRes = window.getPresentationBySize('res', recSize);
+        available = !!(pPollo && pPollo.available && pRes && pRes.available);
+    } else {
+        available = !!(pres && pres.available && (window.MILKARF_CONFIG?.catalog?.[formula]?.available !== false));
+    }
     return {
         size: recSize,
-        grams: recSize === '250gr' ? 250 : 500,
-        label: recSize === '250gr' ? '250 g' : '500 g',
+        grams: recSize === '250gr' ? 250 : 550,
+        label: recSize === '250gr' ? '250 g' : '550 g',
         available,
-        price: pres ? pres.price : (recSize === '250gr' ? 2.50 : 5.00),
-        reason: 'La elegimos según su porción diaria y el tiempo de conservación después de abrirla.'
+        price: pres ? pres.price : (recSize === '250gr' ? 2.50 : (formula === 'res' ? 7.70 : 5.50)),
+        reason: ''
     };
 };
 
@@ -519,169 +527,136 @@ window.calculatePlanConsumption = function (dailyGrams, days, formula = 'pollo',
 
     const rec = window.recommendPresentation(dG, formula);
     const bagSize = presentationSize || rec.size;
-    const bagGrams = bagSize === '250gr' ? 250 : 500;
+    const bagGrams = bagSize === '250gr' ? 250 : 550;
 
-    let totalBags = 0;
     let bags = [];
-    let split = null;
+    let totalBags = 0;
     let totalGramsProvided = 0;
+    let subtotalCost = 0;
+    let split = null;
     let discardedSurplusGrams = 0;
     let usableRemainingGrams = 0;
-    let subtotalCost = 0;
-    let basisText = 'Estimación con apertura diaria; puede generar sobrantes';
 
-    if (formula === 'mixto') {
-        const polloDailyGrams = Math.round((dG / 2) * 10) / 10;
-        const resDailyGrams = Math.round((dG - polloDailyGrams) * 10) / 10;
-
-        const polloPres = window.getPresentationBySize('pollo', bagSize);
-        const resPres = window.getPresentationBySize('res', bagSize);
-
-        if (!polloPres || !resPres) {
-            throw new Error('Configuración pendiente para plan mixto: falta presentación en catálogo.');
-        }
-
-        const polloBagsPerDay = polloDailyGrams > 0 ? Math.ceil(polloDailyGrams / bagGrams) : 0;
-        const resBagsPerDay = resDailyGrams > 0 ? Math.ceil(resDailyGrams / bagGrams) : 0;
-
-        const polloBagsCount = polloBagsPerDay * pts;
-        const resBagsCount = resBagsPerDay * pts;
-
-        const totalPolloGrams = polloBagsCount * bagGrams;
-        const totalResGrams = resBagsCount * bagGrams;
-
-        const requiredPolloGrams = Math.round(polloDailyGrams * pts);
-        const requiredResGrams = Math.round(resDailyGrams * pts);
-
-        const discardedPollo = Math.max(0, totalPolloGrams - requiredPolloGrams);
-        const discardedRes = Math.max(0, totalResGrams - requiredResGrams);
-
-        totalBags = polloBagsCount + resBagsCount;
-        totalGramsProvided = totalPolloGrams + totalResGrams;
-        discardedSurplusGrams = discardedPollo + discardedRes;
-        usableRemainingGrams = 0;
-
-        subtotalCost = (polloBagsCount * polloPres.price) + (resBagsCount * resPres.price);
-
-        if (polloBagsCount > 0) {
-            bags.push({
-                formula: 'pollo',
-                formulaName: window.MILKARF_CONFIG?.catalog?.pollo?.name || 'Pollo con Zanahoria',
-                size: bagSize,
-                weight: bagSize,
-                grams: bagGrams,
-                qty: polloBagsCount,
-                unitPrice: polloPres.price
-            });
-        }
-        if (resBagsCount > 0) {
-            bags.push({
-                formula: 'res',
-                formulaName: window.MILKARF_CONFIG?.catalog?.res?.name || 'Carne de Res con Calabacín',
-                size: bagSize,
-                weight: bagSize,
-                grams: bagGrams,
-                qty: resBagsCount,
-                unitPrice: resPres.price
-            });
-        }
-
-        const polloPct = totalGramsProvided > 0 ? Math.round((totalPolloGrams / totalGramsProvided) * 100) : 50;
-        const resPct = 100 - polloPct;
-        split = { polloGrams: requiredPolloGrams, resGrams: requiredResGrams, polloPct, resPct };
-    } else {
+    if (mealSchedule && Array.isArray(mealSchedule) && mealSchedule.length > 0) {
         const pres = window.getPresentationBySize(formula, bagSize);
-        const unitPrice = pres ? pres.price : (bagSize === '250gr' ? 2.50 : 5.00);
+        const unitPrice = pres ? pres.price : (bagSize === '250gr' ? 2.50 : (formula === 'res' ? 7.70 : 5.50));
+        let openBags = [];
+        let discarded = 0;
+        let totalBagsOpened = 0;
 
-        if (mealSchedule && Array.isArray(mealSchedule) && mealSchedule.length > 0) {
-            basisText = 'Simulación basada en pauta de comidas (conservación 24h)';
-            let openBags = [];
-            let discarded = 0;
-            let totalBagsOpened = 0;
+        for (const event of mealSchedule) {
+            let toEat = event.grams;
+            const currentTime = event.time;
 
-            for (const event of mealSchedule) {
-                let toEat = event.grams;
-                const currentTime = event.time;
-
-                for (const openBag of openBags) {
-                    if (openBag.remainingGrams > 0) {
-                        if (currentTime - openBag.openTime <= 24 * 3600 * 1000) {
-                            const take = Math.min(toEat, openBag.remainingGrams);
-                            openBag.remainingGrams -= take;
-                            toEat -= take;
-                        } else {
-                            discarded += openBag.remainingGrams;
-                            openBag.remainingGrams = 0;
-                        }
-                    }
-                    if (toEat <= 0) break;
-                }
-
-                while (toEat > 0) {
-                    totalBagsOpened++;
-                    const newBag = { openTime: currentTime, remainingGrams: bagGrams };
-                    const take = Math.min(toEat, bagGrams);
-                    newBag.remainingGrams -= take;
-                    toEat -= take;
-                    openBags.push(newBag);
-                }
-            }
-
-            const endTime = mealSchedule[mealSchedule.length - 1]?.time || 0;
-            let usableRem = 0;
             for (const openBag of openBags) {
                 if (openBag.remainingGrams > 0) {
-                    if (endTime - openBag.openTime <= 24 * 3600 * 1000) {
-                        usableRem += openBag.remainingGrams;
+                    if (currentTime - openBag.openTime <= 24 * 3600 * 1000) {
+                        const take = Math.min(toEat, openBag.remainingGrams);
+                        openBag.remainingGrams -= take;
+                        toEat -= take;
                     } else {
                         discarded += openBag.remainingGrams;
+                        openBag.remainingGrams = 0;
                     }
                 }
+                if (toEat <= 0) break;
             }
 
-            totalBags = totalBagsOpened;
-            totalGramsProvided = totalBags * bagGrams;
-            discardedSurplusGrams = discarded;
-            usableRemainingGrams = usableRem;
-            subtotalCost = totalBags * unitPrice;
-        } else {
-            const bagsPerDay = dG > 0 ? Math.ceil(dG / bagGrams) : 0;
-            totalBags = bagsPerDay * pts;
-            totalGramsProvided = totalBags * bagGrams;
-            discardedSurplusGrams = Math.max(0, totalGramsProvided - requiredGrams);
-            usableRemainingGrams = 0;
-            subtotalCost = totalBags * unitPrice;
+            while (toEat > 0) {
+                totalBagsOpened++;
+                const newBag = { openTime: currentTime, remainingGrams: bagGrams };
+                const take = Math.min(toEat, bagGrams);
+                newBag.remainingGrams -= take;
+                toEat -= take;
+                openBags.push(newBag);
+            }
         }
+
+        const endTime = mealSchedule[mealSchedule.length - 1]?.time || 0;
+        let usableRem = 0;
+        for (const openBag of openBags) {
+            if (openBag.remainingGrams > 0) {
+                if (endTime - openBag.openTime <= 24 * 3600 * 1000) {
+                    usableRem += openBag.remainingGrams;
+                } else {
+                    discarded += openBag.remainingGrams;
+                }
+            }
+        }
+
+        totalBags = totalBagsOpened;
+        totalGramsProvided = totalBags * bagGrams;
+        discardedSurplusGrams = discarded;
+        usableRemainingGrams = usableRem;
+        subtotalCost = totalBags * unitPrice;
 
         if (totalBags > 0) {
             bags.push({
                 formula,
                 formulaName: window.MILKARF_CONFIG?.catalog?.[formula]?.name || formula,
                 size: bagSize,
-                weight: bagSize,
+                weight: `${bagGrams} g`,
                 grams: bagGrams,
                 qty: totalBags,
                 unitPrice
             });
         }
+    } else if (formula === 'mixto') {
+        const polloDaily = Math.round((dG / 2) * 10) / 10;
+        const resDaily = Math.round((dG - polloDaily) * 10) / 10;
+
+        const optPollo = window.optimizeBagsForFormula('pollo', polloDaily, pts, bagSize);
+        const optRes = window.optimizeBagsForFormula('res', resDaily, pts, bagSize);
+
+        bags = [...optPollo.bags, ...optRes.bags];
+        totalBags = optPollo.totalBags + optRes.totalBags;
+        totalGramsProvided = optPollo.totalGrams + optRes.totalGrams;
+        subtotalCost = optPollo.cost + optRes.cost;
+        discardedSurplusGrams = Math.max(0, totalGramsProvided - requiredGrams);
+
+        const polloProv = optPollo.totalGrams;
+        const resProv = optRes.totalGrams;
+        const polloPct = totalGramsProvided > 0 ? Math.round((polloProv / totalGramsProvided) * 100) : 50;
+        const resPct = 100 - polloPct;
+
+        split = {
+            polloGrams: Math.round(polloDaily * pts),
+            resGrams: Math.round(resDaily * pts),
+            polloPct,
+            resPct
+        };
+    } else {
+        const opt = window.optimizeBagsForFormula(formula, dG, pts, bagSize);
+        bags = opt.bags;
+        totalBags = opt.totalBags;
+        totalGramsProvided = opt.totalGrams;
+        subtotalCost = opt.cost;
+        discardedSurplusGrams = Math.max(0, totalGramsProvided - requiredGrams);
     }
 
-    const calculatedProvided = requiredGrams + discardedSurplusGrams + usableRemainingGrams;
-    if (calculatedProvided !== totalGramsProvided) {
-        discardedSurplusGrams = Math.max(0, totalGramsProvided - requiredGrams - usableRemainingGrams);
-    }
+    const surplusGrams = discardedSurplusGrams;
+    const discountInfo = window.MILKARF_CONFIG?.planDiscounts?.[pts] || {
+        days: pts,
+        discountPct: pts === 7 ? 0.05 : (pts === 15 ? 0.075 : 0.10),
+        label: `Plan ${pts} días`,
+        tag: `${pts} días de alimentación`
+    };
 
-    const discountInfo = window.MILKARF_CONFIG?.planDiscounts?.[pts] || { discountPct: pts === 7 ? 0.05 : (pts === 15 ? 0.075 : 0.10), label: `Plan ${pts} días`, tag: `${pts} días de alimentación` };
     const subtotal = Math.round(subtotalCost * 100) / 100;
     const discountAmount = Math.round(subtotal * (Number(discountInfo.discountPct) || 0) * 100) / 100;
     const finalPrice = Math.round((subtotal - discountAmount) * 100) / 100;
     const costPerDay = pts > 0 ? Math.round((finalPrice / pts) * 100) / 100 : 0;
 
+    const mainBag = bags[0] || {};
+    const presSize = bagSize;
+    const presGrams = presSize === '550gr' ? 550 : (presSize === '500gr' ? 500 : 250);
+    const presPrice = mainBag.unitPrice || (presGrams === 250 ? 2.50 : (formula === 'res' ? 7.70 : 5.50));
+
     return {
         requiredGrams,
         totalGrams: totalGramsProvided,
         totalGramsProvided,
-        surplusGrams: discardedSurplusGrams,
+        surplusGrams,
         discardedSurplusGrams,
         usableRemainingGrams,
         totalBags,
@@ -697,16 +672,27 @@ window.calculatePlanConsumption = function (dailyGrams, days, formula = 'pollo',
         discountAmount,
         finalPrice,
         costPerDay,
-        presentation: (bags[0] && bags[0].size) || String(bagSize || '500gr'),
+        presentation: presSize,
         recommendedPresentation: rec.size,
-        presentationGrams: bagGrams,
-        presentationPrice: bags[0]?.unitPrice || (bagSize === '250gr' ? 2.50 : 5.00),
-        basisText,
-        wasteExplanation: discardedSurplusGrams > 0 ? 'La estimación considera la conservación de 24 horas tras abrir cada bolsa, descartando el sobrante no consumido a tiempo.' : ''
+        presentationGrams: presGrams,
+        presentationPrice: presPrice,
+        basisText: 'Planificación verificada para cubrir cada comida dentro de las 24 horas posteriores a la apertura de cada bolsita.',
+        wasteExplanation: ''
     };
 };
 
 window.getPresentationBySize = function (formula, bagSize) {
+    if (formula === 'mixto') {
+        const pPollo = window.getPresentationBySize('pollo', bagSize);
+        const pRes = window.getPresentationBySize('res', bagSize);
+        if (!pPollo || !pRes) return null;
+        return {
+            size: bagSize,
+            grams: bagSize === '250gr' ? 250 : (bagSize === '500gr' ? 500 : 550),
+            available: (pPollo.available !== false) && (pRes.available !== false),
+            price: Math.round(((pPollo.price + pRes.price) / 2) * 100) / 100
+        };
+    }
     const prod = window.MILKARF_CONFIG?.catalog?.[formula];
     if (!prod) return null;
     const list = prod.presentations || [];
@@ -716,15 +702,13 @@ window.getPresentationBySize = function (formula, bagSize) {
 window.computePlanPricing = function (dailyGrams, days, formula, bagSize = null) {
     const pts = Number(days) > 0 ? Number(days) : 7;
     const dG = Math.max(0, Number(dailyGrams) || 0);
-    const targetSize = bagSize || window.recommendPresentation(dG, formula).size;
-    return window.calculatePlanConsumption(dG, pts, formula, targetSize);
+    return window.calculatePlanConsumption(dG, pts, formula, bagSize);
 };
 
 window.buildFeedingPlan = function (dailyGrams, days, formula, petName = '', bagSize = null) {
     const pts = Number(days) || 7;
     const dG = Math.max(0, Number(dailyGrams) || 0);
-    const targetSize = bagSize || window.recommendPresentation(dG, formula).size;
-    const pricing = window.calculatePlanConsumption(dG, pts, formula, targetSize);
+    const pricing = window.calculatePlanConsumption(dG, pts, formula, bagSize);
     const discountInfo = pricing.discountInfo;
 
     const formulaLabel = formula === 'pollo' ? 'Pollo con Zanahoria' : (formula === 'res' ? 'Carne de Res con Calabacín' : 'Plan Mixto (Pollo y Res)');
@@ -785,13 +769,12 @@ window.buildFeedingPlan = function (dailyGrams, days, formula, petName = '', bag
 };
 
 window.generateFeedingPlans = function (dailyGrams, formula = 'pollo', petName = '') {
-    const recSize = window.recommendPresentation(dailyGrams, formula).size;
-    return [7, 15, 30].map(days => window.buildFeedingPlan(dailyGrams, days, formula, petName, recSize));
+    return [7, 15, 30].map(days => window.buildFeedingPlan(dailyGrams, days, formula, petName, null));
 };
 
-window.state = { nombreMascota: '', etapa: null, cachorroEdad: null, actividad: 'bajo' };
+window.state = { nombreMascota: '', etapa: null, cachorroEdad: null, esterilizado: false, actividad: 'bajo' };
 window.activePlanFormula = 'pollo';
-window.activePlanPresentation = '500gr';
+window.activePlanPresentation = '250gr';
 window.__presentationUserTouched = false;
 window.currentWeightPollo = '250gr';
 window.currentWeightRes = '250gr';
@@ -1033,21 +1016,20 @@ Quisiera confirmar recomendaciones de fórmulas, disponibilidad, costo de entreg
             if (hasFeedingPlans) {
                 itemsFormatted = data.items.map((i, index) => {
                     if (i.type === 'feeding_plan') {
-                        const bagsText = Array.isArray(i.bags) ? i.bags.map(b => `${b.qty}x ${b.weight}`).join(' + ') : '';
+                        const bagsText = Array.isArray(i.bags) ? i.bags.map(b => `${b.qty}x ${b.size || b.weight}`).join(' + ') : '';
                         const reqKg = (Number(i.totalGramsRequired || 0) / 1000).toFixed(2);
                         const provKg = (Number(i.totalGramsProvided || 0) / 1000).toFixed(2);
-                        const surplus = Number(i.surplusGrams || 0);
-                        const presText = i.presentation ? String(i.presentation).replace('gr', ' g') : (Array.isArray(i.bags) && i.bags[0] ? String(i.bags[0].weight).replace('gr', ' g') : '');
+                        const presText = i.presentation ? String(i.presentation).replace('gr', ' g') : (Array.isArray(i.bags) && i.bags[0] ? String(i.bags[0].weight || i.bags[0].size).replace('gr', ' g') : '550 g');
                         const petWeight = Number(i.petWeight) ? ` · ${Number(i.petWeight)} kg` : '';
                         const bagsCount = Number(i.bagsCount) || (Array.isArray(i.bags) ? i.bags.reduce((s, b) => s + (Number(b.qty) || 0), 0) : 0);
-                        const subtotalNum = Number(i.originalSubtotal || i.price);
+                        const subtotalNum = Number(i.originalSubtotal || i.price || 0);
                         const discNum = Number(i.discountAmount || 0);
-                        const totalNum = Number(i.finalPrice || i.price);
+                        const totalNum = Number(i.finalPrice || i.price || 0);
                         return `${index + 1}. *Plan para ${i.petName || i.forPet || 'Mascota'}*${petWeight}
    • Mascota: ${i.petName || i.forPet || 'Mascota'}${petWeight} · Ración: ${Number(i.dailyGrams) || 0} g/día
    • Fórmula: ${i.formulaName || 'Fórmula'} · Plan ${Number(i.durationDays) || 7} días
-   • Presentación: ${presText || '500 g'} · Bolsas: ${bagsText || bagsCount + ' bolsa(s)'}
-   • Alimento: ${reqKg} kg requeridos / ${provKg} kg provistos${surplus > 0 ? ` (+${surplus} g sin costo)` : ''}
+   • Presentación: ${presText} · Bolsas: ${bagsText || (bagsCount + ' bolsa(s)')}
+   • Alimento: ${reqKg} kg requeridos (${provKg} kg provistos)
    • Subtotal: ${currency(subtotalNum)} · Descuento (-${Number(i.discountPercent) || 0}%): -${currency(discNum)}
    • Total plan: ${currency(totalNum)}`;
                     }
@@ -1189,7 +1171,7 @@ window.resetAppStateForLogout = function () {
     window.descuentoAplicado = false;
     window.userLocation = null;
     window.lastOrderId = null;
-    window.state = { nombreMascota: '', etapa: null, cachorroEdad: null, actividad: null };
+    window.state = { nombreMascota: '', etapa: null, cachorroEdad: null, esterilizado: false, actividad: 'bajo' };
     window.cart = [];
     try { localStorage.removeItem('milkarf_cart'); } catch (e) { }
     try { window.saveCartToStorage?.(); } catch (e) { }
@@ -1360,6 +1342,7 @@ window.navigateTo = function (targetId) {
     if (targetId === 'view-calc') window.prepareCalculatorInputs?.(true);
     if (['view-perros', 'view-gatos', 'view-snacks'].includes(targetId)) {
         window.renderMenuPetSelector?.();
+        window.refreshIcons?.();
     }
     if (targetId === 'view-redeems') {
         window.renderRedeemItems?.();
@@ -1592,14 +1575,17 @@ window.cargarMascotaEnCalculadora = function (index) {
 
         if (payload.etapa) window.selectCalcButtonByValue('etapa', payload.etapa);
         if (payload.etapa === 'cachorro' && payload.cachorroEdad) window.selectCalcButtonByValue('sub', payload.cachorroEdad);
-        if (payload.etapa && payload.etapa !== 'cachorro' && payload.actividad) window.selectCalcButtonByValue('sub', payload.actividad);
+        if (payload.etapa && payload.etapa !== 'cachorro') {
+            const isEst = !!(payload.esterilizado || payload.actividad === 'esterilizado_bajo' || payload.actividad === 'esterilizado');
+            window.setEsterilizadoState?.(isEst);
+        }
 
-        const readyToCalc = !!(payload.nombre && payload.peso && payload.etapa && ((payload.etapa === 'cachorro' && payload.cachorroEdad) || (payload.etapa !== 'cachorro' && payload.actividad)));
+        const readyToCalc = !!(payload.nombre && payload.peso && payload.etapa && (payload.etapa !== 'cachorro' || payload.cachorroEdad));
         if (readyToCalc) {
             window.calcularRacion?.();
             window.showToast(`Calculadora cargada con los datos de ${payload.nombre}.`, 'success');
         } else {
-            window.showToast(`Datos de ${payload.nombre} cargados. Completa etapa/actividad para calcular.`, 'success');
+            window.showToast(`Datos de ${payload.nombre} cargados. Completa los datos para calcular.`, 'success');
         }
     }, 420);
 };
@@ -5061,15 +5047,23 @@ window.loadAdminCalculadora = function () {
                 </div>
 
                 <div id="sub-actividad" class="hidden mt-4">
-                    <div class="text-[10px] font-bold text-purple/50 dark:text-gray-400 tracking-wider uppercase mb-2 flex items-center gap-2 text-left">
-                        <span class="w-5 h-5 bg-pink text-white text-[10px] font-black rounded-full flex items-center justify-center">↳</span> Condición y actividad
+                    <div class="text-xs font-semibold text-purple/70 dark:text-gray-300 tracking-wider uppercase mb-2 flex items-center gap-2 text-left">
+                        <span class="w-5 h-5 bg-pink text-white text-[10px] font-bold rounded-full flex items-center justify-center">↳</span> Condición
                     </div>
-                    <div class="flex flex-col gap-2" id="actividad-group">
-                        <button class="btn-opt text-left dark:bg-[#0d0718] dark:text-white dark:border-purple/30 calc-sub-btn" onclick="window.selectSubOpt('actividad', 'esterilizado_bajo', this)">✂️ Esterilizado/castrado</button>
-                        <button class="btn-opt text-left dark:bg-[#0d0718] dark:text-white dark:border-purple/30 calc-sub-btn" onclick="window.selectSubOpt('actividad', 'bajo', this)">😴 Poco activo</button>
-                        <button class="btn-opt text-left dark:bg-[#0d0718] dark:text-white dark:border-purple/30 calc-sub-btn" onclick="window.selectSubOpt('actividad', 'normal', this)">🚶 Activo (Normal)</button>
-                        <button class="btn-opt text-left dark:bg-[#0d0718] dark:text-white dark:border-purple/30 calc-sub-btn" onclick="window.selectSubOpt('actividad', 'alto', this)">🏃 Muy activo</button>
-                    </div>
+                    <button type="button" id="btn-toggle-esterilizado" onclick="window.toggleEsterilizado(this)" class="w-full text-left p-3.5 rounded-2xl border-2 border-purple-border/50 dark:border-purple/30 bg-purple-light/40 dark:bg-[#0d0718] hover:border-purple transition-all shadow-xs flex items-center justify-between gap-3 group cursor-pointer select-none">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <span class="text-2xl shrink-0 p-2 rounded-xl bg-white dark:bg-purple/20 shadow-xs">✂️</span>
+                            <div>
+                                <span class="block text-purple-dark dark:text-white font-extrabold text-sm leading-tight">¿Está esterilizado o castrado?</span>
+                                <span id="esterilizado-status-label" class="text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-0.5 block">No marcado · Cálculo preventivo por factor mínimo</span>
+                            </div>
+                        </div>
+                        <div class="shrink-0 flex items-center pr-1">
+                            <div id="esterilizado-switch" class="w-12 h-[26px] bg-gray-300 dark:bg-gray-700 rounded-full p-[2px] transition-colors duration-200 ease-in-out relative flex items-center">
+                                <div id="esterilizado-dot" class="w-[22px] h-[22px] bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out flex items-center justify-center text-[11px] font-black text-purple translate-x-0"></div>
+                            </div>
+                        </div>
+                    </button>
                 </div>
             </div>
 
@@ -5118,15 +5112,13 @@ window.loadAdminCalculadora = function () {
                             <span class="font-black text-purple dark:text-white" id="r-por-comida">0g</span>
                         </div>
 
-                        <!-- Presentación asignada automáticamente + Explicación -->
+                        <!-- Presentación asignada automáticamente -->
                         <div class="bg-purple-light/50 dark:bg-purple/10 rounded-2xl p-4 border border-purple-border/30 dark:border-purple/20">
                             <div class="inline-flex items-center gap-2 text-purple-dark dark:text-white font-black text-xs sm:text-sm">
                                 <span>📦 Presentación recomendada: <strong id="rec-pres-size-text" class="text-pink">250 g</strong></span>
                             </div>
                             <div id="rec-pres-bag" class="mt-3"></div>
-                            <p id="rec-pres-explanation" class="text-xs text-purple-dark/80 dark:text-gray-300 font-medium mt-1.5 leading-relaxed">
-                                La elegimos según su porción diaria y el tiempo de conservación después de abrirla.
-                            </p>
+                            <p id="rec-pres-explanation" class="hidden text-xs text-pink font-medium mt-1.5 leading-relaxed"></p>
                         </div>
                     </div>
                 </div>
@@ -5158,19 +5150,67 @@ window.loadAdminCalculadora = function () {
     window.refreshIcons?.(container);
 };
 
+window.setEsterilizadoState = function (isEsterilizado) {
+    window.state.esterilizado = !!isEsterilizado;
+    window.state.actividad = window.state.esterilizado ? 'esterilizado_bajo' : 'bajo';
+
+    const btn = document.getElementById('btn-toggle-esterilizado');
+    const sw = document.getElementById('esterilizado-switch');
+    const dot = document.getElementById('esterilizado-dot');
+    const label = document.getElementById('esterilizado-status-label');
+
+    if (btn && sw && dot && label) {
+        if (window.state.esterilizado) {
+            btn.classList.add('border-purple', 'bg-purple-light/80', 'dark:bg-purple/20');
+            btn.classList.remove('border-purple-border/50', 'dark:border-purple/30', 'bg-purple-light/40');
+            sw.classList.add('bg-purple', 'dark:bg-green');
+            sw.classList.remove('bg-gray-300', 'dark:bg-gray-700');
+            dot.classList.add('translate-x-[22px]');
+            dot.classList.remove('translate-x-0');
+            dot.textContent = '✓';
+            label.textContent = '✓ Marcado: Esterilizado / castrado (menor gasto calórico)';
+            label.className = 'text-[11px] font-bold text-purple dark:text-green mt-0.5 block';
+        } else {
+            btn.classList.remove('border-purple', 'bg-purple-light/80', 'dark:bg-purple/20');
+            btn.classList.add('border-purple-border/50', 'dark:border-purple/30', 'bg-purple-light/40');
+            sw.classList.remove('bg-purple', 'dark:bg-green');
+            sw.classList.add('bg-gray-300', 'dark:bg-gray-700');
+            dot.classList.remove('translate-x-[22px]');
+            dot.classList.add('translate-x-0');
+            dot.textContent = '';
+            label.textContent = 'No marcado · Cálculo preventivo por factor mínimo';
+            label.className = 'text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-0.5 block';
+        }
+    }
+
+    const tRes = document.getElementById('tu-resultado');
+    if (tRes) tRes.classList.remove('visible', 'show');
+
+    const eMsg = document.getElementById('errorMsg');
+    if (eMsg) eMsg.classList.remove('visible');
+};
+
+window.toggleEsterilizado = function () {
+    window.vibrate?.(20);
+    window.setEsterilizadoState(!window.state.esterilizado);
+};
+
 window.selectEtapa = function (v, btn) {
     window.vibrate(20);
     btn.parentElement.querySelectorAll('button').forEach(b => { b.classList.remove('active'); b.classList.add('opacity-60'); });
     btn.classList.add('active'); btn.classList.remove('opacity-60');
     window.state.etapa = v;
     window.state.cachorroEdad = null;
-    window.state.actividad = 'bajo'; // Fijo internamente en "Poco activo"
 
     const sCachorro = document.getElementById('sub-cachorro');
     if (sCachorro) sCachorro.classList.toggle('hidden', v !== 'cachorro');
 
     const sAct = document.getElementById('sub-actividad');
-    if (sAct) sAct.classList.add('hidden');
+    if (sAct) sAct.classList.toggle('hidden', v === 'cachorro');
+
+    if (v === 'cachorro') {
+        window.setEsterilizadoState(false);
+    }
 
     document.querySelectorAll('#sub-cachorro button').forEach(b => {
         b.classList.remove('active'); b.classList.add('opacity-60');
@@ -5365,10 +5405,6 @@ window.renderPortionBag = function (dailyGrams, presentationGrams, opts) {
             <g clip-path="url(#${bagUid}-clip)">
                 <rect class="mka-bag-fill" data-level="${lv.toFixed(4)}" x="8" y="16" width="62" height="76" fill="url(#${bagUid}-fill)" style="transform-box:view-box;transform-origin:39px 92px;transform:scaleY(${lv});"/>
             </g>
-            <!-- Cuatro divisiones iguales (25 / 50 / 75 % del área útil) -->
-            <path class="mka-bag-line" d="M12 35 H68"/>
-            <path class="mka-bag-line-strong" d="M12 54 H68"/>
-            <path class="mka-bag-line" d="M12 73 H68"/>
             <!-- Base discretamente definida -->
             <rect x="12" y="95" width="56" height="4.5" rx="2" fill="var(--bag-seal)" opacity="0.7"/>
             <path class="mka-bag-line" d="M12 94.5 H68" opacity="0.5"/>
@@ -5444,25 +5480,32 @@ window.renderActiveFeedingPlans = function () {
         const isSelected = isSelectedInCart || (!anyPlanForPet && plan.days === recommendedPlanDays);
 
         return `
-        <div role="button" tabindex="0" aria-pressed="${isSelected ? 'true' : 'false'}" data-plan-days="${plan.days}" data-selected-pres="${plan.presentationGrams}" class="feeding-plan-card compact-plan ${isSelected ? 'selected' : ''} bg-white dark:bg-darkcard rounded-2xl p-3 border border-purple-border/50 dark:border-purple/20 shadow-sm text-center transition-all cursor-pointer hover:-translate-y-1 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple relative" onclick="window.openPlanModal(${plan.days})" onkeydown="if(event.key==='Enter' || event.key===' ') { event.preventDefault(); window.openPlanModal(${plan.days}); }">
+        <div data-plan-days="${plan.days}" data-selected-pres="${plan.presentationGrams}" onclick="window.openPlanModal(${plan.days});" class="feeding-plan-card compact-plan ${isSelected ? 'selected' : ''} ${isMonthly ? 'is-monthly border-pink/60 dark:border-pink/40 ring-1 ring-pink/20' : 'border-purple-border/50 dark:border-purple/20'} bg-white dark:bg-darkcard rounded-2xl p-2.5 sm:p-3.5 border shadow-sm text-center transition-all hover:-translate-y-1 hover:shadow-md relative flex flex-col justify-between cursor-pointer select-none">
 
-            ${isMonthly ? '<div class="absolute top-0 left-0 right-0 bg-pink text-white text-[9px] font-black uppercase py-0.5 tracking-widest rounded-t-xl">Recomendado</div>' : ''}
+            ${isMonthly ? '<div class="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-pink text-white text-[8px] sm:text-[9px] font-black uppercase px-2.5 py-0.5 tracking-wider rounded-full shadow-sm whitespace-nowrap pointer-events-none z-20">Recomendado</div>' : ''}
 
-            <div class="compact-plan-inner flex flex-col items-center gap-2 py-2">
-                <span class="discount-pill">${discountPct} dcto.</span>
-                <div class="plan-card-name text-sm font-black text-purple-dark dark:text-white">${shortName}</div>
-                <div class="plan-card-days text-[11px] text-gray-500">${plan.days} días</div>
-
-                ${window.renderPortionBag(plan.dailyGrams, plan.presentationGrams, { variant: 'card', anchor: 'card-' + plan.days })}
-
-                <div class="mt-1 text-center">
-                    <div class="plan-price text-2xl font-extrabold text-purple-dark dark:text-white">$${plan.finalPrice.toFixed(2)}</div>
-                    <div class="plan-savings text-xs text-green-dark dark:text-green">Ahorras $${plan.savings.toFixed(2)}</div>
+            <div class="compact-plan-inner flex flex-col items-center w-full">
+                <!-- Descuento -->
+                <div class="min-h-[22px] flex items-center justify-center mb-1">
+                    <span class="discount-pill ${isMonthly ? 'discount-pill-monthly' : ''}">${discountPct} dcto.</span>
                 </div>
 
-                <button type="button" onclick="event.stopPropagation(); window.openPlanModal(${plan.days});" onkeydown="if(event.key==='Enter' || event.key===' ') { event.preventDefault(); event.stopPropagation(); window.openPlanModal(${plan.days}); }" class="mt-2 w-full py-2 px-3 bg-purple/10 dark:bg-purple/20 text-purple dark:text-white hover:bg-purple hover:text-white text-[12px] font-bold rounded-xl transition-all">Ver mi plan</button>
+                <!-- Plan -->
+                <div class="plan-card-name text-xs sm:text-base font-black text-purple-dark dark:text-white leading-tight mt-0.5">${shortName}</div>
+                <div class="plan-card-days text-[9px] sm:text-[11px] text-gray-500 dark:text-gray-400 font-semibold leading-tight mt-0.5">${plan.days} días</div>
+
+                <!-- Precio -->
+                <div class="my-2 sm:my-3 text-center w-full">
+                    <div class="plan-price text-sm sm:text-xl font-black text-purple-dark dark:text-white leading-tight">$${plan.finalPrice.toFixed(2)}</div>
+                    <div class="plan-savings text-[9px] sm:text-xs font-bold text-green-dark dark:text-green mt-0.5 leading-tight">Ahorras $${plan.savings.toFixed(2)}</div>
+                </div>
             </div>
 
+            <!-- Botón Ver plan -->
+            <button type="button" onclick="event.stopPropagation(); window.openPlanModal(${plan.days});" class="w-full py-1.5 sm:py-2 px-1 sm:px-2 bg-purple/10 dark:bg-purple/20 text-purple-dark dark:text-white hover:bg-purple hover:text-white text-[10px] sm:text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer shadow-xs active:scale-95">
+                <span>Ver plan</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
         </div>
         `;
     }).join('');
@@ -5475,7 +5518,6 @@ window.renderActiveFeedingPlans = function () {
         cardEls.forEach(el => el.classList.remove('selected'));
         const petName = String(window.state.nombreMascota || 'tu perro');
         const anyPlanForPet = !!(window.cart || []).find(i => i.type === 'feeding_plan' && ((i.petName || '').toLowerCase() === (petName || '').toLowerCase()));
-        // Recalcular plan recomendado
         const plansForRecommend = window.generateFeedingPlans(window.lastCalcResult?.gramos || 0, window.activePlanFormula || 'pollo', petName) || [];
         const recommended = plansForRecommend.reduce((best, p) => ((p.discountPct || 0) > (best.discountPct || 0) ? p : best), plansForRecommend[0] || null);
         const recommendedDays = recommended ? recommended.days : null;
@@ -5484,57 +5526,15 @@ window.renderActiveFeedingPlans = function () {
             const isSelectedInCart = !!(window.cart || []).find(i => i.type === 'feeding_plan' && i.days === days && ((i.petName || '').toLowerCase() === (petName || '').toLowerCase()));
             const shouldSelect = isSelectedInCart || (!anyPlanForPet && days === recommendedDays);
             if (shouldSelect) el.classList.add('selected'); else el.classList.remove('selected');
-            el.setAttribute('aria-pressed', shouldSelect ? 'true' : 'false');
         });
     } catch (e) { console.warn('Error aplicando selección visual a tarjetas:', e); }
 
     window.renderPresentationSelector?.();
-
-    // Mantener sincronizada la presentación de cada tarjeta con su bolsa
-    try {
-        const cardEls2 = Array.from(grid.querySelectorAll('.feeding-plan-card'));
-        cardEls2.forEach(card => {
-            const pres250 = card.querySelector('.plan-card-pres[data-pres-size="250"]');
-            const pres500 = card.querySelector('.plan-card-pres[data-pres-size="500"]');
-            const priceEl = card.querySelector('.plan-price');
-            const savingsEl = card.querySelector('.plan-savings');
-            const days = Number(card.getAttribute('data-plan-days')) || 7;
-            const formula = window.activePlanFormula || 'pollo';
-
-            const applyPres = (size) => {
-                // compute pricing for this card using chosen presentation
-                const sizing = size + 'gr';
-                const pricing = window.calculatePlanConsumption(window.lastCalcResult?.gramos || 0, days, formula, sizing);
-                if (!pricing) return;
-                // set selected attribute on card
-                card.setAttribute('data-selected-pres', pricing.presentationGrams || size);
-                // update displayed price/savings
-                if (priceEl) priceEl.textContent = `$${(pricing.finalPrice || pricing.subtotal || 0).toFixed(2)}`;
-                if (savingsEl) savingsEl.textContent = `Ahorras $${(pricing.discountAmount || 0).toFixed(2)}`;
-                // visual highlight
-                if (pres250) pres250.classList.toggle('pres-active', Number(size) === 250);
-                if (pres500) pres500.classList.toggle('pres-active', Number(size) === 500);
-                // update bag visual (animará solo si cambia el nivel)
-                try {
-                    const block = card.querySelector('.mka-portion-block');
-                    if (block) {
-                        const newHtml = window.renderPortionBag(window.lastCalcResult?.gramos || 0, pricing.presentationGrams || size, { variant: 'card', anchor: 'card-' + days });
-                        block.outerHTML = newHtml;
-                        window.animateProvisionBags(card, { force: true });
-                    }
-                } catch (e) { console.warn('Error updating bag visual on card', e); }
-            };
-
-            // initialize visuals based on data-selected-pres (la presentación
-            // sugerida ya viene del plan; aquí se sincroniza precio y nivel)
-            const initial = Number(card.getAttribute('data-selected-pres')) || Number(window.recommendPresentation(window.lastCalcResult?.gramos || 0, formula).size) || 500;
-            applyPres(initial === 500 ? 500 : 250);
-        });
-    } catch (e) { console.warn('Error setting up per-card presentation handlers', e); }
 };
 
 // Modal accesible de detalle de plan
 window._lastFocusBeforeModal = null;
+window._activeModalPlan = null;
 window.openPlanModal = function (days) {
     window.vibrate?.(20);
     if (!window.lastCalcResult?.gramos) {
@@ -5547,26 +5547,27 @@ window.openPlanModal = function (days) {
     const plans = window.generateFeedingPlans(dailyGrams, formula, petName);
     const plan = plans.find(p => p.days === Number(days));
     if (!plan) return;
+    window._activeModalPlan = plan;
 
     let dlg = document.getElementById('plan-modal');
     if (!dlg) {
         dlg = document.createElement('dialog');
         dlg.id = 'plan-modal';
-        dlg.className = 'plan-modal rounded-xl p-0 border-0 shadow-2xl';
+        dlg.className = 'plan-modal rounded-2xl p-0 border-0 shadow-2xl';
         dlg.setAttribute('aria-labelledby', 'plan-modal-title');
         dlg.setAttribute('aria-modal', 'true');
         dlg.innerHTML = `
             <div class="modal-inner w-full">
-                <div class="modal-content p-5">
+                <div class="modal-content p-5 sm:p-6">
                     <header class="flex items-center justify-between gap-3 mb-4">
                         <div>
                             <h2 id="plan-modal-title" class="text-xl font-black text-purple-dark leading-tight"></h2>
                             <div id="plan-modal-subtitle" class="text-xs text-gray-500 mt-0.5 font-medium"></div>
                         </div>
-                        <button aria-label="Cerrar" id="plan-modal-close" class="w-8 h-8 shrink-0 flex items-center justify-center rounded-full bg-gray-100 hover:bg-pink hover:text-white text-gray-500 transition-colors border-0 text-sm font-black">✕</button>
+                        <button aria-label="Cerrar modal" id="plan-modal-close" class="w-8 h-8 shrink-0 flex items-center justify-center rounded-full bg-gray-100 hover:bg-pink hover:text-white text-gray-500 transition-colors border-0 text-sm font-black cursor-pointer">✕</button>
                     </header>
                     <div id="plan-modal-body" class="space-y-3"></div>
-                    <div id="plan-modal-summary" class="mt-5"></div>
+                    <div id="plan-modal-summary" class="mt-5 space-y-2"></div>
                 </div>
             </div>
         `;
@@ -5583,56 +5584,63 @@ window.openPlanModal = function (days) {
     const subtitle = dlg.querySelector('#plan-modal-subtitle');
 
     title.textContent = plan.label.replace('Plan ', '');
-    subtitle.textContent = `${plan.formulaLabel} · ${plan.days} días`;
+    subtitle.textContent = `${plan.formulaLabel} · ${plan.days} días para ${plan.petName}`;
 
     const isMonthlyModal = plan.days === 30;
     const petNameDisplay = plan.petName || window.state.nombreMascota || 'tu perro';
-    const splitLine = plan.split ? `<div class="flex justify-between items-center">
-        <span class="text-gray-500 font-medium">Composición</span>
-        <span class="font-bold text-purple-dark">${plan.split.polloPct}% Pollo / ${plan.split.resPct}% Res</span>
-    </div>` : '';
+    const splitLine = plan.split ? `
+        <div class="flex justify-between items-center py-1">
+            <span class="text-gray-500 font-medium">Composición mixta</span>
+            <span class="font-bold text-purple-dark dark:text-white">${plan.split.polloPct}% Pollo (${(plan.split.polloGrams / 1000).toFixed(2)} kg) / ${plan.split.resPct}% Res (${(plan.split.resGrams / 1000).toFixed(2)} kg)</span>
+        </div>` : '';
 
-    // prepare pricing for both presentations so modal can show boxes
-    const pricing250 = window.calculatePlanConsumption(plan.dailyGrams, plan.days, plan.formula, '250gr');
-    const pricing500 = window.calculatePlanConsumption(plan.dailyGrams, plan.days, plan.formula, '500gr');
+    const bagsListHTML = (plan.bags || []).map(b => `
+        <div class="flex items-center justify-between text-xs font-bold py-1 border-b border-purple-border/10 last:border-b-0">
+            <span class="text-purple-dark dark:text-white flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-pink inline-block shrink-0"></span>
+                <span>${b.qty} bolsa(s) de ${b.weight} <span class="font-normal opacity-75">(${b.formulaName || (b.formula === 'pollo' ? 'Pollo' : 'Res')})</span></span>
+            </span>
+            <span class="text-gray-600 dark:text-gray-300 font-semibold">${(b.qty * b.grams / 1000).toFixed(2)} kg</span>
+        </div>
+    `).join('');
 
     body.innerHTML = `
-        <!-- Fila Compacta: Porción Diaria + Bolsa (ilustración lateral, sin marco decorativo) -->
+        <!-- Porción Diaria + Bolsa (ilustración SVG proporcional y continua) -->
         <div class="rounded-2xl bg-purple-light/40 dark:bg-purple/10 border border-purple-border/30 dark:border-purple/20 p-3.5 sm:p-4 select-none">
             ${window.renderPortionBag(plan.dailyGrams, plan.presentationGrams, { variant: 'modal', anchor: 'plan-modal' })}
         </div>
 
-        <!-- Selector de presentación (sincronizable con tarjeta) -->
-        <div class="mt-3 grid grid-cols-2 gap-3">
-            <div class="p-3 rounded-2xl border border-purple-border/20 text-center cursor-pointer ${plan.presentationGrams === 250 ? 'pres-active' : ''}" data-pres-select="250">
-                <div class="text-xs font-black text-purple-dark">250 g</div>
-                <div class="text-sm font-bold mt-2 modal-presentation-price">$${pricing250 ? (pricing250.finalPrice || pricing250.subtotal || 0).toFixed(2) : '—'}</div>
-                <div class="text-[11px] text-gray-500 mt-1 modal-presentation-qty">${pricing250 ? pricing250.totalBags + ' bolsa(s)' : ''}</div>
+        <!-- Composición de Bolsas Recomendada (calculada óptimamente, sin adivinar) -->
+        <div class="rounded-2xl bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 p-4 space-y-2">
+            <div class="flex items-center justify-between pb-2 border-b border-purple-border/20">
+                <span class="text-xs font-black uppercase tracking-wider text-purple-dark dark:text-white">Bolsas calculadas (${plan.bagsCount} en total)</span>
+                <span class="text-xs font-bold text-pink">${plan.days} días</span>
             </div>
-            <div class="p-3 rounded-2xl border border-purple-border/20 text-center cursor-pointer ${plan.presentationGrams === 500 ? 'pres-active' : ''}" data-pres-select="500">
-                <div class="text-xs font-black text-purple-dark">500 g</div>
-                <div class="text-sm font-bold mt-2 modal-presentation-price">$${pricing500 ? (pricing500.finalPrice || pricing500.subtotal || 0).toFixed(2) : '—'}</div>
-                <div class="text-[11px] text-gray-500 mt-1 modal-presentation-qty">${pricing500 ? pricing500.totalBags + ' bolsa(s)' : ''}</div>
+            <div class="space-y-0.5">
+                ${bagsListHTML}
+            </div>
+            <div class="pt-2 border-t border-purple-border/20 text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                Diseñado para consumir cada bolsa dentro de las <b>24 horas recomendadas</b> de refrigeración una vez abierta.
             </div>
         </div>
 
-        <!-- Precio destacado -->
-        <div class="rounded-2xl bg-gradient-to-r from-purple-dark to-purple p-4 text-white flex items-center justify-between shadow-md mt-4">
+        <!-- Precio destacado y ahorro -->
+        <div class="rounded-2xl bg-gradient-to-r from-purple-dark to-purple p-4 text-white flex items-center justify-between shadow-md">
             <div>
                 <span class="text-[10px] text-green-light font-bold uppercase block mb-0.5">Precio total del plan</span>
-                <span class="text-3xl font-black text-white leading-none modal-selected-price">$${Number(plan.finalPrice).toFixed(2)}</span>
-                <span class="block text-[11px] text-white/60 line-through mt-1 modal-original-price">Antes: $${Number(plan.originalPrice).toFixed(2)}</span>
+                <span class="text-3xl font-black text-white leading-none">$${Number(plan.finalPrice).toFixed(2)}</span>
+                <span class="block text-[11px] text-white/60 line-through mt-1">Antes: $${Number(plan.originalPrice).toFixed(2)}</span>
             </div>
             <div class="text-right">
-                <span class="inline-block bg-green text-purple-dark text-xs font-black px-3 py-1.5 rounded-xl shadow-sm modal-selected-savings">
+                <span class="inline-block bg-green text-purple-dark text-xs font-black px-3 py-1.5 rounded-xl shadow-sm">
                     Ahorras $${Number(plan.savings).toFixed(2)} (-${plan.discountPercent}%)
                 </span>
-                <div class="text-[11px] text-white/80 mt-1.5 font-medium modal-cost-per-day">~$${plan.costPerDay.toFixed(2)} / día</div>
+                <div class="text-[11px] text-white/80 mt-1.5 font-medium">~$${plan.costPerDay.toFixed(2)} / día</div>
             </div>
         </div>
 
-        <!-- Detalle de cantidades y conservación -->
-        <div class="rounded-2xl border border-purple-border/30 dark:border-purple/20 p-4 space-y-2.5 text-xs sm:text-sm bg-white dark:bg-darkcard">
+        <!-- Resumen de cantidades y regla de conservación -->
+        <div class="rounded-2xl border border-purple-border/30 dark:border-purple/20 p-4 space-y-2 text-xs bg-white dark:bg-darkcard">
             <div class="flex justify-between items-center pb-2 border-b border-purple-border/20">
                 <span class="text-gray-500 font-medium">Mascota</span>
                 <span class="font-black text-purple-dark dark:text-white">${window.escapeHTML(petNameDisplay)}</span>
@@ -5642,106 +5650,38 @@ window.openPlanModal = function (days) {
                 <span class="font-black text-purple-dark dark:text-white">${plan.dailyGrams} g/día</span>
             </div>
             <div class="flex justify-between items-center">
-                <span class="text-gray-500 font-medium">Presentación asignada</span>
-                <span class="font-bold text-purple-dark dark:text-white">${plan.presentation.replace('gr',' g')}</span>
-            </div>
-            <div class="flex justify-between items-center">
                 <span class="text-gray-500 font-medium">Alimento requerido (${plan.days} días)</span>
-                <span class="font-bold text-purple-dark dark:text-white">${(plan.requiredGrams / 1000).toFixed(2)} kg (${plan.requiredGrams} g)</span>
+                <span class="font-bold text-purple-dark dark:text-white">${(plan.requiredGrams / 1000).toFixed(2)} kg</span>
             </div>
             <div class="flex justify-between items-center">
-                <span class="text-gray-500 font-medium">Bolsas incluidas</span>
-                <span class="font-black text-purple-dark dark:text-white">${plan.bagsCount} bolsa(s)</span>
-            </div>
-            ${splitLine}
-            <div class="flex justify-between items-center pt-2 border-t border-purple-border/20">
-                <span class="text-gray-500 font-medium">Peso total comprado</span>
+                <span class="text-gray-500 font-medium">Alimento total provisto</span>
                 <span class="font-black text-green-dark dark:text-green">${(plan.totalGramsProvided / 1000).toFixed(2)} kg</span>
             </div>
-            ${plan.surplusGrams > 0 ? `
-            <div class="flex justify-between items-center text-pink font-semibold">
-                <span>Sobrante descartado por conservación</span>
-                <span>${plan.surplusGrams} g</span>
-            </div>` : ''}
-
-            <!-- Base de estimación de bolsas -->
-            <div class="mt-3 pt-2.5 border-t border-purple-border/20 text-[11px] leading-relaxed text-purple-dark/80 dark:text-gray-300 bg-purple-light/50 dark:bg-purple/10 p-3 rounded-xl">
-                <div class="font-bold mb-0.5 text-purple dark:text-green">💡 Base de estimación:</div>
-                <p>${plan.basisText || 'Estimación con apertura diaria; puede generar sobrantes.'}</p>
-                ${plan.wasteExplanation ? `<p class="mt-1 text-gray-500 dark:text-gray-400">${plan.wasteExplanation}</p>` : ''}
-            </div>
+            ${splitLine}
         </div>
     `;
     window.animateProvisionBags(body, { force: true });
 
     summary.innerHTML = `
-        <button id="plan-modal-choose" class="w-full ${isMonthlyModal ? 'bg-pink hover:bg-pink-dark' : 'bg-purple hover:bg-purple-dark'} text-white font-black py-4 rounded-xl text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg">
+        <button id="plan-modal-choose" type="button" class="w-full ${isMonthlyModal ? 'bg-pink hover:bg-pink-dark' : 'bg-purple hover:bg-purple-dark'} text-white font-black py-3.5 rounded-xl text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             Elegir ${String(plan.label.replace('Plan ', '')).toLowerCase()} ($${plan.finalPrice.toFixed(2)})
         </button>
+        <button id="plan-modal-download-pdf" type="button" class="w-full py-2.5 px-3 bg-purple/10 hover:bg-purple/20 text-purple-dark dark:text-purple-light font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer border border-purple/20">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Descargar mi guía de alimentación (PDF)</span>
+        </button>
     `;
 
-    summary.querySelector('#plan-modal-choose').addEventListener('click', (e) => { e.stopPropagation(); window.selectPlanFromModal(plan.days); });
+    summary.querySelector('#plan-modal-choose').addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.selectPlanFromModal(plan.days);
+    });
 
-    // Sincronizar selección entre modal y tarjeta
-    setTimeout(() => {
-        try {
-            const dlgEl = dlg;
-            const modalBoxes = Array.from(dlgEl.querySelectorAll('[data-pres-select]'));
-            const cardEl = document.querySelector(`.feeding-plan-card[data-plan-days="${plan.days}"]`);
-            const cardPrice = cardEl ? cardEl.querySelector('.plan-price') : null;
-            const cardSavings = cardEl ? cardEl.querySelector('.plan-savings') : null;
-
-            const applyModalChoice = (choice) => {
-                modalBoxes.forEach(b => b.classList.toggle('pres-active', b.getAttribute('data-pres-select') === String(choice)));
-                const pricing = window.calculatePlanConsumption(plan.dailyGrams, plan.days, plan.formula, choice + 'gr');
-                if (pricing) {
-                    const selPrice = dlgEl.querySelector('.modal-selected-price');
-                    const selSavings = dlgEl.querySelector('.modal-selected-savings');
-                    if (selPrice) selPrice.textContent = `$${(pricing.finalPrice || pricing.subtotal || 0).toFixed(2)}`;
-                    if (selSavings) selSavings.textContent = `Ahorras $${(pricing.discountAmount || 0).toFixed(2)} (-${pricing.discountPercent || 0}%)`;
-                    // update bag visuals (modal y tarjeta) con la presentación elegida
-                    const presGrams = pricing.presentationGrams || choice;
-                    try {
-                        const modalBlock = dlgEl.querySelector('.mka-portion-block[data-anchor="plan-modal"]');
-                        if (modalBlock) {
-                            modalBlock.outerHTML = window.renderPortionBag(plan.dailyGrams, presGrams, { variant: 'modal', anchor: 'plan-modal' });
-                        }
-                    } catch (e) { console.warn('Error updating bag visual in modal', e); }
-                    // update card visuals too
-                    if (cardEl) {
-                        cardEl.setAttribute('data-selected-pres', pricing.presentationGrams || choice);
-                        if (cardPrice) cardPrice.textContent = `$${(pricing.finalPrice || pricing.subtotal || 0).toFixed(2)}`;
-                        if (cardSavings) cardSavings.textContent = `Ahorras $${(pricing.discountAmount || 0).toFixed(2)}`;
-                        // highlight pres boxes on card
-                        const pres250 = cardEl.querySelector('.plan-card-pres[data-pres-size="250"]');
-                        const pres500 = cardEl.querySelector('.plan-card-pres[data-pres-size="500"]');
-                        if (pres250) pres250.classList.toggle('pres-active', Number(choice) === 250);
-                        if (pres500) pres500.classList.toggle('pres-active', Number(choice) === 500);
-                        // update bag visual on card
-                        try {
-                            const block = cardEl.querySelector('.mka-portion-block');
-                            if (block) {
-                                block.outerHTML = window.renderPortionBag(plan.dailyGrams, presGrams, { variant: 'card', anchor: 'card-' + plan.days });
-                            }
-                        } catch (e) { console.warn('Error updating bag visual from modal selection', e); }
-                    }
-                    // Animamos todos los bloques recién renderizados (modal + tarjeta)
-                    window.animateProvisionBags(document, { force: true });
-                }
-            };
-
-            modalBoxes.forEach(b => b.addEventListener('click', (ev) => {
-                ev.stopPropagation();
-                const choice = Number(b.getAttribute('data-pres-select')) || 500;
-                applyModalChoice(choice);
-            }));
-
-            // initialize modal selection from card or plan
-            const initial = cardEl ? Number(cardEl.getAttribute('data-selected-pres')) || plan.presentationGrams : plan.presentationGrams;
-            applyModalChoice(initial || 500);
-        } catch (e) { console.warn('Error sincronizando modal y tarjeta', e); }
-    }, 50);
+    summary.querySelector('#plan-modal-download-pdf').addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.descargarGuiaAlimentacion(plan);
+    });
 
     window._lastFocusBeforeModal = document.activeElement;
     try { if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open',''); } catch (e) { dlg.setAttribute('open',''); }
@@ -5749,7 +5689,23 @@ window.openPlanModal = function (days) {
     const focusable = dlg.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
     if (focusable) focusable.focus();
 
-    window._planModalKeyHandler = function (ev) { if (ev.key === 'Escape') { window.closePlanModal(); } };
+    window._planModalKeyHandler = function (ev) {
+        if (ev.key === 'Escape') {
+            window.closePlanModal();
+        } else if (ev.key === 'Tab') {
+            const focusables = Array.from(dlg.querySelectorAll('button:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+            if (!focusables.length) return;
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+            if (ev.shiftKey && document.activeElement === first) {
+                ev.preventDefault();
+                last.focus();
+            } else if (!ev.shiftKey && document.activeElement === last) {
+                ev.preventDefault();
+                first.focus();
+            }
+        }
+    };
     document.addEventListener('keydown', window._planModalKeyHandler);
 };
 
@@ -5757,42 +5713,28 @@ window.closePlanModal = function () {
     const dlg = document.getElementById('plan-modal');
     if (!dlg) return;
     try { if (typeof dlg.close === 'function') dlg.close(); else dlg.removeAttribute('open'); } catch (e) { dlg.removeAttribute('open'); }
-    document.removeEventListener('keydown', window._planModalKeyHandler);
-    if (window._lastFocusBeforeModal && typeof window._lastFocusBeforeModal.focus === 'function') window._lastFocusBeforeModal.focus();
+    if (window._planModalKeyHandler) document.removeEventListener('keydown', window._planModalKeyHandler);
+    if (window._lastFocusBeforeModal && typeof window._lastFocusBeforeModal.focus === 'function') {
+        window._lastFocusBeforeModal.focus();
+    }
     window._lastFocusBeforeModal = null;
+    window._activeModalPlan = null;
 };
 
 window.selectPlanFromModal = function (days) {
     if (!window.lastCalcResult?.gramos) { window.showToast?.('Calcula primero la porción de tu perro.'); return; }
     const formula = window.activePlanFormula || 'pollo';
     const petName = window.state.nombreMascota || 'tu perro';
-    // Prefer presentation selected in the modal (data-pres-select .pres-active), then card, then global
-    let chosenPresentation = window.activePlanPresentation || '500gr';
-    try {
-        const dlg = document.getElementById('plan-modal');
-        if (dlg) {
-            const sel = dlg.querySelector('[data-pres-select].pres-active');
-            if (sel) chosenPresentation = (Number(sel.getAttribute('data-pres-select')) || 500) + 'gr';
-        }
-        if (!dlg) {
-            const card = document.querySelector(`.feeding-plan-card[data-plan-days="${days}"]`);
-            if (card) {
-                const selCard = Number(card.getAttribute('data-selected-pres')) || null;
-                if (selCard) chosenPresentation = selCard + 'gr';
-            }
-        }
-    } catch (e) { console.warn('Error reading selected presentation for plan:', e); }
-
-    const plan = window.buildFeedingPlan(window.lastCalcResult.gramos, days, formula, petName, chosenPresentation);
+    const plan = window.buildFeedingPlan(window.lastCalcResult.gramos, days, formula, petName);
     window.addFeedingPlanToCart(plan);
     window.renderActiveFeedingPlans();
     window.closePlanModal();
-    window.showToast?.('Plan seleccionado. Revisa el resumen del pedido.', 'success');
+    window.showToast?.('Plan agregado a tu pedido.', 'success');
 };
 
 window.selectPlanPresentation = function (size) {
     window.vibrate?.(20);
-    if (size !== '250gr' && size !== '500gr') size = '500gr';
+    if (size !== '250gr' && size !== '550gr') size = '550gr';
     window.activePlanPresentation = size;
     window.__presentationUserTouched = true;
     window.renderPresentationSelector?.();
@@ -5801,13 +5743,11 @@ window.selectPlanPresentation = function (size) {
 
 window.renderPresentationSelector = function () {
     const formula = window.activePlanFormula || 'pollo';
-    const sel = window.activePlanPresentation || '500gr';
-
-    // Etiquetas de precio según fórmula activa
+    const sel = window.activePlanPresentation || '550gr';
     const getLabel = (f, sz) => {
         const p = window.getPresentationBySize?.(f, sz);
         if (p) return '$' + Number(p.price).toFixed(2);
-        if (f === 'mixto') return sz === '250gr' ? '$2.50–$3.50' : '$5.00–$7.00';
+        if (f === 'mixto') return sz === '250gr' ? '$2.50–$3.50' : '$5.50–$7.70';
         return '';
     };
     document.querySelectorAll('#plan-presentation-selector .presentation-price').forEach(el => {
@@ -5900,7 +5840,7 @@ window.updatePlanDuration = function (planId, newDays) {
     window.vibrate?.(20);
     const plan = window.cart.find(i => i.id === planId);
     if (!plan) return;
-    const updated = window.buildFeedingPlan(plan.dailyGrams, newDays, plan.formula, plan.petName, plan.presentation || window.activePlanPresentation);
+    const updated = window.buildFeedingPlan(plan.dailyGrams, newDays, plan.formula, plan.petName, null);
     Object.assign(plan, updated, { id: planId, type: 'feeding_plan' });
     window.updateCartUI();
     window.saveCartToStorage?.();
@@ -5911,11 +5851,36 @@ window.updatePlanFormula = function (planId, newFormula) {
     window.vibrate?.(20);
     const plan = window.cart.find(i => i.id === planId);
     if (!plan) return;
-    const updated = window.buildFeedingPlan(plan.dailyGrams, plan.days, newFormula, plan.petName, plan.presentation || window.activePlanPresentation);
+    const updated = window.buildFeedingPlan(plan.dailyGrams, plan.days, newFormula, plan.petName, null);
     Object.assign(plan, updated, { id: planId, type: 'feeding_plan' });
     window.updateCartUI();
     window.saveCartToStorage?.();
     window.showToast?.(`Fórmula actualizada.`, 'success');
+};
+
+window.editarPlanDesdeCarrito = function (planId) {
+    window.vibrate?.(20);
+    const plan = (window.cart || []).find(i => i.id === planId);
+    if (!plan) return;
+    window.state.nombreMascota = plan.petName || '';
+    window.activePlanFormula = plan.formula || 'pollo';
+    const nombreInput = document.getElementById('calc-nombre');
+    if (nombreInput) nombreInput.value = plan.petName || '';
+    if (plan.petWeight) {
+        const pesoInput = document.getElementById('pesoInput');
+        if (pesoInput) pesoInput.value = plan.petWeight;
+    }
+    window.cambiarFormulaPlan?.(plan.formula || 'pollo');
+    window.navigateTo('view-calc');
+    setTimeout(() => {
+        const resEl = document.getElementById('tu-resultado');
+        if (resEl && resEl.classList.contains('show')) {
+            resEl.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            const calcSec = document.getElementById('calculadora');
+            if (calcSec) calcSec.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, 200);
 };
 
 window.calcularRacion = function () {
@@ -5929,19 +5894,6 @@ window.calcularRacion = function () {
     if (!calcNombreInput || !pesoInputEl || !err) return;
 
     window.state.nombreMascota = calcNombreInput.value.trim();
-    const rawPesoText = String(pesoInputEl.value || '').trim();
-    if (/[a-zA-Z@]/.test(rawPesoText)) {
-        pesoInputEl.value = '';
-        err.textContent = "Ingresa el peso en kg (solo números mayores a 0).";
-        err.classList.add('visible');
-        const tRes = document.getElementById('tu-resultado');
-        if (tRes) tRes.classList.remove('visible', 'show');
-        pesoInputEl.focus();
-        return;
-    }
-    const pesoText = rawPesoText.replace(',', '.');
-    const peso = parseFloat(pesoText);
-
     if (!window.state.nombreMascota) {
         err.textContent = "Ingresa el nombre de tu perro en el Paso 1 para continuar.";
         err.classList.add('visible');
@@ -5951,10 +5903,29 @@ window.calcularRacion = function () {
         return;
     }
 
-    window.state.actividad = 'bajo'; // Fijo internamente en "Poco activo"
+    const rawPesoText = String(pesoInputEl.value || '').trim();
+    const pesoText = rawPesoText.replace(',', '.');
+    const peso = parseFloat(pesoText);
 
-    if (!window.state.etapa || (window.state.etapa === 'cachorro' && !window.state.cachorroEdad) || !peso || peso <= 0) {
-        err.textContent = "Completa la etapa de vida y el peso de tu perro para calcular su porción orientativa.";
+    if (!rawPesoText || isNaN(peso) || !isFinite(peso) || peso < 0.5 || peso > 100 || !/^\d+(\.\d+)?$/.test(pesoText)) {
+        err.textContent = "Ingresa un peso válido entre 0.5 kg y 100 kg (solo números).";
+        err.classList.add('visible');
+        const tRes = document.getElementById('tu-resultado');
+        if (tRes) tRes.classList.remove('visible', 'show');
+        pesoInputEl.focus();
+        return;
+    }
+
+    if (!window.state.etapa) {
+        err.textContent = "Selecciona la etapa de vida de tu perro para calcular su porción orientativa.";
+        err.classList.add('visible');
+        const tRes = document.getElementById('tu-resultado');
+        if (tRes) tRes.classList.remove('visible', 'show');
+        return;
+    }
+
+    if (window.state.etapa === 'cachorro' && !window.state.cachorroEdad) {
+        err.textContent = "Selecciona la edad de tu cachorro para calcular su porción orientativa.";
         err.classList.add('visible');
         const tRes = document.getElementById('tu-resultado');
         if (tRes) tRes.classList.remove('visible', 'show');
@@ -5962,17 +5933,37 @@ window.calcularRacion = function () {
     }
     err.classList.remove('visible');
 
-    // Factor fijado internamente según "Poco activo" (bajo)
-    const factor = window.state.etapa === 'cachorro' ? ({ '2-4': 3, '4-6': 2.5, '6-9': 2, '9-12': 1.8 }[window.state.cachorroEdad] || 2) : (window.state.etapa === 'adulto' ? 1.4 : 1.2);
+    // Factor mínimo preventivo para evitar sobrepeso, o factor específico de esterilizado
+    let factor;
+    if (window.state.etapa === 'cachorro') {
+        factor = { '2-4': 3.0, '4-6': 2.5, '6-9': 2.0, '9-12': 1.8 }[window.state.cachorroEdad] || 2.0;
+    } else if (window.state.etapa === 'adulto') {
+        factor = window.state.esterilizado ? 1.2 : 1.4; // 1.4 factor mínimo preventivo
+    } else { // senior
+        factor = window.state.esterilizado ? 1.1 : 1.2; // 1.2 factor mínimo preventivo
+    }
+
     const gramos = Math.round((70 * Math.pow(peso, 0.75) * factor) / 1.25);
     const comidas = window.state.etapa === 'cachorro' ? (['2-4', '4-6'].includes(window.state.cachorroEdad) ? 4 : 3) : 2;
+
+    const basePortion = Math.floor(gramos / comidas);
+    const remainder = gramos % comidas;
+    const mealPortions = [];
+    for (let i = 0; i < comidas; i++) {
+        mealPortions.push(basePortion + (i < remainder ? 1 : 0));
+    }
 
     const titleName = document.getElementById('result-title-name');
     if (titleName) titleName.textContent = `Porción orientativa para ${window.state.nombreMascota}`;
 
     const subtitlePet = document.getElementById('result-subtitle-pet');
-    const etapaLabel = window.state.etapa === 'cachorro' ? `Cachorro (${window.state.cachorroEdad} meses)` : (window.state.etapa === 'senior' ? 'Senior' : 'Adulto');
-    if (subtitlePet) subtitlePet.textContent = `${etapaLabel} · ${peso} kg`;
+    const etapaLabel = window.state.etapa === 'cachorro'
+        ? `Cachorro (${window.state.cachorroEdad} meses)`
+        : (window.state.etapa === 'senior' ? 'Senior' : 'Adulto');
+    const condLabel = window.state.etapa === 'cachorro'
+        ? ''
+        : (window.state.esterilizado ? ' · Esterilizado' : ' · Factor mínimo preventivo');
+    if (subtitlePet) subtitlePet.textContent = `${etapaLabel}${condLabel} · ${peso} kg`;
 
     const rGrams = document.getElementById('result-grams');
     if (rGrams) rGrams.textContent = gramos;
@@ -5984,7 +5975,13 @@ window.calcularRacion = function () {
     if (rComidas) rComidas.textContent = comidas + (comidas === 1 ? " vez al día" : " veces al día");
 
     const rPorComida = document.getElementById('r-por-comida');
-    if (rPorComida) rPorComida.textContent = Math.round(gramos / comidas) + "g";
+    if (rPorComida) {
+        if (remainder === 0) {
+            rPorComida.textContent = `${basePortion}g`;
+        } else {
+            rPorComida.textContent = `~${Math.round(gramos / comidas)}g (${mealPortions.map((p, idx) => `C${idx + 1}: ${p}g`).join(', ')})`;
+        }
+    }
 
     const noteEl = document.getElementById('r-note');
     if (noteEl) {
@@ -6002,10 +5999,12 @@ window.calcularRacion = function () {
     }
     const recExpEl = document.getElementById('rec-pres-explanation');
     if (recExpEl) {
-        if (rec.available) {
-            recExpEl.textContent = rec.reason;
-        } else {
+        if (!rec.available) {
             recExpEl.textContent = `La presentación recomendada de ${rec.label} no está disponible actualmente.`;
+            recExpEl.classList.remove('hidden');
+        } else {
+            recExpEl.textContent = '';
+            recExpEl.classList.add('hidden');
         }
     }
 
@@ -6020,10 +6019,12 @@ window.calcularRacion = function () {
         tipo: 'perro',
         etapa: window.state.etapa,
         cachorroEdad: window.state.cachorroEdad,
-        actividad: 'bajo',
+        esterilizado: !!window.state.esterilizado,
+        actividad: window.state.esterilizado ? 'esterilizado_bajo' : 'bajo',
         peso,
         gramos,
         comidas,
+        mealPortions,
         porComida: Math.round(gramos / comidas),
         calcVersion: window.MILKARF_CONFIG.calcEngineVersion,
         calculatedAt: new Date().toISOString()
@@ -6046,10 +6047,7 @@ window.calcularRacion = function () {
                     const resRect = tuRes.getBoundingClientRect();
                     const deltaY = resRect.top - containerRect.top - 20;
                     if (typeof scrollContainer.scrollBy === 'function') {
-                        scrollContainer.scrollBy({
-                            top: deltaY,
-                            behavior: 'smooth'
-                        });
+                        scrollContainer.scrollBy({ top: deltaY, behavior: 'smooth' });
                     } else {
                         scrollContainer.scrollTop += deltaY;
                     }
@@ -6124,6 +6122,7 @@ window.applyWeightButtonStyle = function (groupId, selectedButton, weight) {
 
     const styles = {
         '250gr': { bg: '#421d8e', border: '#421d8e', color: '#ffffff', shadow: '0 8px 18px rgba(66,29,142,0.25)' },
+        '550gr': { bg: '#d72b8f', border: '#d72b8f', color: '#ffffff', shadow: '0 8px 18px rgba(215,43,143,0.25)' },
         '500gr': { bg: '#d72b8f', border: '#d72b8f', color: '#ffffff', shadow: '0 8px 18px rgba(215,43,143,0.25)' }
     };
     const s = styles[weight] || styles['250gr'];
@@ -6364,7 +6363,7 @@ window.updateCartUI = function () {
                 const petWeightText = Number(i.petWeight) ? ` · ${Number(i.petWeight)} kg` : '';
                 const curDays = Number(i.durationDays || 7);
                 const curFormula = i.formula || 'pollo';
-                const curPres = i.presentation || '500gr';
+                const curPres = i.presentation || '550gr';
 
                 return `
                     <div class="bg-white dark:bg-darkcard rounded-3xl border-2 border-purple/20 dark:border-purple/30 p-5 sm:p-6 shadow-md transition-all text-left relative overflow-hidden mb-4">
@@ -6381,13 +6380,19 @@ window.updateCartUI = function () {
                                     Ración: <span class="text-purple font-black">${i.dailyGrams} g/día</span> · Duración: <span class="font-bold text-pink">${curDays} días</span>${petWeightText}
                                 </p>
                             </div>
-                            <button onclick="window.removeFromCartAt(${idx})" class="w-10 h-10 bg-pink/10 hover:bg-pink text-pink hover:text-white rounded-2xl flex items-center justify-center transition-all active:scale-90 shrink-0 touch-target-safe shadow-sm" aria-label="Eliminar plan">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <button type="button" onclick="window.editarPlanDesdeCarrito('${i.id}')" class="px-3 py-2 bg-purple/10 hover:bg-purple text-purple-dark hover:text-white dark:text-purple-light dark:hover:text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95" title="Modificar ración o datos de la mascota">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                    <span>Editar</span>
+                                </button>
+                                <button onclick="window.removeFromCartAt(${idx})" class="w-10 h-10 bg-pink/10 hover:bg-pink text-pink hover:text-white rounded-2xl flex items-center justify-center transition-all active:scale-90 touch-target-safe shadow-sm cursor-pointer" aria-label="Eliminar plan">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
                         </div>
 
-                        <!-- Selector inline de duración, fórmula y presentación -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 my-4 bg-purple-light/50 dark:bg-[#0d0718] p-3.5 rounded-2xl border border-purple-border/30 dark:border-purple/20">
+                        <!-- Selector inline de duración y fórmula -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 my-4 bg-purple-light/50 dark:bg-[#0d0718] p-3.5 rounded-2xl border border-purple-border/30 dark:border-purple/20">
                             <div>
                                 <span class="text-[10px] font-black uppercase tracking-wider text-purple/60 dark:text-gray-400 block mb-1.5">Duración del plan:</span>
                                 <div class="grid grid-cols-3 gap-1.5">
@@ -6416,36 +6421,21 @@ window.updateCartUI = function () {
                                     </button>
                                 </div>
                             </div>
-                            <div>
-                                <span class="text-[10px] font-black uppercase tracking-wider text-purple/60 dark:text-gray-400 block mb-1.5">Presentación:</span>
-                                <div class="grid grid-cols-2 gap-1.5">
-                                    <button type="button" onclick="window.updatePlanPresentation('${i.id}', '250gr')" class="py-1.5 px-2 text-[11px] font-black rounded-xl border transition-all ${curPres === '250gr' ? 'bg-purple text-white border-purple shadow-sm' : 'bg-white dark:bg-darkbg text-purple-dark dark:text-white border-purple/20 hover:border-purple/50'}">
-                                        ≤250 g
-                                    </button>
-                                    <button type="button" onclick="window.updatePlanPresentation('${i.id}', '500gr')" class="py-1.5 px-2 text-[11px] font-black rounded-xl border transition-all ${curPres === '500gr' ? 'bg-purple text-white border-purple shadow-sm' : 'bg-white dark:bg-darkbg text-purple-dark dark:text-white border-purple/20 hover:border-purple/50'}">
-                                        ≤500 g
-                                    </button>
-                                </div>
-                            </div>
                         </div>
 
-                        <!-- Detalle de porciones, presentación y excedente -->
+                        <!-- Detalle de porciones y composición calculada -->
                         <div class="space-y-2 text-xs text-gray-600 dark:text-gray-300 font-medium mb-4">
                             <div class="flex items-center justify-between">
-                                <span class="flex items-center gap-1.5"><i data-lucide="package" class="w-3.5 h-3.5 text-purple"></i> Presentación / bolsas:</span>
-                                <span class="font-bold text-purple-dark dark:text-white">${curPres === '250gr' ? '≤250 g' : '≤500 g'}</span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="flex items-center gap-1.5"><i data-lucide="shopping-bag" class="w-3.5 h-3.5 text-pink"></i> Bolsas en el plan:</span>
-                                <span class="font-bold text-purple-dark dark:text-white">${window.escapeHTML(bagsDesc)}</span>
+                                <span class="flex items-center gap-1.5 font-bold text-purple-dark dark:text-white"><i data-lucide="shopping-bag" class="w-3.5 h-3.5 text-pink"></i> Bolsas en el plan:</span>
+                                <span class="font-black text-purple-dark dark:text-white">${window.escapeHTML(bagsDesc || `${i.bagsCount || 0} bolsa(s)`)}</span>
                             </div>
                             <div class="flex items-center justify-between">
                                 <span>Alimento requerido:</span>
                                 <span class="font-bold text-purple-dark dark:text-white">${kgReq} kg (${i.durationDays} días × ${i.dailyGrams}g)</span>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span>Total incluido:</span>
-                                <span class="font-bold text-emerald-600 dark:text-emerald-400">${kgProv} kg ${surplusG > 0 ? `(+${surplusG}g sin costo adicional)` : ''}</span>
+                                <span>Total provisto:</span>
+                                <span class="font-bold text-emerald-600 dark:text-emerald-400">${kgProv} kg</span>
                             </div>
                         </div>
 
@@ -8367,13 +8357,13 @@ window.prepareOrderForCheckout = function () {
                 totalGramsProvided: Number(i.totalGramsProvided || 0),
                 surplusGrams: Number(i.surplusGrams || 0),
                 bags: i.bags || [],
-                presentation: i.presentation || (Array.isArray(i.bags) && i.bags[0] ? i.bags[0].weight : '500gr'),
+                presentation: i.presentation || (Array.isArray(i.bags) && i.bags[0] ? i.bags[0].weight : '550gr'),
                 presentationGrams: Number(i.presentationGrams || 0),
                 presentationPrice: Number(i.presentationPrice || 0),
                 bagsCount: Number(i.bagsCount) || (Array.isArray(i.bags) ? i.bags.reduce((s, b) => s + (Number(b.qty) || 0), 0) : 0),
                 petWeight: Number(i.petWeight) || null,
                 presentationBreakdown: i.presentationBreakdown || {
-                    bagSize: i.presentation || (Array.isArray(i.bags) && i.bags[0] ? i.bags[0].weight : '500gr'),
+                    bagSize: i.presentation || (Array.isArray(i.bags) && i.bags[0] ? i.bags[0].weight : '550gr'),
                     bagGrams: Number(i.presentationGrams || 0),
                     bagPrice: Number(i.presentationPrice || 0),
                     bagsCount: Number(i.bagsCount) || 0,
@@ -9228,3 +9218,480 @@ window.initFallbackEventDelegation = function () {
 
 // Run the fallback shortly after init to recover icons/listeners if something blocked earlier
 setTimeout(() => { try { window.initFallbackEventDelegation(); } catch (e) {} }, 600);
+
+// =========================================================================
+// GENERACIÓN DE GUÍAS EN PDF (jsPDF Client-Side)
+// =========================================================================
+window.getJsPdfLib = async function () {
+    if (window.jspdf && (window.jspdf.jsPDF || window.jspdf.default)) {
+        return window.jspdf.jsPDF || window.jspdf.default;
+    }
+    return new Promise((resolve, reject) => {
+        let attempts = 0;
+        const interval = setInterval(() => {
+            attempts++;
+            if (window.jspdf && (window.jspdf.jsPDF || window.jspdf.default)) {
+                clearInterval(interval);
+                resolve(window.jspdf.jsPDF || window.jspdf.default);
+            } else if (attempts > 25) {
+                clearInterval(interval);
+                const s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
+                s.onload = () => {
+                    if (window.jspdf && (window.jspdf.jsPDF || window.jspdf.default)) {
+                        resolve(window.jspdf.jsPDF || window.jspdf.default);
+                    } else {
+                        reject(new Error('jsPDF no se pudo inicializar'));
+                    }
+                };
+                s.onerror = () => reject(new Error('No se pudo descargar la librería jsPDF'));
+                document.head.appendChild(s);
+            }
+        }, 100);
+    });
+};
+
+window.descargarGuiaAlimentacion = async function (planData = null) {
+    window.vibrate?.(20);
+    try {
+        const jsPDFClass = await window.getJsPdfLib();
+        if (!jsPDFClass) {
+            window.showToast?.('No se pudo cargar el generador de PDF. Intenta de nuevo.');
+            return;
+        }
+
+        const plan = planData || window._activeModalPlan || (window.lastCalcResult?.gramos ? window.buildFeedingPlan(window.lastCalcResult.gramos, 7, window.activePlanFormula || 'pollo', window.state.nombreMascota) : null);
+        if (!plan) {
+            window.showToast?.('Calcula primero la porción de tu mascota para generar su guía personalizada.');
+            return;
+        }
+
+        window.showToast?.('Generando guía en PDF...', 'success');
+
+        const doc = new jsPDFClass({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        const petName = String(plan.petName || window.state.nombreMascota || 'Tu perro').trim();
+        const petWeight = plan.petWeight || window.lastCalcResult?.peso || '—';
+        const etapa = window.lastCalcResult?.etapa === 'cachorro' ? `Cachorro (${window.lastCalcResult.cachorroEdad || ''}m)` : (window.lastCalcResult?.etapa === 'senior' ? 'Senior' : 'Adulto');
+        const dailyGrams = Number(plan.dailyGrams || window.lastCalcResult?.gramos || 0);
+        const days = Number(plan.days || plan.durationDays || 7);
+        const formulaLabel = plan.formulaLabel || (plan.formula === 'pollo' ? 'Pollo con Zanahoria' : (plan.formula === 'res' ? 'Carne de Res con Calabacín' : 'Plan Mixto (Pollo y Res)'));
+        const comidas = Number(window.lastCalcResult?.comidas || (etapa.startsWith('Cachorro') ? 3 : 2));
+        const mealPortions = window.lastCalcResult?.mealPortions || [Math.round(dailyGrams / comidas)];
+        const totalProvKg = ((plan.totalGramsProvided || (dailyGrams * days)) / 1000).toFixed(2);
+        const bags = plan.bags || [];
+
+        // Paleta de colores Milkarf
+        const cPurpleDark = [46, 16, 96];      // #2E1060
+        const cPurple = [66, 29, 142];         // #421D8E
+        const cGreen = [185, 203, 37];         // #B9CB25
+        const cPink = [215, 43, 143];          // #D72B8F
+        const cCardBg = [246, 243, 252];       // Tinte suave morado
+        const cTextDark = [30, 16, 53];        // #1E1035
+        const cTextGray = [100, 105, 120];
+
+        // 1. BANNER DE CABECERA
+        doc.setFillColor(...cPurpleDark);
+        doc.rect(0, 0, 210, 30, 'F');
+
+        doc.setFillColor(...cGreen);
+        doc.rect(0, 30, 210, 2.5, 'F');
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(22);
+        doc.text('MILKARF', 16, 16);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.5);
+        doc.text('ALIMENTACIÓN NATURAL COCINADA PARA PERROS', 16, 23);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.text('GUÍA DE ALIMENTACIÓN Y MANEJO', 194, 15, { align: 'right' });
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.text('milkarf.com · WhatsApp: +58 412 181 2947', 194, 22, { align: 'right' });
+
+        // 2. SECCIÓN: DATOS DE LA MASCOTA Y PLAN
+        let y = 39;
+        doc.setFillColor(...cCardBg);
+        doc.roundedRect(14, y, 182, 34, 3, 3, 'F');
+        doc.setDrawColor(210, 200, 230);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(14, y, 182, 34, 3, 3, 'D');
+
+        doc.setTextColor(...cPurpleDark);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.text('1. PLAN NUTRICIONAL PERSONALIZADO', 18, y + 6);
+
+        doc.setFontSize(8.5);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...cTextDark);
+
+        // Columna Izquierda
+        doc.text(`Mascota: `, 18, y + 13);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${petName} (${etapa} · ${petWeight} kg)`, 34, y + 13);
+        doc.setFont('helvetica', 'normal');
+
+        doc.text(`Ración diaria: `, 18, y + 19);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${dailyGrams} g/día`, 39, y + 19);
+        doc.setFont('helvetica', 'normal');
+
+        doc.text(`Reparto por comida: `, 18, y + 25);
+        doc.setFont('helvetica', 'bold');
+        const mealStr = `${comidas} comidas al día (${mealPortions.map((g, idx) => `C${idx+1}: ${g}g`).join(', ')})`;
+        doc.text(mealStr, 48, y + 25);
+        doc.setFont('helvetica', 'normal');
+
+        // Columna Derecha
+        doc.text(`Receta: `, 115, y + 13);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${formulaLabel}`, 129, y + 13);
+        doc.setFont('helvetica', 'normal');
+
+        doc.text(`Duración del plan: `, 115, y + 19);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${days} días de alimentación`, 144, y + 19);
+        doc.setFont('helvetica', 'normal');
+
+        doc.text(`Alimento provisto: `, 115, y + 25);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(30, 120, 60);
+        doc.text(`${totalProvKg} kg (${plan.bagsCount || bags.length} bolsas)`, 144, y + 25);
+        doc.setTextColor(...cTextDark);
+
+        // 3. SECCIÓN: COMPOSICIÓN DE BOLSAS RECOMENDADA
+        y = 78;
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(14, y, 182, 38, 3, 3, 'F');
+        doc.setDrawColor(210, 200, 230);
+        doc.roundedRect(14, y, 182, 38, 3, 3, 'D');
+
+        doc.setTextColor(...cPurpleDark);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.text('2. COMPOSICIÓN DE BOLSAS (REGLA DE CONSERVACIÓN 24 HORAS)', 18, y + 6);
+
+        doc.setFontSize(8.5);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...cTextDark);
+
+        let by = y + 12;
+        if (bags.length > 0) {
+            bags.forEach(b => {
+                doc.setFillColor(...cPink);
+                doc.circle(20, by - 1, 1, 'F');
+                doc.setFont('helvetica', 'bold');
+                doc.text(`${b.qty} bolsa(s) de ${b.weight}`, 24, by);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`— ${b.formulaName || (b.formula === 'pollo' ? 'Pollo con Zanahoria' : 'Carne de Res con Calabacín')} (${(b.qty * b.grams / 1000).toFixed(2)} kg)`, 62, by);
+                by += 5;
+            });
+        } else {
+            doc.text(`• ${plan.bagsCount || '—'} bolsas recomendadas según ración diaria.`, 20, by);
+            by += 5;
+        }
+
+        doc.setFontSize(7.5);
+        doc.setTextColor(...cTextGray);
+        doc.text(`• Criterio de formulación: Las presentaciones de 250 g y 550 g se combinan para garantizar que cada bolsa`, 18, by + 2);
+        doc.text(`  abierta se consuma en un plazo no mayor a 24 horas en refrigeración, preservando frescura microbiológica.`, 18, by + 6);
+
+        // 4. SECCIÓN: PROTOCOLO DE CONSERVACIÓN Y SEGURIDAD
+        y = 121;
+        doc.setFillColor(...cCardBg);
+        doc.roundedRect(14, y, 182, 53, 3, 3, 'F');
+        doc.setDrawColor(210, 200, 230);
+        doc.roundedRect(14, y, 182, 53, 3, 3, 'D');
+
+        doc.setTextColor(...cPurpleDark);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.text('3. PROTOCOLO DE MANEJO Y SEGURIDAD EN CASA', 18, y + 6);
+
+        const rules = [
+            { icon: '❄', title: 'Congelación inmediata (-18 °C):', desc: 'Mantén las bolsas congeladas al recibirlas. Vida útil cerrada: 6 meses.' },
+            { icon: '🧊', title: 'Descongelación controlada (en nevera):', desc: 'Baja la porción al refrigerador (4 °C) 12 horas antes. NUNCA a temperatura ambiente.' },
+            { icon: '⏱', title: 'Regla estricta de 24 horas:', desc: 'Una vez abierta la bolsa, consérvala en refrigeración y consúmela en máximo 24 horas.' },
+            { icon: '🚫', title: 'No recongelar:', desc: 'Alimento descongelado parcial o totalmente no debe volver a introducirse al congelador.' },
+            { icon: '🍽', title: 'Forma de servir:', desc: 'Sirve a temperatura ambiente o templado a baño maría suave. No uses microondas a alta potencia.' }
+        ];
+
+        let ry = y + 12;
+        doc.setFontSize(8);
+        rules.forEach(r => {
+            doc.setTextColor(...cPink);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${r.icon} ${r.title}`, 18, ry);
+            doc.setTextColor(...cTextDark);
+            doc.setFont('helvetica', 'normal');
+            doc.text(r.desc, 78, ry);
+            ry += 7.5;
+        });
+
+        // 5. SECCIÓN: GUÍA DE TRANSICIÓN GRADUAL (10 DÍAS)
+        y = 179;
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(14, y, 182, 51, 3, 3, 'F');
+        doc.setDrawColor(210, 200, 230);
+        doc.roundedRect(14, y, 182, 51, 3, 3, 'D');
+
+        doc.setTextColor(...cPurpleDark);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.text('4. GUÍA DE TRANSICIÓN DIGESTIVA GRADUAL (10 DÍAS)', 18, y + 6);
+
+        const steps = [
+            { d: 'Días 1 a 3', pM: '25% Milkarf', pA: '75% Alimento anterior', note: 'Adaptación de flora intestinal' },
+            { d: 'Días 4 a 6', pM: '50% Milkarf', pA: '50% Alimento anterior', note: 'Asimilación digestiva' },
+            { d: 'Días 7 a 9', pM: '75% Milkarf', pA: '25% Alimento anterior', note: 'Consolidación nutricional' },
+            { d: 'Día 10+', pM: '100% Milkarf', pA: '0%', note: 'Alimentación completa natural' }
+        ];
+
+        let sy = y + 13;
+        doc.setFontSize(8);
+        steps.forEach(s => {
+            doc.setFillColor(245, 242, 250);
+            doc.roundedRect(18, sy - 4, 174, 6.5, 1.5, 1.5, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...cPurpleDark);
+            doc.text(s.d, 22, sy);
+            doc.setTextColor(...cPink);
+            doc.text(s.pM, 52, sy);
+            doc.setTextColor(...cTextDark);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`+ ${s.pA}`, 80, sy);
+            doc.setTextColor(...cTextGray);
+            doc.text(`(${s.note})`, 130, sy);
+            sy += 7.5;
+        });
+
+        doc.setFontSize(7.5);
+        doc.setTextColor(...cTextGray);
+        doc.text('Nota importante: Si observas heces blandas o apetito selectivo durante la transición, mantén el porcentaje actual', 18, sy + 1);
+        doc.text('durante 2 días adicionales antes de incrementar la proporción de comida natural.', 18, sy + 5);
+
+        // 6. PIE DE PÁGINA Y SOPORTE
+        y = 236;
+        doc.setFillColor(...cCardBg);
+        doc.roundedRect(14, y, 182, 24, 3, 3, 'F');
+        doc.setDrawColor(210, 200, 230);
+        doc.roundedRect(14, y, 182, 24, 3, 3, 'D');
+
+        doc.setTextColor(...cPurpleDark);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.text('¿DUDAS O NECESITAS ASESORÍA CON LA PORCIÓN?', 18, y + 6);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(...cTextDark);
+        doc.text('Escríbenos directamente a WhatsApp: +58 412 181 2947 con el nombre de tu perrito.', 18, y + 12);
+        doc.setTextColor(...cTextGray);
+        doc.setFontSize(7.2);
+        doc.text('Milkarf Nutrición Animal · Ingredientes aptos para consumo humano · Formulado bajo directrices FEDIAF / NRC.', 18, y + 18);
+
+        // Sub-pie legal
+        doc.setTextColor(140, 140, 150);
+        doc.setFontSize(6.8);
+        doc.text('Esta guía es de carácter orientativo. Monitorea periódicamente la condición corporal y consulta al médico veterinario de tu perro.', 105, 275, { align: 'center' });
+        doc.text(`Generado el ${new Date().toLocaleDateString('es-VE')} · Milkarf Nutrition Engine v2.4 (2026)`, 105, 279, { align: 'center' });
+
+        const safePet = petName.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g, '_');
+        doc.save(`Guia_Alimentacion_Milkarf_${safePet}.pdf`);
+        window.showToast?.('Guía de alimentación descargada con éxito.', 'success');
+    } catch (err) {
+        console.error('Error generando PDF de alimentación:', err);
+        window.showToast?.('Error al generar la guía en PDF.');
+    }
+};
+
+window.descargarGuiaGeneral = async function () {
+    window.vibrate?.(20);
+    try {
+        const jsPDFClass = await window.getJsPdfLib();
+        if (!jsPDFClass) {
+            window.showToast?.('No se pudo cargar el generador de PDF.');
+            return;
+        }
+
+        window.showToast?.('Generando guía de transición y conservación en PDF...', 'success');
+
+        const doc = new jsPDFClass({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        const cPurpleDark = [46, 16, 96];
+        const cPurple = [66, 29, 142];
+        const cGreen = [185, 203, 37];
+        const cPink = [215, 43, 143];
+        const cCardBg = [246, 243, 252];
+        const cTextDark = [30, 16, 53];
+        const cTextGray = [100, 105, 120];
+
+        // Banner Cabecera
+        doc.setFillColor(...cPurpleDark);
+        doc.rect(0, 0, 210, 30, 'F');
+        doc.setFillColor(...cGreen);
+        doc.rect(0, 30, 210, 2.5, 'F');
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(22);
+        doc.text('MILKARF', 16, 16);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.5);
+        doc.text('ALIMENTACIÓN NATURAL COCINADA PARA PERROS', 16, 23);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.text('GUÍA DE TRANSICIÓN Y CONSERVACIÓN', 194, 15, { align: 'right' });
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.text('milkarf.com · WhatsApp: +58 412 181 2947', 194, 22, { align: 'right' });
+
+        // 1. INTRODUCCIÓN Y CALIDAD
+        let y = 39;
+        doc.setFillColor(...cCardBg);
+        doc.roundedRect(14, y, 182, 28, 3, 3, 'F');
+        doc.setDrawColor(210, 200, 230);
+        doc.roundedRect(14, y, 182, 28, 3, 3, 'D');
+
+        doc.setTextColor(...cPurpleDark);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.text('1. EL COMPROMISO DE MILKARF', 18, y + 6);
+
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...cTextDark);
+        doc.text('Nuestras recetas se cocinan lentamente al vapor con ingredientes 100% naturales aptos para consumo humano,', 18, y + 12);
+        doc.text('sin subproductos ni conservantes artificiales. Para garantizar la máxima calidad microbiológica y nutricional,', 18, y + 16);
+        doc.text('sigue las instrucciones de esta guía para el manejo en tu hogar.', 18, y + 20);
+
+        // 2. PROTOCOLO DE CONSERVACIÓN
+        y = 73;
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(14, y, 182, 60, 3, 3, 'F');
+        doc.setDrawColor(210, 200, 230);
+        doc.roundedRect(14, y, 182, 60, 3, 3, 'D');
+
+        doc.setTextColor(...cPurpleDark);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.text('2. CADENA DE FRÍO Y MANEJO EN CASA (5 REGLAS DE ORO)', 18, y + 6);
+
+        const rules = [
+            { icon: '❄', t: 'Congelación a -18 °C:', d: 'Guarda las bolsas de 250 g y 550 g en freezer inmediatamente. Vida útil cerrada: 6 meses.' },
+            { icon: '🧊', t: 'Descongelación en nevera:', d: 'Baja la ración al refrigerador (4 °C) 12 horas antes. NUNCA descongeles a temperatura ambiente.' },
+            { icon: '⏱', t: 'Regla de las 24 horas:', d: 'Una vez abierta la bolsa, mantén refrigerado el sobrante y consúmelo dentro de las siguientes 24 horas.' },
+            { icon: '🚫', t: 'Nunca recongelar:', d: 'El alimento descongelado no debe devolverse al congelador bajo ninguna circunstancia.' },
+            { icon: '🍽', t: 'Temperatura de servicio:', d: 'Sirve fresco o templado con un poco de agua tibia o a baño maría suave. No recalientes a alta potencia.' }
+        ];
+
+        let ry = y + 13;
+        doc.setFontSize(8);
+        rules.forEach(r => {
+            doc.setTextColor(...cPink);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${r.icon} ${r.t}`, 18, ry);
+            doc.setTextColor(...cTextDark);
+            doc.setFont('helvetica', 'normal');
+            doc.text(r.d, 68, ry);
+            ry += 8.5;
+        });
+
+        // 3. PROTOCOLO DE TRANSICIÓN GRADUAL
+        y = 139;
+        doc.setFillColor(...cCardBg);
+        doc.roundedRect(14, y, 182, 62, 3, 3, 'F');
+        doc.setDrawColor(210, 200, 230);
+        doc.roundedRect(14, y, 182, 62, 3, 3, 'D');
+
+        doc.setTextColor(...cPurpleDark);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.text('3. CALENDARIO DE TRANSICIÓN DIGESTIVA (10 DÍAS)', 18, y + 6);
+
+        const steps = [
+            { d: 'Días 1 a 3', pM: '25% Milkarf', pA: '75% Alimento actual', obj: 'Adaptación enzimática y microbiana' },
+            { d: 'Días 4 a 6', pM: '50% Milkarf', pA: '50% Alimento actual', obj: 'Equilibrio de absorción de nutrientes' },
+            { d: 'Días 7 a 9', pM: '75% Milkarf', pA: '25% Alimento actual', obj: 'Consolidación del tracto digestivo' },
+            { d: 'Día 10 en adelante', pM: '100% Milkarf', pA: '0%', obj: 'Nutrición natural completa activa' }
+        ];
+
+        let sy = y + 14;
+        doc.setFontSize(8);
+        steps.forEach(s => {
+            doc.setFillColor(255, 255, 255);
+            doc.roundedRect(18, sy - 4, 174, 7.5, 1.5, 1.5, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...cPurpleDark);
+            doc.text(s.d, 22, sy + 1);
+            doc.setTextColor(...cPink);
+            doc.text(s.pM, 56, sy + 1);
+            doc.setTextColor(...cTextDark);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`+ ${s.pA}`, 84, sy + 1);
+            doc.setTextColor(...cTextGray);
+            doc.text(`— ${s.obj}`, 130, sy + 1);
+            sy += 9;
+        });
+
+        doc.setFontSize(7.5);
+        doc.setTextColor(...cTextGray);
+        doc.text('Recomendación: Si tu perro presenta heces blandas o tiene estómago sensible, prolonga cada fase 2 o 3 días.', 18, sy + 2);
+        doc.text('La flora intestinal de cada perro se adapta a su propio ritmo.', 18, sy + 6);
+
+        // 4. PREGUNTAS FRECUENTES Y CONTACTO
+        y = 207;
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(14, y, 182, 45, 3, 3, 'F');
+        doc.setDrawColor(210, 200, 230);
+        doc.roundedRect(14, y, 182, 45, 3, 3, 'D');
+
+        doc.setTextColor(...cPurpleDark);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10.5);
+        doc.text('4. RECOMENDACIONES CLAVE', 18, y + 6);
+
+        doc.setFontSize(7.8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...cTextDark);
+        doc.text('• Heces más compactas: Es completamente normal que las deposiciones sean más pequeñas y menos olorosas debido a la alta digestibilidad.', 18, y + 12);
+        doc.text('• Agua siempre disponible: Aunque la comida natural aporta más hidratación que el ultraprocesado, mantén siempre agua limpia.', 18, y + 17);
+        doc.text('• Ajustes de peso: Pesa a tu perro cada 2 a 4 semanas para calibrar la ración si sube o baja de nivel de actividad física.', 18, y + 22);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...cPurple);
+        doc.text('Atención directa por WhatsApp: +58 412 181 2947 | milkarf.com | Caracas, Venezuela', 18, y + 30);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...cTextGray);
+        doc.setFontSize(7);
+        doc.text('Milkarf Nutrición Animal · Hecho con amor para una vida canina más sana, activa y feliz.', 18, y + 35);
+
+        // Sub-pie
+        doc.setTextColor(140, 140, 150);
+        doc.setFontSize(6.8);
+        doc.text(`Documento emitido por Milkarf (milkarf.com) · Versión 2.4 (2026)`, 105, 275, { align: 'center' });
+
+        doc.save('Guia_General_Transicion_Milkarf.pdf');
+        window.showToast?.('Guía de transición descargada con éxito.', 'success');
+    } catch (err) {
+        console.error('Error generando guía general en PDF:', err);
+        window.showToast?.('Error al generar la guía en PDF.');
+    }
+};

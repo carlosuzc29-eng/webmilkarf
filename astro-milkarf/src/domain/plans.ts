@@ -6,7 +6,7 @@
 import { MILKARF_CONFIG } from '../data/catalog';
 import type { Formula } from '../data/catalog';
 
-export type BagSize = '250gr' | '500gr';
+export type BagSize = '250gr' | '550gr';
 
 export interface BagItem {
     formula: string;
@@ -235,15 +235,15 @@ export function optimizeBagsMixed(requiredGrams: number) {
 
 export function getBagRecommendation(grams = 0) {
     const g = Number(grams) || 0;
-    if (g <= 300) return { size: '250g', label: '250g', text: 'Presentación sugerida: 250 g para prueba inicial, razas pequeñas o consumo moderado.' };
-    return { size: '500g', label: '500g', text: 'Presentación sugerida: 500 g para perros medianos, grandes o planificación regular de raciones.' };
+    if (g <= 250) return { size: '250g', label: '250 g', text: 'Presentación sugerida: 250 g para prueba inicial, razas pequeñas o consumo moderado.' };
+    return { size: '550g', label: '550 g', text: 'Presentación sugerida: 550 g para perros medianos, grandes o planificación regular de raciones.' };
 }
 
 /**
  * Es la ÚNICA fuente de verdad de los planes de alimentación (misma lógica que app.js).
- * @param bagSize Presentación seleccionada (250gr | 500gr).
+ * @param bagSize Presentación seleccionada (250gr | 550gr).
  */
-export function computePlanPricing(dailyGrams: number, days: number, formula: string, bagSize: string = '500gr'): PlanPricing {
+export function computePlanPricing(dailyGrams: number, days: number, formula: string, bagSize: string = '550gr'): PlanPricing {
     const pts = Number(days) > 0 ? Number(days) : 7;
     const dG = Math.max(0, Number(dailyGrams) || 0);
     const requiredGrams = Math.round(dG * pts);
@@ -320,7 +320,7 @@ export function computePlanPricing(dailyGrams: number, days: number, formula: st
         discountAmount,
         finalPrice,
         costPerDay,
-        presentation: (bags[0] && bags[0].size) || String(bagSize || '500gr'),
+        presentation: (bags[0] && bags[0].size) || String(bagSize || '550gr'),
         presentationGrams: bags[0]?.grams || 0,
         presentationPrice: bags[0]?.unitPrice || 0
     };
@@ -331,7 +331,7 @@ export function buildFeedingPlan(
     days: number,
     formula: string,
     petName = '',
-    bagSize: string = '500gr',
+    bagSize: string = '550gr',
     petWeight: number | null = null
 ): FeedingPlan {
     const pts = Number(days) || 7;
@@ -395,6 +395,6 @@ export function buildFeedingPlan(
     };
 }
 
-export function generateFeedingPlans(dailyGrams: number, formula = 'pollo', petName = '', bagSize: string = '500gr'): FeedingPlan[] {
+export function generateFeedingPlans(dailyGrams: number, formula = 'pollo', petName = '', bagSize: string = '550gr'): FeedingPlan[] {
     return [7, 15, 30].map(days => buildFeedingPlan(dailyGrams, days, formula, petName, bagSize));
 }

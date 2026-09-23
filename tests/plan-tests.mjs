@@ -73,7 +73,7 @@ function createSandbox() {
         MILKARF_CONFIG: config,
         state: { nombreMascota: 'Rex' },
         lastCalcResult: { peso: 9 },
-        activePlanPresentation: '500gr',
+        activePlanPresentation: '550gr',
         __presentationUserTouched: false,
         capitalizeName: (v) => String(v || '').trim(),
         vibrate: () => {}
@@ -82,7 +82,7 @@ function createSandbox() {
 }
 
 const sandbox = createSandbox();
-const names = ['recommendPresentation', 'calculatePlanConsumption', 'getPresentationBySize', 'computePlanPricing', 'buildFeedingPlan', 'generateFeedingPlans'];
+const names = ['getPresentationBySize', 'recommendPresentation', 'optimizeBagsForFormula', 'calculatePlanConsumption', 'computePlanPricing', 'buildFeedingPlan', 'generateFeedingPlans'];
 for (const name of names) {
     const { code } = extractAssignment(SRC, name);
     Function('window', code)(sandbox);
@@ -136,25 +136,25 @@ const clean = (plan) => {
     assert.equal(recommendPresentation(125).size, '250gr');
     assert.equal(recommendPresentation(249).size, '250gr');
     assert.equal(recommendPresentation(250).size, '250gr');
-    assert.equal(recommendPresentation(251).size, '500gr');
-    assert.equal(recommendPresentation(300).size, '500gr');
-    assert.equal(recommendPresentation(500).size, '500gr');
-    assert.equal(recommendPresentation(750).size, '500gr');
+    assert.equal(recommendPresentation(251).size, '550gr');
+    assert.equal(recommendPresentation(300).size, '550gr');
+    assert.equal(recommendPresentation(550).size, '550gr');
+    assert.equal(recommendPresentation(750).size, '550gr');
 }
 
-// 1) 500 g: 7 bolsas de 500 g = 3500 g para 3199 g requeridos (apertura diaria)
+// 1) 550 g: 7 bolsas de 550 g = 3850 g para 3199 g requeridos (apertura diaria)
 {
-    const p = computePlanPricing(DAILY, 7, 'pollo', '500gr');
-    assert.deepEqual(p.presentation, '500gr');
+    const p = computePlanPricing(DAILY, 7, 'pollo', '550gr');
+    assert.deepEqual(p.presentation, '550gr');
     assert.equal(p.totalBags, 7);
-    assert.equal(p.totalGrams, 3500);
-    assert.equal(p.surplusGrams, 301);
-    assert.equal(p.subtotal, 35.00);
+    assert.equal(p.totalGrams, 3850);
+    assert.equal(p.surplusGrams, 651);
+    assert.equal(p.subtotal, 38.50);
     assert.equal(p.discountPct, 0.05);
     assert.equal(p.discountPercent, 5);
-    assert.equal(p.discountAmount, 1.75);
-    assert.equal(p.finalPrice, 33.25);
-    assert.equal(p.costPerDay, 4.75);
+    assert.equal(p.discountAmount, 1.93);
+    assert.equal(p.finalPrice, 36.57);
+    assert.equal(p.costPerDay, 5.22);
 }
 
 // 2) 250 g con porción 457g: 2 bolsas/día = 14 bolsas de 250 g = 3500 g (conservación 24h)
@@ -184,7 +184,7 @@ const clean = (plan) => {
 {
     const byDays = { 7: 0.05, 15: 0.075, 30: 0.10 };
     for (const [d, pct] of Object.entries(byDays)) {
-        const p = computePlanPricing(DAILY, Number(d), 'pollo', '500gr');
+        const p = computePlanPricing(DAILY, Number(d), 'pollo', '550gr');
         assert.equal(p.discountPct, pct, `Descuento ${d} días`);
         assert.equal(p.finalPrice, Math.round((p.subtotal - p.discountAmount) * 100) / 100);
         assert.equal(p.discountAmount, Math.round((p.subtotal - p.finalPrice) * 100) / 100, 'Descuento = subtotal - total');
@@ -194,15 +194,15 @@ const clean = (plan) => {
 // 5) buildFeedingPlan es consistente con computePlanPricing
 {
     const plan = clean(buildFeedingPlan(DAILY, 30, 'pollo', 'Rex'));
-    const pricing = computePlanPricing(DAILY, 30, 'pollo', '500gr');
+    const pricing = computePlanPricing(DAILY, 30, 'pollo', '550gr');
     assert.equal(plan.bagsCount, pricing.totalBags);
     assert.equal(plan.totalGramsProvided, pricing.totalGrams);
     assert.equal(plan.finalPrice, pricing.finalPrice);
     assert.equal(plan.originalSubtotal, pricing.subtotal);
-    assert.equal(plan.presentation, '500gr');
+    assert.equal(plan.presentation, '550gr');
     assert.equal(plan.requiredGrams, DAYS_7 * (30 / 7)); // 13710
     assert.equal(plan.petWeight, 9);
-    assert.deepEqual(plan.presentationBreakdown.bagSize, '500gr');
+    assert.deepEqual(plan.presentationBreakdown.bagSize, '550gr');
     assert.equal(plan.presentationBreakdown.bagsCount, plan.bagsCount);
 }
 
@@ -222,17 +222,17 @@ const clean = (plan) => {
 
 // 7) Plan mixto con conservación 24h (1 bolsa Pollo/día + 1 bolsa Res/día = 14 bolsas en 7 días)
 {
-    const p = computePlanPricing(DAILY, 7, 'mixto', '500gr');
+    const p = computePlanPricing(DAILY, 7, 'mixto', '550gr');
     assert.equal(p.split.polloPct, 50);
     assert.equal(p.split.resPct, 50);
     assert.equal(p.bags.length, 2);
-    assert.equal(p.bags[0].size, '500gr');
-    assert.equal(p.bags[1].size, '500gr');
+    assert.equal(p.bags[0].size, '550gr');
+    assert.equal(p.bags[1].size, '550gr');
     assert.equal(p.bags[0].qty, 7); // 1 bolsa Pollo/día * 7
     assert.equal(p.bags[1].qty, 7); // 1 bolsa Res/día * 7
     assert.equal(p.totalBags, 14);
-    assert.equal(p.subtotal, 84.00); // 7*5 + 7*7
-    assert.equal(p.finalPrice, 79.80); // -5 %
+    assert.equal(p.subtotal, 92.40); // 7*5.50 + 7*7.70
+    assert.equal(p.finalPrice, 87.78); // -5 %
 }
 
 // 7.5) Conservación 24h con pauta de comidas (Requisito 4)
@@ -257,7 +257,7 @@ const clean = (plan) => {
     const degenerate = [0, -5, 'abc', null, undefined, 0.0001];
     for (const badDaily of degenerate) {
         for (const badDays of degenerate) {
-            const p = computePlanPricing(badDaily, badDays, 'pollo', '500gr');
+            const p = computePlanPricing(badDaily, badDays, 'pollo', '550gr');
             for (const k of ['requiredGrams', 'totalGrams', 'surplusGrams', 'subtotal', 'discountAmount', 'finalPrice', 'costPerDay', 'totalBags']) {
                 const v = Number(p[k]);
                 assert.equal(Number.isNaN(v), false, `NaN con daily=${badDaily} days=${badDays} en ${k}`);
@@ -285,7 +285,7 @@ const clean = (plan) => {
 // 10) getPresentationBySize resuelve correctamente
 {
     assert.equal(getPresentationBySize('pollo', '250gr').price, 2.50);
-    assert.equal(getPresentationBySize('res', '500gr').price, 7.00);
+    assert.equal(getPresentationBySize('res', '550gr').price, 7.70);
 }
 
 // 11) Template 'newOrder': incluye presentación, bolsas, peso y desglose
@@ -325,15 +325,15 @@ const clean = (plan) => {
         location: 'Caracas'
     });
     assert.match(msg, /Plan para Rex/);
-    assert.match(msg, /500 g/);
+    assert.match(msg, /550 g/);
     assert.match(msg, /Ración: 457 g\/día/);
-    assert.match(msg, /Presentación: 500 g/);
-    assert.match(msg, /Bolsas: 30x 500gr/);
+    assert.match(msg, /Presentación: 550 g/);
+    assert.match(msg, /Bolsas: 30x 550gr/);
     assert.equal(msg.includes('undefined'), false, 'No debe contener "undefined"');
     assert.equal(msg.includes('NaN'), false, 'No debe contener "NaN"');
     assert.equal(msg.includes('null '), false, 'No debe contener "null"');
     assert.match(msg, /30 días/);
-    assert.match(msg, /15\.00 kg provistos/);
+    assert.match(msg, /16\.50 kg provistos/);
 }
 
 // 12) El template no estalla con datos ausentes (guardas para mensaje incompleto)
@@ -346,9 +346,9 @@ const clean = (plan) => {
 // 13) Invariantes de marca: precios de la configuración real
 {
     assert.equal(getPresentationBySize('pollo', '250gr').price, 2.50);
-    assert.equal(getPresentationBySize('pollo', '500gr').price, 5.00);
+    assert.equal(getPresentationBySize('pollo', '550gr').price, 5.50);
     assert.equal(getPresentationBySize('res', '250gr').price, 3.50);
-    assert.equal(getPresentationBySize('res', '500gr').price, 7.00);
+    assert.equal(getPresentationBySize('res', '550gr').price, 7.70);
 }
 
-console.log('✅ Todas las pruebas pasaron (13 bloques: 250g/500g, descuentos, mixto, degenerados, planes, WhatsApp).');
+console.log('✅ Todas las pruebas pasaron (13 bloques: 250g/550g, descuentos, mixto, degenerados, planes, WhatsApp).');

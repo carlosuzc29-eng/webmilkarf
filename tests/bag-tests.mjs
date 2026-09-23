@@ -125,11 +125,10 @@ function labels(html) {
     assert.ok(levels[1] > 0 && levels[1] < 1, 'Fracción parcial al lado');
     assert.ok(levels.every(l => l <= 1), 'Ninguna bolsa supera el 100 %');
     assert.ok(html.includes('457 g'), 'Texto central con gramos reales');
-    assert.ok(html.includes('1 bolsa de 250 g'), 'Detalle: 1 bolsa singular');
-    // Tres divisiones de cuartos a las alturas nítidas del área útil
+    // Verificación de llenado continuo: sin líneas divisorias internas de cuartos
     const quarters = ['M12 35 H68', 'M12 54 H68', 'M12 73 H68'];
     for (const d of quarters) {
-        assert.ok(html.includes(d), `División de cuarto en ${d}`);
+        assert.ok(!html.includes(d), `Línea de cuarto eliminada (${d}) para garantizar llenado continuo`);
     }
     assert.equal(labels(html).length, 1, 'Una sola etiqueta de texto (fuera del SVG)');
 }
