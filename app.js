@@ -2078,8 +2078,10 @@ window.eliminarMascota = async function (index) {
 window.loginConEmail = async function () {
     window.vibrate(20);
     if (!auth) { window.showToast("Base de datos no configurada."); return; }
-    const email = document.getElementById('auth-email-login').value.trim();
-    const pass = document.getElementById('auth-pass-login').value;
+    const emailEl = document.getElementById('auth-email-login');
+    const passEl = document.getElementById('auth-pass-login');
+    const email = emailEl ? emailEl.value.trim() : '';
+    const pass = passEl ? passEl.value : '';
     const err = document.getElementById('auth-error');
 
     if (!email || !pass) {
@@ -5840,7 +5842,7 @@ window.updatePlanPresentation = function (planId, size) {
     const plan = window.cart.find(i => i.id === planId);
     if (!plan) return;
     const updated = window.buildFeedingPlan(plan.dailyGrams, plan.days, plan.formula, plan.petName, size);
-    Object.assign(plan, updated);
+    Object.assign(plan, updated, { id: planId, type: 'feeding_plan' });
     window.updateCartUI();
     window.saveCartToStorage?.();
     window.showToast?.(`Presentación cambiada a ${size.replace('gr', ' g')}.`, 'success');
@@ -5899,7 +5901,7 @@ window.updatePlanDuration = function (planId, newDays) {
     const plan = window.cart.find(i => i.id === planId);
     if (!plan) return;
     const updated = window.buildFeedingPlan(plan.dailyGrams, newDays, plan.formula, plan.petName, plan.presentation || window.activePlanPresentation);
-    Object.assign(plan, updated);
+    Object.assign(plan, updated, { id: planId, type: 'feeding_plan' });
     window.updateCartUI();
     window.saveCartToStorage?.();
     window.showToast?.(`Plan cambiado a ${newDays} días.`, 'success');
@@ -5910,7 +5912,7 @@ window.updatePlanFormula = function (planId, newFormula) {
     const plan = window.cart.find(i => i.id === planId);
     if (!plan) return;
     const updated = window.buildFeedingPlan(plan.dailyGrams, plan.days, newFormula, plan.petName, plan.presentation || window.activePlanPresentation);
-    Object.assign(plan, updated);
+    Object.assign(plan, updated, { id: planId, type: 'feeding_plan' });
     window.updateCartUI();
     window.saveCartToStorage?.();
     window.showToast?.(`Fórmula actualizada.`, 'success');
@@ -6042,10 +6044,15 @@ window.calcularRacion = function () {
                 if (scrollContainer) {
                     const containerRect = scrollContainer.getBoundingClientRect();
                     const resRect = tuRes.getBoundingClientRect();
-                    scrollContainer.scrollBy({
-                        top: resRect.top - containerRect.top - 20,
-                        behavior: 'smooth'
-                    });
+                    const deltaY = resRect.top - containerRect.top - 20;
+                    if (typeof scrollContainer.scrollBy === 'function') {
+                        scrollContainer.scrollBy({
+                            top: deltaY,
+                            behavior: 'smooth'
+                        });
+                    } else {
+                        scrollContainer.scrollTop += deltaY;
+                    }
                 }
             }, 350);
         }, 20);
