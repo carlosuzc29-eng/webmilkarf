@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Milkarf - Alimentación real para perros, formulada con ingredientes seleccionados y lista para servir. Calculadora nutricional y planes semanales, quincenales y mensuales.">
-    <title>Milkarf · Su alimentación diaria, más fácil</title>
+    <title>Milkarf · Alimentación real, lista para servir</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="faviconn.png">
@@ -147,7 +147,7 @@
                 </div>
             </a>
 
-            <!-- Central Nav Links -->
+            <!-- Central Nav Links (4 esenciales) -->
             <nav class="flex items-center gap-1 bg-purple-light/70 dark:bg-darkcard/70 px-2 py-1.5 rounded-full border border-purple-border/40 dark:border-purple/20 shadow-inner">
                 <button onclick="window.navigateTo('view-home')" class="milkarf-nav-link" data-target="view-home">
                     <i data-lucide="home" class="w-4 h-4"></i>
@@ -159,15 +159,11 @@
                 </button>
                 <button onclick="window.navigateTo('view-calc')" class="milkarf-nav-link" data-target="view-calc">
                     <i data-lucide="scale" class="w-4 h-4 text-green"></i>
-                    <span>Calculadora</span>
+                    <span>Calcular</span>
                 </button>
-                <button onclick="window.navigateTo('view-faq')" class="milkarf-nav-link" data-target="view-faq">
-                    <i data-lucide="book-open" class="w-4 h-4"></i>
-                    <span>Guía de Transición</span>
-                </button>
-                <button onclick="window.navigateTo('view-mision')" class="milkarf-nav-link" data-target="view-mision">
-                    <i data-lucide="sparkles" class="w-4 h-4 text-purple"></i>
-                    <span>Filosofía</span>
+                <button onclick="window.navigateTo('view-cart')" class="milkarf-nav-link" data-target="view-cart">
+                    <i data-lucide="shopping-cart" class="w-4 h-4 text-purple"></i>
+                    <span>Mi pedido</span>
                 </button>
             </nav>
 
@@ -216,7 +212,7 @@
 
                             <!-- Título Principal -->
                             <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-purple-dark dark:text-white tracking-tight leading-[1.06] font-display">
-                                Su alimentación diaria, <span class="relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-purple via-pink to-purple-dark dark:from-green dark:via-pink dark:to-white">más fácil</span>.
+                                Alimentación real, <span class="relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-purple via-pink to-purple-dark dark:from-green dark:via-pink dark:to-white">lista para servir</span>.
                             </h1>
 
                             <!-- Descripción -->
@@ -224,23 +220,23 @@
                                 Conoce nuestras recetas y encuentra un plan pensado para su porción y tu rutina.
                             </p>
 
-                            <!-- CTAs Hero (accesos compactos) -->
+                            <!-- CTAs Hero: Calcular su porción (primario) y Conocer las fórmulas (secundario) -->
                             <div class="mka-access-grid w-full grid grid-cols-1 gap-3 pt-1">
-                                <button onclick="window.navigateTo('view-perros')" aria-label="Conoce nuestras fórmulas para perros" class="mka-access flex items-center gap-3 w-full bg-purple hover:bg-purple-dark text-white rounded-2xl px-4 py-3 shadow-lg shadow-purple/25 transition-all duration-200 active:scale-[0.98] cursor-pointer group touch-target-safe">
+                                <button onclick="window.navigateTo('view-calc')" aria-label="Calcular la porción de tu mascota" class="mka-access flex items-center gap-3 w-full bg-purple hover:bg-purple-dark text-white rounded-2xl px-5 py-4 shadow-lg shadow-purple/25 transition-all duration-200 active:scale-[0.98] cursor-pointer group touch-target-safe">
                                     <span class="mka-access-icon flex items-center justify-center bg-white/15 text-green rounded-xl shrink-0">
-                                        <i data-lucide="utensils" class="w-5 h-5"></i>
+                                        <i data-lucide="scale" class="w-5 h-5"></i>
                                     </span>
                                     <span class="flex-1 text-left leading-tight">
-                                        <span class="mka-access-title block font-bold text-sm">Conoce nuestras fórmulas</span>
+                                        <span class="mka-access-title block font-bold text-base">Calcular su porción</span>
                                     </span>
                                     <i data-lucide="arrow-right" class="i-arrow shrink-0 opacity-80 transition-transform duration-200 group-hover:translate-x-1"></i>
                                 </button>
-                                <button onclick="window.navigateTo('view-faq')" aria-label="Cómo empezar con Milkarf" class="mka-access flex items-center gap-3 w-full bg-white dark:bg-darkcard border-2 border-purple-border/80 hover:border-purple/40 dark:border-purple/30 text-purple-dark dark:text-white rounded-2xl px-4 py-3 shadow-sm transition-all duration-200 active:scale-[0.98] cursor-pointer group touch-target-safe">
+                                <button onclick="window.navigateTo('view-perros')" aria-label="Conocer las fórmulas para perros" class="mka-access flex items-center gap-3 w-full bg-white dark:bg-darkcard border-2 border-purple-border/80 hover:border-purple/40 dark:border-purple/30 text-purple-dark dark:text-white rounded-2xl px-5 py-3.5 shadow-sm transition-all duration-200 active:scale-[0.98] cursor-pointer group touch-target-safe">
                                     <span class="mka-access-icon flex items-center justify-center bg-pink/10 text-pink rounded-xl shrink-0">
-                                        <i data-lucide="book-open" class="w-5 h-5"></i>
+                                        <i data-lucide="beef" class="w-5 h-5"></i>
                                     </span>
                                     <span class="flex-1 text-left leading-tight">
-                                        <span class="mka-access-title block font-bold text-sm">Cómo empezar</span>
+                                        <span class="mka-access-title block font-bold text-sm">Conocer las fórmulas</span>
                                     </span>
                                     <i data-lucide="arrow-right" class="i-arrow shrink-0 opacity-80 transition-transform duration-200 group-hover:translate-x-1"></i>
                                 </button>
@@ -646,24 +642,20 @@
                     </button>
                 </div>
 
-                <!-- INDICADOR DE PROGRESO DEL RECORRIDO (MÓVIL Y ESCRITORIO) -->
+                <!-- INDICADOR DE PROGRESO DEL RECORRIDO (3 PASOS CLAROS) -->
                 <div id="flow-stepper" class="w-full max-w-md mx-auto mb-6 px-1 select-none">
-                    <div class="grid grid-cols-4 gap-1 sm:gap-2 text-center">
+                    <div class="grid grid-cols-3 gap-1.5 sm:gap-2 text-center">
                         <button type="button" onclick="window.goToFlowStep(1)" id="step-btn-1" class="flow-step-btn flex flex-col items-center gap-1 py-2 px-1 rounded-xl border border-purple bg-purple text-white transition-all">
                             <span class="w-5 h-5 rounded-full bg-white text-purple text-[10px] font-black flex items-center justify-center shadow-sm">1</span>
-                            <span class="text-[9px] font-bold tracking-tight leading-tight">Sus datos</span>
+                            <span class="text-[10px] sm:text-xs font-bold tracking-tight leading-tight">Tu Mascota</span>
                         </button>
                         <button type="button" onclick="window.goToFlowStep(2)" id="step-btn-2" class="flow-step-btn flex flex-col items-center gap-1 py-2 px-1 rounded-xl border border-purple-border/50 dark:border-purple/20 bg-white dark:bg-darkcard text-purple/60 dark:text-gray-400 opacity-60 transition-all" disabled>
                             <span class="w-5 h-5 rounded-full bg-purple/10 dark:bg-purple/20 text-purple dark:text-white text-[10px] font-black flex items-center justify-center">2</span>
-                            <span class="text-[9px] font-bold tracking-tight leading-tight">Su porción</span>
+                            <span class="text-[10px] sm:text-xs font-bold tracking-tight leading-tight">Tu Plan</span>
                         </button>
                         <button type="button" onclick="window.goToFlowStep(3)" id="step-btn-3" class="flow-step-btn flex flex-col items-center gap-1 py-2 px-1 rounded-xl border border-purple-border/50 dark:border-purple/20 bg-white dark:bg-darkcard text-purple/60 dark:text-gray-400 opacity-60 transition-all" disabled>
                             <span class="w-5 h-5 rounded-full bg-purple/10 dark:bg-purple/20 text-purple dark:text-white text-[10px] font-black flex items-center justify-center">3</span>
-                            <span class="text-[9px] font-bold tracking-tight leading-tight">Elige plan</span>
-                        </button>
-                        <button type="button" onclick="window.goToFlowStep(4)" id="step-btn-4" class="flow-step-btn flex flex-col items-center gap-1 py-2 px-1 rounded-xl border border-purple-border/50 dark:border-purple/20 bg-white dark:bg-darkcard text-purple/60 dark:text-gray-400 opacity-60 transition-all" disabled>
-                            <span class="w-5 h-5 rounded-full bg-purple/10 dark:bg-purple/20 text-purple dark:text-white text-[10px] font-black flex items-center justify-center">4</span>
-                            <span class="text-[9px] font-bold tracking-tight leading-tight">Pedido</span>
+                            <span class="text-[10px] sm:text-xs font-bold tracking-tight leading-tight">Revisar</span>
                         </button>
                     </div>
                 </div>
@@ -695,10 +687,11 @@
 
                         <!-- PASO 1: NOMBRE -->
                         <div>
-                            <div class="text-xs font-semibold text-purple/70 dark:text-gray-300 tracking-wider uppercase mb-2.5 flex items-center gap-2 text-left">
-                                <span class="w-5 h-5 bg-purple dark:bg-green dark:text-darkbg text-white text-[10px] font-bold rounded-full flex items-center justify-center">1</span> Nombre de tu perro
+                            <div class="text-xs font-semibold text-purple/70 dark:text-gray-300 tracking-wider uppercase mb-2.5 flex items-center justify-between text-left">
+                                <span class="flex items-center gap-2"><span class="w-5 h-5 bg-purple dark:bg-green dark:text-darkbg text-white text-[10px] font-bold rounded-full flex items-center justify-center">1</span> Nombre de tu perro</span>
+                                <span class="text-[10px] font-medium text-gray-400 dark:text-gray-500 lowercase">(opcional)</span>
                             </div>
-                            <input type="text" id="calc-nombre" name="calc_pet_name" autocomplete="off" autocapitalize="words" placeholder="Ej. Bruno" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3.5 text-base font-bold text-purple dark:text-white outline-none focus:border-purple transition-all text-center milkarf-input-focus">
+                            <input type="text" id="calc-nombre" name="calc_pet_name" autocomplete="off" autocapitalize="words" placeholder="Ej. Bruno (opcional)" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3.5 text-base font-bold text-purple dark:text-white outline-none focus:border-purple transition-all text-center milkarf-input-focus">
                         </div>
 
                         <!-- PASO 2: ETAPA -->
@@ -774,43 +767,59 @@
                                     <div id="result-grams" class="text-6xl font-black tracking-tight select-all">0</div>
                                     <div class="text-sm font-extrabold uppercase tracking-wider opacity-70 mt-1">gramos al día</div>
                                     <div id="result-subtitle-pet" class="text-xs font-semibold opacity-80 mt-2"></div>
-                                    <div id="r-note" class="text-xs text-white/90 font-medium mt-3 pt-2.5 border-t border-white/20">Porción orientativa. Las necesidades de tu perro pueden variar.</div>
+                                    <div id="r-note" class="text-xs text-white/90 font-medium mt-3 pt-2.5 border-t border-white/20">Porción orientativa calculada según peso y etapa de vida.</div>
                                 </div>
 
                                 <div class="p-5 space-y-3 bg-white dark:bg-darkcard text-left">
                                     <div class="flex justify-between items-center pb-2 border-b border-purple-border/20 text-xs md:text-sm">
-                                        <span class="font-semibold text-purple/65 dark:text-gray-400">Energía diaria estimada (DER)</span>
-                                        <span class="font-black text-purple dark:text-white" id="r-kcal">0 kcal/día</span>
+                                        <span class="font-semibold text-purple/65 dark:text-gray-400">Pauta de alimentación</span>
+                                        <span class="font-black text-purple dark:text-white" id="r-comidas">2 veces al día</span>
                                     </div>
                                     <div class="flex justify-between items-center pb-2 border-b border-purple-border/20 text-xs md:text-sm">
-                                        <span class="font-semibold text-purple/65 dark:text-gray-400">Frecuencia recomendada</span>
-                                        <span class="font-black text-purple dark:text-white" id="r-comidas">0 veces</span>
-                                    </div>
-                                    <div class="flex justify-between items-center pb-3 border-b border-purple-border/20 text-xs md:text-sm">
                                         <span class="font-semibold text-purple/65 dark:text-gray-400">Porción por comida</span>
                                         <span class="font-black text-purple dark:text-white" id="r-por-comida">0g</span>
                                     </div>
 
-                                    <!-- Presentación asignada automáticamente -->
-                                    <div class="bg-purple-light/50 dark:bg-purple/10 rounded-2xl p-4 border border-purple-border/30 dark:border-purple/20">
-                                        <div class="inline-flex items-center gap-2 text-purple-dark dark:text-white font-black text-xs sm:text-sm">
-                                            <span>📦 Presentación recomendada: <strong id="rec-pres-size-text" class="text-pink">250 g</strong></span>
+                                    <!-- Desplegable opcional: Cómo calculamos su porción -->
+                                    <details id="details-como-calculamos" class="pt-2 text-xs border-t border-purple-border/20 group">
+                                        <summary class="cursor-pointer font-bold text-purple dark:text-green inline-flex items-center gap-1.5 hover:underline py-1 select-none">
+                                            <i data-lucide="help-circle" class="w-4 h-4"></i>
+                                            <span>Cómo calculamos su porción</span>
+                                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform group-open:rotate-180"></i>
+                                        </summary>
+                                        <div class="mt-2.5 p-3.5 rounded-xl bg-purple-light/50 dark:bg-[#15092a] border border-purple-border/30 dark:border-purple/20 space-y-2 text-gray-600 dark:text-gray-300 text-[11px] leading-relaxed">
+                                            <div class="flex justify-between items-center">
+                                                <span>Energía diaria estimada (DER):</span>
+                                                <strong id="r-kcal" class="text-purple dark:text-white">0 kcal</strong>
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span>Ecuación metabólica:</span>
+                                                <span>Kleiber (70 × peso^0.75)</span>
+                                            </div>
+                                            <p class="text-[10px] text-gray-500 dark:text-gray-400 pt-1 border-t border-purple-border/20">
+                                                Formulación con densidad de 1.25 kcal/g y factor mínimo preventivo para mantener un peso saludable y evitar sobrepeso.
+                                            </p>
                                         </div>
-                                        <div id="rec-pres-bag" class="mt-3"></div>
-                                        <p id="rec-pres-explanation" class="hidden text-xs text-pink font-medium mt-1.5 leading-relaxed"></p>
-                                    </div>
+                                    </details>
                                 </div>
                             </div>
 
-                            <!-- SECCIÓN PLANES DE ALIMENTACIÓN CALCULADOS -->
-                            <div id="feeding-plans-section" class="mt-8 space-y-6 text-left">
+                            <!-- Botón para modificar datos de la mascota -->
+                            <div class="flex items-center justify-start mt-3">
+                                <button type="button" onclick="window.goToFlowStep(1)" class="inline-flex items-center gap-1.5 text-xs font-bold text-purple hover:text-purple-dark dark:text-purple-light dark:hover:text-white transition-colors cursor-pointer py-1.5">
+                                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Modificar datos de tu mascota
+                                </button>
+                            </div>
+
+                            <!-- SECCIÓN PLANES DE ALIMENTACIÓN CALCULADOS (PASO 2) -->
+                            <div id="feeding-plans-section" class="mt-6 space-y-6 text-left">
                                 <div class="bg-gradient-to-br from-purple-dark via-[#351675] to-purple rounded-3xl p-6 text-white shadow-soft-lg border border-white/10">
                                     <div class="flex items-center gap-2 text-green text-[10px] font-black uppercase tracking-widest mb-1">
-                                        <i data-lucide="sparkles" class="w-4 h-4"></i> Paso 3: Configura su plan
+                                        <i data-lucide="sparkles" class="w-4 h-4"></i> Paso 2: Tu Plan
                                     </div>
-                                    <h3 class="text-xl md:text-2xl font-black text-white tracking-tight">Elige la fórmula y duración para tu perro</h3>
+                                    <h3 class="text-xl md:text-2xl font-black text-white tracking-tight">Elige la fórmula y duración para tu mascota</h3>
                                     <p class="text-xs text-white/80 font-medium mt-1 leading-relaxed">
-                                        Calculamos automáticamente las bolsas recomendadas para cada plan según la porción diaria de tu perro.
+                                        Calculamos las bolsas necesarias para tu plan.
                                     </p>
 
                                     <!-- Selector de fórmula -->
@@ -1473,7 +1482,7 @@
                                 <div class="w-10 h-10 rounded-full bg-green/20 flex items-center justify-center text-green-dark font-black text-xl shrink-0">🐶</div>
                                 <div>
                                     <h5 class="font-black text-purple-dark dark:text-white text-sm">Cachorro (Nivel 1)</h5>
-                                    <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium leading-tight mt-1">20% de descuento de bienvenida en tu primera compra, guía de transición y asesoría de porciones. Acumulación base 1x.</p>
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium leading-tight mt-1">Guía de transición personalizada, asesoría nutricional y acumulación base 1x en todas tus compras.</p>
                                 </div>
                             </div>
                             <hr class="border-purple-border/30 dark:border-purple/10">
@@ -1716,21 +1725,6 @@
                     <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/30 dark:border-purple/20 shadow-soft-lg p-6 md:p-7 space-y-5 premium-card">
                         <div class="text-[10px] font-bold tracking-wider text-purple/60 dark:text-gray-400 uppercase mb-1">Resumen del pedido</div>
                         <div id="cart-summary-lines" class="space-y-2.5 text-sm border-b border-purple-border/30 dark:border-purple/20 pb-5"></div>
-                        
-                        <div id="descuento-banner" class="bg-gradient-to-r from-pink/10 via-purple/5 to-pink/10 border border-pink/25 rounded-xl p-4 flex flex-col gap-3 shadow-soft">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-pink text-white flex items-center justify-center shrink-0 shadow-sm">
-                                    <i data-lucide="gift" class="w-5 h-5"></i>
-                                </div>
-                                <div class="text-left">
-                                    <h4 class="text-xs font-bold text-pink uppercase tracking-wider">Descuento de bienvenida</h4>
-                                    <p class="text-[11px] text-gray-600 dark:text-gray-300 font-medium leading-tight">Crea tu cuenta o inicia sesión para disfrutar un 20% de descuento en tu primer pedido.</p>
-                                </div>
-                            </div>
-                            <button id="btn-abrir-modal-desc" onclick="window.abrirModalDescuento()" class="w-full py-2.5 bg-pink hover:bg-pink-dark text-white text-xs font-bold rounded-xl transition-all shadow-soft active:scale-[0.98] touch-target-safe">
-                                Validar descuento
-                            </button>
-                        </div>
 
                         <div class="flex justify-between items-center pt-3 border-t border-purple-border/20 dark:border-purple/20">
                             <div class="flex flex-col text-left">
@@ -1748,37 +1742,32 @@
                         </p>
                     </div>
 
-                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-2xl p-5 space-y-3.5 mt-2 shadow-soft">
-                        <div class="text-[10px] font-bold tracking-wider text-purple/60 dark:text-gray-400 uppercase flex items-center gap-2">
-                            <i data-lucide="map-pin" class="w-4 h-4 text-pink shrink-0"></i> Dirección de entrega
-                        </div>
-                        <button id="location-btn" onclick="window.captureLocation()" class="w-full flex items-center justify-center gap-2 border border-dashed border-purple/40 dark:border-purple/40 hover:border-purple text-purple-dark dark:text-white font-bold text-xs py-3.5 rounded-xl transition-all hover:bg-purple-light dark:hover:bg-purple/10 active:scale-[0.98] touch-target-safe">
-                            <i data-lucide="map-pin" class="w-4 h-4 shrink-0 text-pink"></i>
-                            <span id="location-btn-text">Marcar mi ubicación de entrega</span>
-                        </button>
-                        <div id="location-status" class="hidden text-xs font-medium text-purple/70 dark:text-gray-300 leading-relaxed text-left"></div>
-                    </div>
-
                     <div class="bg-purple-light/90 dark:bg-purple/15 border border-purple-border/40 dark:border-purple/20 rounded-2xl p-5 text-left space-y-2.5 shadow-soft">
                         <h4 class="text-xs font-bold text-purple-dark dark:text-white uppercase tracking-wider flex items-center gap-2"><i data-lucide="info" class="w-4 h-4 text-pink"></i> Antes de enviar tu pedido</h4>
-                        <p class="text-xs text-gray-600 dark:text-gray-300 font-medium leading-relaxed">Al pulsar enviar, se preparará tu mensaje para WhatsApp. Nuestro equipo confirmará la disponibilidad de las fórmulas, el costo de entrega y los datos de pago para procesarlo. Tu pedido quedará registrado como <b class="text-purple-dark dark:text-white">En proceso</b>.</p>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2">
-                            <button onclick="window.navigateTo('view-calc')" class="bg-white dark:bg-darkcard border border-purple/20 dark:border-purple/30 text-purple-dark dark:text-white text-xs font-bold py-2.5 rounded-xl hover:border-purple transition-colors touch-target-safe">Calcular porción</button>
-                            <button onclick="window.navigateTo('view-faq')" class="bg-white dark:bg-darkcard border border-purple/20 dark:border-purple/30 text-purple-dark dark:text-white text-xs font-bold py-2.5 rounded-xl hover:border-purple transition-colors touch-target-safe">Guía de transición</button>
-                            <a href="#" onclick="event.preventDefault(); window.openWhatsApp('quickHelp');" class="bg-white dark:bg-darkcard border border-green/40 dark:border-green/30 text-green-dark dark:text-green text-xs font-bold py-2.5 rounded-xl text-center hover:bg-green/10 transition-colors touch-target-safe flex items-center justify-center">Atención por WhatsApp</a>
+                        <p class="text-xs text-gray-600 dark:text-gray-300 font-medium leading-relaxed">Al pulsar continuar, se preparará tu mensaje para WhatsApp con el resumen exacto de tu pedido. Nuestro equipo confirmará la disponibilidad de las fórmulas y coordinará la entrega y el pago.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                            <button type="button" onclick="window.editarPlanMascota()" class="bg-white dark:bg-darkcard border border-purple/20 dark:border-purple/30 text-purple-dark dark:text-white text-xs font-bold py-2.5 rounded-xl hover:border-purple transition-colors touch-target-safe flex items-center justify-center gap-1.5"><i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Cambiar fórmula o plan</button>
+                            <a href="#" onclick="event.preventDefault(); window.openWhatsApp('quickHelp');" class="bg-white dark:bg-darkcard border border-green/40 dark:border-green/30 text-green-dark dark:text-green text-xs font-bold py-2.5 rounded-xl text-center hover:bg-green/10 transition-colors touch-target-safe flex items-center justify-center gap-1.5"><i data-lucide="message-circle" class="w-3.5 h-3.5 text-green"></i> Ayuda por WhatsApp</a>
                         </div>
                     </div>
 
-                    <a id="btn-finalizar-pedido" href="#" target="_self" rel="noopener noreferrer" onclick="return window.finalizarPedido(event)" class="w-full flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-base py-4 rounded-xl shadow-soft-lg hover:shadow-lg transition-all active:scale-[0.98] group touch-target-safe">
+                    <!-- Acción Principal de Envío -->
+                    <a id="btn-finalizar-pedido" href="#" target="_self" rel="noopener noreferrer" onclick="return window.finalizarPedido(event)" class="w-full flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-base py-4 rounded-xl shadow-soft-lg hover:shadow-lg transition-all active:scale-[0.98] group touch-target-safe cursor-pointer">
+                        <span>Continuar por WhatsApp</span>
                         <i data-lucide="send" class="w-5 h-5 shrink-0 group-hover:translate-x-1 transition-transform"></i>
-                        Enviar pedido por WhatsApp
                     </a>
+
+                    <!-- Acción Secundaria: Descargar Guía Personalizada -->
+                    <button id="btn-cart-download-guide" type="button" onclick="window.descargarGuiaDesdeCarrito()" class="w-full flex items-center justify-center gap-2 bg-purple/10 dark:bg-purple/20 hover:bg-purple/20 text-purple-dark dark:text-purple-light font-bold text-xs py-3.5 rounded-xl border border-purple-border/40 transition-all cursor-pointer touch-target-safe">
+                        <i data-lucide="download" class="w-4 h-4 text-purple dark:text-purple-light"></i>
+                        <span>Descargar mi guía de alimentación (PDF)</span>
+                    </button>
 
                     <button id="btn-ver-mis-pedidos" onclick="window.navigateTo('view-dashboard'); window.startUserOrdersListener(true);" class="hidden w-full flex items-center justify-center gap-2 bg-white dark:bg-darkcard border border-green/40 text-green-dark dark:text-green font-bold text-xs py-3.5 rounded-xl shadow-soft hover:bg-green/10 transition-all active:scale-[0.98] touch-target-safe">
                         <i data-lucide="clipboard-check" class="w-4 h-4"></i> Consultar mis pedidos
                     </button>
 
-                    <button id="btn-clear-cart" onclick="window.clearCart()" class="w-full text-center text-xs font-medium text-purple/60 dark:text-gray-400 hover:text-pink transition-colors py-2 touch-target-safe">
+                    <button id="btn-clear-cart" onclick="window.clearCart()" class="w-full text-center text-xs font-medium text-purple/60 dark:text-gray-400 hover:text-pink transition-colors py-2 touch-target-safe cursor-pointer">
                         Vaciar carrito
                     </button>
                 </div>
@@ -1816,18 +1805,22 @@
         </section>
 
 
-        <!-- FAB CART -->
-        <button id="cart-fab" class="nav-btn fixed bottom-24 md:bottom-6 right-6 z-[999] w-14 h-14 bg-purple hover:bg-purple-dark text-white rounded-full shadow-soft-lg hover:shadow-xl flex items-center justify-center transition-all duration-300 transform translate-y-24 opacity-0 pointer-events-none active:scale-95 touch-target-safe border border-white/20" aria-label="Ver carrito" data-target="view-cart">
+        <!-- FAB CART (Oculto en favor de barra inferior con badge) -->
+        <button id="cart-fab" class="hidden nav-btn fixed bottom-24 md:bottom-6 right-6 z-[999] w-14 h-14 bg-purple hover:bg-purple-dark text-white rounded-full shadow-soft-lg hover:shadow-xl flex items-center justify-center transition-all duration-300 transform translate-y-24 opacity-0 pointer-events-none active:scale-95 touch-target-safe border border-white/20" aria-label="Ver carrito" data-target="view-cart">
             <i data-lucide="shopping-cart" class="w-6 h-6"></i>
             <span id="cart-badge" class="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-pink text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-soft px-1 border-2 border-white dark:border-darkcard">0</span>
         </button>
 
-        <nav id="mobile-bottom-nav" aria-label="Navegación móvil principal" class="md:hidden fixed bottom-3 left-3 right-3 z-[998] bg-white/95 dark:bg-darkcard/95 backdrop-blur-2xl border border-purple-border/40 dark:border-purple/30 rounded-2xl shadow-soft-lg p-1.5 grid grid-cols-5 gap-1">
+        <!-- BARRA DE NAVEGACIÓN MÓVIL (4 ACCESOS PRINCIPALES) -->
+        <nav id="mobile-bottom-nav" aria-label="Navegación móvil principal" class="md:hidden fixed bottom-3 left-3 right-3 z-[998] bg-white/95 dark:bg-darkcard/95 backdrop-blur-2xl border border-purple-border/40 dark:border-purple/30 rounded-2xl shadow-soft-lg p-1.5 grid grid-cols-4 gap-1">
             <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-purple dark:text-white font-bold text-[10px] hover:bg-purple/10 dark:hover:bg-purple/20 transition-all active:scale-95 touch-target-safe" data-target="view-home"><i data-lucide="home" class="w-4 h-4"></i>Inicio</button>
+            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-purple dark:text-white font-bold text-[10px] hover:bg-purple/10 dark:hover:bg-purple/20 transition-all active:scale-95 touch-target-safe" data-target="view-perros"><i data-lucide="beef" class="w-4 h-4"></i>Fórmulas</button>
             <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-purple dark:text-white font-bold text-[10px] hover:bg-purple/10 dark:hover:bg-purple/20 transition-all active:scale-95 touch-target-safe" data-target="view-calc"><i data-lucide="scale" class="w-4 h-4"></i>Calcular</button>
-            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-purple dark:text-white font-bold text-[10px] hover:bg-purple/10 dark:hover:bg-purple/20 transition-all active:scale-95 touch-target-safe" data-target="view-perros"><i data-lucide="beef" class="w-4 h-4"></i>Menú</button>
-            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-purple dark:text-white font-bold text-[10px] hover:bg-purple/10 dark:hover:bg-purple/20 transition-all active:scale-95 touch-target-safe" data-target="view-cart"><i data-lucide="shopping-cart" class="w-4 h-4"></i>Carrito</button>
-            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-purple dark:text-white font-bold text-[10px] hover:bg-purple/10 dark:hover:bg-purple/20 transition-all active:scale-95 touch-target-safe" data-target="view-dashboard"><i data-lucide="user" class="w-4 h-4"></i>Perfil</button>
+            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-purple dark:text-white font-bold text-[10px] hover:bg-purple/10 dark:hover:bg-purple/20 transition-all active:scale-95 touch-target-safe relative" data-target="view-cart">
+                <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                <span>Mi pedido</span>
+                <span id="mobile-cart-badge" class="absolute -top-1 right-2 min-w-[16px] h-4 bg-pink text-white text-[9px] font-black rounded-full flex items-center justify-center px-1">0</span>
+            </button>
         </nav>
 
     </div>
@@ -2127,43 +2120,18 @@
                 </div>
                 <h3 class="text-2xl font-extrabold text-purple-dark dark:text-white tracking-tight leading-none mb-2">¡Te damos la bienvenida a <br><span class="text-purple">Milkarf!</span></h3>
                 <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-medium mb-5 leading-relaxed">
-                    Crea tu cuenta y obtén un <br>
-                    <strong class="font-bold text-pink text-sm tracking-wide uppercase bg-pink/10 px-2.5 py-0.5 rounded-lg mt-1 inline-block">20% de descuento</strong><br>
-                    en tu primer pedido de fórmulas.
+                    Crea tu cuenta para guardar los datos de tus mascotas, acumular puntos y personalizar sus planes de alimentación.
                 </p>
 
                 <div class="space-y-2.5">
                     <button id="btn-cerrar-bienvenida" onclick="window.entendidoBienvenida()" class="w-full bg-purple hover:bg-purple-dark text-white font-bold tracking-wider text-xs py-3.5 rounded-xl transition-all shadow-soft active:scale-95 group">
-                        Crear cuenta y obtener 20% de descuento <i data-lucide="arrow-right" class="w-3.5 h-3.5 inline-block ml-1 group-hover:translate-x-1 transition-transform"></i>
+                        Crear mi cuenta <i data-lucide="arrow-right" class="w-3.5 h-3.5 inline-block ml-1 group-hover:translate-x-1 transition-transform"></i>
                     </button>
                     <button type="button" onclick="window.cerrarModalBienvenida()" class="w-full bg-purple-light/80 dark:bg-purple/10 hover:bg-purple/10 text-purple-dark dark:text-purple-light font-semibold text-xs py-2.5 rounded-xl border border-purple-border/50 dark:border-purple/20 transition-all active:scale-95">
                         Continuar explorando
                     </button>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- MODAL DESCUENTO -->
-    <div id="modal-descuento" class="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-md hidden items-center justify-center opacity-0 transition-opacity duration-300 p-4">
-        <div id="modal-descuento-box" class="bg-white dark:bg-darkcard w-full max-w-sm rounded-2xl shadow-soft-lg p-6 transform scale-95 transition-transform duration-300 flex flex-col border border-purple-border/40 dark:border-purple/25 premium-card">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="text-lg font-bold text-purple-dark dark:text-white leading-tight tracking-tight">Descuento de bienvenida (20%)</h3>
-                <button id="btn-cerrar-modal-desc" onclick="window.cerrarModalDescuento()" class="w-8 h-8 flex items-center justify-center rounded-xl bg-purple-light/80 dark:bg-darkbg text-gray-400 hover:text-pink transition-colors active:scale-95 touch-target-safe"><i data-lucide="x" class="w-4 h-4"></i></button>
-            </div>
-            <p class="text-xs text-gray-600 dark:text-gray-300 mb-4 font-medium leading-relaxed">Ingresa tus datos y los de tu mascota para validar el 20% de descuento en tu primer pedido de fórmulas.</p>
-            
-            <div class="space-y-3">
-                <input type="text" id="desc-nombre" placeholder="Tu nombre y apellido" class="w-full bg-purple-light/80 dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple transition-all text-left">
-                <input type="tel" id="desc-telefono" placeholder="WhatsApp de contacto (ej. 0412 000 0000)" class="w-full bg-purple-light/80 dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple transition-all text-left">
-                <input type="text" id="desc-mascota" placeholder="Nombre de tu mascota" class="w-full bg-purple-light/80 dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-3 text-sm font-semibold outline-none focus:border-purple transition-all text-left">
-            </div>
-
-            <div id="desc-error" class="hidden mt-3 text-xs font-bold text-pink bg-pink/10 p-3 rounded-xl text-center leading-tight border border-pink/20"></div>
-
-            <button id="btn-verificar" onclick="window.verificarDescuento()" class="w-full bg-green hover:bg-[#a6b621] text-purple-dark font-bold text-xs uppercase tracking-wider py-3.5 rounded-xl mt-4 shadow-soft transition-all active:scale-95 touch-target-safe">
-                Validar descuento
-            </button>
         </div>
     </div>
 

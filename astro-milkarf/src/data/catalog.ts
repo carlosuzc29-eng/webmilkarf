@@ -67,7 +67,7 @@ export const MILKARF_CONFIG: MilkarfConfig = {
         15: { days: 15, label: 'Plan quincenal', discountPct: 0.075, tag: '15 días de alimentación' },
         30: { days: 30, label: 'Plan mensual', discountPct: 0.1, tag: 'Mayor ahorro' }
     },
-    welcomeDiscountPct: 0.2
+    welcomeDiscountPct: 0
 };
 
 export const PLAN_DAYS = [7, 15, 30] as const;

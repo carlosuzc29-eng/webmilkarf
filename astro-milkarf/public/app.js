@@ -352,7 +352,7 @@ window.MILKARF_CONFIG = {
         15: { days: 15, label: 'Plan quincenal', discountPct: 0.075, tag: '15 días de alimentación' },
         30: { days: 30, label: 'Plan mensual', discountPct: 0.10, tag: 'Mayor ahorro' }
     },
-    welcomeDiscountPct: 0.20
+    welcomeDiscountPct: 0
 };
 
 // Algoritmo de optimización de bolsas para fórmula individual

@@ -354,7 +354,7 @@ window.MILKARF_CONFIG = {
         15: { days: 15, label: 'Plan quincenal', discountPct: 0.075, tag: '15 días de alimentación' },
         30: { days: 30, label: 'Plan mensual', discountPct: 0.10, tag: 'Mayor ahorro' }
     },
-    welcomeDiscountPct: 0.20
+    welcomeDiscountPct: 0
 };
 
 // Algoritmo de optimización de bolsas verificable (conservación 24h tras apertura)
@@ -1977,14 +1977,8 @@ window.actualizarUIAuth = function () {
         }
 
         const banner = document.getElementById('descuento-banner');
-        if (banner) {
-            if (window.currentUser.data?.descuento_usado) {
-                banner.classList.add('hidden');
-                window.descuentoAplicado = false;
-            } else {
-                banner.classList.remove('hidden');
-            }
-        }
+        if (banner) banner.classList.add('hidden');
+        window.descuentoAplicado = false;
         window.renderRedeemItems?.();
         window.startUserOrdersListener?.(false);
 
@@ -2014,7 +2008,8 @@ window.actualizarUIAuth = function () {
         if (btnAddPetView) btnAddPetView.classList.add('hidden');
 
         const banner = document.getElementById('descuento-banner');
-        if (banner) banner.classList.remove('hidden');
+        if (banner) banner.classList.add('hidden');
+        window.descuentoAplicado = false;
     }
     window.renderRedeemItems?.();
     window.updateCalcSaveCTA?.();
@@ -2581,7 +2576,7 @@ window.updateCalcSaveCTA = function () {
         btn.classList.add('opacity-60', 'cursor-not-allowed');
     } else {
         title.textContent = 'Crea tu cuenta y guarda esta porción';
-        text.textContent = `Guarda los datos de ${window.lastCalcResult.nombre}, acumula puntos y valida tu 20% de descuento de bienvenida.`;
+        text.textContent = `Guarda los datos de ${window.lastCalcResult.nombre}, acumula puntos y personaliza sus planes.`;
         btn.textContent = 'Crear cuenta';
     }
 };
@@ -2613,7 +2608,7 @@ window.guardarMascotaDesdeCalculadora = async function () {
         window.abrirModalAuth();
         window.switchAuthTab('register');
         window.prefillRegisterFromCalc();
-        window.showAuthInfo('Crea tu cuenta para guardar la porción orientativa de tu mascota y validar tu <b>20% de descuento</b>.');
+        window.showAuthInfo('Crea tu cuenta para guardar la porción de tu mascota y acumular puntos.');
         return;
     }
     if (!db) {
@@ -2714,159 +2709,16 @@ window.entendidoBienvenida = function () {
         }
         window.abrirModalAuth();
         window.switchAuthTab('register');
-        window.showAuthInfo('Crea tu cuenta para validar tu <b>20% de descuento</b> en tu primer pedido de fórmulas.');
+        window.showAuthInfo('Crea tu cuenta para guardar los datos de tus mascotas y acumular puntos.');
     }, 520);
 };
 
 window.abrirModalDescuento = function () {
-    if (window.descuentoAplicado) return;
-
-    if (!window.currentUser || window.currentUser.isAnonymous || !window.currentUser.email) {
-        window.abrirModalAuth();
-        window.switchAuthTab('register');
-        const err = document.getElementById('auth-error');
-        if (err) {
-            err.innerHTML = "Crea tu cuenta para validar tu <b>20% de descuento</b> en tu primer pedido.";
-            err.className = "mt-4 text-xs font-bold text-purple-dark bg-green/20 border border-green/30 p-2.5 rounded-lg text-center leading-tight";
-            err.classList.remove('hidden');
-        }
-        return;
-    }
-
-    if (window.currentUser.data && window.currentUser.data.descuento_usado) {
-        window.showToast("Tu cuenta ya utilizó el descuento de bienvenida.");
-        return;
-    }
-
-    if (window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email)) {
-        const primerNombre = window.currentUser.displayName ? window.currentUser.displayName.split(' ')[0] : (window.currentUser.email ? window.currentUser.email.split('@')[0] : '');
-        const descNombre = document.getElementById('desc-nombre');
-        if (descNombre) descNombre.value = primerNombre;
-
-        const descMascota = document.getElementById('desc-mascota');
-        if (descMascota) {
-            if (window.currentUser.data && window.currentUser.data.mascotas && window.currentUser.data.mascotas.length > 0) {
-                descMascota.value = window.currentUser.data.mascotas[0].nombre;
-            } else if (window.state.nombreMascota) {
-                descMascota.value = window.state.nombreMascota;
-            }
-        }
-    }
-
-    const modal = document.getElementById('modal-descuento');
-    if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        setTimeout(() => {
-            modal.classList.remove('opacity-0');
-            const box = document.getElementById('modal-descuento-box');
-            if (box) box.classList.remove('scale-95');
-        }, 10);
-    }
+    window.showToast?.('Los descuentos se aplican directamente al elegir tu plan (hasta 10% en plan mensual).');
 };
 
-window.cerrarModalDescuento = function () {
-    const modal = document.getElementById('modal-descuento');
-    if (!modal) return;
-    modal.classList.add('opacity-0');
-    const box = document.getElementById('modal-descuento-box');
-    if (box) box.classList.add('scale-95');
-    setTimeout(() => {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-
-        const err = document.getElementById('desc-error'); if (err) err.classList.add('hidden');
-        const dNombre = document.getElementById('desc-nombre'); if (dNombre) dNombre.classList.remove('border-pink', 'border-2');
-        const dTel = document.getElementById('desc-telefono'); if (dTel) dTel.classList.remove('border-pink', 'border-2');
-        const dMasc = document.getElementById('desc-mascota'); if (dMasc) dMasc.classList.remove('border-pink', 'border-2');
-    }, 300);
-};
-
-window.verificarDescuento = async function () {
-    window.vibrate(20);
-    const inputNombre = document.getElementById('desc-nombre');
-    const inputTelefono = document.getElementById('desc-telefono');
-    const inputMascota = document.getElementById('desc-mascota');
-    const err = document.getElementById('desc-error');
-
-    if (!inputNombre || !inputTelefono || !inputMascota || !err) return;
-
-    const nombre = inputNombre.value.trim().toLowerCase();
-    const telefono = inputTelefono.value.trim();
-    try { localStorage.setItem('milkarf_contact_phone', telefono); } catch (e) { }
-    const mascota = inputMascota.value.trim().toLowerCase();
-
-    inputNombre.classList.remove('border-pink', 'border-2');
-    inputTelefono.classList.remove('border-pink', 'border-2');
-    inputMascota.classList.remove('border-pink', 'border-2');
-
-    if (!nombre || !telefono || !mascota) {
-        err.textContent = "Completa todos los campos para validar el descuento.";
-        err.classList.remove('hidden');
-        if (!nombre) inputNombre.classList.add('border-pink', 'border-2');
-        if (!telefono) inputTelefono.classList.add('border-pink', 'border-2');
-        if (!mascota) inputMascota.classList.add('border-pink', 'border-2');
-        return;
-    }
-
-    if (!window.currentUser || window.currentUser.isAnonymous) {
-        err.innerHTML = "Sesión inválida. Por favor, recarga la página e inicia sesión.";
-        err.classList.remove('hidden');
-        return;
-    }
-
-    if (window.currentUser.data?.descuento_usado) {
-        err.textContent = "Tu cuenta ya utilizó el descuento de bienvenida.";
-        err.classList.remove('hidden');
-        return;
-    }
-
-    const btn = document.getElementById('btn-verificar');
-    const oldText = btn ? btn.innerHTML : '';
-    if (btn) {
-        btn.innerHTML = "Verificando...";
-        btn.disabled = true;
-    }
-
-    const uid = window.currentUser.uid;
-
-    if (db && configToUse.apiKey) {
-        try {
-            const docSnap = await getDoc(window.getUserPath(uid));
-            if (docSnap.exists() && docSnap.data().descuento_usado) {
-                err.textContent = "Tu cuenta ya utilizó el descuento de bienvenida.";
-                err.classList.remove('hidden');
-                if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
-                return;
-            }
-        } catch (e) { console.warn("Aviso de red", e); }
-    }
-
-    window.descuentoAplicado = true;
-    if (db && window.currentUser?.uid) {
-        try {
-            const cleanPhone = telefono.replace(/\D/g, '');
-            await setDoc(window.getUserPath(window.currentUser.uid), {
-                uid: window.currentUser.uid,
-                telefono: cleanPhone,
-                phone: cleanPhone,
-                whatsapp: cleanPhone,
-                nombre: nombre,
-                nombre_persona: nombre,
-                userName: nombre,
-                updatedAt: serverTimestamp()
-            }, { merge: true });
-            window.currentUser.data = { ...(window.currentUser.data || {}), telefono: cleanPhone, phone: cleanPhone, whatsapp: cleanPhone, nombre, nombre_persona: nombre, userName: nombre };
-        } catch (e) { console.warn('No se pudo guardar el teléfono de contacto:', e); }
-    }
-    window.cerrarModalDescuento();
-    const banner = document.getElementById('descuento-banner');
-    if (banner) banner.innerHTML = `<div class="bg-green/20 text-green-dark p-3 rounded-lg text-center text-xs font-black flex items-center justify-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> Descuento del 20% aplicado al pedido</div>`;
-    if (typeof window.refreshIcons === 'function') window.refreshIcons();
-    window.updateCartUI();
-
-    if (btn) { btn.innerHTML = oldText; btn.disabled = false; }
-};
+window.cerrarModalDescuento = function () {};
+window.verificarDescuento = function () {};
 
 // =========================================================================================
 // LÓGICA EXCLUSIVA DEL ADMINISTRADOR (PEDIDOS, USUARIOS Y CANJES)
@@ -5243,7 +5095,7 @@ window.getBagRecommendation = function (grams = 0) {
 };
 
 window.updateFlowStepper = function (currentStep) {
-    for (let s = 1; s <= 4; s++) {
+    for (let s = 1; s <= 3; s++) {
         const btn = document.getElementById(`step-btn-${s}`);
         if (!btn) continue;
         if (s <= currentStep) {
@@ -5277,7 +5129,7 @@ window.goToFlowStep = function (step) {
         window.updateFlowStepper(1);
     } else if (step === 2) {
         if (!window.lastCalcResult?.gramos) {
-            window.showToast?.('Ingresa primero los datos de tu perro.');
+            window.showToast?.('Ingresa primero los datos de tu mascota.');
             return;
         }
         window.navigateTo('view-calc');
@@ -5285,18 +5137,31 @@ window.goToFlowStep = function (step) {
         if (tuRes) tuRes.scrollIntoView({ behavior: 'smooth', block: 'start' });
         window.updateFlowStepper(2);
     } else if (step === 3) {
-        if (!window.lastCalcResult?.gramos) {
-            window.showToast?.('Calcula primero la porción de tu perro.');
-            return;
-        }
-        window.navigateTo('view-calc');
-        const planSection = document.getElementById('feeding-plans-section');
-        if (planSection) planSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        window.updateFlowStepper(3);
-    } else if (step === 4) {
         window.navigateTo('view-cart');
-        window.updateFlowStepper(4);
+        window.updateFlowStepper(3);
     }
+};
+
+window.editarDatosMascota = function () {
+    window.vibrate?.(20);
+    window.navigateTo('view-calc');
+    window.updateFlowStepper(1);
+    setTimeout(() => {
+        const pesoEl = document.getElementById('pesoInput');
+        if (pesoEl) pesoEl.focus();
+        const card = document.getElementById('calc-step-card');
+        if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
+};
+
+window.editarPlanMascota = function () {
+    window.vibrate?.(20);
+    window.navigateTo('view-calc');
+    window.updateFlowStepper(2);
+    setTimeout(() => {
+        const planSec = document.getElementById('feeding-plans-section');
+        if (planSec) planSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
 };
 
 window.cambiarFormulaPlan = function (formula) {
@@ -5480,9 +5345,9 @@ window.renderActiveFeedingPlans = function () {
         const isSelected = isSelectedInCart || (!anyPlanForPet && plan.days === recommendedPlanDays);
 
         return `
-        <div data-plan-days="${plan.days}" data-selected-pres="${plan.presentationGrams}" onclick="window.openPlanModal(${plan.days});" class="feeding-plan-card compact-plan ${isSelected ? 'selected' : ''} ${isMonthly ? 'is-monthly border-pink/60 dark:border-pink/40 ring-1 ring-pink/20' : 'border-purple-border/50 dark:border-purple/20'} bg-white dark:bg-darkcard rounded-2xl p-2.5 sm:p-3.5 border shadow-sm text-center transition-all hover:-translate-y-1 hover:shadow-md relative flex flex-col justify-between cursor-pointer select-none">
+        <div data-plan-days="${plan.days}" data-selected-pres="${plan.presentationGrams}" class="feeding-plan-card compact-plan ${isSelected ? 'selected' : ''} ${isMonthly ? 'is-monthly border-pink/60 dark:border-pink/40 ring-1 ring-pink/20' : 'border-purple-border/50 dark:border-purple/20'} bg-white dark:bg-darkcard rounded-2xl p-2.5 sm:p-3.5 border shadow-sm text-center transition-all hover:shadow-md relative flex flex-col justify-between select-none">
 
-            ${isMonthly ? '<div class="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-pink text-white text-[8px] sm:text-[9px] font-black uppercase px-2.5 py-0.5 tracking-wider rounded-full shadow-sm whitespace-nowrap pointer-events-none z-20">Recomendado</div>' : ''}
+            ${isMonthly ? '<div class="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-pink text-white text-[8px] sm:text-[9px] font-black uppercase px-2.5 py-0.5 tracking-wider rounded-full shadow-sm whitespace-nowrap pointer-events-none z-20">Mayor ahorro porcentual</div>' : ''}
 
             <div class="compact-plan-inner flex flex-col items-center w-full">
                 <!-- Descuento -->
@@ -5495,17 +5360,27 @@ window.renderActiveFeedingPlans = function () {
                 <div class="plan-card-days text-[9px] sm:text-[11px] text-gray-500 dark:text-gray-400 font-semibold leading-tight mt-0.5">${plan.days} días</div>
 
                 <!-- Precio -->
-                <div class="my-2 sm:my-3 text-center w-full">
+                <div class="my-2 text-center w-full">
                     <div class="plan-price text-sm sm:text-xl font-black text-purple-dark dark:text-white leading-tight">$${plan.finalPrice.toFixed(2)}</div>
                     <div class="plan-savings text-[9px] sm:text-xs font-bold text-green-dark dark:text-green mt-0.5 leading-tight">Ahorras $${plan.savings.toFixed(2)}</div>
                 </div>
+
+                <!-- Bolsas calculadas -->
+                <div class="mb-2 text-[10px] text-gray-500 dark:text-gray-400 font-semibold leading-tight">
+                    ${plan.bagsCount} bolsas (${(plan.totalGramsProvided / 1000).toFixed(2)} kg)
+                </div>
             </div>
 
-            <!-- Botón Ver plan -->
-            <button type="button" onclick="event.stopPropagation(); window.openPlanModal(${plan.days});" class="w-full py-1.5 sm:py-2 px-1 sm:px-2 bg-purple/10 dark:bg-purple/20 text-purple-dark dark:text-white hover:bg-purple hover:text-white text-[10px] sm:text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer shadow-xs active:scale-95">
-                <span>Ver plan</span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-            </button>
+            <!-- Acciones: Elegir plan directo y Ver detalle opcional -->
+            <div class="space-y-1.5 w-full mt-auto">
+                <button type="button" onclick="window.seleccionarYContinuarPlan(${plan.days});" class="w-full py-2 px-2 bg-purple hover:bg-purple-dark text-white text-[11px] sm:text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer shadow-sm active:scale-95">
+                    <span>Elegir plan</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+                <button type="button" onclick="window.openPlanModal(${plan.days});" class="w-full py-1 text-[10px] text-purple/70 dark:text-purple-light hover:underline font-bold transition-all cursor-pointer">
+                    Ver detalle
+                </button>
+            </div>
         </div>
         `;
     }).join('');
@@ -5721,15 +5596,35 @@ window.closePlanModal = function () {
     window._activeModalPlan = null;
 };
 
-window.selectPlanFromModal = function (days) {
-    if (!window.lastCalcResult?.gramos) { window.showToast?.('Calcula primero la porción de tu perro.'); return; }
+window.seleccionarYContinuarPlan = function (days) {
+    window.vibrate?.(20);
+    if (!window.lastCalcResult?.gramos) {
+        window.showToast?.('Calcula primero la porción de tu mascota.');
+        return;
+    }
     const formula = window.activePlanFormula || 'pollo';
     const petName = window.state.nombreMascota || 'tu perro';
-    const plan = window.buildFeedingPlan(window.lastCalcResult.gramos, days, formula, petName);
+    const plan = window.buildFeedingPlan(window.lastCalcResult.gramos, Number(days), formula, petName);
+    window.addFeedingPlanToCart(plan);
+    window.renderActiveFeedingPlans();
+    window.updateFlowStepper(3);
+    window.navigateTo('view-cart');
+    const shortName = Number(days) === 7 ? 'Semanal' : (Number(days) === 15 ? 'Quincenal' : 'Mensual');
+    window.showToast?.(`Plan ${shortName} agregado a tu pedido.`, 'success');
+};
+
+window.selectPlanFromModal = function (days) {
+    if (!window.lastCalcResult?.gramos) { window.showToast?.('Calcula primero la porción de tu mascota.'); return; }
+    const formula = window.activePlanFormula || 'pollo';
+    const petName = window.state.nombreMascota || 'tu perro';
+    const plan = window.buildFeedingPlan(window.lastCalcResult.gramos, Number(days), formula, petName);
     window.addFeedingPlanToCart(plan);
     window.renderActiveFeedingPlans();
     window.closePlanModal();
-    window.showToast?.('Plan agregado a tu pedido.', 'success');
+    window.updateFlowStepper(3);
+    window.navigateTo('view-cart');
+    const shortName = Number(days) === 7 ? 'Semanal' : (Number(days) === 15 ? 'Quincenal' : 'Mensual');
+    window.showToast?.(`Plan ${shortName} agregado a tu pedido.`, 'success');
 };
 
 window.selectPlanPresentation = function (size) {
@@ -5893,15 +5788,8 @@ window.calcularRacion = function () {
 
     if (!calcNombreInput || !pesoInputEl || !err) return;
 
-    window.state.nombreMascota = calcNombreInput.value.trim();
-    if (!window.state.nombreMascota) {
-        err.textContent = "Ingresa el nombre de tu perro en el Paso 1 para continuar.";
-        err.classList.add('visible');
-        const tRes = document.getElementById('tu-resultado');
-        if (tRes) tRes.classList.remove('visible', 'show');
-        calcNombreInput.focus();
-        return;
-    }
+    const rawNombre = (calcNombreInput ? calcNombreInput.value : '').trim();
+    window.state.nombreMascota = rawNombre || 'Tu mascota';
 
     const rawPesoText = String(pesoInputEl.value || '').trim();
     const pesoText = rawPesoText.replace(',', '.');
@@ -6266,41 +6154,17 @@ window.updateCartUI = function () {
         return s;
     }, 0);
 
-    // Validar estado del cupón de bienvenida
-    if (window.descuentoAplicado) {
-        const isLoggedUser = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
-        const alreadyUsed = window.currentUser?.data?.descuento_usado === true;
-        if (!isLoggedUser || alreadyUsed) {
-            window.descuentoAplicado = false;
-        }
-    }
-
-    // Regla de no acumulación: aplicar el mayor beneficio económico
-    const totalWelcomeDiscount = window.descuentoAplicado ? (totalOriginalSubtotal * 0.20) : 0;
-    let appliedDiscountType = 'none';
-    let finalDiscountAmount = 0;
-
-    if (window.descuentoAplicado) {
-        if (totalWelcomeDiscount > totalPlanDiscount) {
-            appliedDiscountType = 'welcome';
-            finalDiscountAmount = totalWelcomeDiscount;
-        } else {
-            appliedDiscountType = totalPlanDiscount > 0 ? 'plan' : 'welcome';
-            finalDiscountAmount = Math.max(totalPlanDiscount, totalWelcomeDiscount);
-        }
-    } else {
-        if (totalPlanDiscount > 0) {
-            appliedDiscountType = 'plan';
-            finalDiscountAmount = totalPlanDiscount;
-        }
-    }
-
+    // Los descuentos vigentes corresponden a los planes de alimentación (7, 15, 30 días)
+    window.descuentoAplicado = false;
+    let appliedDiscountType = totalPlanDiscount > 0 ? 'plan' : 'none';
+    let finalDiscountAmount = totalPlanDiscount;
     const finalTotal = Math.max(0, totalOriginalSubtotal - finalDiscountAmount);
 
     // Badges y Floating Action Button
     const fab = document.getElementById('cart-fab');
     const cartBadge = document.getElementById('cart-badge');
     const dBadge = document.getElementById('desktop-cart-badge');
+    const mBadge = document.getElementById('mobile-cart-badge');
 
     if (tItems > 0) {
         if (fab) {
@@ -6309,10 +6173,12 @@ window.updateCartUI = function () {
         }
         if (cartBadge) cartBadge.textContent = tItems;
         if (dBadge) dBadge.textContent = tItems;
+        if (mBadge) mBadge.textContent = tItems;
     } else {
         if (fab) fab.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
         if (cartBadge) cartBadge.textContent = '0';
         if (dBadge) dBadge.textContent = '0';
+        if (mBadge) mBadge.textContent = '0';
     }
 
     const empty = document.getElementById('cart-empty');
@@ -6331,6 +6197,7 @@ window.updateCartUI = function () {
         if (cartBackBtn) cartBackBtn.classList.add('hidden');
         if (fab) fab.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
         if (cartBadge) cartBadge.textContent = '0';
+        if (mBadge) mBadge.textContent = '0';
         return;
     }
 
@@ -6351,104 +6218,77 @@ window.updateCartUI = function () {
     if (cont) cont.classList.remove('hidden');
     if (sum) sum.classList.remove('hidden');
 
-    // Renderizar tarjetas de carrito (Planes y legacy)
+    // Renderizar tarjetas de carrito (Resumen simple y editable sin selectores duplicados)
     if (cont) {
         const itemsHTML = window.cart.map((i, idx) => {
             if (i.type === 'feeding_plan') {
                 const kgReq = (Number(i.totalGramsRequired || 0) / 1000).toFixed(2);
                 const kgProv = (Number(i.totalGramsProvided || 0) / 1000).toFixed(2);
-                const surplusG = Number(i.surplusGrams || 0);
                 const bagsDesc = Array.isArray(i.bags) ? i.bags.map(b => `${b.qty}x ${b.weight}`).join(' + ') : '';
-                const petDisplay = i.petName || 'Tu perro';
+                const petDisplay = i.petName || 'Tu mascota';
                 const petWeightText = Number(i.petWeight) ? ` · ${Number(i.petWeight)} kg` : '';
                 const curDays = Number(i.durationDays || 7);
-                const curFormula = i.formula || 'pollo';
-                const curPres = i.presentation || '550gr';
 
                 return `
-                    <div class="bg-white dark:bg-darkcard rounded-3xl border-2 border-purple/20 dark:border-purple/30 p-5 sm:p-6 shadow-md transition-all text-left relative overflow-hidden mb-4">
+                    <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/40 dark:border-purple/30 p-5 sm:p-6 shadow-md transition-all text-left relative overflow-hidden mb-4">
                         <!-- Cabecera del plan -->
                         <div class="flex items-start justify-between gap-3 pb-3 border-b border-purple-border/30 dark:border-purple/20">
                             <div>
                                 <div class="inline-flex items-center gap-1.5 bg-purple/10 dark:bg-purple/25 text-purple-dark dark:text-purple-light text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider mb-1.5">
-                                    🐾 Plan para ${window.escapeHTML(petDisplay)}
+                                    🐾 Para ${window.escapeHTML(petDisplay)}
                                 </div>
-                                <h3 class="font-black text-lg sm:text-xl text-purple-dark dark:text-white leading-tight">
+                                <h3 class="font-black text-xl text-purple-dark dark:text-white leading-tight">
                                     ${window.escapeHTML(i.formulaName || 'Fórmula Milkarf')}
                                 </h3>
                                 <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-0.5">
-                                    Ración: <span class="text-purple font-black">${i.dailyGrams} g/día</span> · Duración: <span class="font-bold text-pink">${curDays} días</span>${petWeightText}
+                                    Plan de <span class="font-bold text-pink">${curDays} días</span> · Porción diaria: <span class="text-purple font-black">${i.dailyGrams} g/día</span>${petWeightText}
                                 </p>
                             </div>
-                            <div class="flex items-center gap-2 shrink-0">
-                                <button type="button" onclick="window.editarPlanDesdeCarrito('${i.id}')" class="px-3 py-2 bg-purple/10 hover:bg-purple text-purple-dark hover:text-white dark:text-purple-light dark:hover:text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95" title="Modificar ración o datos de la mascota">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                                    <span>Editar</span>
-                                </button>
-                                <button onclick="window.removeFromCartAt(${idx})" class="w-10 h-10 bg-pink/10 hover:bg-pink text-pink hover:text-white rounded-2xl flex items-center justify-center transition-all active:scale-90 touch-target-safe shadow-sm cursor-pointer" aria-label="Eliminar plan">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                            </div>
+                            <button onclick="window.removeFromCartAt(${idx})" class="w-9 h-9 bg-pink/10 hover:bg-pink text-pink hover:text-white rounded-xl flex items-center justify-center transition-all active:scale-90 shrink-0 touch-target-safe shadow-xs cursor-pointer" aria-label="Eliminar plan" title="Eliminar del pedido">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
                         </div>
 
-                        <!-- Selector inline de duración y fórmula -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 my-4 bg-purple-light/50 dark:bg-[#0d0718] p-3.5 rounded-2xl border border-purple-border/30 dark:border-purple/20">
-                            <div>
-                                <span class="text-[10px] font-black uppercase tracking-wider text-purple/60 dark:text-gray-400 block mb-1.5">Duración del plan:</span>
-                                <div class="grid grid-cols-3 gap-1.5">
-                                    <button type="button" onclick="window.updatePlanDuration('${i.id}', 7)" class="py-1.5 px-2 text-[11px] font-black rounded-xl border transition-all ${curDays === 7 ? 'bg-purple text-white border-purple shadow-sm' : 'bg-white dark:bg-darkbg text-purple-dark dark:text-white border-purple/20 hover:border-purple/50'}">
-                                        7d <span class="text-[9px] opacity-80 block">-5%</span>
-                                    </button>
-                                    <button type="button" onclick="window.updatePlanDuration('${i.id}', 15)" class="py-1.5 px-2 text-[11px] font-black rounded-xl border transition-all ${curDays === 15 ? 'bg-purple text-white border-purple shadow-sm' : 'bg-white dark:bg-darkbg text-purple-dark dark:text-white border-purple/20 hover:border-purple/50'}">
-                                        15d <span class="text-[9px] opacity-80 block">-7.5%</span>
-                                    </button>
-                                    <button type="button" onclick="window.updatePlanDuration('${i.id}', 30)" class="py-1.5 px-2 text-[11px] font-black rounded-xl border transition-all ${curDays === 30 ? 'bg-purple text-white border-purple shadow-sm' : 'bg-white dark:bg-darkbg text-purple-dark dark:text-white border-purple/20 hover:border-purple/50'}">
-                                        30d <span class="text-[9px] opacity-80 block">-10%</span>
-                                    </button>
-                                </div>
+                        <!-- Composición de bolsas calculadas -->
+                        <div class="my-4 p-4 rounded-2xl bg-purple-light/50 dark:bg-[#0d0718] border border-purple-border/30 dark:border-purple/20 space-y-2 text-xs">
+                            <div class="flex items-center justify-between pb-1.5 border-b border-purple-border/20">
+                                <span class="font-bold text-purple-dark dark:text-white flex items-center gap-1.5">
+                                    <i data-lucide="package" class="w-3.5 h-3.5 text-pink"></i> Bolsas incluidas:
+                                </span>
+                                <span class="font-black text-purple-dark dark:text-white">${window.escapeHTML(bagsDesc || `${i.bagsCount || 0} bolsas`)}</span>
                             </div>
-                            <div>
-                                <span class="text-[10px] font-black uppercase tracking-wider text-purple/60 dark:text-gray-400 block mb-1.5">Fórmula:</span>
-                                <div class="grid grid-cols-3 gap-1.5">
-                                    <button type="button" onclick="window.updatePlanFormula('${i.id}', 'pollo')" class="py-1.5 px-2 text-[11px] font-black rounded-xl border transition-all ${curFormula === 'pollo' ? 'bg-pink text-white border-pink shadow-sm' : 'bg-white dark:bg-darkbg text-purple-dark dark:text-white border-purple/20 hover:border-purple/50'}">
-                                        Pollo
-                                    </button>
-                                    <button type="button" onclick="window.updatePlanFormula('${i.id}', 'res')" class="py-1.5 px-2 text-[11px] font-black rounded-xl border transition-all ${curFormula === 'res' ? 'bg-pink text-white border-pink shadow-sm' : 'bg-white dark:bg-darkbg text-purple-dark dark:text-white border-purple/20 hover:border-purple/50'}">
-                                        Res
-                                    </button>
-                                    <button type="button" onclick="window.updatePlanFormula('${i.id}', 'mixto')" class="py-1.5 px-2 text-[11px] font-black rounded-xl border transition-all ${curFormula === 'mixto' ? 'bg-pink text-white border-pink shadow-sm' : 'bg-white dark:bg-darkbg text-purple-dark dark:text-white border-purple/20 hover:border-purple/50'}">
-                                        Mixto
-                                    </button>
-                                </div>
+                            <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
+                                <span>Alimento requerido (${curDays} días):</span>
+                                <span class="font-semibold text-purple-dark dark:text-white">${kgReq} kg</span>
                             </div>
-                        </div>
-
-                        <!-- Detalle de porciones y composición calculada -->
-                        <div class="space-y-2 text-xs text-gray-600 dark:text-gray-300 font-medium mb-4">
-                            <div class="flex items-center justify-between">
-                                <span class="flex items-center gap-1.5 font-bold text-purple-dark dark:text-white"><i data-lucide="shopping-bag" class="w-3.5 h-3.5 text-pink"></i> Bolsas en el plan:</span>
-                                <span class="font-black text-purple-dark dark:text-white">${window.escapeHTML(bagsDesc || `${i.bagsCount || 0} bolsa(s)`)}</span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span>Alimento requerido:</span>
-                                <span class="font-bold text-purple-dark dark:text-white">${kgReq} kg (${i.durationDays} días × ${i.dailyGrams}g)</span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span>Total provisto:</span>
-                                <span class="font-bold text-emerald-600 dark:text-emerald-400">${kgProv} kg</span>
+                            <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
+                                <span>Total provisto en bolsas:</span>
+                                <span class="font-black text-green-dark dark:text-green">${kgProv} kg</span>
                             </div>
                         </div>
 
                         <!-- Precios y ahorro del plan -->
-                        <div class="flex items-center justify-between pt-3 border-t border-purple-border/30 dark:border-purple/20">
+                        <div class="flex items-center justify-between pt-2 pb-4 border-b border-purple-border/20">
                             <div>
-                                <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider line-through">Subtotal: $${Number(i.originalSubtotal || 0).toFixed(2)}</div>
-                                <div class="text-[11px] text-emerald-600 dark:text-emerald-400 font-black">Ahorro: -$${Number(i.discountAmount || 0).toFixed(2)} (${i.discountPercent}%)</div>
+                                <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider line-through">Precio base: $${Number(i.originalSubtotal || 0).toFixed(2)}</div>
+                                <div class="text-xs text-green-dark dark:text-green font-black">Ahorro del plan: -$${Number(i.discountAmount || 0).toFixed(2)} (-${i.discountPercent}%)</div>
                             </div>
                             <div class="text-right">
-                                <div class="text-[10px] text-purple/60 dark:text-gray-400 font-bold uppercase">Total del plan</div>
-                                <div class="font-black text-pink text-xl sm:text-2xl tracking-tight">$${Number(i.finalPrice || 0).toFixed(2)}</div>
+                                <div class="text-[10px] text-purple/60 dark:text-gray-400 font-bold uppercase">Total plan</div>
+                                <div class="font-black text-pink text-2xl tracking-tight leading-none">$${Number(i.finalPrice || 0).toFixed(2)}</div>
                             </div>
+                        </div>
+
+                        <!-- Acciones de edición: Editar datos / Cambiar plan -->
+                        <div class="grid grid-cols-2 gap-2.5 pt-3">
+                            <button type="button" onclick="window.editarDatosMascota()" class="py-2.5 px-3 bg-purple-light dark:bg-purple/15 hover:bg-purple/20 text-purple-dark dark:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 border border-purple-border/30">
+                                <i data-lucide="edit-3" class="w-3.5 h-3.5 text-pink"></i>
+                                <span>Editar datos</span>
+                            </button>
+                            <button type="button" onclick="window.editarPlanMascota()" class="py-2.5 px-3 bg-purple-light dark:bg-purple/15 hover:bg-purple/20 text-purple-dark dark:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 border border-purple-border/30">
+                                <i data-lucide="sliders" class="w-3.5 h-3.5 text-purple"></i>
+                                <span>Cambiar plan</span>
+                            </button>
                         </div>
                     </div>
                 `;
@@ -6529,26 +6369,6 @@ window.updateCartUI = function () {
             </div>
         `;
 
-        // Notificación de beneficio / resolución de descuento
-        if (appliedDiscountType === 'welcome') {
-            cLines.innerHTML += `
-                <div class="mt-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 p-2.5 rounded-xl text-[11px] font-bold text-left flex items-start gap-2">
-                    <i data-lucide="sparkles" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"></i>
-                    <div>
-                        <span>Cupón de bienvenida (-20%) aplicado: Te otorga un mayor ahorro ($${totalWelcomeDiscount.toFixed(2)} vs $${totalPlanDiscount.toFixed(2)} del plan).</span>
-                    </div>
-                </div>
-            `;
-        } else if (appliedDiscountType === 'plan' && window.descuentoAplicado) {
-            cLines.innerHTML += `
-                <div class="mt-2 bg-purple/10 border border-purple/20 text-purple-dark dark:text-purple-light p-2.5 rounded-xl text-[11px] font-bold text-left flex items-start gap-2">
-                    <i data-lucide="info" class="w-4 h-4 text-purple shrink-0 mt-0.5"></i>
-                    <div>
-                        <span>Descuento de plan aplicado: Te otorga un mayor ahorro ($${totalPlanDiscount.toFixed(2)} vs $${totalWelcomeDiscount.toFixed(2)} del cupón de bienvenida). No son acumulables.</span>
-                    </div>
-                </div>
-            `;
-        }
         if (window.lucide) window.lucide.createIcons({ root: cLines });
     }
 
@@ -8293,35 +8113,11 @@ window.prepareOrderForCheckout = function () {
         return s;
     }, 0);
 
-    // Validar si el cupón de bienvenida es aplicable
-    if (window.descuentoAplicado) {
-        const isLoggedUser = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
-        const alreadyUsed = window.currentUser?.data?.descuento_usado === true;
-        if (!isLoggedUser || alreadyUsed) {
-            window.descuentoAplicado = false;
-        }
-    }
-
-    const welcomeSavings = window.descuentoAplicado ? (totalOriginalSubtotal * 0.20) : 0;
-    let discountType = 'none';
-    let discountAmount = 0;
-    let discountLabel = '';
-
-    if (window.descuentoAplicado) {
-        if (welcomeSavings > totalPlanDiscount) {
-            discountType = 'welcome';
-            discountAmount = welcomeSavings;
-            discountLabel = 'Descuento de bienvenida (-20%)';
-        } else {
-            discountType = totalPlanDiscount > 0 ? 'plan' : 'welcome';
-            discountAmount = Math.max(totalPlanDiscount, welcomeSavings);
-            discountLabel = totalPlanDiscount > 0 ? 'Descuento por plan' : 'Descuento de bienvenida (-20%)';
-        }
-    } else if (totalPlanDiscount > 0) {
-        discountType = 'plan';
-        discountAmount = totalPlanDiscount;
-        discountLabel = 'Descuento por plan';
-    }
+    // Los descuentos vigentes corresponden a los planes de alimentación (7, 15, 30 días)
+    window.descuentoAplicado = false;
+    let discountType = totalPlanDiscount > 0 ? 'plan' : 'none';
+    let discountAmount = totalPlanDiscount;
+    let discountLabel = totalPlanDiscount > 0 ? 'Descuento por plan' : '';
 
     const discountApplied = discountAmount > 0;
     const finalTotal = Math.max(0, totalOriginalSubtotal - discountAmount);
@@ -9512,6 +9308,19 @@ window.descargarGuiaAlimentacion = async function (planData = null) {
     } catch (err) {
         console.error('Error generando PDF de alimentación:', err);
         window.showToast?.('Error al generar la guía en PDF.');
+    }
+};
+
+window.descargarGuiaDesdeCarrito = function () {
+    window.vibrate?.(20);
+    const plan = (window.cart || []).find(i => i.type === 'feeding_plan');
+    if (plan && typeof window.descargarGuiaAlimentacion === 'function') {
+        window.descargarGuiaAlimentacion(plan);
+    } else if (window.lastCalcResult?.gramos) {
+        const fallbackPlan = window.buildFeedingPlan(window.lastCalcResult.gramos, 30, window.activePlanFormula || 'pollo', window.state.nombreMascota || 'tu perro');
+        window.descargarGuiaAlimentacion(fallbackPlan);
+    } else {
+        window.showToast?.('Calcula primero la porción de tu mascota para descargar su guía personalizada.');
     }
 };
 
