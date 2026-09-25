@@ -5098,10 +5098,8 @@ window.updateFlowStepper = function (currentStep) {
     for (let s = 1; s <= 3; s++) {
         const btn = document.getElementById(`step-btn-${s}`);
         if (!btn) continue;
-        if (s <= currentStep) {
-            btn.removeAttribute('disabled');
-            btn.classList.remove('opacity-60');
-        }
+        btn.removeAttribute('disabled');
+        btn.classList.remove('opacity-60');
         if (s === currentStep) {
             btn.classList.add('bg-purple', 'text-white', 'border-purple');
             btn.classList.remove('bg-white', 'dark:bg-darkcard', 'text-purple/60', 'dark:text-gray-400');
@@ -5128,14 +5126,31 @@ window.goToFlowStep = function (step) {
         if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
         window.updateFlowStepper(1);
     } else if (step === 2) {
-        if (!window.lastCalcResult?.gramos) {
-            window.showToast?.('Ingresa primero los datos de tu mascota.');
-            return;
-        }
         window.navigateTo('view-calc');
-        const tuRes = document.getElementById('tu-resultado');
-        if (tuRes) tuRes.scrollIntoView({ behavior: 'smooth', block: 'start' });
         window.updateFlowStepper(2);
+        const tuRes = document.getElementById('tu-resultado');
+        const emptyPlans = document.getElementById('calc-step-empty-plans');
+        const plansContainer = document.getElementById('feeding-plans-container');
+        const plansSec = document.getElementById('feeding-plans-section');
+
+        if (!window.lastCalcResult?.gramos) {
+            if (tuRes) tuRes.classList.add('show', 'visible');
+            if (emptyPlans) emptyPlans.classList.remove('hidden');
+            if (plansContainer) plansContainer.classList.add('hidden');
+            if (plansSec) {
+                plansSec.classList.remove('hidden');
+                plansSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        } else {
+            if (tuRes) tuRes.classList.add('show', 'visible');
+            if (emptyPlans) emptyPlans.classList.add('hidden');
+            if (plansContainer) plansContainer.classList.remove('hidden');
+            if (plansSec) {
+                plansSec.classList.remove('hidden');
+                plansSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            window.renderActiveFeedingPlans?.();
+        }
     } else if (step === 3) {
         window.navigateTo('view-cart');
         window.updateFlowStepper(3);
@@ -5373,8 +5388,8 @@ window.renderActiveFeedingPlans = function () {
 
             <!-- Acciones: Elegir plan directo y Ver detalle opcional -->
             <div class="space-y-1.5 w-full mt-auto">
-                <button type="button" onclick="window.seleccionarYContinuarPlan(${plan.days});" class="w-full py-2 px-2 bg-purple hover:bg-purple-dark text-white text-[11px] sm:text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer shadow-sm active:scale-95">
-                    <span>Elegir plan</span>
+                <button type="button" onclick="window.seleccionarYContinuarPlan(${plan.days});" class="w-full py-2.5 px-2 bg-purple hover:bg-purple-dark text-white text-[11px] sm:text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-95 touch-target-safe">
+                    <span>Revisar mi pedido</span>
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                 </button>
                 <button type="button" onclick="window.openPlanModal(${plan.days});" class="w-full py-1 text-[10px] text-purple/70 dark:text-purple-light hover:underline font-bold transition-all cursor-pointer">
@@ -5538,9 +5553,9 @@ window.openPlanModal = function (days) {
     window.animateProvisionBags(body, { force: true });
 
     summary.innerHTML = `
-        <button id="plan-modal-choose" type="button" class="w-full ${isMonthlyModal ? 'bg-pink hover:bg-pink-dark' : 'bg-purple hover:bg-purple-dark'} text-white font-black py-3.5 rounded-xl text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg cursor-pointer">
+        <button id="plan-modal-choose" type="button" class="w-full ${isMonthlyModal ? 'bg-pink hover:bg-pink-dark' : 'bg-purple hover:bg-purple-dark'} text-white font-black py-3.5 rounded-xl text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg cursor-pointer touch-target-safe">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Elegir ${String(plan.label.replace('Plan ', '')).toLowerCase()} ($${plan.finalPrice.toFixed(2)})
+            Revisar mi pedido · ${String(plan.label.replace('Plan ', '')).toLowerCase()} ($${plan.finalPrice.toFixed(2)})
         </button>
         <button id="plan-modal-download-pdf" type="button" class="w-full py-2.5 px-3 bg-purple/10 hover:bg-purple/20 text-purple-dark dark:text-purple-light font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer border border-purple/20">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -5842,7 +5857,7 @@ window.calcularRacion = function () {
     }
 
     const titleName = document.getElementById('result-title-name');
-    if (titleName) titleName.textContent = `Porción orientativa para ${window.state.nombreMascota}`;
+    if (titleName) titleName.textContent = `Su porción diaria orientativa`;
 
     const subtitlePet = document.getElementById('result-subtitle-pet');
     const etapaLabel = window.state.etapa === 'cachorro'
@@ -5851,7 +5866,7 @@ window.calcularRacion = function () {
     const condLabel = window.state.etapa === 'cachorro'
         ? ''
         : (window.state.esterilizado ? ' · Esterilizado' : ' · Factor mínimo preventivo');
-    if (subtitlePet) subtitlePet.textContent = `${etapaLabel}${condLabel} · ${peso} kg`;
+    if (subtitlePet) subtitlePet.textContent = `Para ${window.state.nombreMascota} · ${etapaLabel}${condLabel} · ${peso} kg`;
 
     const rGrams = document.getElementById('result-grams');
     if (rGrams) rGrams.textContent = gramos;
@@ -6106,22 +6121,22 @@ window.agregarPlanOtraMascota = function () {
 window.armarPlanDesdeCatalogo = function (formula = 'pollo') {
     window.vibrate?.(20);
     window.activePlanFormula = formula;
-    const nombreInput = document.getElementById('calc-nombre');
-    const pesoInput = document.getElementById('pesoInput');
     
-    // Si ya se calculó una porción previamente, actualizamos los planes con la fórmula elegida
-    if (window.state?.porcionesRecomendadas?.perro) {
+    // Si ya existe una porción válida, continúa a los planes conservando los datos
+    if (window.lastCalcResult?.gramos || window.state?.porcionesRecomendadas?.perro) {
         window.cambiarFormulaPlan(formula);
-        window.navigateTo('view-calc');
-        setTimeout(() => {
-            const plansSec = document.getElementById('feeding-plans-section');
-            if (plansSec) plansSec.scrollIntoView({ behavior: 'smooth' });
-        }, 200);
+        window.goToFlowStep(2);
     } else {
-        window.updateFlowStepper(1);
-        window.navigateTo('view-calc');
+        // Si faltan datos, abre el proceso de cálculo conservando la fórmula elegida
+        window.goToFlowStep(1);
         setTimeout(() => {
-            if (nombreInput) nombreInput.focus();
+            const pesoInput = document.getElementById('pesoInput');
+            const nombreInput = document.getElementById('calc-nombre');
+            if (nombreInput && !nombreInput.value) {
+                nombreInput.focus();
+            } else if (pesoInput) {
+                pesoInput.focus();
+            }
         }, 250);
     }
 };
@@ -7480,18 +7495,40 @@ window.initFastMobileNav = function () {
 // =========================================================================================
 window.VIEW_ROUTES = {
     'view-home': '#inicio',
-    'view-mision': '#mision',
+    'view-mision': '#por-que-milkarf',
     'view-calc': '#calculadora',
-    'view-perros': '#menu-perros',
+    'view-perros': '#formulas',
     'view-gatos': '#menu-gatos',
     'view-snacks': '#snacks',
-    'view-faq': '#guia-natural',
+    'view-faq': '#ayuda',
     'view-dashboard': '#perfil',
     'view-redeems': '#canje-puntos',
-    'view-cart': '#carrito',
+    'view-cart': '#pedido',
     'view-admin': '#admin'
 };
-window.ROUTE_VIEWS = Object.fromEntries(Object.entries(window.VIEW_ROUTES).map(([view, hash]) => [hash, view]));
+window.ROUTE_VIEWS = {
+    '#inicio': 'view-home',
+    '#home': 'view-home',
+    '#por-que-milkarf': 'view-mision',
+    '#mision': 'view-mision',
+    '#formulas': 'view-perros',
+    '#menu-perros': 'view-perros',
+    '#calculadora': 'view-calc',
+    '#calcular-porcion': 'view-calc',
+    '#planes': 'view-calc',
+    '#elegir-plan': 'view-calc',
+    '#ayuda': 'view-faq',
+    '#guia-natural': 'view-faq',
+    '#faq': 'view-faq',
+    '#pedido': 'view-cart',
+    '#carrito': 'view-cart',
+    '#mi-pedido': 'view-cart',
+    '#perfil': 'view-dashboard',
+    '#canje-puntos': 'view-redeems',
+    '#menu-gatos': 'view-gatos',
+    '#snacks': 'view-snacks',
+    '#admin': 'view-admin'
+};
 
 window.getActiveViewId = function () {
     return document.querySelector('.view.active')?.id || 'view-home';
@@ -7565,16 +7602,24 @@ window.navigateTo = function (targetId, options = {}) {
 window.initHistoryNavigation = function () {
     if (window.__milkarf_history_ready || window.location.pathname.endsWith('admin.html')) return;
     window.__milkarf_history_ready = true;
-    const initialView = window.getViewFromHash(window.location.hash);
+    const initialHash = window.location.hash;
+    const initialView = window.getViewFromHash(initialHash);
     window.navigateTo(initialView, { pushHistory: false, replaceHistory: true });
+    if (initialHash === '#planes' || initialHash === '#elegir-plan') {
+        setTimeout(() => window.goToFlowStep?.(2), 60);
+    }
     window.addEventListener('popstate', (event) => {
         const activeNow = window.getActiveViewId();
         if (window.closeTopLayerIfNeeded?.()) {
             try { history.pushState({ view: activeNow }, '', window.VIEW_ROUTES[activeNow] || '#inicio'); } catch (e) { }
             return;
         }
-        const targetView = event.state?.view || window.getViewFromHash(window.location.hash) || 'view-home';
+        const currentHash = window.location.hash;
+        const targetView = event.state?.view || window.getViewFromHash(currentHash) || 'view-home';
         window.navigateTo(targetView, { pushHistory: false, fromPopState: true });
+        if (currentHash === '#planes' || currentHash === '#elegir-plan') {
+            setTimeout(() => window.goToFlowStep?.(2), 60);
+        }
     });
 };
 
