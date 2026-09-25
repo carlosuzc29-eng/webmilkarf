@@ -170,7 +170,7 @@
 
             <!-- Right Actions: Mi Cuenta & Carrito -->
             <div class="flex items-center gap-3">
-                <button id="desktop-auth-btn" onclick="window.handleDesktopAuthClick()" class="h-10 flex items-center gap-2 bg-white/90 dark:bg-darkcard/90 hover:bg-purple-light dark:hover:bg-purple/20 border border-purple-border/60 dark:border-purple/30 rounded-full px-4 text-xs font-bold text-purple-dark dark:text-white transition-all active:scale-95 shadow-sm">
+                <button id="desktop-auth-btn" data-target="view-dashboard" onclick="window.handleDesktopAuthClick()" class="h-10 flex items-center gap-2 bg-white/90 dark:bg-darkcard/90 hover:bg-purple-light dark:hover:bg-purple/20 border border-purple-border/60 dark:border-purple/30 rounded-full px-4 text-xs font-bold text-purple-dark dark:text-white transition-all active:scale-95 shadow-sm">
                     <div id="desktop-auth-logged-out" class="flex items-center gap-2">
                         <i data-lucide="user" class="w-4 h-4 text-pink"></i>
                         <span>Mi cuenta</span>
@@ -181,7 +181,7 @@
                     </div>
                 </button>
 
-                <button onclick="window.navigateTo('view-cart')" class="h-10 flex items-center gap-2 bg-purple hover:bg-purple-dark text-white rounded-full px-4 text-xs font-bold transition-all shadow-soft hover:shadow-soft-lg active:scale-95 group">
+                <button data-target="view-cart" onclick="window.navigateTo('view-cart')" class="h-10 flex items-center gap-2 bg-purple hover:bg-purple-dark text-white rounded-full px-4 text-xs font-bold transition-all shadow-soft hover:shadow-soft-lg active:scale-95 group">
                     <i data-lucide="shopping-cart" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
                     <span>Pedido</span>
                     <span id="desktop-cart-badge" class="min-w-[20px] h-5 px-1.5 rounded-full bg-green text-purple-dark font-bold text-[10px] flex items-center justify-center">0</span>
@@ -553,19 +553,50 @@
                         </div>
                     </div>
 
-                    <!-- FOOTER -->
-                    <footer class="w-full max-w-4xl mx-auto mt-20 pt-8 border-t border-purple-border/50 dark:border-purple/20 text-center flex flex-col items-center gap-5">
-                        <div class="bg-purple/10 dark:bg-purple/5 text-purple-dark dark:text-purple-light px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase border border-purple/20">Alimentación Fisiológica Responsable</div>
-                        <div class="flex gap-4">
+                    <!-- FOOTER PROFESIONAL MILKARF -->
+                    <footer class="w-full max-w-4xl mx-auto mt-20 pt-10 border-t border-purple-border/50 dark:border-purple/20 text-center flex flex-col items-center gap-6">
+                        <div class="bg-purple/10 dark:bg-purple/5 text-purple-dark dark:text-purple-light px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase border border-purple/20">
+                            Alimentación Fisiológica Responsable
+                        </div>
+
+                        <!-- Redes Sociales y Contacto Directo -->
+                        <div class="flex items-center gap-4">
                             <a href="#" onclick="event.preventDefault(); window.openWhatsApp('general');" class="w-11 h-11 rounded-full bg-white dark:bg-darkcard shadow-md flex items-center justify-center text-[#25D366] hover:scale-110 transition-all dark:border dark:border-purple/30 touch-target-safe" aria-label="WhatsApp Milkarf">
                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                             </a>
-                            <a href="https://www.instagram.com/milkarfood" target="_blank" class="w-11 h-11 rounded-full bg-white dark:bg-darkcard shadow-md flex items-center justify-center text-[#d72b8f] hover:scale-110 transition-all dark:border dark:border-purple/30 touch-target-safe" aria-label="Instagram Milkarf">
+                            <a href="https://www.instagram.com/milkarfood" target="_blank" rel="noopener noreferrer" class="w-11 h-11 rounded-full bg-white dark:bg-darkcard shadow-md flex items-center justify-center text-[#d72b8f] hover:scale-110 transition-all dark:border dark:border-purple/30 touch-target-safe" aria-label="Instagram Milkarf">
                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
                             </a>
+                            <a href="mailto:milkarffood@gmail.com" class="w-11 h-11 rounded-full bg-white dark:bg-darkcard shadow-md flex items-center justify-center text-purple dark:text-purple-light hover:scale-110 transition-all dark:border dark:border-purple/30 touch-target-safe" aria-label="Correo de contacto Milkarf">
+                                <i data-lucide="mail" class="w-5 h-5"></i>
+                            </a>
                         </div>
-                        <p class="text-[11px] text-purple/60 dark:text-purple/40 font-bold mb-4">Milkarf · Alimentación real y responsable para perros</p>
-                        <p class="text-[9px] text-purple/35 dark:text-gray-600 font-bold tracking-widest mt-1 uppercase">designed by @cauv19</p>
+
+                        <!-- Enlaces Legales Discretos y Accesibles -->
+                        <nav aria-label="Información legal y privacidad" class="flex flex-wrap justify-center items-center gap-x-5 gap-y-2 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                            <a href="#terminos" onclick="event.preventDefault(); window.navigateTo('view-terminos');" class="hover:text-purple dark:hover:text-white transition-colors">Términos y Condiciones</a>
+                            <span class="text-gray-300 dark:text-gray-600">·</span>
+                            <a href="#privacidad" onclick="event.preventDefault(); window.navigateTo('view-privacidad');" class="hover:text-purple dark:hover:text-white transition-colors">Política de Privacidad</a>
+                            <span class="text-gray-300 dark:text-gray-600">·</span>
+                            <a href="#entregas" onclick="event.preventDefault(); window.navigateTo('view-entregas');" class="hover:text-purple dark:hover:text-white transition-colors">Envíos e Incidencias</a>
+                            <span class="text-gray-300 dark:text-gray-600">·</span>
+                            <a href="#cookies" onclick="event.preventDefault(); window.navigateTo('view-cookies');" class="hover:text-purple dark:hover:text-white transition-colors">Almacenamiento Local</a>
+                            <span class="text-gray-300 dark:text-gray-600">·</span>
+                            <button type="button" onclick="window.openPrivacyPrefsModal();" class="hover:text-purple dark:hover:text-white transition-colors inline-flex items-center gap-1 cursor-pointer">
+                                <i data-lucide="sliders" class="w-3.5 h-3.5 text-purple dark:text-green"></i>
+                                <span>Preferencias de privacidad</span>
+                            </button>
+                        </nav>
+
+                        <!-- Titularidad, Sede y Atribuciones de Licencia -->
+                        <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium space-y-1 max-w-lg leading-relaxed">
+                            <p class="font-bold text-purple-dark dark:text-gray-200">© 2026 Milkarf · Caracas, Venezuela. Todos los derechos reservados.</p>
+                            <p class="text-[10px]">Alimentación fisiológica natural para caninos. Solicitudes y pedidos coordinados a través de WhatsApp.</p>
+                            <p class="text-[9px] text-gray-400 dark:text-gray-500 pt-1">
+                                Recursos licenciados: Tipografías Montserrat (SIL OFL) y Eloura Sans. Iconos por Lucide (ISC License). Imagen de portada generada mediante Google Gemini (IA).
+                            </p>
+                            <p class="text-[9px] text-purple/40 dark:text-gray-600 font-bold tracking-widest uppercase pt-1">designed by @cauv19</p>
+                        </div>
                     </footer>
                     
                     <!-- ESPACIADOR INFERIOR -->
@@ -961,7 +992,10 @@
                                                 <span>Kleiber (70 × peso^0.75)</span>
                                             </div>
                                             <p class="text-[10px] text-gray-500 dark:text-gray-400 pt-1 border-t border-purple-border/20">
-                                                Formulación con densidad de 1.25 kcal/g y factor mínimo preventivo para mantener un peso saludable y evitar sobrepeso.
+                                                Formulación con densidad de 1.25 kcal/g y factor preventivo adaptado a perros para mantener su peso óptimo.
+                                            </p>
+                                            <p class="text-[9.5px] text-gray-500 dark:text-gray-400 pt-1 border-t border-purple-border/10 leading-tight">
+                                                <strong class="font-bold text-purple-dark dark:text-gray-200">Aviso orientativo:</strong> Estimación referencial para caninos sanos según estándares NRC / FEDIAF. No sustituye la prescripción ni el diagnóstico veterinario individual ante patologías clínicas.
                                             </p>
                                         </div>
                                     </details>
@@ -1997,6 +2031,11 @@
                         </div>
                     </div>
 
+                    <!-- Aviso de términos y privacidad antes de WhatsApp -->
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 text-left leading-relaxed">
+                        Al continuar, preparas tu solicitud conforme a nuestros <a href="#terminos" onclick="event.preventDefault(); window.navigateTo('view-terminos');" class="text-purple dark:text-purple-light font-bold underline hover:text-pink">Términos y Condiciones</a> y <a href="#entregas" onclick="event.preventDefault(); window.navigateTo('view-entregas');" class="text-purple dark:text-purple-light font-bold underline hover:text-pink">Condiciones de Entrega</a>. Consulta nuestra <a href="#privacidad" onclick="event.preventDefault(); window.navigateTo('view-privacidad');" class="text-purple dark:text-purple-light font-bold underline hover:text-pink">Política de Privacidad</a>.
+                    </p>
+
                     <!-- Acción Principal de Envío -->
                     <a id="btn-finalizar-pedido" href="#" target="_self" rel="noopener noreferrer" onclick="return window.finalizarPedido(event)" class="w-full flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-base py-4 rounded-xl shadow-soft-lg hover:shadow-lg transition-all active:scale-[0.98] group touch-target-safe cursor-pointer">
                         <span>Continuar por WhatsApp</span>
@@ -2050,6 +2089,536 @@
             </div>
         </section>
 
+        <!-- ==========================================================================
+             VISTAS LEGALES Y DE PRIVACIDAD MILKARF (SPA)
+             ========================================================================== -->
+
+        <!-- VISTA LEGAL: POLÍTICA DE PRIVACIDAD -->
+        <section id="view-privacidad" class="view next" aria-labelledby="privacidad-title">
+            <div class="view-wrapper">
+                <div class="max-w-4xl w-full mb-8 text-center md:text-left">
+                    <button class="nav-btn inline-flex items-center gap-2 font-medium text-xs px-4 py-2 rounded-full border border-purple-border/70 dark:border-purple/30 text-purple dark:text-white hover:bg-purple-light dark:hover:bg-purple/15 transition-all touch-target-safe mx-auto md:mx-0 cursor-pointer" data-target="view-home">
+                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Volver al inicio
+                    </button>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple/10 text-purple dark:text-purple-light text-xs font-bold uppercase tracking-wider mt-4">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-purple dark:text-green"></i> Transparencia y Protección de Datos
+                    </div>
+                    <h1 id="privacidad-title" class="text-3xl md:text-4xl lg:text-5xl font-black text-purple-dark dark:text-white mt-2 tracking-tight font-display">Política de Privacidad</h1>
+                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium mt-1 max-w-2xl leading-relaxed">
+                        Sede de operaciones: Caracas, República Bolivariana de Venezuela · Última actualización: 25 de septiembre de 2026
+                    </p>
+
+                    <!-- Pestañas de navegación legal rápida -->
+                    <div class="flex flex-wrap gap-2 pt-5 border-b border-purple-border/40 dark:border-purple/20 pb-4 text-xs font-bold">
+                        <button type="button" onclick="window.navigateTo('view-privacidad')" class="px-4 py-2 rounded-xl bg-purple text-white shadow-soft">Política de Privacidad</button>
+                        <button type="button" onclick="window.navigateTo('view-terminos')" class="px-4 py-2 rounded-xl bg-white dark:bg-darkcard border border-purple-border/60 text-purple-dark dark:text-white hover:bg-purple-light transition-colors">Términos y Condiciones</button>
+                        <button type="button" onclick="window.navigateTo('view-entregas')" class="px-4 py-2 rounded-xl bg-white dark:bg-darkcard border border-purple-border/60 text-purple-dark dark:text-white hover:bg-purple-light transition-colors">Envíos e Incidencias</button>
+                        <button type="button" onclick="window.navigateTo('view-cookies')" class="px-4 py-2 rounded-xl bg-white dark:bg-darkcard border border-purple-border/60 text-purple-dark dark:text-white hover:bg-purple-light transition-colors">Almacenamiento Local</button>
+                    </div>
+                </div>
+
+                <div class="max-w-4xl w-full space-y-6 text-left text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                    <!-- Introducción y Responsable -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="building-2" class="w-5 h-5 text-purple"></i> 1. Responsable del Tratamiento y Datos de Contacto
+                        </h2>
+                        <p>
+                            El responsable del tratamiento de los datos personales recopilados a través de <strong class="text-purple-dark dark:text-white">milkarf.com</strong> es la marca comercial <strong class="text-purple-dark dark:text-white">Milkarf</strong>, con centro operativo y de despacho en la ciudad de <strong>Caracas, República Bolivariana de Venezuela</strong>.
+                        </p>
+                        <p>
+                            Para cualquier consulta, aclaratoria, solicitud de ejercicio de derechos de privacidad o gestión de información personal, disponemos de los siguientes canales oficiales directos:
+                        </p>
+                        <ul class="list-disc pl-5 space-y-1.5 text-xs text-gray-600 dark:text-gray-300">
+                            <li><strong>Correo electrónico de privacidad:</strong> <a href="mailto:milkarffood@gmail.com" class="text-purple dark:text-purple-light font-bold underline">milkarffood@gmail.com</a></li>
+                            <li><strong>Canal de mensajería directa y pedidos:</strong> WhatsApp oficial <a href="https://wa.me/584121791137" target="_blank" rel="noopener noreferrer" class="text-purple dark:text-purple-light font-bold underline">+58 412 1791137</a></li>
+                            <li><strong>Sede de despacho:</strong> Caracas, Venezuela.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Marco Legal -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="scale" class="w-5 h-5 text-purple"></i> 2. Marco Jurídico Aplicable
+                        </h2>
+                        <p>
+                            El tratamiento de datos personales en Milkarf se rige por el ordenamiento jurídico de la República Bolivariana de Venezuela:
+                        </p>
+                        <ul class="list-disc pl-5 space-y-2 text-xs">
+                            <li><strong>Constitución de la República Bolivariana de Venezuela (CRBV):</strong> Artículo 28 (garantía de <em>Habeas Data</em>, derecho a acceder a los registros personales, conocer el uso y destino de la información, y exigir su actualización, rectificación o destrucción si fuere errónea o lesiva); y Artículo 60 (protección del honor, intimidad y vida privada).</li>
+                            <li><strong>Ley sobre Mensajes de Datos y Firmas Electrónicas (Gaceta Oficial N° 37.148):</strong> Regula la eficacia y validez de la información transmitida electrónicamente para la preparación y confirmación de pedidos vía WhatsApp y plataformas digitales.</li>
+                            <li><strong>Ley Especial contra los Delitos Informáticos (Gaceta Oficial N° 37.313):</strong> Protección integral de los sistemas informáticos y preservación del secreto y confidencialidad de la información.</li>
+                            <li><strong>Principios Rectores de Protección de Datos:</strong> Licitud, lealtad, transparencia, proporcionalidad, limitación de la finalidad y minimización de datos.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Datos que recopilamos -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="database" class="w-5 h-5 text-purple"></i> 3. Datos que Recopilamos y su Procedencia
+                        </h2>
+                        <p>Recopilamos únicamente los datos necesarios para brindar orientación nutricional y procesar tus pedidos:</p>
+                        <div class="space-y-3">
+                            <div class="p-3.5 bg-purple/5 dark:bg-purple/10 rounded-xl border border-purple/10">
+                                <h3 class="font-bold text-xs text-purple-dark dark:text-white mb-1">A. Datos de cuenta y contacto (facilitados por ti)</h3>
+                                <p class="text-xs text-gray-600 dark:text-gray-300">Nombre, apellido, dirección de correo electrónico, número de teléfono/WhatsApp de contacto, y credencial de acceso cifrada mediante el servicio de Firebase Authentication. Si inicias sesión con Google, recibimos tu nombre público, correo electrónico y foto de perfil autorizados por tu cuenta Google.</p>
+                            </div>
+                            <div class="p-3.5 bg-purple/5 dark:bg-purple/10 rounded-xl border border-purple/10">
+                                <h3 class="font-bold text-xs text-purple-dark dark:text-white mb-1">B. Datos de tu mascota (facilitados por ti)</h3>
+                                <p class="text-xs text-gray-600 dark:text-gray-300">Nombre de la mascota, especie (perro o gato), edad, peso corporal en kilogramos, nivel de actividad física diaria, condición física y porción nutricional sugerida.</p>
+                            </div>
+                            <div class="p-3.5 bg-purple/5 dark:bg-purple/10 rounded-xl border border-purple/10">
+                                <h3 class="font-bold text-xs text-purple-dark dark:text-white mb-1">C. Datos de pedidos e historial de compras</h3>
+                                <p class="text-xs text-gray-600 dark:text-gray-300">Fórmulas seleccionadas, paquetes de raciones por días (7, 15 o 30 días), tamaño de bolsas (250g o 550g), subtotales, notas de entrega, fecha de emisión y estado del pedido en tu perfil.</p>
+                            </div>
+                            <div class="p-3.5 bg-purple/5 dark:bg-purple/10 rounded-xl border border-purple/10">
+                                <h3 class="font-bold text-xs text-purple-dark dark:text-white mb-1">D. Ubicación geográfica (estrictamente voluntaria)</h3>
+                                <p class="text-xs text-gray-600 dark:text-gray-300">Únicamente si pulsas de forma explícita el botón para generar un enlace de Google Maps con tus coordenadas de entrega. La web no solicita permisos de GPS al entrar ni rastrea tu ubicación de manera oculta o en segundo plano.</p>
+                            </div>
+                        </div>
+                        <div class="p-3.5 bg-green/10 border border-green/30 rounded-xl text-xs text-purple-dark dark:text-gray-200">
+                            <strong>Datos que NO recopilamos:</strong> Milkarf no solicita, procesa ni almacena números de tarjetas de crédito o débito, códigos de seguridad bancarios ni claves financieras en la web. La liquidación de pagos se realiza de forma directa y concertada por WhatsApp.
+                        </div>
+                    </div>
+
+                    <!-- Finalidades y Bases -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="target" class="w-5 h-5 text-purple"></i> 4. Finalidades del Tratamiento
+                        </h2>
+                        <ul class="list-disc pl-5 space-y-2 text-xs">
+                            <li><strong>Cálculo de porciones nutricionales:</strong> Determinar los requerimientos energéticos y la ración sugerida para tu perro mediante ecuaciones metabólicas caninas.</li>
+                            <li><strong>Preparación de solicitudes de pedido:</strong> Armar el resumen de bolsas y precios para estructurar el mensaje que se enviará por WhatsApp.</li>
+                            <li><strong>Gestión de tu cuenta y perfiles de mascotas:</strong> Permitirte guardar los datos de tus perros para no tener que recalcular sus porciones en futuras visitas.</li>
+                            <li><strong>Programa Milkarf Points:</strong> Registrar la acreditación de puntos tras la confirmación de entrega y gestionar los canjes de beneficios solicitados.</li>
+                            <li><strong>Atención y soporte:</strong> Responder tus dudas nutricionales, operativas o de entrega a través de WhatsApp o correo electrónico.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Almacenamiento local vs servidores -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="hard-drive" class="w-5 h-5 text-purple"></i> 5. Almacenamiento en tu Dispositivo vs Servidores
+                        </h2>
+                        <p>Diferenciamos con total claridad qué información reside en tu navegador y cuál se procesa en servidores:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                            <div class="p-4 bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 rounded-xl space-y-2">
+                                <h3 class="font-bold text-purple-dark dark:text-white">Almacenamiento Local (en tu equipo)</h3>
+                                <p class="text-gray-600 dark:text-gray-300">Los productos de tu carrito activo, un identificador anónimo de sesión y el teléfono que ingresas para autocompletar pedidos residen en la memoria local de tu navegador (localStorage). Puedes vaciarlos en cualquier momento desde el panel de preferencias de privacidad.</p>
+                            </div>
+                            <div class="p-4 bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 rounded-xl space-y-2">
+                                <h3 class="font-bold text-purple-dark dark:text-white">Servidores Seguros (Cloud Firestore)</h3>
+                                <p class="text-gray-600 dark:text-gray-300">Si te registras o confirmas un pedido, tu cuenta, mascotas e historial de pedidos se almacenan en la infraestructura en la nube de Google Firebase, con reglas de seguridad que impiden que otros usuarios accedan a tus registros personales.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WhatsApp y Proveedores -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="share-2" class="w-5 h-5 text-purple"></i> 6. Proveedores y Canal de WhatsApp
+                        </h2>
+                        <p>
+                            Para prestar el servicio, Milkarf se apoya en proveedores tecnológicos de alta reputación:
+                        </p>
+                        <ul class="list-disc pl-5 space-y-2 text-xs">
+                            <li><strong>Google Firebase (Google Cloud Platform):</strong> Infraestructura de base de datos (Cloud Firestore) y autenticación segura de usuarios.</li>
+                            <li><strong>GitHub Pages:</strong> Alojamiento estático y distribución de los archivos web mediante conexión cifrada HTTPS.</li>
+                            <li><strong>WhatsApp (Meta Platforms Inc.):</strong> Al pulsar "Continuar por WhatsApp", el texto con el resumen de tu pedido se traslada a la app de mensajería para iniciar el contacto directo con nuestro equipo comercial. El tratamiento en WhatsApp queda sujeto a los términos del servicio de mensajería.</li>
+                        </ul>
+                        <div class="p-3 bg-purple/10 rounded-xl text-xs font-bold text-purple-dark dark:text-purple-light">
+                            Milkarf NO comparte, no vende ni comercializa tu información con redes de publicidad, corredores de datos ni empresas externas para fines de prospección comercial.
+                        </div>
+                    </div>
+
+                    <!-- Plazos de conservación -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="clock" class="w-5 h-5 text-purple"></i> 7. Plazos de Conservación de Datos
+                        </h2>
+                        <p>
+                            Los datos de tu cuenta y mascotas se conservan mientras mantengas tu cuenta activa en la plataforma. Los registros históricos de pedidos se conservan durante el tiempo prudencial y razonable necesario para respaldar reclamos de entrega, acreditar puntos de fidelidad y cumplir con normativas contables y comerciales mínimas. Los datos almacenados localmente en tu navegador pueden ser suprimidos de inmediato cuando tú lo decidas.
+                        </p>
+                    </div>
+
+                    <!-- Ejercicio de Derechos -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="user-check" class="w-5 h-5 text-purple"></i> 8. Ejercicio de tus Derechos
+                        </h2>
+                        <p>
+                            Conforme al Artículo 28 de la Constitución venezolana y a las mejores prácticas de privacidad, tienes derecho a:
+                        </p>
+                        <ul class="list-disc pl-5 space-y-1.5 text-xs">
+                            <li><strong>Acceder</strong> a los datos que conservamos sobre ti y tus mascotas.</li>
+                            <li><strong>Rectificar</strong> cualquier dato incompleto, desactualizado o inexacto.</li>
+                            <li><strong>Solicitar la eliminación</strong> de tu cuenta y registros personales de nuestros servidores cuando ya no desees utilizar el servicio.</li>
+                            <li><strong>Retirar tu consentimiento</strong> para cualquier tratamiento voluntario en cualquier momento.</li>
+                        </ul>
+                        <p class="text-xs pt-1">
+                            Para ejercer cualquiera de estos derechos, contáctanos indicando el correo o número de teléfono vinculado a tu cuenta a través de <a href="mailto:milkarffood@gmail.com" class="text-purple dark:text-purple-light font-bold underline">milkarffood@gmail.com</a> o por WhatsApp al <strong>+58 412 1791137</strong>. Responderemos tu solicitud en el menor tiempo operativo posible.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="h-28 w-full shrink-0 pointer-events-none"></div>
+            </div>
+        </section>
+
+        <!-- VISTA LEGAL: TÉRMINOS Y CONDICIONES -->
+        <section id="view-terminos" class="view next" aria-labelledby="terminos-title">
+            <div class="view-wrapper">
+                <div class="max-w-4xl w-full mb-8 text-center md:text-left">
+                    <button class="nav-btn inline-flex items-center gap-2 font-medium text-xs px-4 py-2 rounded-full border border-purple-border/70 dark:border-purple/30 text-purple dark:text-white hover:bg-purple-light dark:hover:bg-purple/15 transition-all touch-target-safe mx-auto md:mx-0 cursor-pointer" data-target="view-home">
+                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Volver al inicio
+                    </button>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple/10 text-purple dark:text-purple-light text-xs font-bold uppercase tracking-wider mt-4">
+                        <i data-lucide="file-text" class="w-3.5 h-3.5 text-purple dark:text-green"></i> Condiciones Comerciales Claras
+                    </div>
+                    <h1 id="terminos-title" class="text-3xl md:text-4xl lg:text-5xl font-black text-purple-dark dark:text-white mt-2 tracking-tight font-display">Términos y Condiciones</h1>
+                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium mt-1 max-w-2xl leading-relaxed">
+                        Condiciones generales de uso, compra y contratación de productos Milkarf · Caracas, Venezuela
+                    </p>
+
+                    <!-- Pestañas de navegación legal rápida -->
+                    <div class="flex flex-wrap gap-2 pt-5 border-b border-purple-border/40 dark:border-purple/20 pb-4 text-xs font-bold">
+                        <button type="button" onclick="window.navigateTo('view-privacidad')" class="px-4 py-2 rounded-xl bg-white dark:bg-darkcard border border-purple-border/60 text-purple-dark dark:text-white hover:bg-purple-light transition-colors">Política de Privacidad</button>
+                        <button type="button" onclick="window.navigateTo('view-terminos')" class="px-4 py-2 rounded-xl bg-purple text-white shadow-soft">Términos y Condiciones</button>
+                        <button type="button" onclick="window.navigateTo('view-entregas')" class="px-4 py-2 rounded-xl bg-white dark:bg-darkcard border border-purple-border/60 text-purple-dark dark:text-white hover:bg-purple-light transition-colors">Envíos e Incidencias</button>
+                        <button type="button" onclick="window.navigateTo('view-cookies')" class="px-4 py-2 rounded-xl bg-white dark:bg-darkcard border border-purple-border/60 text-purple-dark dark:text-white hover:bg-purple-light transition-colors">Almacenamiento Local</button>
+                    </div>
+                </div>
+
+                <div class="max-w-4xl w-full space-y-6 text-left text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                    <!-- Objeto y Vendedor -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="tag" class="w-5 h-5 text-purple"></i> 1. Identidad del Vendedor y Ámbito del Servicio
+                        </h2>
+                        <p>
+                            El presente documento regula el uso del sitio web <strong class="text-purple-dark dark:text-white">milkarf.com</strong> y las condiciones de compra de los productos comercializados bajo la marca <strong class="text-purple-dark dark:text-white">Milkarf</strong>, con centro de elaboración y distribución en la ciudad de <strong>Caracas, Venezuela</strong>.
+                        </p>
+                        <p>
+                            Milkarf elabora y comercializa alimento fisiológico natural congelado para perros, formulado con ingredientes frescos de calidad seleccionada y listo para servir.
+                        </p>
+                    </div>
+
+                    <!-- Productos y Presentaciones -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="package" class="w-5 h-5 text-purple"></i> 2. Características de los Productos, Presentaciones y Planes
+                        </h2>
+                        <ul class="list-disc pl-5 space-y-2 text-xs">
+                            <li><strong>Fórmulas disponibles:</strong> Pollo con zanahoria y Carne de res con calabacín, libres de harinas cárnicas, conservantes artificiales y ultraprocesados.</li>
+                            <li><strong>Presentaciones individuales:</strong> Bolsas herméticas congeladas de <strong>250 g</strong> y <strong>550 g</strong>.</li>
+                            <li><strong>Planes nutricionales por días:</strong> Paquetes de raciones calculados para cubrir períodos de <strong>7 días</strong>, <strong>15 días</strong> y <strong>30 días</strong> según el gramaje requerido por la mascota.</li>
+                        </ul>
+                        <div class="p-3.5 bg-purple/10 rounded-xl border border-purple/20 text-xs">
+                            <strong class="text-purple-dark dark:text-white block mb-1">Aclaratoria sobre los Planes de Alimentación:</strong>
+                            Los planes de 7, 15 y 30 días corresponden a compras cerradas y puntuales de raciones de alimento. <strong>En ningún caso constituyen cobros automáticos recurrentes ni suscripciones forzosas</strong>. Cada pedido es solicitado y aprobado individualmente por el cliente.
+                        </div>
+                    </div>
+
+                    <!-- Descuentos comerciales -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="percent" class="w-5 h-5 text-purple"></i> 3. Descuentos Comerciales Vigentes
+                        </h2>
+                        <p>Los descuentos por volumen asociados a los planes de alimentación se aplican automáticamente en el cálculo del carrito sobre el precio regular de los productos:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-center font-bold">
+                            <div class="p-3 bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 rounded-xl">
+                                <span class="text-purple text-base block font-black">5% OFF</span>
+                                <span class="text-gray-500">Plan Semanal (7 días)</span>
+                            </div>
+                            <div class="p-3 bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 rounded-xl">
+                                <span class="text-purple text-base block font-black">7.5% OFF</span>
+                                <span class="text-gray-500">Plan Quincenal (15 días)</span>
+                            </div>
+                            <div class="p-3 bg-purple-light dark:bg-[#0d0718] border border-purple-border/40 rounded-xl">
+                                <span class="text-purple text-base block font-black">10% OFF</span>
+                                <span class="text-gray-500">Plan Mensual (30 días)</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500">El descuento de bienvenida para nuevos usuarios registrados aplica una única vez por cuenta según las condiciones vigentes de la promoción.</p>
+                    </div>
+
+                    <!-- Flujo de compra: WhatsApp -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="message-circle" class="w-5 h-5 text-purple"></i> 4. Flujo de Compra: Solicitud vs Pedido Confirmado
+                        </h2>
+                        <p>
+                            Diferenciamos con total transparencia dos momentos clave del proceso de compra:
+                        </p>
+                        <div class="space-y-2 text-xs">
+                            <div class="p-3 bg-purple/5 dark:bg-purple/10 rounded-xl border border-purple/10">
+                                <strong class="text-purple-dark dark:text-white block mb-0.5">Paso 1: Solicitud de Pedido / Cotización</strong>
+                                <p class="text-gray-600 dark:text-gray-300">Al pulsar "Continuar por WhatsApp", la web genera una propuesta con el resumen exacto de productos y montos. Esta acción traslada los datos a la conversación con nuestro equipo comercial para verificar disponibilidad.</p>
+                            </div>
+                            <div class="p-3 bg-purple/5 dark:bg-purple/10 rounded-xl border border-purple/10">
+                                <strong class="text-purple-dark dark:text-white block mb-0.5">Paso 2: Pedido Definitivamente Confirmado</strong>
+                                <p class="text-gray-600 dark:text-gray-300">El pedido se considera confirmado únicamente cuando el equipo Milkarf valida el inventario, cotiza el costo de entrega según la dirección exacta del cliente, y este aprueba y realiza el pago por el medio acordado.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Precios y Pagos -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="dollar-sign" class="w-5 h-5 text-purple"></i> 5. Precios, Moneda y Medios de Pago
+                        </h2>
+                        <ul class="list-disc pl-5 space-y-2 text-xs">
+                            <li><strong>Moneda de cuenta:</strong> Los precios mostrados en el catálogo web se expresan en Dólares Estadounidenses (USD / `$`) como valor de referencia comercial.</li>
+                            <li><strong>Forma de pago:</strong> Los pagos se acuerdan directamente por WhatsApp: bolívares calculados a la tasa oficial del Banco Central de Venezuela (BCV) mediante Pago Móvil o transferencia bancaria, o en divisas en efectivo contra entrega o métodos electrónicos acordados.</li>
+                            <li><strong>Costo de entrega:</strong> El flete no está incluido en el precio de los productos; se cotiza de forma transparente según la zona de Caracas / Gran Caracas antes del despacho.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Milkarf Points -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="award" class="w-5 h-5 text-purple"></i> 6. Programa Milkarf Points
+                        </h2>
+                        <p>
+                            Los usuarios registrados acumulan puntos con cada compra completada. Los puntos se acreditan formalmente una vez que el equipo logístico confirma la entrega del pedido. Los puntos acumulados son personales, no caducan mientras la cuenta esté activa, y son canjeables exclusivamente por los beneficios del catálogo de canjes disponible en la web. No son canjeables por dinero en efectivo.
+                        </p>
+                    </div>
+
+                    <!-- Atención y Soporte -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="headphones" class="w-5 h-5 text-purple"></i> 7. Atención al Cliente y Reclamaciones
+                        </h2>
+                        <p>
+                            Ante cualquier inquietud sobre tu pedido o el uso de la web, nuestro equipo atiende directamente a través de WhatsApp en el <strong>+58 412 1791137</strong> y por correo en <strong>milkarffood@gmail.com</strong>.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="h-28 w-full shrink-0 pointer-events-none"></div>
+            </div>
+        </section>
+
+        <!-- VISTA LEGAL: CONDICIONES DE ENTREGA, CANCELACIONES E INCIDENCIAS -->
+        <section id="view-entregas" class="view next" aria-labelledby="entregas-title">
+            <div class="view-wrapper">
+                <div class="max-w-4xl w-full mb-8 text-center md:text-left">
+                    <button class="nav-btn inline-flex items-center gap-2 font-medium text-xs px-4 py-2 rounded-full border border-purple-border/70 dark:border-purple/30 text-purple dark:text-white hover:bg-purple-light dark:hover:bg-purple/15 transition-all touch-target-safe mx-auto md:mx-0 cursor-pointer" data-target="view-home">
+                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Volver al inicio
+                    </button>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple/10 text-purple dark:text-purple-light text-xs font-bold uppercase tracking-wider mt-4">
+                        <i data-lucide="truck" class="w-3.5 h-3.5 text-purple dark:text-green"></i> Cadena de Frío y Entregas
+                    </div>
+                    <h1 id="entregas-title" class="text-3xl md:text-4xl lg:text-5xl font-black text-purple-dark dark:text-white mt-2 tracking-tight font-display">Envíos, Cancelaciones e Incidencias</h1>
+                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium mt-1 max-w-2xl leading-relaxed">
+                        Protocolos de cadena de frío, despacho en Caracas y garantía de calidad del producto
+                    </p>
+
+                    <!-- Pestañas de navegación legal rápida -->
+                    <div class="flex flex-wrap gap-2 pt-5 border-b border-purple-border/40 dark:border-purple/20 pb-4 text-xs font-bold">
+                        <button type="button" onclick="window.navigateTo('view-privacidad')" class="px-4 py-2 rounded-xl bg-white dark:bg-darkcard border border-purple-border/60 text-purple-dark dark:text-white hover:bg-purple-light transition-colors">Política de Privacidad</button>
+                        <button type="button" onclick="window.navigateTo('view-terminos')" class="px-4 py-2 rounded-xl bg-white dark:bg-darkcard border border-purple-border/60 text-purple-dark dark:text-white hover:bg-purple-light transition-colors">Términos y Condiciones</button>
+                        <button type="button" onclick="window.navigateTo('view-entregas')" class="px-4 py-2 rounded-xl bg-purple text-white shadow-soft">Envíos e Incidencias</button>
+                        <button type="button" onclick="window.navigateTo('view-cookies')" class="px-4 py-2 rounded-xl bg-white dark:bg-darkcard border border-purple-border/60 text-purple-dark dark:text-white hover:bg-purple-light transition-colors">Almacenamiento Local</button>
+                    </div>
+                </div>
+
+                <div class="max-w-4xl w-full space-y-6 text-left text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                    <!-- Cadena de Frío -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="snowflake" class="w-5 h-5 text-purple"></i> 1. Naturaleza del Alimento Congelado y Cadena de Frío
+                        </h2>
+                        <p>
+                            Los alimentos Milkarf son productos 100% naturales, elaborados con ingredientes biológicamente apropiados para caninos y ultracongelados sin conservantes químicos artificiales.
+                        </p>
+                        <div class="p-3.5 bg-purple/10 rounded-xl space-y-1 text-xs text-purple-dark dark:text-gray-200">
+                            <strong>Instrucciones de conservación:</strong>
+                            <p>El producto debe almacenarse en el congelador a temperatura doméstica (-18°C o inferior) hasta el momento previo a su consumo. Para servir, traslada la ración correspondiente al refrigerador para una descongelación gradual y segura.</p>
+                        </div>
+                    </div>
+
+                    <!-- Zonas y Costos -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="map-pin" class="w-5 h-5 text-purple"></i> 2. Zonas y Costos de Despacho
+                        </h2>
+                        <ul class="list-disc pl-5 space-y-2 text-xs">
+                            <li><strong>Cobertura de entrega:</strong> Realizamos despachos locales en la ciudad de Caracas y áreas metropolitanas coordinadas mediante transporte con aislamiento térmico.</li>
+                            <li><strong>Cotización de flete:</strong> El costo del delivery se calcula de forma transparente y personalizada según la distancia geográfica hacia tu dirección de entrega y se confirma por WhatsApp antes de preparar el despacho.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Recepción -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="clock" class="w-5 h-5 text-purple"></i> 3. Horarios y Recepción de la Entrega
+                        </h2>
+                        <p>
+                            Las entregas se coordinan con una ventana horaria acordada. Es indispensable que el cliente o una persona autorizada esté presente en la dirección para recibir el pedido y guardarlo inmediatamente en el congelador.
+                        </p>
+                        <p class="text-xs text-gray-500">
+                            En caso de entrega fallida por ausencia injustificada del cliente o imposibilidad de contacto en el punto acordado, se coordinará una reprogramación con costo de flete adicional.
+                        </p>
+                    </div>
+
+                    <!-- Incidencias y Reclamaciones -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="alert-circle" class="w-5 h-5 text-purple"></i> 4. Procedimiento ante Incidencias y Garantía
+                        </h2>
+                        <p>Garantizamos la calidad de nuestras fórmulas. Si ocurre algún inconveniente, aplicamos el siguiente protocolo:</p>
+                        <div class="space-y-3">
+                            <div class="p-3 bg-purple/5 dark:bg-purple/10 rounded-xl border border-purple/10 text-xs">
+                                <strong>Producto dañado o pérdida de frío:</strong> Si el producto llega roto o descongelado debido a demoras en el traslado, repórtalo de inmediato (el mismo día de la recepción o dentro de las 24 horas siguientes) con fotografía del paquete a nuestro WhatsApp oficial.
+                            </div>
+                            <div class="p-3 bg-purple/5 dark:bg-purple/10 rounded-xl border border-purple/10 text-xs">
+                                <strong>Producto incorrecto o faltante:</strong> Si recibes una fórmula o presentación distinta a la confirmada, Milkarf gestionará la reposición correcta de forma prioritaria sin costo de transporte adicional para el cliente.
+                            </div>
+                            <div class="p-3 bg-green/10 border border-green/30 rounded-xl text-xs text-purple-dark dark:text-gray-200">
+                                <strong>Soluciones:</strong> Ofrecemos reposición prioritaria en el siguiente despacho disponible, emisión de nota de crédito para futuros pedidos o reembolso del monto correspondiente al ítem afectado.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cancelaciones -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="x-circle" class="w-5 h-5 text-purple"></i> 5. Cancelación o Modificación del Pedido
+                        </h2>
+                        <p>
+                            El cliente puede cancelar o modificar su solicitud de pedido sin penalización alguna siempre que lo notifique antes de que el pedido sea despachado con el repartidor. Una vez que el producto perecedero congelado está en ruta, no proceden cancelaciones sobre la marcha por razones de inocuidad alimentaria.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="h-28 w-full shrink-0 pointer-events-none"></div>
+            </div>
+        </section>
+
+        <!-- VISTA LEGAL: POLÍTICA DE ALMACENAMIENTO LOCAL Y TECNOLOGÍAS SIMILARES -->
+        <section id="view-cookies" class="view next" aria-labelledby="cookies-title">
+            <div class="view-wrapper">
+                <div class="max-w-4xl w-full mb-8 text-center md:text-left">
+                    <button class="nav-btn inline-flex items-center gap-2 font-medium text-xs px-4 py-2 rounded-full border border-purple-border/70 dark:border-purple/30 text-purple dark:text-white hover:bg-purple-light dark:hover:bg-purple/15 transition-all touch-target-safe mx-auto md:mx-0 cursor-pointer" data-target="view-home">
+                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Volver al inicio
+                    </button>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple/10 text-purple dark:text-purple-light text-xs font-bold uppercase tracking-wider mt-4">
+                        <i data-lucide="database" class="w-3.5 h-3.5 text-purple dark:text-green"></i> Privacidad Técnica y Transparencia
+                    </div>
+                    <h1 id="cookies-title" class="text-3xl md:text-4xl lg:text-5xl font-black text-purple-dark dark:text-white mt-2 tracking-tight font-display">Almacenamiento Local y Cookies</h1>
+                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium mt-1 max-w-2xl leading-relaxed">
+                        Inventario técnico de almacenamiento en navegador y controles de privacidad disponibles
+                    </p>
+
+                    <!-- Pestañas de navegación legal rápida -->
+                    <div class="flex flex-wrap gap-2 pt-5 border-b border-purple-border/40 dark:border-purple/20 pb-4 text-xs font-bold">
+                        <button type="button" onclick="window.navigateTo('view-privacidad')" class="px-4 py-2 rounded-xl bg-white dark:bg-darkcard border border-purple-border/60 text-purple-dark dark:text-white hover:bg-purple-light transition-colors">Política de Privacidad</button>
+                        <button type="button" onclick="window.navigateTo('view-terminos')" class="px-4 py-2 rounded-xl bg-white dark:bg-darkcard border border-purple-border/60 text-purple-dark dark:text-white hover:bg-purple-light transition-colors">Términos y Condiciones</button>
+                        <button type="button" onclick="window.navigateTo('view-entregas')" class="px-4 py-2 rounded-xl bg-white dark:bg-darkcard border border-purple-border/60 text-purple-dark dark:text-white hover:bg-purple-light transition-colors">Envíos e Incidencias</button>
+                        <button type="button" onclick="window.navigateTo('view-cookies')" class="px-4 py-2 rounded-xl bg-purple text-white shadow-soft">Almacenamiento Local</button>
+                    </div>
+                </div>
+
+                <div class="max-w-4xl w-full space-y-6 text-left text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                    <!-- Declaración de cookies -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="shield-alert" class="w-5 h-5 text-purple"></i> 1. Declaración Técnica: Sin Cookies Publicitarias de Terceros
+                        </h2>
+                        <div class="p-3.5 bg-green/10 border border-green/30 rounded-xl text-xs text-purple-dark dark:text-gray-200">
+                            <strong>Principio de Privacidad por Diseño:</strong> Milkarf <strong>NO utiliza cookies de publicidad comportamental, ni píxeles de seguimiento entre sitios (Meta Pixel, Google Analytics o TikTok Pixel)</strong>. No monitorizamos tu navegación externa ni compartimos tus intereses con plataformas de anuncios.
+                        </div>
+                        <p>
+                            En su lugar, empleamos las funciones nativas del navegador conocidas como **Almacenamiento Web (`localStorage` y `sessionStorage`)** e **IndexedDB**, que permiten guardar información directamente en tu propio dispositivo para que la tienda sea ágil y recuerde tus productos seleccionados.
+                        </p>
+                    </div>
+
+                    <!-- Tabla de Inventario Técnico -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="table" class="w-5 h-5 text-purple"></i> 2. Inventario Técnico de Tecnologías de Almacenamiento
+                        </h2>
+                        <p>A continuación se detallan todas las claves técnicas utilizadas en este sitio web:</p>
+                        
+                        <div class="overflow-x-auto -mx-2 sm:mx-0">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="bg-purple/10 dark:bg-purple/20 text-purple-dark dark:text-white">
+                                        <th class="p-2.5 font-bold border-b border-purple/20">Identificador</th>
+                                        <th class="p-2.5 font-bold border-b border-purple/20">Tecnología</th>
+                                        <th class="p-2.5 font-bold border-b border-purple/20">Categoría</th>
+                                        <th class="p-2.5 font-bold border-b border-purple/20">Finalidad</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-purple-border/30 dark:divide-purple/20 text-gray-600 dark:text-gray-300">
+                                    <tr>
+                                        <td class="p-2.5 font-mono text-[11px] font-bold text-purple dark:text-purple-light">milkarf_cart</td>
+                                        <td class="p-2.5">localStorage</td>
+                                        <td class="p-2.5"><span class="px-2 py-0.5 rounded-full bg-purple/10 text-purple dark:text-green font-bold text-[10px]">Necesaria</span></td>
+                                        <td class="p-2.5">Conserva los ítems del carrito para que no los pierdas al navegar entre fórmulas y calculadora.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 font-mono text-[11px] font-bold text-purple dark:text-purple-light">milkarf_client_token</td>
+                                        <td class="p-2.5">localStorage</td>
+                                        <td class="p-2.5"><span class="px-2 py-0.5 rounded-full bg-purple/10 text-purple dark:text-green font-bold text-[10px]">Necesaria</span></td>
+                                        <td class="p-2.5">Identificador de sesión anónimo para pedidos de invitados y cola de sincronización.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 font-mono text-[11px] font-bold text-purple dark:text-purple-light">milkarf_contact_phone</td>
+                                        <td class="p-2.5">localStorage</td>
+                                        <td class="p-2.5"><span class="px-2 py-0.5 rounded-full bg-green/15 text-green-dark dark:text-green font-bold text-[10px]">Preferencia</span></td>
+                                        <td class="p-2.5">Recuerda el número de WhatsApp ingresado para autocompletar futuros pedidos.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 font-mono text-[11px] font-bold text-purple dark:text-purple-light">milkarf_local_orders_*</td>
+                                        <td class="p-2.5">localStorage</td>
+                                        <td class="p-2.5"><span class="px-2 py-0.5 rounded-full bg-purple/10 text-purple dark:text-green font-bold text-[10px]">Funcional</span></td>
+                                        <td class="p-2.5">Caché local de pedidos realizados para consulta rápida y respaldo sin conexión.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 font-mono text-[11px] font-bold text-purple dark:text-purple-light">milkarf_welcome_seen</td>
+                                        <td class="p-2.5">sessionStorage</td>
+                                        <td class="p-2.5"><span class="px-2 py-0.5 rounded-full bg-green/15 text-green-dark dark:text-green font-bold text-[10px]">Preferencia</span></td>
+                                        <td class="p-2.5">Evita mostrar el aviso de bienvenida más de una vez en la misma sesión de navegación.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 font-mono text-[11px] font-bold text-purple dark:text-purple-light">firebaseLocalStorageDb</td>
+                                        <td class="p-2.5">IndexedDB</td>
+                                        <td class="p-2.5"><span class="px-2 py-0.5 rounded-full bg-purple/10 text-purple dark:text-green font-bold text-[10px]">Necesaria</span></td>
+                                        <td class="p-2.5">Gestionado por Firebase Auth para mantener la sesión de usuario activa de forma segura.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Cómo Gestionar y Eliminar -->
+                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/40 dark:border-purple/20 p-6 sm:p-7 shadow-soft space-y-4">
+                        <h2 class="text-base sm:text-lg font-bold text-purple-dark dark:text-white flex items-center gap-2">
+                            <i data-lucide="settings" class="w-5 h-5 text-purple"></i> 3. Control Directo y Eliminación de Datos Locales
+                        </h2>
+                        <p>
+                            Tienes control total sobre la información almacenada en tu navegador:
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                            <button type="button" onclick="window.openPrivacyPrefsModal()" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-purple text-white font-bold text-xs hover:bg-purple-dark transition-all shadow-soft active:scale-95 cursor-pointer">
+                                <i data-lucide="sliders" class="w-4 h-4 text-green"></i> Abrir Preferencias de Privacidad
+                            </button>
+                            <button type="button" onclick="window.clearLocalStoragePreferences('all')" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white dark:bg-darkcard border border-purple-border/60 text-purple-dark dark:text-white font-bold text-xs hover:bg-pink/10 hover:text-pink transition-all active:scale-95 cursor-pointer">
+                                <i data-lucide="trash-2" class="w-4 h-4 text-pink"></i> Restablecer datos en este navegador
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 pt-2">
+                            También puedes borrar el almacenamiento local en cualquier momento a través del menú de tu navegador: <em>Ajustes / Privacidad y Seguridad / Borrar datos de navegación</em>.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="h-28 w-full shrink-0 pointer-events-none"></div>
+            </div>
+        </section>
+
 
         <!-- FAB CART (Oculto en favor de barra inferior con badge) -->
         <button id="cart-fab" class="hidden nav-btn fixed bottom-24 md:bottom-6 right-6 z-[999] w-14 h-14 bg-purple hover:bg-purple-dark text-white rounded-full shadow-soft-lg hover:shadow-xl flex items-center justify-center transition-all duration-300 transform translate-y-24 opacity-0 pointer-events-none active:scale-95 touch-target-safe border border-white/20" aria-label="Ver carrito" data-target="view-cart">
@@ -2057,15 +2626,50 @@
             <span id="cart-badge" class="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-pink text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-soft px-1 border-2 border-white dark:border-darkcard">0</span>
         </button>
 
-        <!-- BARRA DE NAVEGACIÓN MÓVIL (4 ACCESOS PRINCIPALES) -->
-        <nav id="mobile-bottom-nav" aria-label="Navegación móvil principal" class="md:hidden fixed bottom-3 left-3 right-3 z-[998] bg-white/95 dark:bg-darkcard/95 backdrop-blur-2xl border border-purple-border/40 dark:border-purple/30 rounded-2xl shadow-soft-lg p-1.5 grid grid-cols-4 gap-1">
-            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-purple dark:text-white font-bold text-[10px] hover:bg-purple/10 dark:hover:bg-purple/20 transition-all active:scale-95 touch-target-safe" data-target="view-home"><i data-lucide="home" class="w-4 h-4"></i>Inicio</button>
-            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-purple dark:text-white font-bold text-[10px] hover:bg-purple/10 dark:hover:bg-purple/20 transition-all active:scale-95 touch-target-safe" data-target="view-perros"><i data-lucide="beef" class="w-4 h-4"></i>Fórmulas</button>
-            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-purple dark:text-white font-bold text-[10px] hover:bg-purple/10 dark:hover:bg-purple/20 transition-all active:scale-95 touch-target-safe" data-target="view-calc"><i data-lucide="scale" class="w-4 h-4"></i>Calcular</button>
-            <button class="nav-btn flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-purple dark:text-white font-bold text-[10px] hover:bg-purple/10 dark:hover:bg-purple/20 transition-all active:scale-95 touch-target-safe relative" data-target="view-cart">
-                <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-                <span>Mi pedido</span>
-                <span id="mobile-cart-badge" class="absolute -top-1 right-2 min-w-[16px] h-4 bg-pink text-white text-[9px] font-black rounded-full flex items-center justify-center px-1">0</span>
+        <!-- BARRA DE NAVEGACIÓN MÓVIL (7 ACCESOS PRINCIPALES - EN TOTAL ARMONÍA CON EL MENÚ PC) -->
+        <nav id="mobile-bottom-nav" aria-label="Navegación móvil principal" class="md:hidden">
+            <button class="nav-btn mobile-nav-item active-mobile-nav" data-target="view-home" aria-label="Inicio" aria-current="page">
+                <span class="mobile-nav-icon-wrap">
+                    <i data-lucide="home"></i>
+                </span>
+                <span class="mobile-nav-label">Inicio</span>
+            </button>
+            <button class="nav-btn mobile-nav-item" data-target="view-mision" aria-label="Por qué Milkarf">
+                <span class="mobile-nav-icon-wrap">
+                    <i data-lucide="heart"></i>
+                </span>
+                <span class="mobile-nav-label">Por qué</span>
+            </button>
+            <button class="nav-btn mobile-nav-item" data-target="view-perros" aria-label="Nuestras Fórmulas">
+                <span class="mobile-nav-icon-wrap">
+                    <i data-lucide="beef"></i>
+                </span>
+                <span class="mobile-nav-label">Fórmulas</span>
+            </button>
+            <button class="nav-btn mobile-nav-item" data-target="view-calc" aria-label="Calcular su porción">
+                <span class="mobile-nav-icon-wrap">
+                    <i data-lucide="scale"></i>
+                </span>
+                <span class="mobile-nav-label">Calcular</span>
+            </button>
+            <button class="nav-btn mobile-nav-item" data-target="view-faq" aria-label="Guía y Ayuda">
+                <span class="mobile-nav-icon-wrap">
+                    <i data-lucide="help-circle"></i>
+                </span>
+                <span class="mobile-nav-label">Ayuda</span>
+            </button>
+            <button class="nav-btn mobile-nav-item" data-target="view-dashboard" aria-label="Mi Cuenta">
+                <span class="mobile-nav-icon-wrap">
+                    <i data-lucide="user"></i>
+                </span>
+                <span class="mobile-nav-label">Cuenta</span>
+            </button>
+            <button class="nav-btn mobile-nav-item" data-target="view-cart" aria-label="Mi pedido">
+                <span class="mobile-nav-icon-wrap">
+                    <i data-lucide="shopping-cart"></i>
+                    <span id="mobile-cart-badge" class="scale-0 opacity-0 pointer-events-none">0</span>
+                </span>
+                <span class="mobile-nav-label">Pedido</span>
             </button>
         </nav>
 
@@ -2289,6 +2893,10 @@
                         Continuar con Google
                     </button>
                     
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 text-center mt-2.5 leading-relaxed">
+                        Al ingresar o registrarte, confirmas haber leído nuestra <a href="#privacidad" onclick="window.cerrarModalAuth(); window.navigateTo('view-privacidad');" class="text-purple dark:text-purple-light font-bold underline hover:text-pink">Política de Privacidad</a> y aceptas los <a href="#terminos" onclick="window.cerrarModalAuth(); window.navigateTo('view-terminos');" class="text-purple dark:text-purple-light font-bold underline hover:text-pink">Términos y Condiciones</a>.
+                    </p>
+                    
                     <div id="auth-error" class="hidden mt-3 text-xs font-bold text-pink bg-pink/10 border border-pink/20 p-2.5 rounded-lg text-center leading-tight"></div>
                 </div>
 
@@ -2377,6 +2985,93 @@
                         Continuar explorando
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE PREFERENCIAS DE PRIVACIDAD Y ALMACENAMIENTO LOCAL -->
+    <div id="modal-privacy-prefs" class="fixed inset-0 z-[1002] bg-black/60 backdrop-blur-sm hidden items-center justify-center opacity-0 transition-opacity duration-300 p-4">
+        <div id="modal-privacy-prefs-box" class="bg-white dark:bg-darkcard w-full max-w-md rounded-[2rem] shadow-2xl p-6 sm:p-7 relative text-left border border-purple-border/40 dark:border-purple/20 pointer-events-auto flex flex-col max-h-[90vh] transform scale-95 transition-transform duration-300">
+            <button onclick="window.closePrivacyPrefsModal()" class="absolute top-5 right-5 text-gray-400 hover:text-pink transition-colors z-20" aria-label="Cerrar modal">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-purple/10 text-purple dark:text-green-300 flex items-center justify-center shrink-0">
+                    <i data-lucide="shield-check" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-black text-purple-dark dark:text-white leading-tight">Privacidad y Almacenamiento</h3>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Control directo sobre tus datos locales en este navegador</p>
+                </div>
+            </div>
+
+            <div class="overflow-y-auto custom-scroll flex-1 space-y-4 pr-1">
+                <div class="bg-purple-light/70 dark:bg-[#0d0718] p-4 rounded-2xl border border-purple-border/30 dark:border-purple/20">
+                    <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed font-medium">
+                        Milkarf <strong>no utiliza cookies de publicidad ni rastreadores de terceros</strong>. Empleamos almacenamiento local en tu dispositivo estrictamente para mantener tu carrito, recordar tu teléfono al pedir y asegurar el funcionamiento de la tienda.
+                    </p>
+                </div>
+
+                <!-- Tarjetas de datos en el dispositivo -->
+                <div class="space-y-3">
+                    <!-- Carrito -->
+                    <div class="flex items-center justify-between p-3.5 bg-white dark:bg-[#150a24] rounded-xl border border-purple-border/30 dark:border-purple/20 shadow-xs">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-purple/10 text-purple dark:text-white flex items-center justify-center shrink-0">
+                                <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-purple-dark dark:text-white">Carrito de compras</h4>
+                                <p id="privacy-stat-cart" class="text-[10px] text-gray-500 font-medium">Cargando...</p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="window.clearLocalStoragePreferences('cart')" class="text-[11px] font-bold text-pink hover:underline">Vaciar</button>
+                    </div>
+
+                    <!-- Teléfono recordado -->
+                    <div class="flex items-center justify-between p-3.5 bg-white dark:bg-[#150a24] rounded-xl border border-purple-border/30 dark:border-purple/20 shadow-xs">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-green/10 text-green-dark dark:text-green flex items-center justify-center shrink-0">
+                                <i data-lucide="phone" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-purple-dark dark:text-white">Teléfono recordado</h4>
+                                <p id="privacy-stat-phone" class="text-[10px] text-gray-500 font-medium">Cargando...</p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="window.clearLocalStoragePreferences('phone')" class="text-[11px] font-bold text-pink hover:underline">Olvidar</button>
+                    </div>
+
+                    <!-- Caché local de pedidos -->
+                    <div class="flex items-center justify-between p-3.5 bg-white dark:bg-[#150a24] rounded-xl border border-purple-border/30 dark:border-purple/20 shadow-xs">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-purple/10 text-purple dark:text-white flex items-center justify-center shrink-0">
+                                <i data-lucide="archive" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-purple-dark dark:text-white">Caché local de pedidos</h4>
+                                <p id="privacy-stat-orders" class="text-[10px] text-gray-500 font-medium">Cargando...</p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="window.clearLocalStoragePreferences('orders')" class="text-[11px] font-bold text-pink hover:underline">Limpiar</button>
+                    </div>
+                </div>
+
+                <!-- Enlaces a políticas completas -->
+                <div class="pt-2 flex justify-between text-[11px] font-bold text-purple dark:text-purple-light border-t border-purple-border/30 dark:border-purple/20">
+                    <button type="button" onclick="window.closePrivacyPrefsModal(); window.navigateTo('view-privacidad');" class="hover:underline">Leer Política de Privacidad</button>
+                    <button type="button" onclick="window.closePrivacyPrefsModal(); window.navigateTo('view-cookies');" class="hover:underline">Ver Almacenamiento Local</button>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-purple-border/40 dark:border-purple/20 flex gap-2.5 mt-2">
+                <button type="button" onclick="window.clearLocalStoragePreferences('all')" class="flex-1 bg-purple-light dark:bg-purple/10 border border-purple-border/60 text-purple-dark dark:text-white text-xs font-bold py-3 rounded-xl hover:bg-pink/10 hover:text-pink hover:border-pink/30 transition-colors">
+                    Restablecer datos locales
+                </button>
+                <button type="button" onclick="window.closePrivacyPrefsModal()" class="flex-1 bg-purple text-white text-xs font-bold py-3 rounded-xl hover:bg-purple-dark transition-colors shadow-soft">
+                    Listo
+                </button>
             </div>
         </div>
     </div>

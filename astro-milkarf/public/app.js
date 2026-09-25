@@ -7112,7 +7112,13 @@ window.startUserOrdersListener = function (forceNavigate = false) {
 
 window.refreshMobileBottomNav = function (targetId) {
     document.querySelectorAll('#mobile-bottom-nav button').forEach(btn => {
-        btn.classList.toggle('active-mobile-nav', btn.getAttribute('data-target') === targetId);
+        const isActive = btn.getAttribute('data-target') === targetId;
+        btn.classList.toggle('active-mobile-nav', isActive);
+        if (isActive) {
+            btn.setAttribute('aria-current', 'page');
+        } else {
+            btn.removeAttribute('aria-current');
+        }
     });
     document.querySelectorAll('.milkarf-header .milkarf-nav-link').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-target') === targetId);
@@ -7152,6 +7158,110 @@ window.initFastMobileNav = function () {
 
 
 // =========================================================================================
+// PREFERENCIAS DE PRIVACIDAD Y ALMACENAMIENTO LOCAL
+// =========================================================================================
+window.openPrivacyPrefsModal = function () {
+    const modal = document.getElementById('modal-privacy-prefs');
+    if (!modal) return;
+    window.updatePrivacyStats?.();
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        const box = document.getElementById('modal-privacy-prefs-box');
+        if (box) box.classList.remove('scale-95');
+    }, 50);
+};
+
+window.closePrivacyPrefsModal = function () {
+    const modal = document.getElementById('modal-privacy-prefs');
+    if (!modal) return;
+    modal.classList.add('opacity-0');
+    const box = document.getElementById('modal-privacy-prefs-box');
+    if (box) box.classList.add('scale-95');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }, 300);
+};
+
+window.updatePrivacyStats = function () {
+    // Carrito
+    const cartEl = document.getElementById('privacy-stat-cart');
+    if (cartEl) {
+        let count = 0;
+        try {
+            const raw = localStorage.getItem('milkarf_cart');
+            const items = raw ? JSON.parse(raw) : [];
+            count = Array.isArray(items) ? items.reduce((acc, it) => acc + (it.cantidad || it.qty || 1), 0) : 0;
+        } catch (e) {}
+        cartEl.textContent = count > 0 ? `${count} ${count === 1 ? 'producto guardado' : 'productos guardados'}` : 'Vacío';
+    }
+
+    // Teléfono
+    const phoneEl = document.getElementById('privacy-stat-phone');
+    if (phoneEl) {
+        let phone = '';
+        try { phone = localStorage.getItem('milkarf_contact_phone') || ''; } catch (e) {}
+        phoneEl.textContent = phone ? `${phone.slice(0, 4)}••••${phone.slice(-3)}` : 'No guardado';
+    }
+
+    // Pedidos en caché
+    const ordersEl = document.getElementById('privacy-stat-orders');
+    if (ordersEl) {
+        let totalKeys = 0;
+        try {
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i) || '';
+                if (k.startsWith('milkarf_user_orders_') || k.startsWith('milkarf_local_orders') || k.startsWith('milkarf_pending_orders')) {
+                    totalKeys++;
+                }
+            }
+        } catch (e) {}
+        ordersEl.textContent = totalKeys > 0 ? `${totalKeys} registro(s) en caché` : 'Sin registros locales';
+    }
+};
+
+window.clearLocalStoragePreferences = function (type) {
+    try {
+        if (type === 'cart') {
+            localStorage.removeItem('milkarf_cart');
+            window.cart = [];
+            window.updateCartUI?.();
+            window.showToast?.('Carrito local vaciado.');
+        } else if (type === 'phone') {
+            localStorage.removeItem('milkarf_contact_phone');
+            const phoneInput = document.getElementById('cart-phone') || document.getElementById('order-phone');
+            if (phoneInput) phoneInput.value = '';
+            window.showToast?.('Teléfono recordado eliminado de este dispositivo.');
+        } else if (type === 'orders') {
+            const toRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i) || '';
+                if (k.startsWith('milkarf_user_orders_') || k.startsWith('milkarf_local_orders') || k.startsWith('milkarf_pending_orders') || k === 'milkarf_last_order_id' || k === 'milkarf_post_order_state') {
+                    toRemove.push(k);
+                }
+            }
+            toRemove.forEach(k => localStorage.removeItem(k));
+            window.showToast?.('Caché local de pedidos eliminada.');
+        } else if (type === 'all') {
+            const milkarfKeys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i) || '';
+                if (k.startsWith('milkarf_')) milkarfKeys.push(k);
+            }
+            milkarfKeys.forEach(k => localStorage.removeItem(k));
+            window.cart = [];
+            window.updateCartUI?.();
+            window.showToast?.('Todos los datos locales de Milkarf fueron restablecidos.');
+        }
+    } catch (e) {
+        console.warn('Error limpiando datos locales:', e);
+    }
+    window.updatePrivacyStats?.();
+};
+
+// =========================================================================================
 // NAVEGACIÓN SPA CON HISTORIAL + SINCRONIZACIÓN PENDIENTE + WHATSAPP MÓVIL
 // =========================================================================================
 window.VIEW_ROUTES = {
@@ -7165,9 +7275,25 @@ window.VIEW_ROUTES = {
     'view-dashboard': '#perfil',
     'view-redeems': '#canje-puntos',
     'view-cart': '#carrito',
-    'view-admin': '#admin'
+    'view-admin': '#admin',
+    'view-privacidad': '#privacidad',
+    'view-terminos': '#terminos',
+    'view-entregas': '#entregas-y-cambios',
+    'view-cookies': '#almacenamiento-y-cookies'
 };
-window.ROUTE_VIEWS = Object.fromEntries(Object.entries(window.VIEW_ROUTES).map(([view, hash]) => [hash, view]));
+window.ROUTE_VIEWS = {
+    ...Object.fromEntries(Object.entries(window.VIEW_ROUTES).map(([view, hash]) => [hash, view])),
+    '#por-que-milkarf': 'view-mision',
+    '#formulas': 'view-perros',
+    '#ayuda': 'view-faq',
+    '#faq': 'view-faq',
+    '#pedido': 'view-cart',
+    '#terminos-y-condiciones': 'view-terminos',
+    '#entregas': 'view-entregas',
+    '#envios': 'view-entregas',
+    '#cookies': 'view-cookies',
+    '#almacenamiento': 'view-cookies'
+};
 
 window.getActiveViewId = function () {
     return document.querySelector('.view.active')?.id || 'view-home';
@@ -7193,7 +7319,8 @@ window.closeTopLayerIfNeeded = function () {
         ['modal-admin-login', window.cerrarModalAdmin],
         ['modal-descuento', window.cerrarModalDescuento],
         ['modal-auth', window.cerrarModalAuth],
-        ['modal-bienvenida', window.cerrarModalBienvenida]
+        ['modal-bienvenida', window.cerrarModalBienvenida],
+        ['modal-privacy-prefs', window.closePrivacyPrefsModal]
     ];
     for (const [id, closer] of closers) {
         const modal = document.getElementById(id);
