@@ -26,7 +26,7 @@ function makeSandbox() {
         _bagUidCounter: 0,
         _bagAnimByAnchor: new Map(),
         matchMedia: () => ({ matches: false }),
-        animateProvisionBags: () => {},
+        animateProvisionBags: () => { },
         renderPortionBag: () => '',
         renderBagAnimationSVG: () => '',
         renderBagModern: () => ''
@@ -192,10 +192,12 @@ function labels(html) {
     windowStub._bagAnimByAnchor.set('test', '132|250|card');
     // 2ª pasada con la misma clave: sin re-animación (ya seteó provee último key)
     const marks = [];
-    const root2 = { querySelectorAll: () => [{
-        dataset: { anchor: 'test', animKey: '132|250|card' },
-        querySelectorAll: () => [{ dataset: { level: '0.5280' }, style: { transform: '' }, getBoundingClientRect: () => ({}) }]
-    }] };
+    const root2 = {
+        querySelectorAll: () => [{
+            dataset: { anchor: 'test', animKey: '132|250|card' },
+            querySelectorAll: () => [{ dataset: { level: '0.5280' }, style: { transform: '' }, getBoundingClientRect: () => ({}) }]
+        }]
+    };
     windowStub.animateProvisionBags(root2, { force: true });
     assert.equal(windowStub._bagAnimByAnchor.get('test'), '132|250|card', 'Clave registrada');
 }
