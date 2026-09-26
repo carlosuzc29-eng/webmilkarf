@@ -142,42 +142,41 @@ const clean = (plan) => {
     assert.equal(recommendPresentation(750).size, '550gr');
 }
 
-// 1) 550 g: 7 bolsas de 550 g = 3850 g para 3199 g requeridos (apertura diaria)
+// 1) 550 g: 6 bolsas de 550 g = 3300 g para 3199 g requeridos (457 g/día * 7 días)
 {
     const p = computePlanPricing(DAILY, 7, 'pollo', '550gr');
     assert.deepEqual(p.presentation, '550gr');
-    assert.equal(p.totalBags, 7);
-    assert.equal(p.totalGrams, 3850);
-    assert.equal(p.surplusGrams, 651);
-    assert.equal(p.subtotal, 38.50);
+    assert.equal(p.totalBags, 6);
+    assert.equal(p.totalGrams, 3300);
+    assert.equal(p.surplusGrams, 101);
+    assert.equal(p.subtotal, 33.00);
     assert.equal(p.discountPct, 0.05);
     assert.equal(p.discountPercent, 5);
-    assert.equal(p.discountAmount, 1.93);
-    assert.equal(p.finalPrice, 36.57);
-    assert.equal(p.costPerDay, 5.22);
+    assert.equal(p.discountAmount, 1.65);
+    assert.equal(p.finalPrice, 31.35);
+    assert.equal(p.costPerDay, 4.48);
 }
 
-// 2) 250 g con porción 457g: 2 bolsas/día = 14 bolsas de 250 g = 3500 g (conservación 24h)
+// 2) 250 g con porción 457g: 13 bolsas de 250 g = 3250 g para 3199 g requeridos
 {
     const p = computePlanPricing(DAILY, 7, 'pollo', '250gr');
     assert.equal(p.presentation, '250gr');
-    assert.equal(p.totalBags, 14);
-    assert.equal(p.totalGrams, 3500);
-    assert.equal(p.subtotal, 35.00);
-    assert.equal(p.finalPrice, 33.25);
+    assert.equal(p.totalBags, 13);
+    assert.equal(p.totalGrams, 3250);
+    assert.equal(p.subtotal, 32.50);
+    assert.equal(p.finalPrice, 30.87);
 }
 
-// 3) Prueba de regresión (Requisito 13): 100 g/día durante 7 días -> 7 bolsas de 250 g
+// 3) Prueba de regresión: 100 g/día durante 7 días -> 700 g requeridos -> 3 bolsas de 250 g (750 g provistos)
 {
     const rec = recommendPresentation(100, 'pollo');
     assert.equal(rec.size, '250gr', 'Porción <= 250g debe recomendar 250gr');
     const p = computePlanPricing(100, 7, 'pollo');
     assert.equal(p.presentation, '250gr');
-    assert.equal(p.totalBags, 7, 'Corresponden 7 bolsas bajo apertura diaria');
-    assert.equal(p.totalGramsProvided, 1750);
+    assert.equal(p.totalBags, 3, 'Corresponden 3 bolsas para 700 g');
+    assert.equal(p.totalGramsProvided, 750);
     assert.equal(p.requiredGrams, 700);
-    assert.equal(p.discardedSurplusGrams, 1050);
-    assert.equal(p.totalGramsProvided, p.requiredGrams + p.discardedSurplusGrams + p.usableRemainingGrams);
+    assert.equal(p.discardedSurplusGrams, 50);
 }
 
 // 4) Descuentos de plan: 5 %, 7,5 %, 10 % para 7/15/30 días
@@ -220,7 +219,7 @@ const clean = (plan) => {
     assert.equal(keptFormula.presentationPrice, 3.50);
 }
 
-// 7) Plan mixto con conservación 24h (1 bolsa Pollo/día + 1 bolsa Res/día = 14 bolsas en 7 días)
+// 7) Plan mixto según consumo del periodo (DAILY=457g, 7 días: 3 bolsas Pollo + 3 bolsas Res = 6 bolsas de 550g)
 {
     const p = computePlanPricing(DAILY, 7, 'mixto', '550gr');
     assert.equal(p.split.polloPct, 50);
@@ -228,11 +227,11 @@ const clean = (plan) => {
     assert.equal(p.bags.length, 2);
     assert.equal(p.bags[0].size, '550gr');
     assert.equal(p.bags[1].size, '550gr');
-    assert.equal(p.bags[0].qty, 7); // 1 bolsa Pollo/día * 7
-    assert.equal(p.bags[1].qty, 7); // 1 bolsa Res/día * 7
-    assert.equal(p.totalBags, 14);
-    assert.equal(p.subtotal, 92.40); // 7*5.50 + 7*7.70
-    assert.equal(p.finalPrice, 87.78); // -5 %
+    assert.equal(p.bags[0].qty, 3);
+    assert.equal(p.bags[1].qty, 3);
+    assert.equal(p.totalBags, 6);
+    assert.equal(p.subtotal, 39.60); // 3*5.50 + 3*7.70
+    assert.equal(p.finalPrice, 37.62); // -5 %
 }
 
 // 7.5) Conservación 24h con pauta de comidas (Requisito 4)
@@ -328,12 +327,12 @@ const clean = (plan) => {
     assert.match(msg, /550 g/);
     assert.match(msg, /Ración: 457 g\/día/);
     assert.match(msg, /Presentación: 550 g/);
-    assert.match(msg, /Bolsas: 30x 550gr/);
+    assert.match(msg, /Bolsas: 25x 550gr/);
     assert.equal(msg.includes('undefined'), false, 'No debe contener "undefined"');
     assert.equal(msg.includes('NaN'), false, 'No debe contener "NaN"');
     assert.equal(msg.includes('null '), false, 'No debe contener "null"');
     assert.match(msg, /30 días/);
-    assert.match(msg, /16\.50 kg provistos/);
+    assert.match(msg, /13\.75 kg provistos/);
 }
 
 // 12) El template no estalla con datos ausentes (guardas para mensaje incompleto)

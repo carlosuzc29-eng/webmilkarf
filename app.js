@@ -358,23 +358,23 @@ window.MILKARF_CONFIG = {
     welcomeDiscountPct: 0
 };
 
-// Algoritmo de optimización de bolsas verificable (conservación 24h tras apertura)
+// Algoritmo de optimización de bolsas según el consumo total del periodo (días × ración diaria)
 window.optimizeBagsForFormula = function (formula, dailyGrams, days, forcedSize = null) {
     const dG = Math.max(0, Number(dailyGrams) || 0);
     const pts = Math.max(1, Number(days) || 7);
+    const totalRequiredGrams = Math.round(dG * pts);
     const prod = window.MILKARF_CONFIG?.catalog?.[formula] || window.MILKARF_CONFIG?.catalog?.pollo;
     const name = prod?.name || (formula === 'res' ? 'Carne de Res con Calabacín' : 'Pollo con Zanahoria');
 
     const pres250 = window.getPresentationBySize(formula, '250gr') || { price: formula === 'res' ? 3.50 : 2.50, grams: 250 };
     const pres550 = window.getPresentationBySize(formula, '550gr') || { price: formula === 'res' ? 7.70 : 5.50, grams: 550 };
 
-    if (dG <= 0) {
+    if (totalRequiredGrams <= 0) {
         return { bags: [], totalBags: 0, totalGrams: 0, cost: 0 };
     }
 
     if (forcedSize === '250gr') {
-        const perDay = Math.ceil(dG / 250);
-        const qty = perDay * pts;
+        const qty = Math.ceil(totalRequiredGrams / 250);
         const totalGrams = qty * 250;
         const cost = qty * pres250.price;
         return {
@@ -388,8 +388,7 @@ window.optimizeBagsForFormula = function (formula, dailyGrams, days, forcedSize 
     if (forcedSize === '550gr' || forcedSize === '500gr') {
         const bagG = forcedSize === '500gr' ? 500 : 550;
         const unitP = forcedSize === '500gr' ? (formula === 'res' ? 7.00 : 5.00) : pres550.price;
-        const perDay = Math.ceil(dG / bagG);
-        const qty = perDay * pts;
+        const qty = Math.ceil(totalRequiredGrams / bagG);
         const totalGrams = qty * bagG;
         const cost = qty * unitP;
         return {
@@ -400,33 +399,27 @@ window.optimizeBagsForFormula = function (formula, dailyGrams, days, forcedSize 
         };
     }
 
-    // Selección automática considerando la regla de 24 horas tras apertura:
-    // Evalúa las combinaciones enteras por día (c550, c250) que cubren la ración diaria
+    // Selección automática considerando la totalidad de gramos requeridos en el periodo
     const candidates = [];
-    const max550 = Math.ceil(dG / 550) + 1;
+    const max550 = Math.ceil(totalRequiredGrams / 550) + 1;
     for (let c550 = 0; c550 <= max550; c550++) {
-        const rem = Math.max(0, dG - (c550 * 550));
+        const rem = Math.max(0, totalRequiredGrams - (c550 * 550));
         const c250 = Math.ceil(rem / 250);
-        const providedDay = (c550 * 550) + (c250 * 250);
-        if (providedDay >= dG) {
+        const provided = (c550 * 550) + (c250 * 250);
+        if (provided >= totalRequiredGrams) {
             // Descartar si sobra una bolsa entera de 550 o de 250
-            if (c550 > 0 && ((c550 - 1) * 550 + c250 * 250) >= dG) continue;
-            if (c250 > 0 && (c550 * 550 + (c250 - 1) * 250) >= dG) continue;
+            if (c550 > 0 && ((c550 - 1) * 550 + c250 * 250) >= totalRequiredGrams) continue;
+            if (c250 > 0 && (c550 * 550 + (c250 - 1) * 250) >= totalRequiredGrams) continue;
 
-            const total550 = c550 * pts;
-            const total250 = c250 * pts;
-            const totalBags = total550 + total250;
-            const totalGrams = (total550 * 550) + (total250 * 250);
-            const cost = (total550 * pres550.price) + (total250 * pres250.price);
-            const surplus = totalGrams - (dG * pts);
+            const totalBags = c550 + c250;
+            const cost = (c550 * pres550.price) + (c250 * pres250.price);
+            const surplus = provided - totalRequiredGrams;
 
             candidates.push({
-                c550,
-                c250,
-                total550,
-                total250,
+                total550: c550,
+                total250: c250,
                 totalBags,
-                totalGrams,
+                totalGrams: provided,
                 cost,
                 surplus
             });
@@ -442,10 +435,10 @@ window.optimizeBagsForFormula = function (formula, dailyGrams, days, forcedSize 
 
     const best = candidates[0] || {
         total550: 0,
-        total250: Math.ceil((dG * pts) / 250),
-        totalBags: Math.ceil((dG * pts) / 250),
-        totalGrams: Math.ceil((dG * pts) / 250) * 250,
-        cost: Math.ceil((dG * pts) / 250) * pres250.price
+        total250: Math.ceil(totalRequiredGrams / 250),
+        totalBags: Math.ceil(totalRequiredGrams / 250),
+        totalGrams: Math.ceil(totalRequiredGrams / 250) * 250,
+        cost: Math.ceil(totalRequiredGrams / 250) * pres250.price
     };
 
     const bags = [];
@@ -677,7 +670,7 @@ window.calculatePlanConsumption = function (dailyGrams, days, formula = 'pollo',
         recommendedPresentation: rec.size,
         presentationGrams: presGrams,
         presentationPrice: presPrice,
-        basisText: 'Planificación verificada para cubrir cada comida dentro de las 24 horas posteriores a la apertura de cada bolsita.',
+        basisText: 'Planificación calculada según la porción diaria para cubrir exactamente los días del plan seleccionado.',
         wasteExplanation: ''
     };
 };
@@ -5559,7 +5552,7 @@ window.openPlanModal = function (days) {
                 ${bagsListHTML}
             </div>
             <div class="pt-2 border-t border-purple-border/20 text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
-                Diseñado para consumir cada bolsa dentro de las <b>24 horas recomendadas</b> de refrigeración una vez abierta.
+                Calculado para cubrir la totalidad de la alimentación de tu perro durante los <b>${plan.days} días</b> del plan.
             </div>
         </div>
 
