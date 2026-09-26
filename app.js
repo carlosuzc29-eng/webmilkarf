@@ -19,7 +19,8 @@ let auth = null;
 let appId = typeof __app_id !== 'undefined' ? __app_id : 'milkarf-app';
 const ADMIN_EMAILS = [
     'milkarffood@gmail.com',
-    'carlosauv11@gmail.com'
+    'carlosauv11@gmail.com',
+    'carlosuzc29@gmail.com'
 ];
 window.ADMIN_EMAILS = ADMIN_EMAILS;
 
@@ -2166,6 +2167,54 @@ window.recuperarPassword = async function () {
         if (btn && btn.tagName === 'BUTTON') {
             btn.innerHTML = "¿Olvidaste tu contraseña?";
             btn.disabled = false;
+        }
+    }
+};
+
+// --- Restablecer contraseña desde el panel de administrador ---
+window.adminRestablecerContrasena = async function () {
+    window.vibrate?.(20);
+    if (!auth) { window.showToast('Firebase no está disponible.', 'error'); return; }
+
+    const user = auth.currentUser;
+    if (!user || !user.email) {
+        window.showToast('No se encontró el correo del administrador.', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('admin-reset-pass-btn');
+    const originalHTML = btn ? btn.innerHTML : '';
+
+    if (btn) {
+        btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline mr-2"></i>Enviando...';
+        btn.disabled = true;
+        window.refreshIcons?.();
+    }
+
+    try {
+        const actionCodeSettings = {
+            url: window.location.origin + '/admin.html',
+            handleCodeInApp: false
+        };
+        await sendPasswordResetEmail(auth, user.email, actionCodeSettings);
+        window.showToast(`✅ Enlace enviado a ${user.email}. Revisa tu correo.`, 'success');
+        if (btn) {
+            btn.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4 inline mr-2 text-green-dark"></i>¡Correo enviado!';
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+                window.refreshIcons?.();
+            }, 3000);
+        }
+    } catch (error) {
+        console.warn('Error al enviar correo de restablecimiento:', error);
+        let msg = 'No se pudo enviar el correo. Intenta de nuevo.';
+        if (error.code === 'auth/too-many-requests') msg = 'Demasiados intentos. Espera unos minutos.';
+        window.showToast(msg, 'error');
+        if (btn) {
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+            window.refreshIcons?.();
         }
     }
 };

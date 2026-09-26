@@ -13,11 +13,13 @@ service cloud.firestore {
         && (
           request.auth.token.email in [
             'milkarffood@gmail.com',
-            'carlosauv11@gmail.com'
+            'carlosauv11@gmail.com',
+            'carlosuzc29@gmail.com'
           ]
           || request.auth.token.email.lower() in [
             'milkarffood@gmail.com',
-            'carlosauv11@gmail.com'
+            'carlosauv11@gmail.com',
+            'carlosuzc29@gmail.com'
           ]
           || (
             exists(/databases/$(database)/documents/admins/$(request.auth.token.email))
