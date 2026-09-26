@@ -331,7 +331,7 @@ window.MILKARF_CONFIG = {
             shortName: 'Pollo',
             emoji: '🍗',
             available: true,
-            caloricDensity: 1.25,
+            caloricDensity: 1.55, // 1.550 kcal/kg — valor indicado por la marca
             presentations: [
                 { size: '250gr', grams: 250, price: 2.50, available: true },
                 { size: '550gr', grams: 550, price: 5.50, available: true }
@@ -343,7 +343,7 @@ window.MILKARF_CONFIG = {
             shortName: 'Res',
             emoji: '🥩',
             available: true,
-            caloricDensity: 1.25,
+            caloricDensity: 1.55, // 1.550 kcal/kg — valor indicado por la marca
             presentations: [
                 { size: '250gr', grams: 250, price: 3.50, available: true },
                 { size: '550gr', grams: 550, price: 7.70, available: true }
@@ -5895,7 +5895,10 @@ window.calcularRacion = function () {
         factor = window.state.esterilizado ? 1.1 : 1.2; // 1.2 factor mínimo preventivo
     }
 
-    const gramos = Math.round((70 * Math.pow(peso, 0.75) * factor) / 1.25);
+    const activeFormula = window.activePlanFormula || 'pollo';
+    const activeProd = window.MILKARF_CONFIG?.catalog?.[activeFormula] || window.MILKARF_CONFIG?.catalog?.pollo;
+    const densidad = activeProd?.caloricDensity || 1.55; // kcal/g — 1.550 kcal/kg indicado por la marca
+    const gramos = Math.round((70 * Math.pow(peso, 0.75) * factor) / densidad);
     const comidas = window.state.etapa === 'cachorro' ? (['2-4', '4-6'].includes(window.state.cachorroEdad) ? 4 : 3) : 2;
 
     const basePortion = Math.floor(gramos / comidas);
