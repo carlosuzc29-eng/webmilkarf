@@ -999,7 +999,7 @@ window.getWhatsAppTemplate = function (type = 'general', data = {}) {
         case 'general':
             return `Hola, equipo Milkarf.
 
-Me gustaría recibir información sobre la alimentación fisiológica para mi mascota.
+Me gustaría recibir información sobre la alimentación cruda para mi mascota.
 
 Quisiera conocer las fórmulas disponibles, presentaciones recomendadas y los pasos adecuados para iniciar la transición.`;
 
