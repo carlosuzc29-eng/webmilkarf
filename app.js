@@ -9308,98 +9308,104 @@ window.descargarGuiaAlimentacion = async function (planData = null) {
         const cPurple = [66, 29, 142];         // #421D8E
         const cGreen = [185, 203, 37];         // #B9CB25
         const cPink = [215, 43, 143];          // #D72B8F
-        const cCardBg = [246, 243, 252];       // Tinte suave morado
+        const cCardBg = [248, 246, 253];       // Tinte suave morado
+        const cCardBorder = [222, 214, 238];
         const cTextDark = [30, 16, 53];        // #1E1035
-        const cTextGray = [100, 105, 120];
+        const cTextGray = [105, 110, 125];
 
         // 1. BANNER DE CABECERA
         doc.setFillColor(...cPurpleDark);
-        doc.rect(0, 0, 210, 30, 'F');
-
+        doc.rect(0, 0, 210, 28, 'F');
         doc.setFillColor(...cGreen);
-        doc.rect(0, 30, 210, 2.5, 'F');
+        doc.rect(0, 28, 210, 2.5, 'F');
 
         doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(22);
-        doc.text('MILKARF', 16, 16);
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8.5);
-        doc.text('ALIMENTACIÓN NATURAL COCINADA PARA PERROS', 16, 23);
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
-        doc.text('GUÍA DE ALIMENTACIÓN Y MANEJO', 194, 15, { align: 'right' });
+        doc.setFontSize(21);
+        doc.text('MILKARF', 16, 14);
 
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
-        doc.text('milkarf.com · WhatsApp: +58 412 181 2947', 194, 22, { align: 'right' });
+        doc.text('ALIMENTACIÓN NATURAL COCINADA PARA PERROS', 16, 20.5);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10.5);
+        doc.text('GUÍA DE ALIMENTACIÓN Y MANEJO', 194, 13.5, { align: 'right' });
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.text('milkarf.com · WhatsApp: +58 412 181 2947', 194, 19.5, { align: 'right' });
 
         // 2. SECCIÓN: DATOS DE LA MASCOTA Y PLAN
-        let y = 39;
+        let y = 35;
         doc.setFillColor(...cCardBg);
-        doc.roundedRect(14, y, 182, 34, 3, 3, 'F');
-        doc.setDrawColor(210, 200, 230);
+        doc.roundedRect(14, y, 182, 32, 2.5, 2.5, 'F');
+        doc.setDrawColor(...cCardBorder);
         doc.setLineWidth(0.3);
-        doc.roundedRect(14, y, 182, 34, 3, 3, 'D');
+        doc.roundedRect(14, y, 182, 32, 2.5, 2.5, 'D');
+
+        doc.setFillColor(...cPurple);
+        doc.roundedRect(14, y, 2.5, 32, 1, 1, 'F');
 
         doc.setTextColor(...cPurpleDark);
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
-        doc.text('1. PLAN NUTRICIONAL PERSONALIZADO', 18, y + 6);
+        doc.setFontSize(9.5);
+        doc.text('1. PLAN NUTRICIONAL PERSONALIZADO', 20, y + 5.5);
 
-        doc.setFontSize(8.5);
+        doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(...cTextDark);
 
         // Columna Izquierda
-        doc.text(`Mascota: `, 18, y + 13);
+        doc.text('Mascota: ', 20, y + 12);
         doc.setFont('helvetica', 'bold');
-        doc.text(`${petName} (${etapa} · ${petWeight} kg)`, 34, y + 13);
+        doc.text(`${petName} (${etapa} · ${petWeight} kg)`, 36, y + 12);
         doc.setFont('helvetica', 'normal');
 
-        doc.text(`Ración diaria: `, 18, y + 19);
+        doc.text('Ración diaria: ', 20, y + 18);
         doc.setFont('helvetica', 'bold');
-        doc.text(`${dailyGrams} g/día`, 39, y + 19);
+        doc.setTextColor(...cPink);
+        doc.text(`${dailyGrams} g/día`, 41, y + 18);
+        doc.setTextColor(...cTextDark);
         doc.setFont('helvetica', 'normal');
 
-        doc.text(`Reparto por comida: `, 18, y + 25);
+        doc.text('Reparto por comida: ', 20, y + 24);
         doc.setFont('helvetica', 'bold');
-        const mealStr = `${comidas} comidas al día (${mealPortions.map((g, idx) => `C${idx+1}: ${g}g`).join(', ')})`;
-        doc.text(mealStr, 48, y + 25);
+        const mealStr = `${comidas} comidas al día (${mealPortions.map((g, idx) => `C${idx + 1}: ${g}g`).join(', ')})`;
+        doc.text(mealStr, 51, y + 24);
         doc.setFont('helvetica', 'normal');
 
         // Columna Derecha
-        doc.text(`Receta: `, 115, y + 13);
+        doc.text('Receta: ', 116, y + 12);
         doc.setFont('helvetica', 'bold');
-        doc.text(`${formulaLabel}`, 129, y + 13);
+        doc.text(formulaLabel, 129, y + 12);
         doc.setFont('helvetica', 'normal');
 
-        doc.text(`Duración del plan: `, 115, y + 19);
+        doc.text('Duración del plan: ', 116, y + 18);
         doc.setFont('helvetica', 'bold');
-        doc.text(`${days} días de alimentación`, 144, y + 19);
+        doc.text(`${days} días de alimentación`, 144, y + 18);
         doc.setFont('helvetica', 'normal');
 
-        doc.text(`Alimento provisto: `, 115, y + 25);
+        doc.text('Alimento provisto: ', 116, y + 24);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(30, 120, 60);
-        doc.text(`${totalProvKg} kg (${plan.bagsCount || bags.length} bolsas)`, 144, y + 25);
+        doc.setTextColor(35, 125, 60);
+        doc.text(`${totalProvKg} kg (${plan.bagsCount || bags.length} bolsas)`, 144, y + 24);
         doc.setTextColor(...cTextDark);
 
-        // 3. SECCIÓN: COMPOSICIÓN DE BOLSAS RECOMENDADA
-        y = 78;
+        // 3. SECCIÓN: COMPOSICIÓN DE BOLSAS
+        y = 71;
         doc.setFillColor(255, 255, 255);
-        doc.roundedRect(14, y, 182, 38, 3, 3, 'F');
-        doc.setDrawColor(210, 200, 230);
-        doc.roundedRect(14, y, 182, 38, 3, 3, 'D');
+        doc.roundedRect(14, y, 182, 34, 2.5, 2.5, 'F');
+        doc.setDrawColor(...cCardBorder);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(14, y, 182, 34, 2.5, 2.5, 'D');
 
         doc.setTextColor(...cPurpleDark);
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
-        doc.text('2. COMPOSICIÓN DE BOLSAS (REGLA DE CONSERVACIÓN 24 HORAS)', 18, y + 6);
+        doc.setFontSize(9.5);
+        doc.text('2. COMPOSICIÓN DE BOLSAS DEL PLAN', 18, y + 5.5);
 
-        doc.setFontSize(8.5);
+        doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(...cTextDark);
 
@@ -9407,122 +9413,153 @@ window.descargarGuiaAlimentacion = async function (planData = null) {
         if (bags.length > 0) {
             bags.forEach(b => {
                 doc.setFillColor(...cPink);
-                doc.circle(20, by - 1, 1, 'F');
+                doc.circle(21, by - 0.8, 1.6, 'F');
                 doc.setFont('helvetica', 'bold');
-                doc.text(`${b.qty} bolsa(s) de ${b.weight}`, 24, by);
+                doc.text(`${b.qty} bolsa(s) de ${b.weight}`, 25, by);
                 doc.setFont('helvetica', 'normal');
-                doc.text(`— ${b.formulaName || (b.formula === 'pollo' ? 'Pollo con Zanahoria' : 'Carne de Res con Calabacín')} (${(b.qty * b.grams / 1000).toFixed(2)} kg)`, 62, by);
+                doc.text(`— ${b.formulaName || (b.formula === 'pollo' ? 'Pollo con Zanahoria' : 'Carne de Res con Calabacín')} (${(b.qty * b.grams / 1000).toFixed(2)} kg)`, 64, by);
                 by += 5;
             });
         } else {
-            doc.text(`• ${plan.bagsCount || '—'} bolsas recomendadas según ración diaria.`, 20, by);
+            doc.text(`• ${plan.bagsCount || '—'} bolsas recomendadas según ración diaria.`, 21, by);
             by += 5;
         }
 
-        doc.setFontSize(7.5);
+        doc.setFontSize(7.2);
         doc.setTextColor(...cTextGray);
-        doc.text(`• Criterio de formulación: Las presentaciones de 250 g y 550 g se combinan para garantizar que cada bolsa`, 18, by + 2);
-        doc.text(`  abierta se consuma en un plazo no mayor a 24 horas en refrigeración, preservando frescura microbiológica.`, 18, by + 6);
+        doc.text(`• Criterio de porción: Las bolsas provistas cubren el 100% de la ración requerida para los ${days} días del plan seleccionado.`, 18, by + 2);
+        doc.text('• Conservación en refrigeración: Una vez abierta la bolsa, mantén el sobrante refrigerado y consúmelo en 24 a 48 h.', 18, by + 6);
 
-        // 4. SECCIÓN: PROTOCOLO DE CONSERVACIÓN Y SEGURIDAD
-        y = 121;
+        // 4. SECCIÓN: PROTOCOLO DE CONSERVACIÓN Y SEGURIDAD EN CASA
+        y = 109;
         doc.setFillColor(...cCardBg);
-        doc.roundedRect(14, y, 182, 53, 3, 3, 'F');
-        doc.setDrawColor(210, 200, 230);
-        doc.roundedRect(14, y, 182, 53, 3, 3, 'D');
+        doc.roundedRect(14, y, 182, 63, 2.5, 2.5, 'F');
+        doc.setDrawColor(...cCardBorder);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(14, y, 182, 63, 2.5, 2.5, 'D');
 
         doc.setTextColor(...cPurpleDark);
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
-        doc.text('3. PROTOCOLO DE MANEJO Y SEGURIDAD EN CASA', 18, y + 6);
+        doc.setFontSize(9.5);
+        doc.text('3. PROTOCOLO DE MANEJO Y CADENA DE FRÍO (5 REGLAS DE ORO)', 18, y + 5.5);
 
         const rules = [
-            { icon: '❄', title: 'Congelación inmediata (-18 °C):', desc: 'Mantén las bolsas congeladas al recibirlas. Vida útil cerrada: 6 meses.' },
-            { icon: '🧊', title: 'Descongelación controlada (en nevera):', desc: 'Baja la porción al refrigerador (4 °C) 12 horas antes. NUNCA a temperatura ambiente.' },
-            { icon: '⏱', title: 'Regla estricta de 24 horas:', desc: 'Una vez abierta la bolsa, consérvala en refrigeración y consúmela en máximo 24 horas.' },
-            { icon: '🚫', title: 'No recongelar:', desc: 'Alimento descongelado parcial o totalmente no debe volver a introducirse al congelador.' },
-            { icon: '🍽', title: 'Forma de servir:', desc: 'Sirve a temperatura ambiente o templado a baño maría suave. No uses microondas a alta potencia.' }
+            { n: '1', t: 'Congelación a -18 °C:', d: 'Guarda las bolsas de 250 g y 550 g en el congelador inmediatamente al recibirlas. Vida útil: 6 meses.' },
+            { n: '2', t: 'Descongelación en nevera:', d: 'Baja la porción al refrigerador (4 °C) 12 horas antes de servir. NUNCA descongeles a temperatura ambiente.' },
+            { n: '3', t: 'Regla de las 24 horas:', d: 'Una vez abierta la bolsa, mantén refrigerado el sobrante y consúmelo dentro de las siguientes 24 horas.' },
+            { n: '4', t: 'Nunca recongelar:', d: 'El alimento descongelado no debe devolverse al congelador bajo ninguna circunstancia.' },
+            { n: '5', t: 'Temperatura de servicio:', d: 'Sirve fresco o templado con un poco de agua tibia o baño maría suave. No recalientes a alta potencia.' }
         ];
 
-        let ry = y + 12;
-        doc.setFontSize(8);
-        rules.forEach(r => {
+        let ry = y + 12.5;
+        rules.forEach((r, idx) => {
+            if (idx % 2 === 0) {
+                doc.setFillColor(255, 255, 255);
+                doc.roundedRect(17, ry - 3, 176, 8.5, 1.2, 1.2, 'F');
+            }
+            doc.setFillColor(...cPurple);
+            doc.circle(22, ry + 1.2, 2.5, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(7.2);
+            doc.text(r.n, 22, ry + 2.1, { align: 'center' });
+
             doc.setTextColor(...cPink);
             doc.setFont('helvetica', 'bold');
-            doc.text(`${r.icon} ${r.title}`, 18, ry);
+            doc.setFontSize(7.8);
+            doc.text(r.t, 27, ry + 2);
+
             doc.setTextColor(...cTextDark);
             doc.setFont('helvetica', 'normal');
-            doc.text(r.desc, 78, ry);
-            ry += 7.5;
+            doc.setFontSize(7.5);
+            doc.text(r.d, 74, ry + 2, { maxWidth: 118 });
+            ry += 9.4;
         });
 
         // 5. SECCIÓN: GUÍA DE TRANSICIÓN GRADUAL (10 DÍAS)
-        y = 179;
+        y = 176;
         doc.setFillColor(255, 255, 255);
-        doc.roundedRect(14, y, 182, 51, 3, 3, 'F');
-        doc.setDrawColor(210, 200, 230);
-        doc.roundedRect(14, y, 182, 51, 3, 3, 'D');
+        doc.roundedRect(14, y, 182, 53, 2.5, 2.5, 'F');
+        doc.setDrawColor(...cCardBorder);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(14, y, 182, 53, 2.5, 2.5, 'D');
 
         doc.setTextColor(...cPurpleDark);
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
-        doc.text('4. GUÍA DE TRANSICIÓN DIGESTIVA GRADUAL (10 DÍAS)', 18, y + 6);
+        doc.setFontSize(9.5);
+        doc.text('4. GUÍA DE TRANSICIÓN DIGESTIVA GRADUAL (10 DÍAS)', 18, y + 5.5);
 
         const steps = [
-            { d: 'Días 1 a 3', pM: '25% Milkarf', pA: '75% Alimento anterior', note: 'Adaptación de flora intestinal' },
-            { d: 'Días 4 a 6', pM: '50% Milkarf', pA: '50% Alimento anterior', note: 'Asimilación digestiva' },
-            { d: 'Días 7 a 9', pM: '75% Milkarf', pA: '25% Alimento anterior', note: 'Consolidación nutricional' },
-            { d: 'Día 10+', pM: '100% Milkarf', pA: '0%', note: 'Alimentación completa natural' }
+            { d: 'Días 1 a 3', pM: '25% Milkarf', pA: '75% Alimento actual', note: 'Adaptación enzimática y microbiana' },
+            { d: 'Días 4 a 6', pM: '50% Milkarf', pA: '50% Alimento actual', note: 'Equilibrio de absorción de nutrientes' },
+            { d: 'Días 7 a 9', pM: '75% Milkarf', pA: '25% Alimento actual', note: 'Consolidación del tracto digestivo' },
+            { d: 'Día 10+', pM: '100% Milkarf', pA: '0%', note: 'Nutrición natural completa activa' }
         ];
 
         let sy = y + 13;
-        doc.setFontSize(8);
         steps.forEach(s => {
-            doc.setFillColor(245, 242, 250);
-            doc.roundedRect(18, sy - 4, 174, 6.5, 1.5, 1.5, 'F');
+            doc.setFillColor(248, 246, 253);
+            doc.roundedRect(18, sy - 3.2, 174, 6.8, 1.2, 1.2, 'F');
+
             doc.setFont('helvetica', 'bold');
+            doc.setFontSize(7.8);
             doc.setTextColor(...cPurpleDark);
-            doc.text(s.d, 22, sy);
-            doc.setTextColor(...cPink);
-            doc.text(s.pM, 52, sy);
+            doc.text(s.d, 22, sy + 1.4);
+
+            doc.setFillColor(...cPink);
+            doc.roundedRect(60, sy - 2.2, 28, 5, 1, 1, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(7.2);
+            doc.text(s.pM, 74, sy + 1.3, { align: 'center' });
+
             doc.setTextColor(...cTextDark);
             doc.setFont('helvetica', 'normal');
-            doc.text(`+ ${s.pA}`, 80, sy);
+            doc.setFontSize(7.5);
+            doc.text(`+ ${s.pA}`, 98, sy + 1.4);
+
             doc.setTextColor(...cTextGray);
-            doc.text(`(${s.note})`, 130, sy);
-            sy += 7.5;
+            doc.setFont('helvetica', 'italic');
+            doc.setFontSize(7);
+            doc.text(`— ${s.note}`, 136, sy + 1.4);
+
+            sy += 7.8;
         });
 
-        doc.setFontSize(7.5);
+        doc.setFontSize(7);
         doc.setTextColor(...cTextGray);
-        doc.text('Nota importante: Si observas heces blandas o apetito selectivo durante la transición, mantén el porcentaje actual', 18, sy + 1);
-        doc.text('durante 2 días adicionales antes de incrementar la proporción de comida natural.', 18, sy + 5);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Nota: Si observas heces blandas o apetito selectivo, mantén el porcentaje actual 2 días más antes de avanzar.', 18, sy + 2);
 
-        // 6. PIE DE PÁGINA Y SOPORTE
-        y = 236;
-        doc.setFillColor(...cCardBg);
-        doc.roundedRect(14, y, 182, 24, 3, 3, 'F');
-        doc.setDrawColor(210, 200, 230);
-        doc.roundedRect(14, y, 182, 24, 3, 3, 'D');
+        // 6. PIE DE PÁGINA Y SOPORTE DIRECTO
+        y = 233;
+        doc.setFillColor(...cPurpleDark);
+        doc.roundedRect(14, y, 182, 24, 2.5, 2.5, 'F');
 
-        doc.setTextColor(...cPurpleDark);
+        doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9);
-        doc.text('¿DUDAS O NECESITAS ASESORÍA CON LA PORCIÓN?', 18, y + 6);
+        doc.setFontSize(8.5);
+        doc.text(`¿Dudas o necesitas asesoría personalizada con ${petName}?`, 20, y + 8);
 
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
-        doc.setTextColor(...cTextDark);
-        doc.text('Escríbenos directamente a WhatsApp: +58 412 181 2947 con el nombre de tu perrito.', 18, y + 12);
-        doc.setTextColor(...cTextGray);
         doc.setFontSize(7.2);
-        doc.text('Milkarf Nutrición Animal · Ingredientes aptos para consumo humano · Formulado bajo directrices FEDIAF / NRC.', 18, y + 18);
+        doc.setTextColor(220, 215, 238);
+        doc.text('Escríbenos directamente a WhatsApp y te acompañamos en cada etapa de su alimentación.', 20, y + 14);
+        doc.text('Milkarf Nutrición Animal · Ingredientes aptos para consumo humano · Caracas, Venezuela', 20, y + 19);
+
+        doc.setFillColor(...cGreen);
+        doc.roundedRect(122, y + 6, 68, 12, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(...cPurpleDark);
+        doc.text('WhatsApp: +58 412 181 2947', 156, y + 13.5, { align: 'center' });
 
         // Sub-pie legal
         doc.setTextColor(140, 140, 150);
-        doc.setFontSize(6.8);
-        doc.text('Esta guía es de carácter orientativo. Monitorea periódicamente la condición corporal y consulta al médico veterinario de tu perro.', 105, 275, { align: 'center' });
-        doc.text(`Generado el ${new Date().toLocaleDateString('es-VE')} · Milkarf Nutrition Engine v2.4 (2026)`, 105, 279, { align: 'center' });
+        doc.setFontSize(6.5);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Esta guía es de carácter orientativo. Monitorea la condición corporal de tu mascota y consulta al médico veterinario.', 105, 273, { align: 'center' });
+        doc.text(`Generado para ${petName} el ${new Date().toLocaleDateString('es-VE')} · Milkarf Nutrition Engine (2026)`, 105, 277, { align: 'center' });
 
         const safePet = petName.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g, '_');
         doc.save(`Guia_Alimentacion_Milkarf_${safePet}.pdf`);
@@ -9563,99 +9600,143 @@ window.descargarGuiaGeneral = async function () {
             format: 'a4'
         });
 
-        const cPurpleDark = [46, 16, 96];
-        const cPurple = [66, 29, 142];
-        const cGreen = [185, 203, 37];
-        const cPink = [215, 43, 143];
-        const cCardBg = [246, 243, 252];
-        const cTextDark = [30, 16, 53];
-        const cTextGray = [100, 105, 120];
+        const cPurpleDark = [46, 16, 96];      // #2E1060
+        const cPurple = [66, 29, 142];         // #421D8E
+        const cGreen = [185, 203, 37];         // #B9CB25
+        const cPink = [215, 43, 143];          // #D72B8F
+        const cCardBg = [248, 246, 253];       // Tinte suave morado
+        const cCardBorder = [222, 214, 238];
+        const cTextDark = [30, 16, 53];        // #1E1035
+        const cTextGray = [105, 110, 125];
 
-        // Banner Cabecera
+        // 1. BANNER CABECERA
         doc.setFillColor(...cPurpleDark);
-        doc.rect(0, 0, 210, 30, 'F');
+        doc.rect(0, 0, 210, 28, 'F');
         doc.setFillColor(...cGreen);
-        doc.rect(0, 30, 210, 2.5, 'F');
+        doc.rect(0, 28, 210, 2.5, 'F');
 
         doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(22);
-        doc.text('MILKARF', 16, 16);
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8.5);
-        doc.text('ALIMENTACIÓN NATURAL COCINADA PARA PERROS', 16, 23);
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
-        doc.text('GUÍA DE TRANSICIÓN Y CONSERVACIÓN', 194, 15, { align: 'right' });
+        doc.setFontSize(21);
+        doc.text('MILKARF', 16, 14);
 
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
-        doc.text('milkarf.com · WhatsApp: +58 412 181 2947', 194, 22, { align: 'right' });
+        doc.text('ALIMENTACIÓN NATURAL COCINADA PARA PERROS', 16, 20.5);
 
-        // 1. INTRODUCCIÓN Y CALIDAD
-        let y = 39;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10.5);
+        doc.text('GUÍA DE TRANSICIÓN Y CONSERVACIÓN', 194, 13.5, { align: 'right' });
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.text('milkarf.com · WhatsApp: +58 412 181 2947', 194, 19.5, { align: 'right' });
+
+        // 2. SECCIÓN 1: EL COMPROMISO DE MILKARF
+        let y = 35;
         doc.setFillColor(...cCardBg);
-        doc.roundedRect(14, y, 182, 28, 3, 3, 'F');
-        doc.setDrawColor(210, 200, 230);
-        doc.roundedRect(14, y, 182, 28, 3, 3, 'D');
+        doc.roundedRect(14, y, 182, 23, 2.5, 2.5, 'F');
+        doc.setDrawColor(...cCardBorder);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(14, y, 182, 23, 2.5, 2.5, 'D');
+
+        doc.setFillColor(...cPurple);
+        doc.roundedRect(14, y, 2.5, 23, 1, 1, 'F');
 
         doc.setTextColor(...cPurpleDark);
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
-        doc.text('1. EL COMPROMISO DE MILKARF', 18, y + 6);
+        doc.setFontSize(9.5);
+        doc.text('1. EL COMPROMISO DE MILKARF', 20, y + 5.5);
 
-        doc.setFontSize(8);
+        doc.setFontSize(7.8);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(...cTextDark);
-        doc.text('Nuestras recetas se cocinan lentamente al vapor con ingredientes 100% naturales aptos para consumo humano,', 18, y + 12);
-        doc.text('sin subproductos ni conservantes artificiales. Para garantizar la máxima calidad microbiológica y nutricional,', 18, y + 16);
-        doc.text('sigue las instrucciones de esta guía para el manejo en tu hogar.', 18, y + 20);
+        doc.text('Nuestras recetas se cocinan lentamente al vapor con ingredientes 100% naturales aptos para consumo humano, sin subproductos', 20, y + 11.5);
+        doc.text('ni conservantes artificiales. Para garantizar la máxima calidad microbiológica y nutricional, sigue las instrucciones de esta guía en casa.', 20, y + 16.5);
 
-        // 2. PROTOCOLO DE CONSERVACIÓN
-        y = 73;
+        // 3. SECCIÓN 2: CADENA DE FRÍO Y MANEJO EN CASA (5 REGLAS DE ORO)
+        y = 62;
         doc.setFillColor(255, 255, 255);
-        doc.roundedRect(14, y, 182, 60, 3, 3, 'F');
-        doc.setDrawColor(210, 200, 230);
-        doc.roundedRect(14, y, 182, 60, 3, 3, 'D');
+        doc.roundedRect(14, y, 182, 65, 2.5, 2.5, 'F');
+        doc.setDrawColor(...cCardBorder);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(14, y, 182, 65, 2.5, 2.5, 'D');
 
         doc.setTextColor(...cPurpleDark);
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
-        doc.text('2. CADENA DE FRÍO Y MANEJO EN CASA (5 REGLAS DE ORO)', 18, y + 6);
+        doc.setFontSize(9.5);
+        doc.text('2. CADENA DE FRÍO Y MANEJO EN CASA (5 REGLAS DE ORO)', 18, y + 5.5);
+
+        doc.setFontSize(7.2);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...cTextGray);
+        doc.text('Sigue estos pasos indispensables para conservar la inocuidad y frescura del alimento:', 18, y + 10);
 
         const rules = [
-            { icon: '❄', t: 'Congelación a -18 °C:', d: 'Guarda las bolsas de 250 g y 550 g en freezer inmediatamente. Vida útil cerrada: 6 meses.' },
-            { icon: '🧊', t: 'Descongelación en nevera:', d: 'Baja la ración al refrigerador (4 °C) 12 horas antes. NUNCA descongeles a temperatura ambiente.' },
-            { icon: '⏱', t: 'Regla de las 24 horas:', d: 'Una vez abierta la bolsa, mantén refrigerado el sobrante y consúmelo dentro de las siguientes 24 horas.' },
-            { icon: '🚫', t: 'Nunca recongelar:', d: 'El alimento descongelado no debe devolverse al congelador bajo ninguna circunstancia.' },
-            { icon: '🍽', t: 'Temperatura de servicio:', d: 'Sirve fresco o templado con un poco de agua tibia o a baño maría suave. No recalientes a alta potencia.' }
+            { n: '1', t: 'Congelación a -18 °C:', d: 'Guarda las bolsas de 250 g y 550 g en freezer inmediatamente. Vida útil cerrada: 6 meses.' },
+            { n: '2', t: 'Descongelación en nevera:', d: 'Baja la ración al refrigerador (4 °C) 12 horas antes. NUNCA descongeles a temperatura ambiente.' },
+            { n: '3', t: 'Regla de las 24 horas:', d: 'Una vez abierta la bolsa, mantén refrigerado el sobrante y consúmelo dentro de las siguientes 24 horas.' },
+            { n: '4', t: 'Nunca recongelar:', d: 'El alimento descongelado no debe devolverse al congelador bajo ninguna circunstancia.' },
+            { n: '5', t: 'Temperatura de servicio:', d: 'Sirve fresco o templado con un poco de agua tibia o a baño maría suave. No recalientes a alta potencia.' }
         ];
 
-        let ry = y + 13;
-        doc.setFontSize(8);
-        rules.forEach(r => {
+        let ry = y + 13.5;
+        rules.forEach((r, idx) => {
+            // Fondo alterno suave
+            if (idx % 2 === 0) {
+                doc.setFillColor(250, 248, 254);
+                doc.roundedRect(17, ry - 3.2, 176, 8.8, 1.2, 1.2, 'F');
+            }
+
+            // Badge circular numérico
+            doc.setFillColor(...cPurple);
+            doc.circle(22, ry + 1.2, 2.6, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(7.2);
+            doc.text(r.n, 22, ry + 2.1, { align: 'center' });
+
+            // Título de la regla en rosa
             doc.setTextColor(...cPink);
             doc.setFont('helvetica', 'bold');
-            doc.text(`${r.icon} ${r.t}`, 18, ry);
+            doc.setFontSize(7.8);
+            doc.text(r.t, 27, ry + 2);
+
+            // Descripción alineada limpiamente en su propia columna sin solapamiento
             doc.setTextColor(...cTextDark);
             doc.setFont('helvetica', 'normal');
-            doc.text(r.d, 68, ry);
-            ry += 8.5;
+            doc.setFontSize(7.5);
+            doc.text(r.d, 74, ry + 2, { maxWidth: 118 });
+
+            ry += 9.6;
         });
 
-        // 3. PROTOCOLO DE TRANSICIÓN GRADUAL
-        y = 139;
+        // 4. SECCIÓN 3: CALENDARIO DE TRANSICIÓN DIGESTIVA (10 DÍAS)
+        y = 131;
         doc.setFillColor(...cCardBg);
-        doc.roundedRect(14, y, 182, 62, 3, 3, 'F');
-        doc.setDrawColor(210, 200, 230);
-        doc.roundedRect(14, y, 182, 62, 3, 3, 'D');
+        doc.roundedRect(14, y, 182, 67, 2.5, 2.5, 'F');
+        doc.setDrawColor(...cCardBorder);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(14, y, 182, 67, 2.5, 2.5, 'D');
 
         doc.setTextColor(...cPurpleDark);
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
-        doc.text('3. CALENDARIO DE TRANSICIÓN DIGESTIVA (10 DÍAS)', 18, y + 6);
+        doc.setFontSize(9.5);
+        doc.text('3. CALENDARIO DE TRANSICIÓN DIGESTIVA (10 DÍAS)', 18, y + 5.5);
+
+        doc.setFontSize(7.2);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...cTextGray);
+        doc.text('La transición progresiva permite que la microbiota intestinal asimile la nueva nutrición sin malestar:', 18, y + 10);
+
+        // Encabezados de tabla
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(6.8);
+        doc.setTextColor(...cTextGray);
+        doc.text('FASE / PERIODO', 22, y + 15);
+        doc.text('ALIMENTO MILKARF', 64, y + 15);
+        doc.text('ALIMENTO HABITUAL', 100, y + 15);
+        doc.text('OBJETIVO DIGESTIVO', 138, y + 15);
 
         const steps = [
             { d: 'Días 1 a 3', pM: '25% Milkarf', pA: '75% Alimento actual', obj: 'Adaptación enzimática y microbiana' },
@@ -9664,60 +9745,125 @@ window.descargarGuiaGeneral = async function () {
             { d: 'Día 10 en adelante', pM: '100% Milkarf', pA: '0%', obj: 'Nutrición natural completa activa' }
         ];
 
-        let sy = y + 14;
-        doc.setFontSize(8);
+        let sy = y + 19;
         steps.forEach(s => {
             doc.setFillColor(255, 255, 255);
-            doc.roundedRect(18, sy - 4, 174, 7.5, 1.5, 1.5, 'F');
+            doc.setDrawColor(228, 222, 240);
+            doc.setLineWidth(0.2);
+            doc.roundedRect(18, sy - 3.2, 174, 7.6, 1.2, 1.2, 'FD');
+
+            // Periodo
             doc.setFont('helvetica', 'bold');
+            doc.setFontSize(7.8);
             doc.setTextColor(...cPurpleDark);
-            doc.text(s.d, 22, sy + 1);
-            doc.setTextColor(...cPink);
-            doc.text(s.pM, 56, sy + 1);
+            doc.text(s.d, 22, sy + 1.8);
+
+            // Pastilla % Milkarf
+            doc.setFillColor(...cPink);
+            doc.roundedRect(62, sy - 2.2, 28, 5.4, 1, 1, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(7.2);
+            doc.text(s.pM, 76, sy + 1.6, { align: 'center' });
+
+            // Alimento actual
             doc.setTextColor(...cTextDark);
             doc.setFont('helvetica', 'normal');
-            doc.text(`+ ${s.pA}`, 84, sy + 1);
+            doc.setFontSize(7.6);
+            doc.text(`+ ${s.pA}`, 100, sy + 1.8);
+
+            // Objetivo
             doc.setTextColor(...cTextGray);
-            doc.text(`— ${s.obj}`, 130, sy + 1);
-            sy += 9;
+            doc.setFont('helvetica', 'italic');
+            doc.setFontSize(7.2);
+            doc.text(`— ${s.obj}`, 138, sy + 1.8);
+
+            sy += 8.6;
         });
 
-        doc.setFontSize(7.5);
-        doc.setTextColor(...cTextGray);
-        doc.text('Recomendación: Si tu perro presenta heces blandas o tiene estómago sensible, prolonga cada fase 2 o 3 días.', 18, sy + 2);
-        doc.text('La flora intestinal de cada perro se adapta a su propio ritmo.', 18, sy + 6);
-
-        // 4. PREGUNTAS FRECUENTES Y CONTACTO
-        y = 207;
+        // Recuadro de recomendación
         doc.setFillColor(255, 255, 255);
-        doc.roundedRect(14, y, 182, 45, 3, 3, 'F');
-        doc.setDrawColor(210, 200, 230);
-        doc.roundedRect(14, y, 182, 45, 3, 3, 'D');
+        doc.setDrawColor(...cGreen);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(18, sy + 1, 174, 8, 1.2, 1.2, 'FD');
+        doc.setFillColor(...cGreen);
+        doc.roundedRect(18, sy + 1, 2.5, 8, 0.8, 0.8, 'F');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.2);
+        doc.setTextColor(...cPurpleDark);
+        doc.text('Nota clave:', 23, sy + 6.2);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...cTextDark);
+        doc.text('Si tu perro presenta heces blandas o tiene estómago sensible, prolonga cada fase 2 o 3 días. Cada mascota se adapta a su ritmo.', 38, sy + 6.2);
+
+        // 5. SECCIÓN 4: RECOMENDACIONES CLAVE Y SOPORTE DIRECTO
+        y = 202;
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(14, y, 182, 67, 2.5, 2.5, 'F');
+        doc.setDrawColor(...cCardBorder);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(14, y, 182, 67, 2.5, 2.5, 'D');
 
         doc.setTextColor(...cPurpleDark);
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(10.5);
-        doc.text('4. RECOMENDACIONES CLAVE', 18, y + 6);
+        doc.setFontSize(9.5);
+        doc.text('4. RECOMENDACIONES CLAVE DE NUTRICIÓN', 18, y + 5.5);
 
-        doc.setFontSize(7.8);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(...cTextDark);
-        doc.text('• Heces más compactas: Es completamente normal que las deposiciones sean más pequeñas y menos olorosas debido a la alta digestibilidad.', 18, y + 12);
-        doc.text('• Agua siempre disponible: Aunque la comida natural aporta más hidratación que el ultraprocesado, mantén siempre agua limpia.', 18, y + 17);
-        doc.text('• Ajustes de peso: Pesa a tu perro cada 2 a 4 semanas para calibrar la ración si sube o baja de nivel de actividad física.', 18, y + 22);
+        const tips = [
+            { t: 'Heces más compactas:', d: 'Es completamente normal que las deposiciones sean más pequeñas, firmes y menos olorosas debido a la alta digestibilidad del alimento natural.' },
+            { t: 'Agua siempre disponible:', d: 'Aunque la comida natural aporta mucha más hidratación que las croquetas ultraprocesadas, mantén siempre agua fresca y limpia a su alcance.' },
+            { t: 'Ajustes de peso corporal:', d: 'Pesa a tu perro cada 2 a 4 semanas para calibrar la porción diaria si sube o baja de nivel de actividad física.' }
+        ];
 
+        let ty = y + 11.5;
+        tips.forEach(item => {
+            doc.setFillColor(...cGreen);
+            doc.circle(21, ty + 1.2, 1.5, 'F');
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(7.8);
+            doc.setTextColor(...cPurpleDark);
+            doc.text(item.t, 25, ty + 2);
+
+            const tw = doc.getTextWidth(item.t + ' ');
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(...cTextDark);
+            doc.setFontSize(7.5);
+            doc.text(item.d, 25 + tw, ty + 2, { maxWidth: 168 - tw });
+
+            ty += 8;
+        });
+
+        // Banner de soporte WhatsApp
+        const by = y + 38;
+        doc.setFillColor(...cPurpleDark);
+        doc.roundedRect(18, by, 174, 23, 2, 2, 'F');
+
+        doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(...cPurple);
-        doc.text('Atención directa por WhatsApp: +58 412 181 2947 | milkarf.com | Caracas, Venezuela', 18, y + 30);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(...cTextGray);
-        doc.setFontSize(7);
-        doc.text('Milkarf Nutrición Animal · Hecho con amor para una vida canina más sana, activa y feliz.', 18, y + 35);
+        doc.setFontSize(8.5);
+        doc.text('¿Tienes dudas con la ración o la transición de tu perro?', 24, by + 8);
 
-        // Sub-pie
-        doc.setTextColor(140, 140, 150);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.2);
+        doc.setTextColor(220, 215, 238);
+        doc.text('Escríbenos directamente a WhatsApp indicando el nombre de tu mascota y te orientamos.', 24, by + 14);
+        doc.text('Milkarf Nutrición Animal · Caracas, Venezuela · milkarf.com', 24, by + 19);
+
+        // Botón WhatsApp en verde lima
+        doc.setFillColor(...cGreen);
+        doc.roundedRect(122, by + 5.5, 64, 12, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(...cPurpleDark);
+        doc.text('WhatsApp: +58 412 181 2947', 154, by + 13, { align: 'center' });
+
+        // 6. SUB-PIE
+        doc.setTextColor(140, 140, 155);
         doc.setFontSize(6.8);
-        doc.text(`Documento emitido por Milkarf (milkarf.com) · Versión 2.4 (2026)`, 105, 275, { align: 'center' });
+        doc.setFont('helvetica', 'normal');
+        doc.text('Documento oficial emitido por Milkarf (milkarf.com) · Nutrición natural de grado humano · Actualizado 2026', 105, 276, { align: 'center' });
 
         doc.save('Guia_General_Transicion_Milkarf.pdf');
         window.showToast?.('Guía de transición descargada con éxito.', 'success');
