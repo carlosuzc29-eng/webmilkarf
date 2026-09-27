@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="description" content="Milkarf - Alimentación real para perros, formulada con ingredientes seleccionados y lista para servir. Calculadora nutricional y planes semanales, quincenales y mensuales.">
-    <title>Milkarf · Alimentación real, lista para servir</title>
+    <meta name="description" content="Milkarf - Alimentación Real para Mascotas, formulada con ingredientes seleccionados y lista para servir. Calculadora nutricional y planes semanales, quincenales y mensuales.">
+    <title>Milkarf | Alimentación Real para Mascotas</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="faviconn.png">
@@ -74,7 +74,7 @@
                     <div id="top-pets-icons" class="text-[10px] sm:text-xs bg-purple/10 dark:bg-purple/20 px-2 py-1 rounded-lg border border-purple/10 flex items-center gap-0.5">🐾</div>
                     <div class="flex flex-col items-start text-left">
                         <span class="text-[10px] leading-none truncate max-w-[60px] sm:max-w-[90px]" id="top-auth-text">Usuario</span>
-                        <span class="text-[9px] text-green font-black leading-none mt-1" id="top-auth-pts">0 ptos</span>
+                        <span class="text-[9px] text-green font-black leading-none mt-1 hidden" id="top-auth-pts"></span>
                     </div>
                 </div>
                 <i data-lucide="chevron-down" class="w-3 h-3 ml-1 opacity-70"></i>
@@ -140,51 +140,52 @@
                 </div>
                 <div class="flex flex-col text-left">
                     <span class="text-xl font-black tracking-tight bg-gradient-to-r from-purple-dark via-purple to-pink dark:from-white dark:via-purple-light dark:to-pink text-transparent bg-clip-text leading-tight font-display">Milkarf</span>
-                    <span class="text-[9px] font-black uppercase tracking-widest text-green-dark dark:text-green leading-none">Alimentación cruda para perros</span>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-green-dark dark:text-green leading-none">Alimentación Real para Mascotas</span>
                 </div>
             </a>
 
             <!-- Central Nav Links (5 accesos claros) -->
-            <nav class="flex items-center gap-1 bg-purple-light/70 dark:bg-darkcard/70 px-2.5 py-1.5 rounded-full border border-purple-border/40 dark:border-purple/20 shadow-inner">
-                <button onclick="window.navigateTo('view-home')" class="milkarf-nav-link" data-target="view-home">
-                    <i data-lucide="home" class="w-4 h-4"></i>
-                    <span>Inicio</span>
+            <nav class="flex items-center gap-1 bg-[#f5f1fa] dark:bg-[#1a0f30]/80 p-1.5 rounded-full border border-purple-border/40 dark:border-purple/20 shadow-xs">
+                <button onclick="window.navigateTo('view-home')" class="milkarf-nav-link active" data-target="view-home">
+                    <i data-lucide="home" class="w-4 h-4 text-purple shrink-0"></i>
+                    <span class="whitespace-nowrap">Inicio</span>
                 </button>
                 <button onclick="window.navigateTo('view-mision')" class="milkarf-nav-link" data-target="view-mision">
-                    <i data-lucide="heart" class="w-4 h-4 text-purple"></i>
-                    <span>Por qué Milkarf</span>
+                    <i data-lucide="heart" class="w-4 h-4 text-pink shrink-0"></i>
+                    <span class="whitespace-nowrap">Por qué Milkarf</span>
                 </button>
                 <button onclick="window.navigateTo('view-perros')" class="milkarf-nav-link" data-target="view-perros">
-                    <i data-lucide="beef" class="w-4 h-4 text-pink"></i>
-                    <span>Fórmulas</span>
+                    <i data-lucide="beef" class="w-4 h-4 text-purple shrink-0"></i>
+                    <span class="whitespace-nowrap">Fórmulas</span>
                 </button>
                 <button onclick="window.navigateTo('view-calc')" class="milkarf-nav-link" data-target="view-calc">
-                    <i data-lucide="scale" class="w-4 h-4 text-green"></i>
-                    <span>Calcula su porción</span>
+                    <i data-lucide="scale" class="w-4 h-4 text-[#5b6b06] dark:text-green shrink-0"></i>
+                    <span class="whitespace-nowrap">Calcula su porción</span>
                 </button>
                 <button onclick="window.navigateTo('view-faq')" class="milkarf-nav-link" data-target="view-faq">
-                    <i data-lucide="help-circle" class="w-4 h-4 text-pink"></i>
-                    <span>Ayuda</span>
+                    <i data-lucide="help-circle" class="w-4 h-4 text-pink shrink-0"></i>
+                    <span class="whitespace-nowrap">Ayuda</span>
                 </button>
             </nav>
 
             <!-- Right Actions: Mi Cuenta & Carrito -->
-            <div class="flex items-center gap-3">
-                <button id="desktop-auth-btn" data-target="view-dashboard" onclick="window.handleDesktopAuthClick()" class="h-10 flex items-center gap-2 bg-white/90 dark:bg-darkcard/90 hover:bg-purple-light dark:hover:bg-purple/20 border border-purple-border/60 dark:border-purple/30 rounded-full px-4 text-xs font-bold text-purple-dark dark:text-white transition-all active:scale-95 shadow-sm">
+            <div class="flex items-center gap-2.5">
+                <button id="desktop-auth-btn" data-target="view-dashboard" onclick="window.handleDesktopAuthClick()" class="h-10 flex items-center gap-2 bg-white/95 dark:bg-darkcard/95 hover:bg-[#f6f2fc] dark:hover:bg-purple/20 border border-purple-border/60 dark:border-purple/30 rounded-full px-4 text-xs font-extrabold text-purple-dark dark:text-white transition-all active:scale-95 shadow-xs whitespace-nowrap">
                     <div id="desktop-auth-logged-out" class="flex items-center gap-2">
-                        <i data-lucide="user" class="w-4 h-4 text-pink"></i>
-                        <span>Mi cuenta</span>
+                        <i data-lucide="user" class="w-4 h-4 text-pink shrink-0"></i>
+                        <span class="whitespace-nowrap font-extrabold">Mi cuenta</span>
                     </div>
-                    <div id="desktop-auth-logged-in" class="hidden flex items-center gap-2">
-                        <span id="desktop-auth-text" class="truncate max-w-[100px]">Usuario</span>
-                        <span id="desktop-auth-pts" class="text-[10px] text-green-dark dark:text-green font-bold">0 pts</span>
+                    <div id="desktop-auth-logged-in" class="hidden items-center gap-2">
+                        <i data-lucide="user" class="w-4 h-4 text-purple dark:text-purple-light shrink-0"></i>
+                        <span id="desktop-auth-text" class="truncate max-w-[100px] font-extrabold">Usuario</span>
+                        <span id="desktop-auth-pts" class="text-[10px] text-green-dark dark:text-green font-black hidden"></span>
                     </div>
                 </button>
 
-                <button data-target="view-cart" onclick="window.navigateTo('view-cart')" class="h-10 flex items-center gap-2 bg-purple hover:bg-purple-dark text-white rounded-full px-4 text-xs font-bold transition-all shadow-soft hover:shadow-soft-lg active:scale-95 group">
-                    <i data-lucide="shopping-cart" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
+                <button data-target="view-cart" onclick="window.navigateTo('view-cart')" class="h-10 flex items-center gap-2 bg-purple hover:bg-purple-dark text-white rounded-full px-4 text-xs font-extrabold transition-all shadow-soft hover:shadow-soft-lg active:scale-95 group whitespace-nowrap">
+                    <i data-lucide="shopping-cart" class="w-4 h-4 group-hover:scale-110 transition-transform shrink-0"></i>
                     <span>Pedido</span>
-                    <span id="desktop-cart-badge" class="min-w-[20px] h-5 px-1.5 rounded-full bg-green text-purple-dark font-bold text-[10px] flex items-center justify-center">0</span>
+                    <span id="desktop-cart-badge" class="min-w-[20px] h-5 px-1.5 rounded-full bg-green text-purple-dark font-black text-[10px] flex items-center justify-center leading-none">0</span>
                 </button>
             </div>
         </div>
@@ -208,7 +209,7 @@
                                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green opacity-75"></span>
                                     <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-dark"></span>
                                 </span>
-                    <span class="text-xs font-black tracking-wide text-purple-dark dark:text-green uppercase font-display">Alimentación cruda para perros</span>
+                    <span class="text-xs font-black tracking-wide text-purple-dark dark:text-green uppercase font-display">Alimentación Real para Mascotas</span>
                             </div>
 
                             <!-- Título Principal -->
@@ -223,7 +224,7 @@
 
                             <!-- CTAs Hero: Calcula su porción (primario) y Conocer nuestras fórmulas (secundario) -->
                             <div class="mka-access-grid w-full grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                                <button onclick="window.navigateTo('view-calc')" aria-label="Calcular la porción de tu mascota" class="mka-access flex items-center gap-3 w-full bg-purple hover:bg-purple-dark text-white rounded-2xl px-5 py-4 shadow-lg shadow-purple/25 transition-all duration-200 active:scale-[0.98] cursor-pointer group touch-target-safe">
+                                <button onclick="window.navigateTo('view-calc')" aria-label="Calcula la porción de tu mascota" class="mka-access flex items-center gap-3 w-full bg-purple hover:bg-purple-dark text-white rounded-2xl px-5 py-4 shadow-lg shadow-purple/25 transition-all duration-200 active:scale-[0.98] cursor-pointer group touch-target-safe">
                                     <span class="mka-access-icon flex items-center justify-center bg-white/15 text-green rounded-xl shrink-0">
                                         <i data-lucide="scale" class="w-5 h-5"></i>
                                     </span>
@@ -232,12 +233,12 @@
                                     </span>
                                     <i data-lucide="arrow-right" class="i-arrow shrink-0 opacity-80 transition-transform duration-200 group-hover:translate-x-1"></i>
                                 </button>
-                                <button onclick="window.navigateTo('view-perros')" aria-label="Conocer nuestras fórmulas para perros" class="mka-access flex items-center gap-3 w-full bg-white dark:bg-darkcard border-2 border-purple-border/80 hover:border-purple/40 dark:border-purple/30 text-purple-dark dark:text-white rounded-2xl px-5 py-3.5 shadow-sm transition-all duration-200 active:scale-[0.98] cursor-pointer group touch-target-safe">
+                                <button onclick="window.navigateTo('view-perros')" aria-label="Conoce nuestras fórmulas para perros" class="mka-access flex items-center gap-3 w-full bg-white dark:bg-darkcard border-2 border-purple-border/80 hover:border-purple/40 dark:border-purple/30 text-purple-dark dark:text-white rounded-2xl px-5 py-3.5 shadow-sm transition-all duration-200 active:scale-[0.98] cursor-pointer group touch-target-safe">
                                     <span class="mka-access-icon flex items-center justify-center bg-pink/10 text-pink rounded-xl shrink-0">
                                         <i data-lucide="beef" class="w-5 h-5"></i>
                                     </span>
                                     <span class="flex-1 text-left leading-tight">
-                                        <span class="mka-access-title block font-bold text-sm">Conocer nuestras fórmulas</span>
+                                        <span class="mka-access-title block font-bold text-sm">Conoce nuestras fórmulas</span>
                                     </span>
                                     <i data-lucide="arrow-right" class="i-arrow shrink-0 opacity-80 transition-transform duration-200 group-hover:translate-x-1"></i>
                                 </button>
@@ -285,11 +286,11 @@
                                 <!-- Sticker Superior Derecho -->
                                 <span class="mka-hero-sticker absolute -top-3.5 -right-2 sm:-right-3 z-30 bg-green text-purple-dark font-black text-[11px] px-3 py-1.5 rounded-full shadow-lg border-2 border-white dark:border-darkcard rotate-3 flex items-center gap-1.5 hover:rotate-0 transition-transform">
                                     <i data-lucide="check" class="w-3 h-3 text-purple-dark"></i>
-                                    <span>Ingredientes crudos</span>
+                                    <span>Ingredientes reales</span>
                                 </span>
 
                                 <span class="mka-hero-media relative block rounded-[1.8rem] overflow-hidden aspect-[4/3] sm:aspect-square bg-purple-light dark:bg-purple/10">
-                                    <img decoding="async" src="images/perro.jpg" alt="Alimentación cruda Milkarf para perros" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy">
+                                    <img decoding="async" src="images/perro.jpg" alt="Alimentación real Milkarf para perros" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy">
 
                                     <!-- Gradiente inferior para contraste -->
                                     <span class="absolute inset-0 bg-gradient-to-t from-[#0d0718]/70 via-transparent to-transparent pointer-events-none"></span>
@@ -297,7 +298,7 @@
                                     <!-- Badge Superior Izquierdo -->
                                     <span class="mka-hero-badge absolute top-3.5 left-3.5 z-20 inline-flex items-center gap-1.5 bg-white/95 dark:bg-darkcard/95 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-black text-purple-dark dark:text-white shadow-sm border border-purple-border/40 font-display">
                                         <span class="w-2 h-2 rounded-full bg-green animate-pulse"></span>
-                                        Sin cocción
+                                        Pensado para su día a día
                                     </span>
 
                                     <!-- Franja Inferior Compacta de Producto -->
@@ -448,7 +449,7 @@
                                 </button>
                                 <div class="mka-step-body" id="mka-step-body-3" role="region" aria-labelledby="mka-step-head-3">
                                     <p class="text-xs text-gray-600 dark:text-gray-300 font-normal leading-relaxed">
-                                        Revisa el resumen y continúa por WhatsApp para confirmar disponibilidad, entrega y pago.
+                                        Revisa el resumen y continúa por WhatsApp para coordinar la entrega y el pago.
                                     </p>
                                 </div>
                             </div>
@@ -556,7 +557,7 @@
                     <!-- FOOTER PROFESIONAL MILKARF -->
                     <footer class="w-full max-w-4xl mx-auto mt-20 pt-10 border-t border-purple-border/50 dark:border-purple/20 text-center flex flex-col items-center gap-6">
                         <div class="bg-purple/10 dark:bg-purple/5 text-purple-dark dark:text-purple-light px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase border border-purple/20">
-                            Alimentación cruda para perros
+                            Alimentación Real para Mascotas
                         </div>
 
                         <!-- Redes Sociales y Contacto Directo -->
@@ -591,7 +592,7 @@
                         <!-- Titularidad, Sede y Atribuciones de Licencia -->
                         <div class="text-[11px] text-gray-500 dark:text-gray-400 font-medium space-y-1 max-w-lg leading-relaxed">
                             <p class="font-bold text-purple-dark dark:text-gray-200">© 2026 Milkarf · Caracas, Venezuela. Todos los derechos reservados.</p>
-                            <p class="text-[10px]">Alimentación cruda para perros. Pedidos coordinados a través de WhatsApp.</p>
+                            <p class="text-[10px]">Alimentación Real para Mascotas. Pedidos coordinados a través de WhatsApp.</p>
                             <p class="text-[9px] text-gray-400 dark:text-gray-500 pt-1">
                                 Recursos licenciados: Tipografías Montserrat (SIL OFL) y Eloura Sans. Iconos por Lucide (ISC License). Imagen de portada generada mediante Google Gemini (IA).
                             </p>
@@ -613,11 +614,11 @@
                         <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Volver al inicio
                     </button>
                     <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple/10 text-purple dark:text-purple-light text-xs font-bold uppercase tracking-wider mt-4">
-                        <i data-lucide="heart" class="w-3.5 h-3.5 text-pink"></i> Alimentación cruda y formulación responsable
+                        <i data-lucide="heart" class="w-3.5 h-3.5 text-pink"></i> Alimentación Real para Mascotas
                     </div>
                     <h1 class="text-3xl md:text-4xl lg:text-5xl font-black text-purple-dark dark:text-white mt-2 tracking-tight font-display">Por qué Milkarf</h1>
                     <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-normal mt-1 max-w-2xl leading-relaxed">
-                        Nuestras recetas están elaboradas con ingredientes crudos, sin cocción. Ingredientes reales, formulación responsable y fácil de organizar en tu rutina.
+                        Queremos ayudarte a saber qué le das y cómo organizar sus comidas. Nuestras recetas combinan ingredientes crudos con una guía de porciones y planes que hacen más fácil tu rutina.
                     </p>
                 </div>
 
@@ -627,9 +628,9 @@
                     <div class="rounded-3xl p-6 md:p-8 bg-gradient-to-br from-purple-dark via-[#351675] to-purple text-white shadow-soft-lg relative overflow-hidden text-left border border-white/10">
                         <div class="absolute -right-8 -bottom-8 text-white/5 pointer-events-none"><i data-lucide="heart" class="w-48 h-48"></i></div>
                         <span class="text-green text-xs font-black uppercase tracking-wider font-display block mb-1">Nuestro compromiso</span>
-                        <h2 class="text-xl md:text-2xl font-black text-white mb-3">Ingredientes crudos, sin ultraprocesados</h2>
+                        <h2 class="text-xl md:text-2xl font-black text-white mb-3">Más que ingredientes: una receta con propósito.</h2>
                         <p class="text-purple-light/95 dark:text-gray-300 text-xs sm:text-sm leading-relaxed relative z-10 font-medium max-w-2xl">
-                            En Milkarf elaboramos recetas que sustituyen los alimentos ultraprocesados secos por ingredientes crudos, con alto contenido de agua natural. Cada receta está formulada con carnes magras, vísceras y vegetales frescos. Ningún ingrediente es cocido.
+                            Alimentar bien a tu mascota va más allá de mezclar carne con vegetales: las proporciones también importan. Cada receta Milkarf incluye músculo, vísceras, vegetales, fibra y los minerales que su formulación requiere, para que tengas una opción práctica al organizar sus comidas.
                         </p>
                     </div>
 
@@ -637,56 +638,41 @@
                     <div class="text-left space-y-4">
                         <div>
                             <span class="text-xs font-bold uppercase tracking-wider text-pink block font-display">En su organismo</span>
-                            <h2 class="text-2xl sm:text-3xl font-black text-purple-dark dark:text-white tracking-tight font-display">Beneficios para tu mascota y su respaldo</h2>
+                            <h2 class="text-2xl sm:text-3xl font-black text-purple-dark dark:text-white tracking-tight font-display">Beneficios para tu mascota</h2>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                             <!-- Card 1 -->
-                            <div class="bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-6 shadow-soft flex flex-col justify-between">
-                                <div>
-                                    <div class="w-10 h-10 rounded-xl bg-green/15 text-green-dark dark:text-green flex items-center justify-center mb-3">
-                                        <i data-lucide="check" class="w-5 h-5 stroke-[3]"></i>
-                                    </div>
-                                    <h3 class="text-base font-bold text-purple-dark dark:text-white mb-1.5">Digestión más favorable</h3>
-                                    <p class="text-xs text-gray-600 dark:text-gray-300 font-normal leading-relaxed">
-                                        Sin harinas de desecho ni carbohidratos de relleno. Los ingredientes crudos y enteros pueden favorecer heces más firmes y menor volumen.
-                                    </p>
+                            <div class="bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-6 shadow-soft flex flex-col">
+                                <div class="w-10 h-10 rounded-xl bg-green/15 text-green-dark dark:text-green flex items-center justify-center mb-3">
+                                    <i data-lucide="check" class="w-5 h-5 stroke-[3]"></i>
                                 </div>
-                                <div class="mt-4 pt-3 border-t border-purple-border/20 text-[11px] text-gray-500 dark:text-gray-400">
-                                    <strong>Respaldo:</strong> Proteínas magras y fibra vegetal asimilable que apoyan una microbiota intestinal sana.
-                                </div>
+                                <h3 class="text-base font-bold text-purple-dark dark:text-white mb-1.5">Digestión más ligera</h3>
+                                <p class="text-xs text-gray-600 dark:text-gray-300 font-normal leading-relaxed">
+                                    Sin harinas de desecho ni carbohidratos de relleno. Ingredientes crudos que pueden favorecer heces más firmes y de menor volumen.
+                                </p>
                             </div>
 
                             <!-- Card 2 -->
-                            <div class="bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-6 shadow-soft flex flex-col justify-between">
-                                <div>
-                                    <div class="w-10 h-10 rounded-xl bg-pink/15 text-pink flex items-center justify-center mb-3">
-                                        <i data-lucide="sparkles" class="w-5 h-5"></i>
-                                    </div>
-                                    <h3 class="text-base font-bold text-purple-dark dark:text-white mb-1.5">Pelaje sano y humedad natural</h3>
-                                    <p class="text-xs text-gray-600 dark:text-gray-300 font-normal leading-relaxed">
-                                        Aporte equilibrado de ácidos grasos naturales y una hidratación propia del ~70%, favoreciendo el cuidado de la barrera cutánea.
-                                    </p>
+                            <div class="bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-6 shadow-soft flex flex-col">
+                                <div class="w-10 h-10 rounded-xl bg-pink/15 text-pink flex items-center justify-center mb-3">
+                                    <i data-lucide="sparkles" class="w-5 h-5"></i>
                                 </div>
-                                <div class="mt-4 pt-3 border-t border-purple-border/20 text-[11px] text-gray-500 dark:text-gray-400">
-                                    <strong>Respaldo:</strong> Semillas de chía ricas en omega y humedad biológica que previene el estrés renal.
-                                </div>
+                                <h3 class="text-base font-bold text-purple-dark dark:text-white mb-1.5">Piel y pelaje</h3>
+                                <p class="text-xs text-gray-600 dark:text-gray-300 font-normal leading-relaxed">
+                                    Ácidos grasos omega-3 de cadena larga provenientes de pescado, que contribuyen al cuidado de su piel y pelaje.
+                                </p>
                             </div>
 
                             <!-- Card 3 -->
-                            <div class="bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-6 shadow-soft flex flex-col justify-between">
-                                <div>
-                                    <div class="w-10 h-10 rounded-xl bg-purple/15 text-purple dark:text-purple-light flex items-center justify-center mb-3">
-                                        <i data-lucide="shield-check" class="w-5 h-5"></i>
-                                    </div>
-                                    <h3 class="text-base font-bold text-purple-dark dark:text-white mb-1.5">Vitalidad y energía estable</h3>
-                                    <p class="text-xs text-gray-600 dark:text-gray-300 font-normal leading-relaxed">
-                                        Nutrición densa en micronutrientes reales que entrega energía sostenida a lo largo del día sin picos glucémicos.
-                                    </p>
+                            <div class="bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-6 shadow-soft flex flex-col">
+                                <div class="w-10 h-10 rounded-xl bg-purple/15 text-purple dark:text-purple-light flex items-center justify-center mb-3">
+                                    <i data-lucide="shield-check" class="w-5 h-5"></i>
                                 </div>
-                                <div class="mt-4 pt-3 border-t border-purple-border/20 text-[11px] text-gray-500 dark:text-gray-400">
-                                    <strong>Respaldo:</strong> Incluye vísceras (corazón, hígado) ricas en hierro y vitaminas del complejo B.
-                                </div>
+                                <h3 class="text-base font-bold text-purple-dark dark:text-white mb-1.5">Estructura y energía</h3>
+                                <p class="text-xs text-gray-600 dark:text-gray-300 font-normal leading-relaxed">
+                                    Proteína de origen animal y minerales que contribuyen al mantenimiento de sus músculos, huesos y dientes, como parte de su alimentación diaria.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -818,7 +804,7 @@
                         </button>
                         <button onclick="window.navigateTo('view-perros')" class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-white dark:bg-darkcard border-2 border-purple-border hover:border-purple text-purple-dark dark:text-white font-bold text-sm py-3.5 px-7 rounded-2xl shadow-sm transition-all active:scale-98 cursor-pointer touch-target-safe">
                             <i data-lucide="beef" class="w-4 h-4 text-pink"></i>
-                            <span>Conocer las fórmulas</span>
+                            <span>Conoce nuestras fórmulas</span>
                         </button>
                     </div>
 
@@ -856,7 +842,7 @@
 
                 <div class="max-w-md w-full mb-8 text-center select-none">
                     <div class="text-3xl font-black text-purple dark:text-white uppercase tracking-tight">Milkarf<span class="text-green">.</span></div>
-                    <div class="text-[10px] font-bold tracking-[0.2em] text-purple/40 dark:text-gray-500 uppercase mt-1">Alimentación cruda para perros</div>
+                    <div class="text-[10px] font-bold tracking-[0.2em] text-purple/40 dark:text-gray-500 uppercase mt-1">Alimentación Real para Mascotas</div>
                     <h1 class="text-2xl font-black text-purple-dark dark:text-white mt-4">Calculadora de porción y planes</h1>
                 </div>
 
@@ -1229,7 +1215,7 @@
                                     </table>
                                 </div>
                             </div>
-                            <div class="space-y-4 pt-1">
+                            <div class="pt-2">
                                 <div class="bg-purple-light/60 dark:bg-[#0d0718] p-3.5 rounded-2xl border border-purple-border/40 dark:border-purple/20 text-left">
                                     <div class="flex items-center justify-between text-xs font-bold text-purple-dark dark:text-white mb-1">
                                         <span>Presentaciones oficiales:</span>
@@ -1238,11 +1224,6 @@
                                     <p class="text-[11px] text-gray-500 dark:text-gray-400">
                                         Empacadas al vacío y congeladas. El sistema calcula las porciones exactas para 7, 15 o 30 días con hasta 10% de descuento.
                                     </p>
-                                </div>
-                                <div class="border-t border-purple-border/30 dark:border-purple/20 pt-3">
-                                    <button onclick="window.armarPlanDesdeCatalogo('pollo')" class="w-full flex items-center justify-center gap-2.5 bg-purple hover:bg-purple-dark text-white font-black text-sm py-4 px-5 rounded-2xl shadow-soft hover:shadow-soft-lg transition-all active:scale-[0.98] touch-target-safe cursor-pointer">
-                                        <i data-lucide="scale" class="w-4 h-4 text-green-light"></i> Calcula su porción con Pollo
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1295,7 +1276,7 @@
                                     </table>
                                 </div>
                             </div>
-                            <div class="space-y-4 pt-1">
+                            <div class="pt-2">
                                 <div class="bg-purple-light/60 dark:bg-[#0d0718] p-3.5 rounded-2xl border border-purple-border/40 dark:border-purple/20 text-left">
                                     <div class="flex items-center justify-between text-xs font-bold text-purple-dark dark:text-white mb-1">
                                         <span>Presentaciones oficiales:</span>
@@ -1305,29 +1286,17 @@
                                         Empacadas al vacío y congeladas. El sistema calcula las porciones exactas para 7, 15 o 30 días con hasta 10% de descuento.
                                     </p>
                                 </div>
-                                <div class="border-t border-purple-border/30 dark:border-purple/20 pt-3">
-                                    <button onclick="window.armarPlanDesdeCatalogo('res')" class="w-full flex items-center justify-center gap-2.5 bg-purple hover:bg-purple-dark text-white font-black text-sm py-4 px-5 rounded-2xl shadow-soft hover:shadow-soft-lg transition-all active:scale-[0.98] touch-target-safe cursor-pointer">
-                                        <i data-lucide="scale" class="w-4 h-4 text-green-light"></i> Calcula su porción con Carne
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Banner Plan Mixto -->
-                <div class="w-full max-w-5xl mb-8 bg-gradient-to-r from-purple/15 via-pink/15 to-green/15 dark:from-purple/20 dark:via-pink/20 dark:to-green/20 rounded-3xl p-6 md:p-7 border border-purple-border/40 dark:border-purple/30 text-left flex flex-col md:flex-row items-center justify-between gap-5 shadow-sm">
-                    <div class="space-y-1.5 flex-1">
-                        <div class="inline-flex items-center gap-1.5 text-xs font-black text-pink uppercase tracking-wider">
-                            <i data-lucide="sparkles" class="w-4 h-4"></i> Rotación equilibrada
-                        </div>
-                        <h3 class="text-lg md:text-xl font-black text-purple-dark dark:text-white">Plan Mixto: 50% Pollo + 50% Carne</h3>
-                        <p class="text-xs md:text-sm text-gray-600 dark:text-gray-300">
-                            Combina ambas fórmulas en presentaciones de 250 g y 550 g para ofrecer una nutrición variada en aminoácidos sin alterar la rutina de porciones de tu perro.
-                        </p>
-                    </div>
-                    <button onclick="window.armarPlanDesdeCatalogo('mixto')" class="px-6 py-3.5 bg-pink hover:bg-pink-dark text-white font-black text-xs rounded-2xl shadow-md transition-all active:scale-95 shrink-0 flex items-center gap-2 cursor-pointer">
-                        <i data-lucide="scale" class="w-4 h-4"></i> Calcula su porción con Plan Mixto
+                <!-- CTA ÚNICO COMÚN A AMBAS FÓRMULAS -->
+                <div class="w-full max-w-5xl flex justify-center mb-10">
+                    <button onclick="window.navigateTo('view-calc'); window.goToFlowStep?.(1);" class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-purple hover:bg-purple-dark text-white font-black text-sm py-4 px-8 rounded-2xl shadow-soft hover:shadow-soft-lg transition-all active:scale-98 cursor-pointer touch-target-safe">
+                        <i data-lucide="scale" class="w-4 h-4 text-green"></i>
+                        <span>Calcula su plan</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
                     </button>
                 </div>
 
@@ -1572,18 +1541,18 @@
                     <button class="nav-btn flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300" data-target="view-home">
                         <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al inicio
                     </button>
-                    <h2 class="text-3xl font-extrabold text-purple-dark dark:text-white mt-4">Perfil y Milkarf Points</h2>
+                    <h2 class="text-3xl font-extrabold text-purple-dark dark:text-white mt-4">Perfil y Milkarf VIP</h2>
                 </div>
 
                 <div class="max-w-2xl w-full bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-2xl p-6 shadow-soft-lg text-left">
                     
                     <!-- Tarjeta Virtual -->
                     <div class="bg-gradient-to-br from-purple-dark to-pink dark:from-[#2e1060] dark:to-[#b31c71] p-6 rounded-2xl text-white shadow-soft-lg relative overflow-hidden mb-6">
-                        <div class="absolute -right-4 -bottom-4 opacity-20 transform rotate-12"><i data-lucide="credit-card" class="w-40 h-40"></i></div>
+                        <div class="absolute -right-4 -bottom-4 opacity-20 transform rotate-12"><i data-lucide="crown" class="w-40 h-40"></i></div>
                         
                         <div class="relative z-10 flex justify-between items-start mb-6">
                             <div>
-                                <div class="text-[10px] font-bold tracking-wider uppercase opacity-80 mb-1">Membresía Milkarf</div>
+                                <div class="text-[10px] font-bold tracking-wider uppercase opacity-80 mb-1">Membresía</div>
                                 <h3 class="text-2xl font-extrabold leading-tight" id="ben-user-name">Usuario Invitado</h3>
                             </div>
                             <div class="w-11 h-11 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-white border border-white/30 shadow-sm">
@@ -1592,22 +1561,16 @@
                         </div>
                         
                         <div class="relative z-10">
-                            <div class="flex justify-between items-end mb-2">
+                            <div class="flex justify-between items-end">
                                 <div>
-                                    <p class="text-[10px] uppercase tracking-wider font-bold opacity-80">Nivel actual</p>
-                                    <p class="text-lg font-bold" id="ben-user-level">Cachorro 🐾</p>
+                                    <p class="text-[10px] uppercase tracking-wider font-bold opacity-80">Programa</p>
+                                    <p class="text-lg font-bold" id="ben-user-level">Milkarf VIP</p>
                                 </div>
-                                <div class="text-right flex flex-col items-end">
-                                    <p class="text-[10px] uppercase tracking-wider font-bold opacity-80 mb-0.5">Puntos disponibles</p>
-                                    <p class="text-3xl font-extrabold leading-none"><span id="ben-user-pts">0</span> <span class="text-sm opacity-80 font-normal">puntos</span></p>
+                                <div id="ben-user-pts-wrap" class="text-right flex flex-col items-end hidden">
+                                    <p class="text-[10px] uppercase tracking-wider font-bold opacity-80 mb-0.5">Tus puntos</p>
+                                    <p class="text-3xl font-extrabold leading-none"><span id="ben-user-pts"></span> <span class="text-sm opacity-80 font-normal">puntos</span></p>
                                 </div>
                             </div>
-                            <!-- Progress Bar -->
-                            <div class="w-full bg-white/20 rounded-full h-2 mt-2">
-                                <div class="bg-green h-2 rounded-full transition-all duration-1000" id="ben-progress" style="width: 0%"></div>
-                            </div>
-                            <p class="text-[9px] text-right mt-1 font-semibold opacity-80" id="ben-pts-next">Inicia sesión para acumular puntos con tus compras</p>
-                            <div id="points-progress-detail" class="mt-4 grid grid-cols-3 gap-2 text-center"></div>
                         </div>
                     </div>
 
@@ -1616,7 +1579,7 @@
                             <div class="w-10 h-10 rounded-xl bg-green/20 text-green-dark dark:text-green flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="map" class="w-5 h-5"></i></div>
                             <div>
                                 <h4 class="text-sm font-bold text-purple-dark dark:text-white">Bienvenido a tu cuenta Milkarf</h4>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium leading-relaxed mt-1">Desde tu perfil puedes registrar a tus mascotas, guardar sus porciones orientativas, consultar el estado de tus pedidos y canjear tus puntos acumulados.</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium leading-relaxed mt-1">Desde tu perfil puedes registrar a tus mascotas, guardar sus porciones orientativas y consultar el estado de tus pedidos.</p>
                                 <div class="flex flex-wrap gap-2 mt-3">
                                     <button onclick="window.navigateTo('view-calc')" class="bg-purple hover:bg-purple-dark text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-colors">Calcula su porción</button>
                                     <button onclick="window.navigateTo('view-perros')" class="bg-white dark:bg-darkcard text-purple dark:text-white border border-purple/20 text-xs font-bold px-3.5 py-2 rounded-xl transition-colors">Ver fórmulas</button>
@@ -1664,70 +1627,23 @@
                         </div>
                         <div id="user-orders-list" class="hidden"></div>
                     </div>
-                    <!-- Acceso a canje de puntos -->
+                    <!-- Apartado Milkarf VIP -->
                     <div class="mt-6 border-t border-purple/10 pt-6">
-                        <div class="bg-green/10 dark:bg-green/5 border border-green/25 rounded-2xl p-5 text-left shadow-soft">
-                            <div class="flex items-start gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-green/20 text-green-dark dark:text-green flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="gift" class="w-5 h-5"></i></div>
+                        <div class="bg-purple-light/70 dark:bg-purple/10 border border-purple-border/40 dark:border-purple/20 rounded-2xl p-5 text-left shadow-soft">
+                            <div class="flex items-start gap-3.5">
+                                <div class="w-10 h-10 rounded-xl bg-purple/10 text-purple dark:text-purple-light flex items-center justify-center shrink-0 mt-0.5">
+                                    <i data-lucide="crown" class="w-5 h-5 text-pink"></i>
+                                </div>
                                 <div class="flex-1 min-w-0">
-                                    <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider">Beneficios y canje de puntos</h4>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium leading-relaxed mt-1">Explora los beneficios disponibles y canjea los puntos acumulados en tus pedidos.</p>
-                                    <button type="button" onclick="window.navigateTo('view-redeems'); window.renderRedeemItems?.(); window.startUserRedeemsListener?.(true);" class="mt-4 w-full bg-green hover:bg-[#a6b621] text-purple-dark font-bold text-xs tracking-wider py-3 rounded-xl shadow-soft transition-all active:scale-[0.98]">Ver beneficios y canjear puntos</button>
+                                    <h4 class="text-base font-extrabold text-purple-dark dark:text-white">Milkarf VIP</h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium leading-relaxed mt-1">Estamos preparando nuestro programa de beneficios. Pronto te contaremos cómo funcionará.</p>
+                                    <div id="dashboard-vip-points-wrap" class="hidden mt-3 pt-3 border-t border-purple/10">
+                                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Tus puntos</p>
+                                        <p class="text-xl font-black text-purple-dark dark:text-white mt-0.5"><span id="dashboard-vip-points-val"></span> <span class="text-xs font-semibold text-gray-500">puntos</span></p>
+                                    </div>
+                                    <button type="button" onclick="window.navigateTo('view-redeems'); window.renderRedeemItems?.();" class="mt-4 w-full bg-purple hover:bg-purple-dark text-white font-bold text-xs tracking-wider py-3 rounded-xl shadow-soft transition-all active:scale-[0.98]">Conocer más sobre Milkarf VIP</button>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Lista de Niveles -->
-                    <div class="space-y-4 mt-8 pt-6 border-t border-purple/10">
-                        <div class="flex items-start gap-3">
-                            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple to-pink text-white flex items-center justify-center shadow-lg shrink-0">
-                                <i data-lucide="sparkles" class="w-5 h-5 text-green"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-base font-black text-purple-dark dark:text-white tracking-tight">Programa Milkarf Points</h4>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-1">Tus compras también suman. Acumula puntos con tus pedidos y cámbialos por los beneficios disponibles según tu nivel.</p>
-                            </div>
-                        </div>
-
-                        <div class="bg-white dark:bg-[#0d0718] p-4 rounded-2xl border border-purple-border/50 dark:border-purple/20 shadow-sm">
-                            <h5 class="text-[10px] font-black uppercase tracking-widest text-pink mb-3">Niveles del programa</h5>
-                            <div class="space-y-2 text-xs font-bold text-purple-dark dark:text-gray-200">
-                                <p>🐶 Cachorro (0 a 100 puntos): <span class="text-gray-500 dark:text-gray-400 font-semibold">1 punto por cada $1 en compras</span></p>
-                                <p>💛 Consentido (101 a 499 puntos): <span class="text-gray-500 dark:text-gray-400 font-semibold">1.25 puntos por cada $1 en compras</span></p>
-                                <p>👑 Milkarf VIP (500 puntos o más): <span class="text-gray-500 dark:text-gray-400 font-semibold">1.5 puntos por cada $1 en compras</span></p>
-                            </div>
-                            <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium leading-relaxed mt-4 bg-purple-light/70 dark:bg-purple/10 p-3 rounded-xl border border-purple-border/40 dark:border-purple/20">Subes de nivel de forma permanente conforme acumulas compras. Al canjear tus puntos por beneficios, tu nivel de miembro se conserva intacto.</p>
-                        </div>
-                        
-                        <div class="bg-purple-light dark:bg-[#0d0718] p-4 rounded-xl border border-purple-border/50 dark:border-purple/20 space-y-3">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-green/20 flex items-center justify-center text-green-dark font-black text-xl shrink-0">🐶</div>
-                                <div>
-                                    <h5 class="font-black text-purple-dark dark:text-white text-sm">Cachorro (Nivel 1)</h5>
-                                    <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium leading-tight mt-1">Guía de transición personalizada, asesoría nutricional y acumulación base 1x en todas tus compras.</p>
-                                </div>
-                            </div>
-                            <hr class="border-purple-border/30 dark:border-purple/10">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-pink/10 flex items-center justify-center text-pink font-black text-xl shrink-0">💛</div>
-                                <div>
-                                    <h5 class="font-black text-pink-dark dark:text-pink text-sm">Consentido (Nivel 2)</h5>
-                                    <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium leading-tight mt-1">Detalle especial en el mes de cumpleaños de tu mascota y recordatorio de reposición por WhatsApp. Acumulación 1.25x.</p>
-                                </div>
-                            </div>
-                            <hr class="border-purple-border/30 dark:border-purple/10">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-purple/10 flex items-center justify-center text-purple font-black text-xl shrink-0">👑</div>
-                                <div>
-                                    <h5 class="font-black text-purple-dark dark:text-white text-sm">Milkarf VIP (Nivel 3)</h5>
-                                    <p class="text-[11px] text-gray-500 dark:text-gray-400 font-medium leading-tight mt-1">Entrega sin costo en zonas urbanas cubiertas en pedidos mayores a $40 y acceso preferencial a nuevos lanzamientos. Acumulación 1.5x.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-green/10 dark:bg-green/5 border border-green/25 rounded-2xl p-4 mt-6">
-                            <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider flex items-center gap-2"><i data-lucide="stethoscope" class="w-4 h-4 text-green-dark dark:text-green"></i> Recomendación veterinaria validada</h4>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-2">Recibe <strong class="text-purple-dark dark:text-white">20 puntos</strong> adicionales por recomendación de tu médico veterinario validada por el equipo de Milkarf. Beneficio único aplicable una sola vez por usuario tras confirmación administrativa.</p>
                         </div>
                     </div>
                 </div>
@@ -1737,31 +1653,45 @@
         </section>
 
 
-        <!-- VISTA CANJE DE PUNTOS -->
+        <!-- VISTA MILKARF VIP -->
         <section id="view-redeems" class="view next">
             <div class="view-wrapper">
                 <div class="max-w-2xl w-full mb-6">
                     <button class="nav-btn flex items-center gap-2 font-bold px-6 py-3 rounded-full border border-purple text-purple dark:text-white dark:border-purple/30 hover:bg-purple hover:text-white transition-all duration-300" data-target="view-dashboard">
                         <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al perfil
                     </button>
-                    <h2 class="text-3xl font-extrabold text-purple-dark dark:text-white mt-4">Canje de beneficios</h2>
-                    <p class="text-xs font-semibold text-pink uppercase tracking-wider mt-1">Beneficios exclusivos para miembros Milkarf</p>
+                    <h2 class="text-3xl font-extrabold text-purple-dark dark:text-white mt-4">Milkarf VIP</h2>
+                    <p class="text-xs font-semibold text-pink uppercase tracking-wider mt-1">Programa de beneficios y fidelidad</p>
                 </div>
                 <div class="max-w-2xl w-full bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-2xl p-6 shadow-soft-lg text-left">
-                    <div class="mt-6 border-t border-purple/10 pt-6">
-                        <h4 class="text-sm font-extrabold text-purple-dark dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
-                            <i data-lucide="gift" class="w-5 h-5 text-pink"></i> Beneficios disponibles para canje
-                        </h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 font-medium leading-relaxed mb-4">Utiliza tus puntos disponibles para solicitar productos y beneficios. Tu solicitud se enviará por WhatsApp para coordinarla con tu próximo pedido.</p>
-                        <div id="redeem-items-list" class="grid grid-cols-1 gap-3">
-                            <p class="text-xs text-gray-500 font-medium">Inicia sesión para ver los beneficios disponibles.</p>
+                    <div class="space-y-4">
+                        <div class="p-5 rounded-2xl bg-purple-light/70 dark:bg-purple/10 border border-purple-border/40 dark:border-purple/20">
+                            <div class="flex items-start gap-3.5">
+                                <div class="w-10 h-10 rounded-xl bg-purple/15 text-purple dark:text-purple-light flex items-center justify-center shrink-0 mt-0.5">
+                                    <i data-lucide="crown" class="w-5 h-5 text-pink"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-base font-black text-purple-dark dark:text-white">Milkarf VIP</h3>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium leading-relaxed mt-1">Estamos preparando nuestro programa de beneficios. Pronto te contaremos cómo funcionará.</p>
+                                    
+                                    <div id="redeem-user-points-block" class="hidden mt-4 pt-3 border-t border-purple-border/30 dark:border-purple/20">
+                                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Tus puntos</p>
+                                        <p class="text-2xl font-black text-purple-dark dark:text-white mt-0.5"><span id="redeem-user-points-val"></span> <span class="text-xs font-semibold text-gray-500">puntos</span></p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mt-5 bg-purple-light/70 dark:bg-purple/10 rounded-2xl border border-purple-border/40 dark:border-purple/20 p-4">
+
+                        <!-- Contenedor dinámico (oculto, sin catálogos ni canje) -->
+                        <div id="redeem-items-list" class="hidden"></div>
+
+                        <!-- Historial de canjes previos (solo visible si el usuario tiene registros pasados) -->
+                        <div id="user-redeems-history-card" class="hidden mt-5 bg-purple-light/50 dark:bg-purple/10 rounded-2xl border border-purple-border/40 dark:border-purple/20 p-4">
                             <div class="flex items-center justify-between gap-3 mb-3">
-                                <h5 class="text-xs font-bold text-purple-dark dark:text-white flex items-center gap-2"><i data-lucide="history" class="w-4 h-4 text-green"></i> Mis canjes solicitados</h5>
+                                <h5 class="text-xs font-bold text-purple-dark dark:text-white flex items-center gap-2"><i data-lucide="history" class="w-4 h-4 text-green"></i> Historial de canjes previos</h5>
                                 <button type="button" onclick="window.startUserRedeemsListener(true)" class="text-[10px] font-bold text-purple bg-white dark:bg-darkcard border border-purple/20 px-2.5 py-1.5 rounded-lg">Actualizar</button>
                             </div>
-                            <div id="user-redeems-history" class="space-y-2"><p class="text-xs text-gray-500 font-medium">Tus solicitudes de canje aparecerán aquí.</p></div>
+                            <div id="user-redeems-history" class="space-y-2"></div>
                         </div>
                     </div>
                 </div>

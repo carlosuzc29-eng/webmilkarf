@@ -1895,31 +1895,41 @@ window.actualizarUIAuth = function () {
             return;
         }
 
-
         const primerNombre = window.currentUser.displayName ? window.currentUser.displayName.split(' ')[0] : (window.currentUser.email ? window.currentUser.email.split('@')[0] : 'Usuario');
-        const puntosDisp = window.currentUser.data?.puntos || 0;
-        const puntosHist = window.currentUser.data?.puntos_historicos || puntosDisp;
-        const levelInfo = window.getLevelInfo(puntosHist);
+        const isRegisteredAndReal = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email);
+        const hasRealPoints = Boolean(isRegisteredAndReal && window.currentUser.data && typeof window.currentUser.data.puntos === 'number' && !isNaN(window.currentUser.data.puntos));
+        const puntosDisp = hasRealPoints ? window.currentUser.data.puntos : null;
         const mascotas = window.currentUser.data?.mascotas || [];
 
         if (loggedOutMenu) loggedOutMenu.classList.add('hidden');
         if (loggedInMenu) loggedInMenu.classList.remove('hidden');
 
-        if (topLoggedOut) topLoggedOut.classList.add('hidden');
-        if (topLoggedIn) topLoggedIn.classList.remove('hidden');
-        if (dLoggedOut) dLoggedOut.classList.add('hidden');
-        if (dLoggedIn) dLoggedIn.classList.remove('hidden');
+        if (topLoggedOut) { topLoggedOut.classList.add('hidden'); topLoggedOut.classList.remove('flex'); }
+        if (topLoggedIn) { topLoggedIn.classList.remove('hidden'); topLoggedIn.classList.add('flex'); }
+        if (dLoggedOut) { dLoggedOut.classList.add('hidden'); dLoggedOut.classList.remove('flex'); }
+        if (dLoggedIn) { dLoggedIn.classList.remove('hidden'); dLoggedIn.classList.add('flex'); }
 
         if (dropName) dropName.textContent = primerNombre;
         if (topText) topText.textContent = primerNombre;
         if (dText) dText.textContent = primerNombre;
 
         if (topPts) {
-            topPts.textContent = puntosDisp + ' ptos';
-            topPts.classList.remove('hidden');
+            if (hasRealPoints) {
+                topPts.textContent = puntosDisp + ' ptos';
+                topPts.classList.remove('hidden');
+            } else {
+                topPts.classList.add('hidden');
+                topPts.textContent = '';
+            }
         }
         if (dPts) {
-            dPts.textContent = puntosDisp + ' pts';
+            if (hasRealPoints) {
+                dPts.textContent = puntosDisp + ' pts';
+                dPts.classList.remove('hidden');
+            } else {
+                dPts.classList.add('hidden');
+                dPts.textContent = '';
+            }
         }
 
         if (topPetsIcons) {
@@ -1934,21 +1944,34 @@ window.actualizarUIAuth = function () {
         const benUserName = document.getElementById('ben-user-name');
         if (benUserName) benUserName.textContent = primerNombre;
         const benUserLevel = document.getElementById('ben-user-level');
-        if (benUserLevel) benUserLevel.textContent = levelInfo.nombre;
+        if (benUserLevel) benUserLevel.textContent = 'Milkarf VIP';
+        const benUserPtsWrap = document.getElementById('ben-user-pts-wrap');
         const benUserPts = document.getElementById('ben-user-pts');
-        if (benUserPts) benUserPts.textContent = puntosDisp;
-
-        let nextMilestone = puntosHist >= 500 ? "Max" : (puntosHist > 100 ? 500 : 101);
-        const benProgress = document.getElementById('ben-progress');
-        const benPtsNext = document.getElementById('ben-pts-next');
-
-        if (nextMilestone !== "Max") {
-            if (benProgress) benProgress.style.width = Math.min((puntosHist / nextMilestone) * 100, 100) + '%';
-            if (benPtsNext) benPtsNext.textContent = `Puntos Históricos: ${puntosHist} (Faltan ${nextMilestone - puntosHist} para subir de nivel)`;
-        } else {
-            if (benProgress) benProgress.style.width = '100%';
-            if (benPtsNext) benPtsNext.textContent = `Puntos Históricos: ${puntosHist} (¡Nivel Máximo Alcanzado!)`;
+        if (benUserPtsWrap && benUserPts) {
+            if (hasRealPoints) {
+                benUserPts.textContent = puntosDisp;
+                benUserPtsWrap.classList.remove('hidden');
+            } else {
+                benUserPts.textContent = '';
+                benUserPtsWrap.classList.add('hidden');
+            }
         }
+        const dashboardVipPointsWrap = document.getElementById('dashboard-vip-points-wrap');
+        const dashboardVipPointsVal = document.getElementById('dashboard-vip-points-val');
+        if (dashboardVipPointsWrap && dashboardVipPointsVal) {
+            if (hasRealPoints) {
+                dashboardVipPointsVal.textContent = puntosDisp;
+                dashboardVipPointsWrap.classList.remove('hidden');
+            } else {
+                dashboardVipPointsVal.textContent = '';
+                dashboardVipPointsWrap.classList.add('hidden');
+            }
+        }
+
+        const benProgress = document.getElementById('ben-progress');
+        if (benProgress) benProgress.parentElement?.classList.add('hidden');
+        const benPtsNext = document.getElementById('ben-pts-next');
+        if (benPtsNext) benPtsNext.classList.add('hidden');
 
         const dashboardPetsList = document.getElementById('dashboard-pets-list');
         const btnAddPetView = document.getElementById('btn-add-pet-view');
@@ -1979,21 +2002,32 @@ window.actualizarUIAuth = function () {
     } else {
         if (loggedOutMenu) loggedOutMenu.classList.remove('hidden');
         if (loggedInMenu) loggedInMenu.classList.add('hidden');
-        if (topLoggedOut) topLoggedOut.classList.remove('hidden');
-        if (topLoggedIn) topLoggedIn.classList.add('hidden');
-        if (dLoggedOut) dLoggedOut.classList.remove('hidden');
-        if (dLoggedIn) dLoggedIn.classList.add('hidden');
+        if (topLoggedOut) { topLoggedOut.classList.remove('hidden'); topLoggedOut.classList.add('flex'); }
+        if (topLoggedIn) { topLoggedIn.classList.add('hidden'); topLoggedIn.classList.remove('flex'); }
+        if (dLoggedOut) { dLoggedOut.classList.remove('hidden'); dLoggedOut.classList.add('flex'); }
+        if (dLoggedIn) { dLoggedIn.classList.add('hidden'); dLoggedIn.classList.remove('flex'); }
+
+        if (topPts) { topPts.classList.add('hidden'); topPts.textContent = ''; }
+        if (dPts) { dPts.classList.add('hidden'); dPts.textContent = ''; }
 
         const benUserName = document.getElementById('ben-user-name');
         if (benUserName) benUserName.textContent = 'Usuario Invitado';
         const benUserLevel = document.getElementById('ben-user-level');
-        if (benUserLevel) benUserLevel.textContent = 'Cachorro 🐾';
+        if (benUserLevel) benUserLevel.textContent = 'Milkarf VIP';
+        const benUserPtsWrap = document.getElementById('ben-user-pts-wrap');
         const benUserPts = document.getElementById('ben-user-pts');
-        if (benUserPts) benUserPts.textContent = '0';
+        if (benUserPtsWrap) benUserPtsWrap.classList.add('hidden');
+        if (benUserPts) benUserPts.textContent = '';
+        const dashboardVipPointsWrap = document.getElementById('dashboard-vip-points-wrap');
+        const dashboardVipPointsVal = document.getElementById('dashboard-vip-points-val');
+        if (dashboardVipPointsWrap) dashboardVipPointsWrap.classList.add('hidden');
+        if (dashboardVipPointsVal) dashboardVipPointsVal.textContent = '';
+        const redeemUserPointsBlock = document.getElementById('redeem-user-points-block');
+        if (redeemUserPointsBlock) redeemUserPointsBlock.classList.add('hidden');
         const benPtsNext = document.getElementById('ben-pts-next');
-        if (benPtsNext) benPtsNext.textContent = 'Inicia sesión para ganar puntos';
+        if (benPtsNext) benPtsNext.classList.add('hidden');
         const benProgress = document.getElementById('ben-progress');
-        if (benProgress) benProgress.style.width = '0%';
+        if (benProgress) benProgress.parentElement?.classList.add('hidden');
 
         const dashboardPetsList = document.getElementById('dashboard-pets-list');
         if (dashboardPetsList) dashboardPetsList.innerHTML = `<p class="text-xs text-gray-500 font-medium">Inicia sesión para ver y registrar a tus mascotas.</p>`;
@@ -3779,33 +3813,43 @@ window.procesarSumarPuntos = async function () {
 };
 
 window.renderRedeemItems = function () {
-    const container = document.getElementById('redeem-items-list');
-    if (!container) return;
     const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email) && !window.isAdmin;
-    if (!isLogged) {
-        container.innerHTML = '<p class="text-xs text-gray-500 font-medium bg-white dark:bg-darkcard rounded-xl p-3 border border-purple-border/30">Inicia sesión para ver beneficios disponibles y canjear tus puntos.</p>';
-        return;
+    const hasRealPoints = Boolean(isLogged && window.currentUser.data && typeof window.currentUser.data.puntos === 'number' && !isNaN(window.currentUser.data.puntos));
+    const pts = hasRealPoints ? window.currentUser.data.puntos : null;
+
+    const block = document.getElementById('redeem-user-points-block');
+    const val = document.getElementById('redeem-user-points-val');
+    if (block && val) {
+        if (hasRealPoints) {
+            val.textContent = pts;
+            block.classList.remove('hidden');
+        } else {
+            val.textContent = '';
+            block.classList.add('hidden');
+        }
     }
-    const pts = Number(window.currentUser.data?.puntos || 0);
-    container.innerHTML = window.REDEEM_ITEMS.map(item => {
-        const canUse = pts >= item.points;
-        return `
-                    <div class="bg-white dark:bg-darkcard rounded-2xl border border-purple-border/30 dark:border-purple/20 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div class="text-left min-w-0">
-                            <h5 class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(item.name)}</h5>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-1">${window.escapeHTML(item.benefit)}</p>
-                            <p class="text-[10px] font-black text-pink uppercase tracking-widest mt-2">${item.points} ptos</p>
-                        </div>
-                        <button type="button" onclick="window.canjearPuntosUsuario('${item.id}')" class="shrink-0 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 ${canUse ? 'bg-green text-purple-dark hover:bg-[#a6b621]' : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'}" ${canUse ? '' : 'disabled'}>
-                            Canjear
-                        </button>
-                    </div>`;
-    }).join('');
-    window.refreshIcons?.(container);
+
+    const dashBlock = document.getElementById('dashboard-vip-points-wrap');
+    const dashVal = document.getElementById('dashboard-vip-points-val');
+    if (dashBlock && dashVal) {
+        if (hasRealPoints) {
+            dashVal.textContent = pts;
+            dashBlock.classList.remove('hidden');
+        } else {
+            dashVal.textContent = '';
+            dashBlock.classList.add('hidden');
+        }
+    }
+
+    const container = document.getElementById('redeem-items-list');
+    if (container) {
+        container.innerHTML = '';
+        container.classList.add('hidden');
+    }
 };
 
-window.canjearPuntosUsuario = async function (itemId) {
-    window.vibrate(20);
+// Respaldo de la función original para retomar el programa más adelante
+window.__rawCanjearPuntosUsuario = async function (itemId) {
     const item = window.REDEEM_ITEMS.find(i => i.id === itemId);
     if (!item) { window.showToast('Beneficio no encontrado.'); return; }
     const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email) && !window.isAdmin;
@@ -3851,6 +3895,13 @@ window.canjearPuntosUsuario = async function (itemId) {
         console.error(error);
         window.showToast('No se pudo procesar el canje. Intenta nuevamente.');
     }
+};
+
+// Canje desactivado temporalmente en cliente mientras se define el nuevo programa Milkarf VIP
+window.canjearPuntosUsuario = async function (itemId) {
+    window.vibrate?.(20);
+    window.showToast?.('El programa de beneficios y canjes se encuentra temporalmente en preparación.', 'info');
+    return { success: false, paused: true };
 };
 
 window.aprobarPedidoAdmin = async function (orderId, uid, basePts) {
@@ -5927,7 +5978,7 @@ window.calcularRacion = function () {
         if (remainder === 0) {
             rPorComida.textContent = `${basePortion}g`;
         } else {
-            rPorComida.textContent = `~${Math.round(gramos / comidas)}g (${mealPortions.map((p, idx) => `C${idx + 1}: ${p}g`).join(', ')})`;
+            rPorComida.textContent = `~${Math.round(gramos / comidas)}g`;
         }
     }
 
@@ -7242,46 +7293,23 @@ window.startUserRedeemsListener = function (force = false) {
 };
 
 window.renderUserRedeemHistory = function (redeems = []) {
+    const card = document.getElementById('user-redeems-history-card');
     const container = document.getElementById('user-redeems-history');
     if (!container) return;
-    if (!redeems.length) { container.innerHTML = '<p class="text-xs text-gray-500 font-medium">Aún no has solicitado canjes.</p>'; return; }
+    if (!redeems || !redeems.length) {
+        if (card) card.classList.add('hidden');
+        container.innerHTML = '';
+        return;
+    }
+    if (card) card.classList.remove('hidden');
     container.innerHTML = redeems.slice(0, 5).map(r => {
         const status = String(r.status || 'solicitado').toLowerCase();
         const cls = status === 'entregado' ? 'bg-purple/10 text-purple border-purple/20' : status === 'aprobado' ? 'bg-green/15 text-green-dark dark:text-green border-green/20' : 'bg-pink/10 text-pink border-pink/20';
         return `<div class="bg-white dark:bg-darkcard rounded-xl border border-purple-border/30 dark:border-purple/20 p-3 flex items-start justify-between gap-3">
-                    <div><p class="text-xs font-black text-purple-dark dark:text-white">${window.escapeHTML(r.itemName || r.benefit || 'Canje Milkarf')}</p><p class="text-[10px] text-gray-500 font-semibold mt-1">${Number(r.points || 0)} ptos · ${r.createdAt ? new Date(r.createdAt).toLocaleDateString('es-VE') : 'reciente'}</p></div>
+                    <div><p class="text-xs font-black text-purple-dark dark:text-white">${window.escapeHTML(r.itemName || r.benefit || 'Solicitud Milkarf')}</p><p class="text-[10px] text-gray-500 font-semibold mt-1">${Number(r.points || 0)} ptos · ${r.createdAt ? new Date(r.createdAt).toLocaleDateString('es-VE') : 'reciente'}</p></div>
                     <span class="text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border ${cls}">${window.escapeHTML(status)}</span>
                 </div>`;
     }).join('');
-};
-
-window.renderRedeemItems = function () {
-    const container = document.getElementById('redeem-items-list');
-    if (!container) return;
-    const isLogged = window.currentUser && (!window.currentUser.isAnonymous || window.currentUser.email) && !window.isAdmin;
-    if (!isLogged) {
-        container.innerHTML = '<p class="text-xs text-gray-500 font-medium bg-white dark:bg-darkcard rounded-xl p-3 border border-purple-border/30">Inicia sesión para ver beneficios disponibles y canjear tus puntos.</p>';
-        return;
-    }
-    const pts = Number(window.currentUser.data?.puntos || 0);
-    container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">${window.REDEEM_ITEMS.map(item => {
-        const canUse = pts >= item.points;
-        const missing = Math.max(0, item.points - puntos);
-        return `<div class="bg-white dark:bg-darkcard rounded-3xl border ${canUse ? 'border-green/30' : 'border-purple-border/30 dark:border-purple/20'} p-4 shadow-sm text-left flex flex-col justify-between gap-4">
-                    <div><div class="flex items-start justify-between gap-3"><div><h5 class="text-sm font-black text-purple-dark dark:text-white">${window.escapeHTML(item.name)}</h5><p class="text-xs text-gray-500 dark:text-gray-400 font-semibold leading-relaxed mt-1">${window.escapeHTML(item.benefit)}</p></div><div class="shrink-0 bg-pink/10 text-pink border border-pink/20 px-3 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest">${item.points} ptos</div></div>
-                    <div class="mt-3 w-full bg-purple-light dark:bg-[#0d0718] rounded-full h-2 overflow-hidden"><div class="bg-green h-2 rounded-full" style="width:${Math.min(100, (pts / item.points) * 100)}%"></div></div>
-                    <p class="text-[10px] font-bold ${canUse ? 'text-green-dark dark:text-green' : 'text-gray-400'} mt-2">${canUse ? 'Disponible para canjear' : `Te faltan ${missing} ptos`}</p></div>
-                    <button type="button" onclick="window.canjearPuntosUsuario('${item.id}')" class="w-full px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 ${canUse ? 'bg-green text-purple-dark hover:bg-[#a6b621]' : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'}" ${canUse ? '' : 'disabled'}>Canjear beneficio</button>
-                </div>`;
-    }).join('')}</div>`;
-    window.refreshIcons?.(container);
-};
-
-const __originalCanjearUX = window.canjearPuntosUsuario;
-window.canjearPuntosUsuario = async function (itemId) {
-    const result = await __originalCanjearUX?.(itemId);
-    setTimeout(() => window.startUserRedeemsListener?.(true), 600);
-    return result;
 };
 
 const __originalClearCartUX = window.clearCart;
@@ -7665,7 +7693,7 @@ window.VIEW_ROUTES = {
     'view-snacks': '#snacks',
     'view-faq': '#ayuda',
     'view-dashboard': '#perfil',
-    'view-redeems': '#canje-puntos',
+    'view-redeems': '#milkarf-vip',
     'view-cart': '#pedido',
     'view-admin': '#admin',
     'view-privacidad': '#privacidad',
@@ -7691,6 +7719,8 @@ window.ROUTE_VIEWS = {
     '#carrito': 'view-cart',
     '#mi-pedido': 'view-cart',
     '#perfil': 'view-dashboard',
+    '#milkarf-vip': 'view-redeems',
+    '#vip': 'view-redeems',
     '#canje-puntos': 'view-redeems',
     '#menu-gatos': 'view-gatos',
     '#snacks': 'view-snacks',
@@ -7744,6 +7774,24 @@ window.closeTopLayerIfNeeded = function () {
     return false;
 };
 
+window.VIEW_TITLES = {
+    'view-home': 'Milkarf | Alimentación Real para Mascotas',
+    'view-mision': 'Por qué Milkarf | Milkarf',
+    'view-perros': 'Fórmulas | Milkarf',
+    'view-calc': 'Calcula su porción | Milkarf',
+    'view-faq': 'Guía y Ayuda | Milkarf',
+    'view-dashboard': 'Mi Cuenta | Milkarf',
+    'view-cart': 'Mi Pedido | Milkarf',
+    'view-redeems': 'Milkarf VIP | Milkarf',
+    'view-gatos': 'Menú Felino | Milkarf',
+    'view-snacks': 'Snacks Naturales | Milkarf',
+    'view-admin': 'Milkarf · Panel de Control',
+    'view-privacidad': 'Política de Privacidad | Milkarf',
+    'view-terminos': 'Términos y Condiciones | Milkarf',
+    'view-entregas': 'Envíos e Incidencias | Milkarf',
+    'view-cookies': 'Almacenamiento Local y Cookies | Milkarf'
+};
+
 const __milkarfNavigateCoreForHistory = window.navigateTo;
 window.navigateTo = function (targetId, options = {}) {
     if (window.location.pathname.endsWith('admin.html')) {
@@ -7759,6 +7807,9 @@ window.navigateTo = function (targetId, options = {}) {
     }
     const currentView = window.getActiveViewId();
     if (currentView === targetId) {
+        if (!window.location.pathname.endsWith('admin.html')) {
+            document.title = window.VIEW_TITLES?.[targetId] || 'Milkarf | Alimentación Real para Mascotas';
+        }
         if (window.menuOpen) window.forceCloseMenu?.();
         window.refreshMobileBottomNav?.(targetId);
         if (opts.replaceHistory) {
@@ -7767,6 +7818,9 @@ window.navigateTo = function (targetId, options = {}) {
         return;
     }
     const result = __milkarfNavigateCoreForHistory?.(targetId);
+    if (!window.location.pathname.endsWith('admin.html')) {
+        document.title = window.VIEW_TITLES?.[targetId] || 'Milkarf | Alimentación Real para Mascotas';
+    }
     window.refreshMobileBottomNav?.(targetId);
     try {
         const route = window.VIEW_ROUTES[targetId] || '#inicio';
@@ -9426,7 +9480,10 @@ window.descargarGuiaAlimentacion = async function (planData = null) {
 
         doc.text('Reparto por comida: ', 20, y + 24);
         doc.setFont(fontName, 'bold');
-        const mealStr = `${comidas} comidas al día (${mealPortions.map((g, idx) => `C${idx + 1}: ${g}g`).join(', ')})`;
+        const perMealGrams = Math.round(dailyGrams / comidas);
+        const mealStr = dailyGrams % comidas === 0 
+            ? `${comidas} comidas al día (${perMealGrams}g por comida)`
+            : `${comidas} comidas al día (~${perMealGrams}g por comida)`;
         doc.text(mealStr, 51, y + 24);
         doc.setFont(fontName, 'normal');
 

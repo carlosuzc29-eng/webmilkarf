@@ -187,13 +187,9 @@ service cloud.firestore {
     }
 
     function canjeCreateIsSafe() {
-      return signedIn()
-        && request.resource.data.uid is string
-        && request.resource.data.uid == request.auth.uid
-        && (
-          ('estado' in request.resource.data && request.resource.data.estado is string && request.resource.data.estado in ['solicitado', 'pendiente'])
-          || ('status' in request.resource.data && request.resource.data.status is string && request.resource.data.status in ['solicitado', 'pendiente'])
-        );
+      // Temporalmente en pausa: nuevas solicitudes de canje de clientes deshabilitadas
+      // a nivel de servidor mientras se define el nuevo programa de beneficios Milkarf VIP.
+      return false;
     }
 
     match /usuarios/{userId} {
