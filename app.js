@@ -320,7 +320,7 @@ window.normalizeUserProfileForWrite = function (data = {}) {
 window.WA_NUMBER = '584121791137';
 window.WA_NUMBER = '584121791137';
 window.PRICES_POLLO = { '250gr': '$2.50', '550gr': '$5.50' };
-window.PRICES_RES = { '250gr': '$3.50', '550gr': '$7.70' };
+window.PRICES_RES = { '250gr': '$3.50', '550gr': '$7.50' };
 
 window.MILKARF_CONFIG = {
     calcEngineVersion: 'v2.0_plan_based_low_activity',
@@ -346,7 +346,7 @@ window.MILKARF_CONFIG = {
             caloricDensity: 1.55, // 1.550 kcal/kg — valor indicado por la marca
             presentations: [
                 { size: '250gr', grams: 250, price: 3.50, available: true },
-                { size: '550gr', grams: 550, price: 7.70, available: true }
+                { size: '550gr', grams: 550, price: 7.50, available: true }
             ]
         }
     },
@@ -367,7 +367,7 @@ window.optimizeBagsForFormula = function (formula, dailyGrams, days, forcedSize 
     const name = prod?.name || (formula === 'res' ? 'Carne de Res con Calabacín' : 'Pollo con Zanahoria');
 
     const pres250 = window.getPresentationBySize(formula, '250gr') || { price: formula === 'res' ? 3.50 : 2.50, grams: 250 };
-    const pres550 = window.getPresentationBySize(formula, '550gr') || { price: formula === 'res' ? 7.70 : 5.50, grams: 550 };
+    const pres550 = window.getPresentationBySize(formula, '550gr') || { price: formula === 'res' ? 7.50 : 5.50, grams: 550 };
 
     if (totalRequiredGrams <= 0) {
         return { bags: [], totalBags: 0, totalGrams: 0, cost: 0 };
@@ -509,7 +509,7 @@ window.recommendPresentation = function (dailyGrams, formula = 'pollo') {
         grams: recSize === '250gr' ? 250 : 550,
         label: recSize === '250gr' ? '250 g' : '550 g',
         available,
-        price: pres ? pres.price : (recSize === '250gr' ? 2.50 : (formula === 'res' ? 7.70 : 5.50)),
+        price: pres ? pres.price : (recSize === '250gr' ? 2.50 : (formula === 'res' ? 7.50 : 5.50)),
         reason: ''
     };
 };
@@ -533,7 +533,7 @@ window.calculatePlanConsumption = function (dailyGrams, days, formula = 'pollo',
 
     if (mealSchedule && Array.isArray(mealSchedule) && mealSchedule.length > 0) {
         const pres = window.getPresentationBySize(formula, bagSize);
-        const unitPrice = pres ? pres.price : (bagSize === '250gr' ? 2.50 : (formula === 'res' ? 7.70 : 5.50));
+        const unitPrice = pres ? pres.price : (bagSize === '250gr' ? 2.50 : (formula === 'res' ? 7.50 : 5.50));
         let openBags = [];
         let discarded = 0;
         let totalBagsOpened = 0;
@@ -644,7 +644,7 @@ window.calculatePlanConsumption = function (dailyGrams, days, formula = 'pollo',
     const mainBag = bags[0] || {};
     const presSize = bagSize;
     const presGrams = presSize === '550gr' ? 550 : (presSize === '500gr' ? 500 : 250);
-    const presPrice = mainBag.unitPrice || (presGrams === 250 ? 2.50 : (formula === 'res' ? 7.70 : 5.50));
+    const presPrice = mainBag.unitPrice || (presGrams === 250 ? 2.50 : (formula === 'res' ? 7.50 : 5.50));
 
     return {
         requiredGrams,
@@ -5750,7 +5750,7 @@ window.renderPresentationSelector = function () {
     const getLabel = (f, sz) => {
         const p = window.getPresentationBySize?.(f, sz);
         if (p) return '$' + Number(p.price).toFixed(2);
-        if (f === 'mixto') return sz === '250gr' ? '$2.50–$3.50' : '$5.50–$7.70';
+        if (f === 'mixto') return sz === '250gr' ? '$2.50–$3.50' : '$5.50–$7.50';
         return '';
     };
     document.querySelectorAll('#plan-presentation-selector .presentation-price').forEach(el => {
@@ -9690,6 +9690,8 @@ window.descargarGuiaDesdeCarrito = function () {
     } else if (window.lastCalcResult?.gramos) {
         const fallbackPlan = window.buildFeedingPlan(window.lastCalcResult.gramos, 30, window.activePlanFormula || 'pollo', window.state.nombreMascota || 'tu perro');
         window.descargarGuiaAlimentacion(fallbackPlan);
+    } else if (typeof window.descargarGuiaGeneral === 'function') {
+        window.descargarGuiaGeneral();
     } else {
         window.showToast?.('Calcula primero la porción de tu mascota para descargar su guía personalizada.');
     }

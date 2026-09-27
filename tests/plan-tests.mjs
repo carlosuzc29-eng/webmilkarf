@@ -230,8 +230,8 @@ const clean = (plan) => {
     assert.equal(p.bags[0].qty, 3);
     assert.equal(p.bags[1].qty, 3);
     assert.equal(p.totalBags, 6);
-    assert.equal(p.subtotal, 39.60); // 3*5.50 + 3*7.70
-    assert.equal(p.finalPrice, 37.62); // -5 %
+    assert.equal(p.subtotal, 39.00); // 3*5.50 + 3*7.50
+    assert.equal(p.finalPrice, 37.05); // -5 %
 }
 
 // 7.5) Conservación 24h con pauta de comidas (Requisito 4)
@@ -284,7 +284,7 @@ const clean = (plan) => {
 // 10) getPresentationBySize resuelve correctamente
 {
     assert.equal(getPresentationBySize('pollo', '250gr').price, 2.50);
-    assert.equal(getPresentationBySize('res', '550gr').price, 7.70);
+    assert.equal(getPresentationBySize('res', '550gr').price, 7.50);
 }
 
 // 11) Template 'newOrder': incluye presentación, bolsas, peso y desglose
@@ -347,7 +347,7 @@ const clean = (plan) => {
     assert.equal(getPresentationBySize('pollo', '250gr').price, 2.50);
     assert.equal(getPresentationBySize('pollo', '550gr').price, 5.50);
     assert.equal(getPresentationBySize('res', '250gr').price, 3.50);
-    assert.equal(getPresentationBySize('res', '550gr').price, 7.70);
+    assert.equal(getPresentationBySize('res', '550gr').price, 7.50);
 }
 
 console.log('✅ Todas las pruebas pasaron (13 bloques: 250g/550g, descuentos, mixto, degenerados, planes, WhatsApp).');

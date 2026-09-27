@@ -740,41 +740,6 @@
                         <span class="text-xs font-bold uppercase tracking-wider text-green-dark dark:text-green block font-display">Información documentada</span>
                         <h2 class="text-2xl font-black text-purple-dark dark:text-white tracking-tight font-display">Detalle técnico y formulación</h2>
 
-                        <details class="group bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-5 text-left transition-all">
-                            <summary class="cursor-pointer font-bold text-sm text-purple dark:text-purple-light hover:text-purple-dark flex items-center justify-between gap-2 select-none">
-                                <span class="flex items-center gap-2">
-                                    <i data-lucide="pie-chart" class="w-4 h-4 text-purple"></i>
-                                    <span>Composición analítica general aproximada</span>
-                                </span>
-                                <i data-lucide="chevron-down" class="w-4 h-4 transition-transform group-open:rotate-180"></i>
-                            </summary>
-                            <div class="pt-4 text-xs text-gray-600 dark:text-gray-300 space-y-3 border-t border-purple-border/20 dark:border-purple/15 mt-3">
-                                <p class="leading-relaxed">
-                                    Nuestras recetas para perros adultos cuentan con una composición aproximada basada en ingredientes naturales sin harinas de relleno:
-                                </p>
-                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono text-xs">
-                                    <div class="bg-purple/5 dark:bg-purple/10 p-3 rounded-xl text-center border border-purple-border/20">
-                                        <span class="block font-bold text-purple-dark dark:text-white text-base">~70%</span>
-                                        <span class="text-gray-500 text-[11px]">Humedad biológica</span>
-                                    </div>
-                                    <div class="bg-purple/5 dark:bg-purple/10 p-3 rounded-xl text-center border border-purple-border/20">
-                                        <span class="block font-bold text-purple-dark dark:text-white text-base">~15-17%</span>
-                                        <span class="text-gray-500 text-[11px]">Proteína bruta</span>
-                                    </div>
-                                    <div class="bg-purple/5 dark:bg-purple/10 p-3 rounded-xl text-center border border-purple-border/20">
-                                        <span class="block font-bold text-purple-dark dark:text-white text-base">~5-7%</span>
-                                        <span class="text-gray-500 text-[11px]">Grasa natural</span>
-                                    </div>
-                                    <div class="bg-purple/5 dark:bg-purple/10 p-3 rounded-xl text-center border border-purple-border/20">
-                                        <span class="block font-bold text-purple-dark dark:text-white text-base">~1-2%</span>
-                                        <span class="text-gray-500 text-[11px]">Fibra digestible</span>
-                                    </div>
-                                </div>
-                                <p class="text-[11px] text-gray-500 dark:text-gray-400 italic pt-1">
-                                    Formulaciones para perros adultos sanos. Ante patologías diagnosticadas (renales, hepáticas o metabólicas), recomendamos consultar previamente a su médico veterinario tratante.
-                                </p>
-                            </div>
-                        </details>
 
                         <details class="group bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-5 text-left transition-all">
                             <summary class="cursor-pointer font-bold text-sm text-purple dark:text-purple-light hover:text-purple-dark flex items-center justify-between gap-2 select-none">
@@ -1080,6 +1045,24 @@
                             </div>
                         </div>
                 </div>
+
+                <!-- GUÍA DE ALIMENTACIÓN Y CONSERVACIÓN AL FINAL DE LA CALCULADORA -->
+                <div class="max-w-md w-full bg-gradient-to-r from-purple/10 via-pink/10 to-green/10 dark:from-purple/15 dark:via-pink/15 dark:to-green/15 border border-purple-border/40 dark:border-purple/25 rounded-2xl p-5 md:p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+                    <div class="flex items-center gap-3.5 text-left">
+                        <div class="w-10 h-10 rounded-xl bg-purple text-white flex items-center justify-center shrink-0 shadow-sm">
+                            <i data-lucide="file-text" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm md:text-base font-black text-purple-dark dark:text-white">Guía de alimentación y conservación</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold">Descarga tu guía imprimible con pautas de conservación y servicio</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="window.descargarGuiaDesdeCarrito()" class="w-full sm:w-auto px-4 py-2.5 bg-purple hover:bg-purple-dark text-white font-black text-xs rounded-xl shadow-md transition-all active:scale-95 shrink-0 flex items-center justify-center gap-2 cursor-pointer">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>Descargar PDF</span>
+                    </button>
+                </div>
+
                 <!-- ESPACIADOR INFERIOR -->
                 <div class="h-32 md:h-48 w-full shrink-0 pointer-events-none"></div>
             </div>
@@ -1280,7 +1263,7 @@
                                 <div class="bg-purple-light/60 dark:bg-[#0d0718] p-3.5 rounded-2xl border border-purple-border/40 dark:border-purple/20 text-left">
                                     <div class="flex items-center justify-between text-xs font-bold text-purple-dark dark:text-white mb-1">
                                         <span>Presentaciones oficiales:</span>
-                                        <span class="text-pink font-black">250 g ($3.50) · 550 g ($7.70)</span>
+                                        <span class="text-pink font-black">250 g ($3.50) · 550 g ($7.50)</span>
                                     </div>
                                     <p class="text-[11px] text-gray-500 dark:text-gray-400">
                                         Empacadas al vacío y congeladas. El sistema calcula las porciones exactas para 7, 15 o 30 días con hasta 10% de descuento.
@@ -1445,21 +1428,6 @@
                         </div>
                     </details>
 
-                    <!-- Acordeón 3: Descarga de Guía -->
-                    <div class="bg-gradient-to-r from-purple/10 via-pink/10 to-green/10 dark:from-purple/15 dark:via-pink/15 dark:to-green/15 border border-purple-border/40 dark:border-purple/25 rounded-[2rem] p-6 md:p-7 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div class="flex items-center gap-3.5 text-left">
-                            <div class="w-10 h-10 rounded-2xl bg-purple text-white flex items-center justify-center shrink-0">
-                                <i data-lucide="file-text" class="w-5 h-5"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-base md:text-lg font-black text-purple-dark dark:text-white">Guía de alimentación y conservación</h3>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold">Descarga tu guía imprimible con pautas de conservación y servicio</p>
-                            </div>
-                        </div>
-                        <button type="button" onclick="window.descargarGuiaGeneral()" class="px-5 py-3 bg-purple hover:bg-purple-dark text-white font-black text-xs rounded-xl shadow-md transition-all active:scale-95 shrink-0 flex items-center gap-2 cursor-pointer">
-                            <i data-lucide="download" class="w-4 h-4"></i> Descargar guía en PDF
-                        </button>
-                    </div>
                 </div>
                 <!-- ESPACIADOR INFERIOR -->
                 <div class="h-24 w-full shrink-0 pointer-events-none"></div>
@@ -1927,6 +1895,20 @@
                     <button class="nav-btn px-7 py-3.5 bg-purple text-white font-bold rounded-xl text-sm hover:bg-purple-dark transition-all active:scale-95 shadow-soft hover:shadow-soft-lg" data-target="view-perros">
                         Ver fórmulas para perros
                     </button>
+
+                    <!-- Guía de alimentación y conservación con carrito vacío -->
+                    <div class="w-full bg-gradient-to-r from-purple/10 via-pink/10 to-green/10 dark:from-purple/15 dark:via-pink/15 dark:to-green/15 border border-purple-border/40 dark:border-purple/25 rounded-2xl p-4 shadow-sm flex flex-col items-center text-center gap-2.5 mt-6">
+                        <div class="w-8 h-8 rounded-xl bg-purple text-white flex items-center justify-center shadow-sm">
+                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-black text-purple-dark dark:text-white">Guía de alimentación y conservación</h4>
+                            <p class="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Descarga tu guía imprimible con pautas de conservación y servicio</p>
+                        </div>
+                        <button type="button" onclick="window.descargarGuiaDesdeCarrito()" class="w-full py-2.5 px-4 bg-purple hover:bg-purple-dark text-white font-bold text-xs rounded-xl shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i> Descargar guía en PDF
+                        </button>
+                    </div>
                 </div>
 
                 <div id="cart-items-container" class="hidden w-full max-w-lg space-y-4 mb-6"></div>
@@ -1972,11 +1954,22 @@
                         <i data-lucide="send" class="w-5 h-5 shrink-0 group-hover:translate-x-1 transition-transform"></i>
                     </a>
 
-                    <!-- Acción Secundaria: Descargar Guía Personalizada -->
-                    <button id="btn-cart-download-guide" type="button" onclick="window.descargarGuiaDesdeCarrito()" class="w-full flex items-center justify-center gap-2 bg-purple/10 dark:bg-purple/20 hover:bg-purple/20 text-purple-dark dark:text-purple-light font-bold text-xs py-3.5 rounded-xl border border-purple-border/40 transition-all cursor-pointer touch-target-safe">
-                        <i data-lucide="download" class="w-4 h-4 text-purple dark:text-purple-light"></i>
-                        <span>Descargar mi guía de alimentación (PDF)</span>
-                    </button>
+                    <!-- Guía de alimentación y conservación en el carrito -->
+                    <div class="bg-gradient-to-r from-purple/10 via-pink/10 to-green/10 dark:from-purple/15 dark:via-pink/15 dark:to-green/15 border border-purple-border/40 dark:border-purple/25 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-purple text-white flex items-center justify-center shrink-0 shadow-sm">
+                                <i data-lucide="file-text" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-black text-purple-dark dark:text-white">Guía de alimentación y conservación</h3>
+                                <p class="text-[11px] text-gray-500 dark:text-gray-400 font-semibold leading-tight">Descarga tu guía imprimible con pautas de conservación y servicio</p>
+                            </div>
+                        </div>
+                        <button id="btn-cart-download-guide" type="button" onclick="window.descargarGuiaDesdeCarrito()" class="w-full sm:w-auto px-4 py-2.5 bg-purple hover:bg-purple-dark text-white font-black text-xs rounded-xl shadow-md transition-all active:scale-95 shrink-0 flex items-center justify-center gap-2 cursor-pointer">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            <span>Descargar PDF</span>
+                        </button>
+                    </div>
 
                     <button id="btn-ver-mis-pedidos" onclick="window.navigateTo('view-dashboard'); window.startUserOrdersListener(true);" class="hidden w-full flex items-center justify-center gap-2 bg-white dark:bg-darkcard border border-green/40 text-green-dark dark:text-green font-bold text-xs py-3.5 rounded-xl shadow-soft hover:bg-green/10 transition-all active:scale-[0.98] touch-target-safe">
                         <i data-lucide="clipboard-check" class="w-4 h-4"></i> Consultar mis pedidos
