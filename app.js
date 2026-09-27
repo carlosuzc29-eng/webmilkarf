@@ -5452,10 +5452,33 @@ window.renderActiveFeedingPlans = function () {
         const anyPlanForPet = !!(window.cart || []).find(i => i.type === 'feeding_plan' && ((i.petName || '').toLowerCase() === (petName || '').toLowerCase()));
         const isSelected = isSelectedInCart || (!anyPlanForPet && plan.days === recommendedPlanDays);
 
-        return `
-        <div data-plan-days="${plan.days}" data-selected-pres="${plan.presentationGrams}" class="feeding-plan-card compact-plan ${isSelected ? 'selected' : ''} ${isMonthly ? 'is-monthly border-pink/60 dark:border-pink/40 ring-1 ring-pink/20' : 'border-purple-border/50 dark:border-purple/20'} bg-white dark:bg-darkcard rounded-2xl p-2.5 sm:p-3.5 border shadow-sm text-center transition-all hover:shadow-md relative flex flex-col justify-between select-none">
+        const savingsVal = plan.savings ? plan.savings.toFixed(2) : (plan.discountAmount ? plan.discountAmount.toFixed(2) : '0.00');
+        const dailyCostVal = (plan.costPerDay || (plan.finalPrice / plan.days)).toFixed(2);
 
-            ${isMonthly ? '<div class="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-pink text-white text-[8px] sm:text-[9px] font-black uppercase px-2.5 py-0.5 tracking-wider rounded-full shadow-sm whitespace-nowrap pointer-events-none z-20">Mayor ahorro porcentual</div>' : ''}
+        const cardBorderClasses = isMonthly
+            ? (isSelected ? 'border-pink ring-2 ring-pink/40 shadow-md' : 'border-pink/40 dark:border-pink/30 ring-1 ring-pink/20')
+            : (isSelected ? 'border-purple ring-2 ring-purple/40 shadow-md' : 'border-purple-border/50 dark:border-purple/20');
+
+        const cardBgClasses = isMonthly
+            ? 'bg-gradient-to-b from-pink/5 via-white to-white dark:from-pink/10 dark:via-darkcard dark:to-darkcard'
+            : 'bg-white dark:bg-darkcard';
+
+        let btnClass = 'bg-purple hover:bg-purple-dark text-white';
+        let btnText = 'Elegir plan';
+        let btnIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+
+        if (isSelectedInCart) {
+            btnClass = 'bg-green-dark dark:bg-green text-white dark:text-purple-dark';
+            btnText = '✓ En pedido';
+            btnIcon = '';
+        } else if (isMonthly) {
+            btnClass = 'bg-gradient-to-r from-purple to-pink hover:opacity-95 text-white shadow-soft';
+        }
+
+        return `
+        <div data-plan-days="${plan.days}" data-selected-pres="${plan.presentationGrams}" class="feeding-plan-card compact-plan ${isSelected ? 'selected' : ''} ${isMonthly ? 'is-monthly' : ''} ${cardBorderClasses} ${cardBgClasses} rounded-2xl p-2.5 sm:p-3.5 border shadow-sm text-center transition-all hover:shadow-md relative flex flex-col justify-between select-none">
+
+            ${isMonthly ? '<div class="plan-top-badge absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-pink to-purple text-white text-[8px] sm:text-[9px] font-black uppercase px-2.5 py-0.5 tracking-wider rounded-full shadow-md whitespace-nowrap pointer-events-none z-20 ring-2 ring-white dark:ring-darkcard flex items-center gap-1">★ Más ahorro</div>' : ''}
 
             <div class="compact-plan-inner flex flex-col items-center w-full">
                 <!-- Descuento -->
@@ -5463,14 +5486,19 @@ window.renderActiveFeedingPlans = function () {
                     <span class="discount-pill ${isMonthly ? 'discount-pill-monthly' : ''}">${discountPct} dcto.</span>
                 </div>
 
-                <!-- Plan -->
+                <!-- Plan y Duración -->
                 <div class="plan-card-name text-xs sm:text-base font-black text-purple-dark dark:text-white leading-tight mt-0.5">${shortName}</div>
                 <div class="plan-card-days text-[9px] sm:text-[11px] text-gray-500 dark:text-gray-400 font-semibold leading-tight mt-0.5">${plan.days} días</div>
 
-                <!-- Precio -->
+                <!-- Precio, Costo Diario y Ahorro -->
                 <div class="my-2 text-center w-full">
-                    <div class="plan-price text-sm sm:text-xl font-black text-purple-dark dark:text-white leading-tight">$${plan.finalPrice.toFixed(2)}</div>
-                    <div class="plan-savings text-[9px] sm:text-xs font-bold text-green-dark dark:text-green mt-0.5 leading-tight">Ahorras $${plan.savings.toFixed(2)}</div>
+                    <div class="plan-price text-sm sm:text-xl font-black text-purple-dark dark:text-white leading-tight tracking-tight">$${plan.finalPrice.toFixed(2)}</div>
+                    <div class="plan-daily-cost text-[9px] sm:text-[10px] text-gray-400 dark:text-gray-500 font-medium leading-tight mt-0.5">~$${dailyCostVal}/día</div>
+                    <div class="mt-1 flex items-center justify-center">
+                        <span class="plan-savings inline-block text-[9px] sm:text-[10px] font-bold text-green-dark dark:text-green bg-green/10 dark:bg-green/15 px-2 py-0.5 rounded-full leading-tight">
+                            Ahorras $${savingsVal}
+                        </span>
+                    </div>
                 </div>
 
                 <!-- Bolsas calculadas -->
@@ -5481,11 +5509,11 @@ window.renderActiveFeedingPlans = function () {
 
             <!-- Acciones: Elegir plan directo y Ver detalle opcional -->
             <div class="space-y-1.5 w-full mt-auto">
-                <button type="button" onclick="window.seleccionarYContinuarPlan(${plan.days});" class="w-full py-2.5 px-2 bg-purple hover:bg-purple-dark text-white text-[11px] sm:text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-95 touch-target-safe">
-                    <span>Revisar mi pedido</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                <button type="button" onclick="window.seleccionarYContinuarPlan(${plan.days});" class="w-full py-2 px-1.5 ${btnClass} text-[11px] sm:text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer shadow-sm active:scale-95 touch-target-safe">
+                    <span class="plan-btn-text">${btnText}</span>
+                    ${btnIcon}
                 </button>
-                <button type="button" onclick="window.openPlanModal(${plan.days});" class="w-full py-1 text-[10px] text-purple/70 dark:text-purple-light hover:underline font-bold transition-all cursor-pointer">
+                <button type="button" onclick="window.openPlanModal(${plan.days});" class="w-full py-0.5 text-[10px] text-purple/70 dark:text-purple-light hover:text-purple hover:underline font-bold transition-all cursor-pointer">
                     Ver detalle
                 </button>
             </div>

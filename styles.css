@@ -1477,8 +1477,16 @@ dialog#plan-modal {
     color: #d72b8f;
 }
 
-/* Ensure compact cards don't inherit problematic wrapping rules */
-.feeding-plan-card.compact-plan * { white-space: normal; word-break: normal; }
+/* Prevenir quiebre de texto en elementos críticos de las tarjetas */
+.feeding-plan-card.compact-plan .plan-top-badge,
+.feeding-plan-card.compact-plan .discount-pill,
+.feeding-plan-card.compact-plan .plan-btn-text,
+.feeding-plan-card.compact-plan .plan-price,
+.feeding-plan-card.compact-plan .plan-savings,
+.feeding-plan-card.compact-plan .plan-daily-cost {
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+}
 
 /* Badge "Mayor descuento" */
 .badge-major-discount {
