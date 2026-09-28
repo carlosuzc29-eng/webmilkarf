@@ -149,12 +149,12 @@ const clean = (plan) => {
     assert.equal(p.totalBags, 6);
     assert.equal(p.totalGrams, 3300);
     assert.equal(p.surplusGrams, 101);
-    assert.equal(p.subtotal, 33.00);
+    assert.equal(p.subtotal, 30.00);
     assert.equal(p.discountPct, 0.05);
     assert.equal(p.discountPercent, 5);
-    assert.equal(p.discountAmount, 1.65);
-    assert.equal(p.finalPrice, 31.35);
-    assert.equal(p.costPerDay, 4.48);
+    assert.equal(p.discountAmount, 1.50);
+    assert.equal(p.finalPrice, 28.50);
+    assert.equal(p.costPerDay, 4.07);
 }
 
 // 2) 250 g con porción 457g: 13 bolsas de 250 g = 3250 g para 3199 g requeridos
@@ -230,8 +230,8 @@ const clean = (plan) => {
     assert.equal(p.bags[0].qty, 3);
     assert.equal(p.bags[1].qty, 3);
     assert.equal(p.totalBags, 6);
-    assert.equal(p.subtotal, 39.00); // 3*5.50 + 3*7.50
-    assert.equal(p.finalPrice, 37.05); // -5 %
+    assert.equal(p.subtotal, 37.50); // 3*5.00 + 3*7.50
+    assert.equal(p.finalPrice, 35.62); // -5 %
 }
 
 // 7.5) Conservación 24h con pauta de comidas (Requisito 4)
@@ -321,11 +321,10 @@ const clean = (plan) => {
         contactPhone: '',
         userName: 'Cliente',
         orderId: 'local_123',
-        location: 'Caracas'
+        location: 'Mérida'
     });
     assert.match(msg, /Plan para Rex/);
     assert.match(msg, /550 g/);
-    assert.match(msg, /Ración: 457 g\/día/);
     assert.match(msg, /Presentación: 550 g/);
     assert.match(msg, /Bolsas: 25x 550gr/);
     assert.equal(msg.includes('undefined'), false, 'No debe contener "undefined"');
@@ -345,7 +344,7 @@ const clean = (plan) => {
 // 13) Invariantes de marca: precios de la configuración real
 {
     assert.equal(getPresentationBySize('pollo', '250gr').price, 2.50);
-    assert.equal(getPresentationBySize('pollo', '550gr').price, 5.50);
+    assert.equal(getPresentationBySize('pollo', '550gr').price, 5.00);
     assert.equal(getPresentationBySize('res', '250gr').price, 3.50);
     assert.equal(getPresentationBySize('res', '550gr').price, 7.50);
 }

@@ -33,7 +33,7 @@ export interface MilkarfConfig {
 
 export const WA_NUMBER = '584121791137';
 
-export const PRICES_POLLO: Record<PresentationSize, string> = { '250gr': '$2.50', '550gr': '$5.50' };
+export const PRICES_POLLO: Record<PresentationSize, string> = { '250gr': '$2.50', '550gr': '$5.00' };
 export const PRICES_RES: Record<PresentationSize, string> = { '250gr': '$3.50', '550gr': '$7.50' };
 
 export const MILKARF_CONFIG: MilkarfConfig = {
@@ -47,7 +47,7 @@ export const MILKARF_CONFIG: MilkarfConfig = {
             available: true,
             presentations: [
                 { size: '250gr', grams: 250, price: 2.5, available: true },
-                { size: '550gr', grams: 550, price: 5.5, available: true }
+                { size: '550gr', grams: 550, price: 5.0, available: true }
             ]
         },
         res: {

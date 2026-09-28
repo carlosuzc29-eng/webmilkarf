@@ -26,4 +26,5 @@ Static site for **Milkarf** (milkarf.com) — a Spanish-language pet-food storef
 - WhatsApp number and fallback pricing/plans live in `app.js` constants: `WA_NUMBER`, `MILKARF_CONFIG` (catalog, `planDiscounts`, `welcomeDiscountPct`), `PRICES_POLLO`/`PRICES_RES`.
 - Firestore doc `config/tienda` can override prices/redeem items at runtime (`loadDynamicStoreConfig`) — static constants are the fallback.
 - Orders/canjes write Firestore AND open WhatsApp; delivery notes are rendered to an image via html2canvas. There is no payment backend.
+- Sede y operaciones: Milkarf opera y despacha en la ciudad de **Mérida, Venezuela** (no Caracas).
 - Images: optimized fallback is `images/Gemini_Generated_Image_18qpp218qpp218qp.webp` (produced by `convert_images.py` from the ~9.5MB PNG). The stray `assets:images:` directory is an accidental artifact (colon in dir name) not referenced anywhere — safe to delete; don't add new large PNGs to the repo root.

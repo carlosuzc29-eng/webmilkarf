@@ -91,7 +91,7 @@ Quisiera conocer las fórmulas disponibles, presentaciones recomendadas y los pa
 
 Estoy revisando su tienda web y deseo orientación antes de completar mi pedido.
 
-Quisiera confirmar recomendaciones de fórmulas, disponibilidad, costo de entrega y siguientes pasos.`;
+Quisiera confirmar recomendaciones de fórmulas, costo de entrega y siguientes pasos.`;
 
         case 'newOrder': {
             const items = Array.isArray(data.items) ? data.items : [];
@@ -101,64 +101,47 @@ Quisiera confirmar recomendaciones de fórmulas, disponibilidad, costo de entreg
             if (hasFeedingPlans) {
                 itemsFormatted = items.map((i: any, index: number) => {
                     if (i.type === 'feeding_plan') {
-                        const bagsText = Array.isArray(i.bags) ? i.bags.map((b: any) => `${b.qty}x ${b.weight}`).join(' + ') : '';
-                        const reqKg = (Number(i.totalGramsRequired || 0) / 1000).toFixed(2);
+                        const bagsText = Array.isArray(i.bags) ? i.bags.map((b: any) => `${b.qty}x ${b.size || b.weight}`).join(' + ') : '';
                         const provKg = (Number(i.totalGramsProvided || 0) / 1000).toFixed(2);
-                        const surplus = Number(i.surplusGrams || 0);
-                        const presText = i.presentation ? String(i.presentation).replace('gr', ' g') : (Array.isArray(i.bags) && i.bags[0] ? String(i.bags[0].weight).replace('gr', ' g') : '');
-                        const petWeight = Number(i.petWeight) ? ` · ${Number(i.petWeight)} kg` : '';
+                        const presText = i.presentation ? String(i.presentation).replace('gr', ' g') : (Array.isArray(i.bags) && i.bags[0] ? String(i.bags[0].weight || i.bags[0].size).replace('gr', ' g') : '550 g');
                         const bagsCount = Number(i.bagsCount) || (Array.isArray(i.bags) ? i.bags.reduce((s: number, b: any) => s + (Number(b.qty) || 0), 0) : 0);
-                        const subtotalNum = Number(i.originalSubtotal || i.price);
-                        const discNum = Number(i.discountAmount || 0);
-                        const discPctNum = Number(i.discountPct || 0) * 100;
-                        const totalNum = Number(i.finalPrice || i.price);
-                        const excedente = surplus > 0 ? ` (+${surplus} g adicionales por redondeo)` : '';
-                        return `${index + 1}. *Plan para ${i.petName || i.forPet || 'Mascota'}*${petWeight}
-   • Mascota: ${i.petName || i.forPet || 'Mascota'}${petWeight} · Ración: ${Number(i.dailyGrams) || 0} g/día
-   • Fórmula: ${i.formulaName || 'Fórmula'} · Plan ${Number(i.durationDays) || 7} días
-   • Presentación: ${presText || '500 g'} · Bolsas: ${bagsText || bagsCount + ' bolsa(s)'}
-   • Alimento: ${reqKg} kg requeridos / ${provKg} kg provistos${excedente}
-   • Subtotal: ${currency(subtotalNum)} · Descuento (-${discPctNum}%): -${currency(discNum)}
+                        const totalNum = Number(i.finalPrice || i.price || 0);
+                        const days = Number(i.durationDays) || 7;
+                        const formula = i.formula === 'res' ? 'Carne de Res' : (i.formula === 'mixto' ? 'Mixto' : (i.formulaName || 'Pollo'));
+                        const formulaTag = formula ? `${formula} · ` : '';
+                        const pet = i.petName || i.forPet || 'Mascota';
+                        return `${index + 1}. *Plan para ${pet}* (${formulaTag}${days} días)
+   • Presentación: ${presText} · Bolsas: ${bagsText || (bagsCount + ' bolsa(s)')} (${provKg} kg provistos)
    • Total plan: ${currency(totalNum)}`;
                     }
-                    const pet = i.forPet ? ` - Para ${i.forPet}` : '';
-                    return `${index + 1}. ${Number(i.qty || 1)}x ${i.name || 'Fórmula'} (${i.weight || ''})${pet} - ${currency((i.price || 0) * (i.qty || 1))}`;
+                    const pet = i.forPet ? ` (para ${i.forPet})` : '';
+                    return `${index + 1}. ${Number(i.qty || 1)}x ${i.name || 'Fórmula'} (${i.weight || 'presentación'})${pet} - ${currency((i.price || 0) * (i.qty || 1))}`;
                 }).join('\n\n');
             } else if (items.length) {
                 itemsFormatted = items.map((i: any, index: number) => {
-                    const pet = i.forPet ? ` - Para ${i.forPet}` : '';
-                    return `${index + 1}. ${Number(i.qty || 0)}x ${i.name || 'Fórmula'} (${i.weight || 'presentación'})${pet}`;
+                    const pet = i.forPet ? ` (para ${i.forPet})` : '';
+                    return `${index + 1}. ${Number(i.qty || 1)}x ${i.name || 'Fórmula'} (${i.weight || 'presentación'})${pet} - ${currency((i.price || 0) * (i.qty || 1))}`;
                 }).join('\n');
             } else {
                 itemsFormatted = 'Pedido Milkarf';
             }
 
-            let msg = `Hola, equipo Milkarf.
-
-Quisiera confirmar mi pedido ${hasFeedingPlans ? 'de planes de alimentación' : ''} para mi mascota:
-
-👤 *Tutor:* ${userName}${data.contactPhone ? `\n📱 *Teléfono:* ${data.contactPhone}` : ''}
-
-📦 *DETALLE DEL PEDIDO:*
+            let msg = `¡Hola, equipo Milkarf! Quiero realizar el siguiente pedido:
+👤 *Cliente:* ${userName}
+📦 *PEDIDO:*
 ${itemsFormatted}
-
-💵 *RESUMEN DE COMPRA:*
-• Subtotal: ${currency(data.subtotal)}`;
+💰 *TOTAL A PAGAR:* ${currency(data.finalTotal)}`;
 
             if (Number(data.discountAmount) > 0) {
                 const label = data.discountLabel || (data.discountType === 'welcome' ? 'Descuento de bienvenida (-20%)' : 'Descuento de plan');
                 msg += `\n• ${label}: -${currency(data.discountAmount)}`;
             }
-            msg += `\n• *TOTAL FÓRMULAS:* ${currency(data.finalTotal)}`;
-            msg += `\n• *Costo de entrega:* Pendiente por cotizar según zona`;
 
+            msg += `\n📍 *Dirección de entrega:*`;
             if (data.location) {
-                msg += `\n\n📍 *Ubicación para la entrega:*\n${data.location}`;
+                msg += `\n${data.location}`;
             }
-            if (data.orderId) {
-                msg += `\n\n🔖 *Ref pedido web:* #${data.orderId}`;
-            }
-            msg += `\n\nQuedo atento/a para coordinar la confirmación y entrega. ¡Muchas gracias!`;
+
             return msg;
         }
 

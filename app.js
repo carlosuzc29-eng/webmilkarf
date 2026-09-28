@@ -318,8 +318,7 @@ window.normalizeUserProfileForWrite = function (data = {}) {
 // LÓGICA DE INTERFAZ Y NAVEGACIÓN
 // =========================================================================================
 window.WA_NUMBER = '584121791137';
-window.WA_NUMBER = '584121791137';
-window.PRICES_POLLO = { '250gr': '$2.50', '550gr': '$5.50' };
+window.PRICES_POLLO = { '250gr': '$2.50', '550gr': '$5.00' };
 window.PRICES_RES = { '250gr': '$3.50', '550gr': '$7.50' };
 
 window.MILKARF_CONFIG = {
@@ -334,7 +333,7 @@ window.MILKARF_CONFIG = {
             caloricDensity: 1.55, // 1.550 kcal/kg — valor indicado por la marca
             presentations: [
                 { size: '250gr', grams: 250, price: 2.50, available: true },
-                { size: '550gr', grams: 550, price: 5.50, available: true }
+                { size: '550gr', grams: 550, price: 5.00, available: true }
             ]
         },
         res: {
@@ -367,7 +366,7 @@ window.optimizeBagsForFormula = function (formula, dailyGrams, days, forcedSize 
     const name = prod?.name || (formula === 'res' ? 'Carne de Res con Calabacín' : 'Pollo con Zanahoria');
 
     const pres250 = window.getPresentationBySize(formula, '250gr') || { price: formula === 'res' ? 3.50 : 2.50, grams: 250 };
-    const pres550 = window.getPresentationBySize(formula, '550gr') || { price: formula === 'res' ? 7.50 : 5.50, grams: 550 };
+    const pres550 = window.getPresentationBySize(formula, '550gr') || { price: formula === 'res' ? 7.50 : 5.00, grams: 550 };
 
     if (totalRequiredGrams <= 0) {
         return { bags: [], totalBags: 0, totalGrams: 0, cost: 0 };
@@ -509,7 +508,7 @@ window.recommendPresentation = function (dailyGrams, formula = 'pollo') {
         grams: recSize === '250gr' ? 250 : 550,
         label: recSize === '250gr' ? '250 g' : '550 g',
         available,
-        price: pres ? pres.price : (recSize === '250gr' ? 2.50 : (formula === 'res' ? 7.50 : 5.50)),
+        price: pres ? pres.price : (recSize === '250gr' ? 2.50 : (formula === 'res' ? 7.50 : 5.00)),
         reason: ''
     };
 };
@@ -533,7 +532,7 @@ window.calculatePlanConsumption = function (dailyGrams, days, formula = 'pollo',
 
     if (mealSchedule && Array.isArray(mealSchedule) && mealSchedule.length > 0) {
         const pres = window.getPresentationBySize(formula, bagSize);
-        const unitPrice = pres ? pres.price : (bagSize === '250gr' ? 2.50 : (formula === 'res' ? 7.50 : 5.50));
+        const unitPrice = pres ? pres.price : (bagSize === '250gr' ? 2.50 : (formula === 'res' ? 7.50 : 5.00));
         let openBags = [];
         let discarded = 0;
         let totalBagsOpened = 0;
@@ -644,7 +643,7 @@ window.calculatePlanConsumption = function (dailyGrams, days, formula = 'pollo',
     const mainBag = bags[0] || {};
     const presSize = bagSize;
     const presGrams = presSize === '550gr' ? 550 : (presSize === '500gr' ? 500 : 250);
-    const presPrice = mainBag.unitPrice || (presGrams === 250 ? 2.50 : (formula === 'res' ? 7.50 : 5.50));
+    const presPrice = mainBag.unitPrice || (presGrams === 250 ? 2.50 : (formula === 'res' ? 7.50 : 5.00));
 
     return {
         requiredGrams,
@@ -1001,70 +1000,57 @@ Quisiera conocer las fórmulas disponibles, presentaciones recomendadas y los pa
 
 Estoy revisando su tienda web y deseo orientación antes de completar mi pedido.
 
-Quisiera confirmar recomendaciones de fórmulas, disponibilidad, costo de entrega y siguientes pasos.`;
+Quisiera confirmar recomendaciones de fórmulas, costo de entrega y siguientes pasos.`;
 
         case 'newOrder': {
-            const hasFeedingPlans = Array.isArray(data.items) && data.items.some(i => i.type === 'feeding_plan');
+            const items = Array.isArray(data.items) ? data.items : [];
+            const hasFeedingPlans = items.some(i => i.type === 'feeding_plan');
 
             let itemsFormatted = '';
             if (hasFeedingPlans) {
-                itemsFormatted = data.items.map((i, index) => {
+                itemsFormatted = items.map((i, index) => {
                     if (i.type === 'feeding_plan') {
                         const bagsText = Array.isArray(i.bags) ? i.bags.map(b => `${b.qty}x ${b.size || b.weight}`).join(' + ') : '';
-                        const reqKg = (Number(i.totalGramsRequired || 0) / 1000).toFixed(2);
                         const provKg = (Number(i.totalGramsProvided || 0) / 1000).toFixed(2);
                         const presText = i.presentation ? String(i.presentation).replace('gr', ' g') : (Array.isArray(i.bags) && i.bags[0] ? String(i.bags[0].weight || i.bags[0].size).replace('gr', ' g') : '550 g');
-                        const petWeight = Number(i.petWeight) ? ` · ${Number(i.petWeight)} kg` : '';
                         const bagsCount = Number(i.bagsCount) || (Array.isArray(i.bags) ? i.bags.reduce((s, b) => s + (Number(b.qty) || 0), 0) : 0);
-                        const subtotalNum = Number(i.originalSubtotal || i.price || 0);
-                        const discNum = Number(i.discountAmount || 0);
                         const totalNum = Number(i.finalPrice || i.price || 0);
-                        return `${index + 1}. *Plan para ${i.petName || i.forPet || 'Mascota'}*${petWeight}
-   • Mascota: ${i.petName || i.forPet || 'Mascota'}${petWeight} · Ración: ${Number(i.dailyGrams) || 0} g/día
-   • Fórmula: ${i.formulaName || 'Fórmula'} · Plan ${Number(i.durationDays) || 7} días
-   • Presentación: ${presText} · Bolsas: ${bagsText || (bagsCount + ' bolsa(s)')}
-   • Alimento: ${reqKg} kg requeridos (${provKg} kg provistos)
-   • Subtotal: ${currency(subtotalNum)} · Descuento (-${Number(i.discountPercent) || 0}%): -${currency(discNum)}
+                        const days = Number(i.durationDays) || 7;
+                        const formula = i.formula === 'res' ? 'Carne de Res' : (i.formula === 'mixto' ? 'Mixto' : (i.formulaName || 'Pollo'));
+                        const formulaTag = formula ? `${formula} · ` : '';
+                        const pet = i.petName || i.forPet || 'Mascota';
+                        return `${index + 1}. *Plan para ${pet}* (${formulaTag}${days} días)
+   • Presentación: ${presText} · Bolsas: ${bagsText || (bagsCount + ' bolsa(s)')} (${provKg} kg provistos)
    • Total plan: ${currency(totalNum)}`;
                     }
-                    const pet = i.forPet ? ` - Para ${i.forPet}` : '';
-                    return `${index + 1}. ${Number(i.qty || 1)}x ${i.name || 'Fórmula'} (${i.weight || ''})${pet} - ${currency((i.price || 0) * (i.qty || 1))}`;
+                    const pet = i.forPet ? ` (para ${i.forPet})` : '';
+                    return `${index + 1}. ${Number(i.qty || 1)}x ${i.name || 'Fórmula'} (${i.weight || 'presentación'})${pet} - ${currency((i.price || 0) * (i.qty || 1))}`;
                 }).join('\n\n');
-            } else if (Array.isArray(data.items)) {
-                itemsFormatted = data.items.map((i, index) => {
-                    const pet = i.forPet ? ` - Para ${i.forPet}` : '';
-                    return `${index + 1}. ${Number(i.qty || 0)}x ${i.name || 'Fórmula'} (${i.weight || 'presentación'})${pet}`;
+            } else if (items.length) {
+                itemsFormatted = items.map((i, index) => {
+                    const pet = i.forPet ? ` (para ${i.forPet})` : '';
+                    return `${index + 1}. ${Number(i.qty || 1)}x ${i.name || 'Fórmula'} (${i.weight || 'presentación'})${pet} - ${currency((i.price || 0) * (i.qty || 1))}`;
                 }).join('\n');
             } else {
                 itemsFormatted = 'Pedido Milkarf';
             }
 
-            let msg = `Hola, equipo Milkarf.
-
-Quisiera confirmar mi pedido ${hasFeedingPlans ? 'de planes de alimentación' : ''} para mi mascota:
-
-👤 *Tutor:* ${userName}${data.contactPhone ? `\n📱 *Teléfono:* ${data.contactPhone}` : ''}
-
-📦 *DETALLE DEL PEDIDO:*
+            let msg = `¡Hola, equipo Milkarf! Quiero realizar el siguiente pedido:
+👤 *Cliente:* ${userName}
+📦 *PEDIDO:*
 ${itemsFormatted}
-
-💵 *RESUMEN DE COMPRA:*
-• Subtotal: ${currency(data.subtotal)}`;
+💰 *TOTAL A PAGAR:* ${currency(data.finalTotal)}`;
 
             if (data.discountAmount > 0) {
                 const label = data.discountLabel || (data.discountType === 'welcome' ? 'Descuento de bienvenida (-20%)' : 'Descuento de plan');
                 msg += `\n• ${label}: -${currency(data.discountAmount)}`;
             }
-            msg += `\n• *TOTAL FÓRMULAS:* ${currency(data.finalTotal)}`;
-            msg += `\n• *Costo de entrega:* Pendiente por cotizar según zona`;
 
+            msg += `\n📍 *Dirección de entrega:*`;
             if (data.location) {
-                msg += `\n\n📍 *Ubicación para la entrega:*\n${data.location}`;
+                msg += `\n${data.location}`;
             }
-            if (data.orderId) {
-                msg += `\n\n🔖 *Ref pedido web:* #${data.orderId}`;
-            }
-            msg += `\n\nQuedo atento/a para coordinar la confirmación y entrega. ¡Muchas gracias!`;
+
             return msg;
         }
 
@@ -1078,12 +1064,12 @@ Detalle: ${data.benefit || 'Beneficio disponible'}
 Puntos a descontar: ${Number(data.points || 0)} puntos
 Tutor: ${userName}
 
-Por favor, confirmen disponibilidad para coordinar la entrega.`;
+Quedo atento/a para coordinar la entrega.`;
 
         case 'adminOrderContact':
             return `Hola, te escribimos de Milkarf para confirmar tu pedido.
 
-Recibimos tu solicitud y estamos revisando disponibilidad, costo de entrega según tu zona y formas de pago.
+Recibimos tu solicitud y estamos coordinando el costo de entrega según tu zona y las formas de pago.
 
 Por favor, indícanos si deseas proceder con la confirmación.`;
 
@@ -1133,7 +1119,7 @@ Si lo deseas, podemos brindarte recomendaciones personalizadas según su perfil.
 Beneficio solicitado: ${data.itemName || data.benefit || 'Beneficio Milkarf'}
 Puntos aplicados: ${Number(data.points || 0)} puntos
 
-Nos comunicamos para validar disponibilidad y coordinar la entrega.`;
+Nos comunicamos para coordinar los detalles y la entrega de tu beneficio.`;
 
         default:
             return window.getWhatsAppTemplate('general', data);
@@ -5778,7 +5764,7 @@ window.renderPresentationSelector = function () {
     const getLabel = (f, sz) => {
         const p = window.getPresentationBySize?.(f, sz);
         if (p) return '$' + Number(p.price).toFixed(2);
-        if (f === 'mixto') return sz === '250gr' ? '$2.50–$3.50' : '$5.50–$7.50';
+        if (f === 'mixto') return sz === '250gr' ? '$2.50–$3.50' : '$5.00–$7.50';
         return '';
     };
     document.querySelectorAll('#plan-presentation-selector .presentation-price').forEach(el => {
@@ -7463,7 +7449,7 @@ window.buildUserOrderCard = function (o, { compact = false } = {}) {
     const items = itemsArr.length ? itemsArr.map(i => `${Number(i.qty || 0)}x ${i.name || 'Producto'} ${i.weight ? '(' + i.weight + ')' : ''}${i.forPet ? ' · ' + i.forPet : ''}`).join(' · ') : 'Pedido Milkarf';
     const total = typeof o.total === 'number' ? '$' + o.total.toFixed(2) : '';
     const points = Number(o.pointsAwarded || o.pointsGranted || 0);
-    let helper = 'Pedido pendiente por confirmar. El equipo Milkarf validará disponibilidad y continuará la atención por WhatsApp.';
+    let helper = 'Pedido pendiente por confirmar. El equipo Milkarf continuará la atención por WhatsApp para coordinar la entrega.';
     if (['confirmado', 'verificado'].includes(status)) helper = 'Pedido revisado por administración. Está en proceso interno de cierre.';
     if (status === 'completado') helper = points > 0 ? `Pedido completado. Este pedido sumó ${points} puntos a tu cuenta.` : 'Pedido completado por administración.';
     if (status === 'cancelado') helper = 'Pedido cancelado. Escríbenos si necesitas revisarlo.';
@@ -8646,7 +8632,7 @@ window.finalizarPedido = function (event) {
     window.renderUserOrders?.(window.getLocalUserOrders?.() || [prepared.pendingOrder]);
     window.actualizarUIAuth?.();
     window.showCartPostOrderState?.(prepared.localOrderId);
-    window.showToast?.('Tu pedido quedó en proceso. Continúa por WhatsApp para confirmar disponibilidad y entrega.', 'success');
+    window.showToast?.('Tu pedido quedó en proceso. Continúa por WhatsApp para coordinar la entrega.', 'success');
 
     // showCartPostOrderState/updateCartUI pueden cambiar el href a # porque el carrito se vacía.
     // Por eso se vuelve a fijar justo antes de entregar el control al navegador.
@@ -9161,7 +9147,7 @@ window.forceClearCartAfterWhatsAppOrder = function (prepared = null, options = {
     if (prepared) {
         try { window.renderUserOrders?.(window.getLocalUserOrders?.() || [prepared.pendingOrder]); } catch (error) { }
         try { window.actualizarUIAuth?.(); } catch (error) { }
-        if (opts.toast) window.showToast?.('Pedido preparado. Continuemos por WhatsApp para confirmar disponibilidad y entrega.', 'success');
+        if (opts.toast) window.showToast?.('Pedido preparado. Continuemos por WhatsApp para coordinar la entrega.', 'success');
     }
 };
 
@@ -9471,7 +9457,7 @@ window.descargarGuiaAlimentacion = async function (planData = null) {
 
         doc.setFont(fontName, 'normal');
         doc.setFontSize(7.5);
-        doc.text('milkarf.com · WhatsApp: +58 412 181 2947', 194, 19.5, { align: 'right' });
+        doc.text('milkarf.com · WhatsApp: +58 412 179 1137', 194, 19.5, { align: 'right' });
 
         // 2. SECCIÓN: DATOS DE LA MASCOTA Y PLAN
         let y = 35;
@@ -9685,14 +9671,14 @@ window.descargarGuiaAlimentacion = async function (planData = null) {
         doc.setFontSize(7.2);
         doc.setTextColor(220, 215, 238);
         doc.text('Escríbenos directamente a WhatsApp y te acompañamos en cada etapa de su alimentación.', 20, y + 14);
-        doc.text('Milkarf Nutrición Animal · Ingredientes aptos para consumo humano · Caracas, Venezuela', 20, y + 19);
+        doc.text('Milkarf Nutrición Animal · Ingredientes aptos para consumo humano · Mérida, Venezuela', 20, y + 19);
 
         doc.setFillColor(...cGreen);
         doc.roundedRect(122, y + 6, 68, 12, 2, 2, 'F');
         doc.setFont(fontName, 'bold');
         doc.setFontSize(8);
         doc.setTextColor(...cPurpleDark);
-        doc.text('WhatsApp: +58 412 181 2947', 156, y + 13.5, { align: 'center' });
+        doc.text('WhatsApp: +58 412 179 1137', 156, y + 13.5, { align: 'center' });
 
         // Sub-pie legal
         doc.setTextColor(140, 140, 150);
@@ -9774,7 +9760,7 @@ window.descargarGuiaGeneral = async function () {
 
         doc.setFont(fontName, 'normal');
         doc.setFontSize(7.5);
-        doc.text('milkarf.com · WhatsApp: +58 412 181 2947', 194, 19.5, { align: 'right' });
+        doc.text('milkarf.com · WhatsApp: +58 412 179 1137', 194, 19.5, { align: 'right' });
 
         // 2. SECCIÓN 1: EL COMPROMISO DE MILKARF
         let y = 35;
@@ -9993,7 +9979,7 @@ window.descargarGuiaGeneral = async function () {
         doc.setFontSize(7.2);
         doc.setTextColor(220, 215, 238);
         doc.text('Escríbenos directamente a WhatsApp indicando el nombre de tu mascota y te orientamos.', 24, by + 14);
-        doc.text('Milkarf Nutrición Animal · Caracas, Venezuela · milkarf.com', 24, by + 19);
+        doc.text('Milkarf Nutrición Animal · Mérida, Venezuela · milkarf.com', 24, by + 19);
 
         // Botón WhatsApp en verde lima
         doc.setFillColor(...cGreen);
@@ -10001,7 +9987,7 @@ window.descargarGuiaGeneral = async function () {
         doc.setFont(fontName, 'bold');
         doc.setFontSize(8);
         doc.setTextColor(...cPurpleDark);
-        doc.text('WhatsApp: +58 412 181 2947', 154, by + 13, { align: 'center' });
+        doc.text('WhatsApp: +58 412 179 1137', 154, by + 13, { align: 'center' });
 
         // 6. SUB-PIE
         doc.setTextColor(140, 140, 155);
