@@ -319,7 +319,7 @@ window.normalizeUserProfileForWrite = function (data = {}) {
 // =========================================================================================
 window.WA_NUMBER = '584121791137';
 window.PRICES_POLLO = { '250gr': '$2.50', '550gr': '$5.00' };
-window.PRICES_RES = { '250gr': '$3.50', '550gr': '$7.50' };
+window.PRICES_RES = { '250gr': '$3.50', '550gr': '$7.00' };
 
 window.MILKARF_CONFIG = {
     calcEngineVersion: 'v2.0_plan_based_low_activity',
@@ -345,7 +345,7 @@ window.MILKARF_CONFIG = {
             caloricDensity: 1.55, // 1.550 kcal/kg — valor indicado por la marca
             presentations: [
                 { size: '250gr', grams: 250, price: 3.50, available: true },
-                { size: '550gr', grams: 550, price: 7.50, available: true }
+                { size: '550gr', grams: 550, price: 7.00, available: true }
             ]
         }
     },
@@ -366,7 +366,7 @@ window.optimizeBagsForFormula = function (formula, dailyGrams, days, forcedSize 
     const name = prod?.name || (formula === 'res' ? 'Carne de Res con Calabacín' : 'Pollo con Zanahoria');
 
     const pres250 = window.getPresentationBySize(formula, '250gr') || { price: formula === 'res' ? 3.50 : 2.50, grams: 250 };
-    const pres550 = window.getPresentationBySize(formula, '550gr') || { price: formula === 'res' ? 7.50 : 5.00, grams: 550 };
+    const pres550 = window.getPresentationBySize(formula, '550gr') || { price: formula === 'res' ? 7.00 : 5.00, grams: 550 };
 
     if (totalRequiredGrams <= 0) {
         return { bags: [], totalBags: 0, totalGrams: 0, cost: 0 };
@@ -508,7 +508,7 @@ window.recommendPresentation = function (dailyGrams, formula = 'pollo') {
         grams: recSize === '250gr' ? 250 : 550,
         label: recSize === '250gr' ? '250 g' : '550 g',
         available,
-        price: pres ? pres.price : (recSize === '250gr' ? 2.50 : (formula === 'res' ? 7.50 : 5.00)),
+        price: pres ? pres.price : (recSize === '250gr' ? 2.50 : (formula === 'res' ? 7.00 : 5.00)),
         reason: ''
     };
 };
@@ -532,7 +532,7 @@ window.calculatePlanConsumption = function (dailyGrams, days, formula = 'pollo',
 
     if (mealSchedule && Array.isArray(mealSchedule) && mealSchedule.length > 0) {
         const pres = window.getPresentationBySize(formula, bagSize);
-        const unitPrice = pres ? pres.price : (bagSize === '250gr' ? 2.50 : (formula === 'res' ? 7.50 : 5.00));
+        const unitPrice = pres ? pres.price : (bagSize === '250gr' ? 2.50 : (formula === 'res' ? 7.00 : 5.00));
         let openBags = [];
         let discarded = 0;
         let totalBagsOpened = 0;
@@ -643,7 +643,7 @@ window.calculatePlanConsumption = function (dailyGrams, days, formula = 'pollo',
     const mainBag = bags[0] || {};
     const presSize = bagSize;
     const presGrams = presSize === '550gr' ? 550 : (presSize === '500gr' ? 500 : 250);
-    const presPrice = mainBag.unitPrice || (presGrams === 250 ? 2.50 : (formula === 'res' ? 7.50 : 5.00));
+    const presPrice = mainBag.unitPrice || (presGrams === 250 ? 2.50 : (formula === 'res' ? 7.00 : 5.00));
 
     return {
         requiredGrams,
@@ -4986,7 +4986,7 @@ window.loadAdminCalculadora = function () {
                             <span class="text-2xl shrink-0 p-2 rounded-xl bg-white dark:bg-purple/20 shadow-xs">✂️</span>
                             <div>
                                 <span class="block text-purple-dark dark:text-white font-extrabold text-sm leading-tight">¿Está esterilizado o castrado?</span>
-                                <span id="esterilizado-status-label" class="text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-0.5 block">No marcado · Cálculo preventivo por factor mínimo</span>
+                                <span id="esterilizado-status-label" class="text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-0.5 block">No marcado</span>
                             </div>
                         </div>
                         <div class="shrink-0 flex items-center pr-1">
@@ -5109,7 +5109,7 @@ window.setEsterilizadoState = function (isEsterilizado) {
             dot.classList.remove('translate-x-[22px]');
             dot.classList.add('translate-x-0');
             dot.textContent = '';
-            label.textContent = 'No marcado · Cálculo preventivo por factor mínimo';
+            label.textContent = 'No marcado';
             label.className = 'text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-0.5 block';
         }
     }
@@ -5764,7 +5764,7 @@ window.renderPresentationSelector = function () {
     const getLabel = (f, sz) => {
         const p = window.getPresentationBySize?.(f, sz);
         if (p) return '$' + Number(p.price).toFixed(2);
-        if (f === 'mixto') return sz === '250gr' ? '$2.50–$3.50' : '$5.00–$7.50';
+        if (f === 'mixto') return sz === '250gr' ? '$2.50–$3.50' : '$5.00–$7.00';
         return '';
     };
     document.querySelectorAll('#plan-presentation-selector .presentation-price').forEach(el => {
@@ -5823,6 +5823,12 @@ window.seleccionarPlan = function (days) {
 
 window.addFeedingPlanToCart = function (plan) {
     if (!window.cart) window.cart = [];
+
+    // Reactivar carrito y limpiar cualquier estado post-pedido previo
+    window.cartPostOrderActive = false;
+    window.clearCartPostOrderPersistedState?.();
+    const postOrderCard = document.getElementById('cart-post-order');
+    if (postOrderCard) postOrderCard.classList.add('hidden');
 
     // Formatear como item de plan de alimentación
     const planItem = {
@@ -5973,9 +5979,7 @@ window.calcularRacion = function () {
     const etapaLabel = window.state.etapa === 'cachorro'
         ? `Cachorro (${window.state.cachorroEdad} meses)`
         : (window.state.etapa === 'senior' ? 'Senior' : 'Adulto');
-    const condLabel = window.state.etapa === 'cachorro'
-        ? ''
-        : (window.state.esterilizado ? ' · Esterilizado' : ' · Factor mínimo preventivo');
+    const condLabel = (window.state.etapa !== 'cachorro' && window.state.esterilizado) ? ' · Esterilizado' : '';
     if (subtitlePet) subtitlePet.textContent = `Para ${window.state.nombreMascota} · ${etapaLabel}${condLabel} · ${peso} kg`;
 
     const rGrams = document.getElementById('result-grams');
@@ -6319,6 +6323,12 @@ window.updateCartUI = function () {
     const sum = document.getElementById('cart-summary');
     const post = document.getElementById('cart-post-order');
 
+    // Si hay productos en el carrito, debe mostrarse el pedido (no el estado post-orden previo)
+    if (window.cart && window.cart.length > 0) {
+        window.cartPostOrderActive = false;
+        window.clearCartPostOrderPersistedState?.();
+    }
+
     if (window.cartPostOrderActive) {
         if (empty) empty.classList.add('hidden');
         if (cont) { cont.classList.add('hidden'); cont.innerHTML = ''; }
@@ -6566,10 +6576,15 @@ window.saveCartToStorage = function () {
         try {
             const user = window.currentUser;
             if (!user || user.isAnonymous || !user.email || !db) return;
-            const cartData = (window.cart || []).map(i => ({
-                key: i.key, name: i.name, weight: i.weight,
-                price: i.price, qty: i.qty, forPet: i.forPet || ''
-            }));
+            const cartData = (window.cart || []).map(i => {
+                if (i.type === 'feeding_plan') {
+                    return { ...i };
+                }
+                return {
+                    key: i.key, name: i.name, weight: i.weight,
+                    price: i.price, qty: i.qty, forPet: i.forPet || ''
+                };
+            });
             await setDoc(window.getUserPath(user.uid), { cart: cartData, updatedAt: serverTimestamp() }, { merge: true });
         } catch (e) { console.warn('No se pudo sincronizar carrito a Firestore:', e); }
     }, 2000);
@@ -6604,9 +6619,14 @@ window.syncCartOnLogin = async function (userData) {
     if (window.cart.length === 0) {
         window.cart = remoteCart;
     } else if (remoteCart.length > 0) {
-        // Fusionar sin duplicados (por key+forPet)
+        // Fusionar sin duplicados
         for (const ri of remoteCart) {
-            const exists = window.cart.find(li => li.key === ri.key && (li.forPet || '') === (ri.forPet || ''));
+            const exists = window.cart.find(li => {
+                if (ri.type === 'feeding_plan' || li.type === 'feeding_plan') {
+                    return (li.petName || '').toLowerCase() === (ri.petName || '').toLowerCase();
+                }
+                return li.key === ri.key && (li.forPet || '') === (ri.forPet || '');
+            });
             if (!exists) {
                 window.cart.push(ri);
             }
@@ -8596,76 +8616,7 @@ window.savePreparedOrderNonBlocking = function (prepared) {
     })();
 };
 
-window.finalizarPedido = function (event) {
-    const btn = event?.currentTarget || document.getElementById('btn-finalizar-pedido');
-    const isMobileCheckout = window.isMobileCheckoutBrowser?.() || false;
-
-    if (!window.cart || !window.cart.length) {
-        if (event) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-        window.showToast?.('Agrega productos antes de pedir por WhatsApp.');
-        return false;
-    }
-
-    const prepared = window.prepareOrderForCheckout?.();
-    if (!prepared || !prepared.url) {
-        if (event) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-        window.showToast?.('No se pudo preparar el pedido. Intenta nuevamente.');
-        return false;
-    }
-
-    if (btn) {
-        btn.setAttribute('href', prepared.url);
-        btn.setAttribute('target', isMobileCheckout ? '_self' : '_blank');
-        btn.setAttribute('rel', 'noopener noreferrer');
-    }
-
-    // Estado local primero: si el usuario vuelve desde WhatsApp, ya verá el pedido en proceso.
-    window.cacheUserOrderLocal?.(prepared.pendingOrder);
-    window.queuePendingOrderForSync?.(prepared.pendingOrder);
-    try { localStorage.setItem('milkarf_last_order_id', prepared.localOrderId); } catch (e) { }
-    window.renderUserOrders?.(window.getLocalUserOrders?.() || [prepared.pendingOrder]);
-    window.actualizarUIAuth?.();
-    window.showCartPostOrderState?.(prepared.localOrderId);
-    window.showToast?.('Tu pedido quedó en proceso. Continúa por WhatsApp para coordinar la entrega.', 'success');
-
-    // showCartPostOrderState/updateCartUI pueden cambiar el href a # porque el carrito se vacía.
-    // Por eso se vuelve a fijar justo antes de entregar el control al navegador.
-    if (btn) {
-        btn.setAttribute('href', prepared.url);
-        btn.setAttribute('target', isMobileCheckout ? '_self' : '_blank');
-        btn.setAttribute('rel', 'noopener noreferrer');
-    }
-
-    // Firestore corre en paralelo y nunca bloquea la salida hacia WhatsApp.
-    window.savePreparedOrderNonBlocking?.(prepared);
-
-    if (isMobileCheckout) {
-        // Clave del bug: no usar preventDefault, window.open ni a.click().
-        // El navegador móvil debe seguir el href real del <a> como navegación nativa.
-        setTimeout(() => {
-            if (document.visibilityState === 'visible') {
-                window.showWhatsAppManualFallback?.(prepared.url);
-            }
-        }, 1800);
-        return true;
-    }
-
-    // Escritorio: sí evitamos la navegación nativa para abrir WhatsApp Web en una pestaña nueva.
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
-
-    const opened = window.open(prepared.url, '_blank', 'noopener,noreferrer');
-    if (!opened) window.showWhatsAppManualFallback?.(prepared.url);
-    return false;
-};
+// window.finalizarPedido se define e implementa en el bloque de checkout canónico al final de app.js
 
 window.refreshCheckoutWhatsAppLink = function () {
     const btn = document.getElementById('btn-finalizar-pedido');
@@ -9571,10 +9522,10 @@ window.descargarGuiaAlimentacion = async function (planData = null) {
 
         const rules = [
             { n: '1', t: 'Congelación a -18 °C:', d: 'Guarda las bolsas de 250 g y 550 g en el congelador inmediatamente al recibirlas. Vida útil: 6 meses.' },
-            { n: '2', t: 'Descongelación en nevera:', d: 'Baja la porción al refrigerador (4 °C) 12 horas antes de servir. NUNCA descongeles a temperatura ambiente.' },
+            { n: '2', t: 'Descongelación en nevera:', d: 'Baja la porción al refrigerador (4 °C) unas 12 horas antes. Evita descongelar a temperatura ambiente para no olvidarla y evitar que se dañe.' },
             { n: '3', t: 'Regla de las 24 horas:', d: 'Una vez abierta la bolsa, mantén refrigerado el sobrante y consúmelo dentro de las siguientes 24 horas.' },
-            { n: '4', t: 'Nunca recongelar:', d: 'El alimento descongelado no debe devolverse al congelador bajo ninguna circunstancia.' },
-            { n: '5', t: 'Temperatura de servicio:', d: 'Sirve fresco o templado con un poco de agua tibia o baño maría suave. No recalientes a alta potencia.' }
+            { n: '4', t: 'No recongelar:', d: 'Una vez descongelado el alimento, no se debe volver a congelar para mantener su calidad y frescura.' },
+            { n: '5', t: 'Temperatura de servicio:', d: 'Sirve fresco o a temperatura ambiente directamente tras su descongelación en nevera. No recalentar.' }
         ];
 
         let ry = y + 12.5;
@@ -9616,10 +9567,10 @@ window.descargarGuiaAlimentacion = async function (planData = null) {
         doc.text('4. GUÍA DE TRANSICIÓN DIGESTIVA GRADUAL (10 DÍAS)', 18, y + 5.5);
 
         const steps = [
-            { d: 'Días 1 a 3', pM: '25% Milkarf', pA: '75% Alimento actual', note: 'Adaptación enzimática y microbiana' },
-            { d: 'Días 4 a 6', pM: '50% Milkarf', pA: '50% Alimento actual', note: 'Equilibrio de absorción de nutrientes' },
-            { d: 'Días 7 a 9', pM: '75% Milkarf', pA: '25% Alimento actual', note: 'Consolidación del tracto digestivo' },
-            { d: 'Día 10+', pM: '100% Milkarf', pA: '0%', note: 'Nutrición natural completa activa' }
+            { d: 'Días 1 a 3', pM: '25% Milkarf', pA: '75% Alimento actual' },
+            { d: 'Días 4 a 6', pM: '50% Milkarf', pA: '50% Alimento actual' },
+            { d: 'Días 7 a 9', pM: '75% Milkarf', pA: '25% Alimento actual' },
+            { d: 'Día 10+', pM: '100% Milkarf', pA: '0%' }
         ];
 
         let sy = y + 13;
@@ -9633,21 +9584,16 @@ window.descargarGuiaAlimentacion = async function (planData = null) {
             doc.text(s.d, 22, sy + 1.4);
 
             doc.setFillColor(...cPink);
-            doc.roundedRect(60, sy - 2.2, 28, 5, 1, 1, 'F');
+            doc.roundedRect(70, sy - 2.2, 32, 5, 1, 1, 'F');
             doc.setTextColor(255, 255, 255);
             doc.setFont(fontName, 'bold');
             doc.setFontSize(7.2);
-            doc.text(s.pM, 74, sy + 1.3, { align: 'center' });
+            doc.text(s.pM, 86, sy + 1.3, { align: 'center' });
 
             doc.setTextColor(...cTextDark);
             doc.setFont(fontName, 'normal');
             doc.setFontSize(7.5);
-            doc.text(`+ ${s.pA}`, 98, sy + 1.4);
-
-            doc.setTextColor(...cTextGray);
-            doc.setFont(fontName, 'italic');
-            doc.setFontSize(7);
-            doc.text(`— ${s.note}`, 136, sy + 1.4);
+            doc.text(`+ ${s.pA}`, 115, sy + 1.4);
 
             sy += 7.8;
         });
@@ -9804,10 +9750,10 @@ window.descargarGuiaGeneral = async function () {
 
         const rules = [
             { n: '1', t: 'Congelación a -18 °C:', d: 'Guarda las bolsas de 250 g y 550 g en freezer inmediatamente. Vida útil cerrada: 6 meses.' },
-            { n: '2', t: 'Descongelación en nevera:', d: 'Baja la ración al refrigerador (4 °C) 12 horas antes. NUNCA descongeles a temperatura ambiente.' },
+            { n: '2', t: 'Descongelación en nevera:', d: 'Baja la ración al refrigerador (4 °C) unas 12 horas antes. Evita descongelar a temperatura ambiente para no olvidarla y evitar que se dañe.' },
             { n: '3', t: 'Regla de las 24 horas:', d: 'Una vez abierta la bolsa, mantén refrigerado el sobrante y consúmelo dentro de las siguientes 24 horas.' },
-            { n: '4', t: 'Nunca recongelar:', d: 'El alimento descongelado no debe devolverse al congelador bajo ninguna circunstancia.' },
-            { n: '5', t: 'Temperatura de servicio:', d: 'Sirve fresco o templado con un poco de agua tibia o a baño maría suave. No recalientes a alta potencia.' }
+            { n: '4', t: 'No recongelar:', d: 'Una vez descongelado el alimento, no se debe volver a congelar para mantener su calidad y frescura.' },
+            { n: '5', t: 'Temperatura de servicio:', d: 'Sirve fresco o a temperatura ambiente directamente tras su descongelación en nevera. No recalentar.' }
         ];
 
         let ry = y + 13.5;
@@ -9861,18 +9807,17 @@ window.descargarGuiaGeneral = async function () {
 
         // Encabezados de tabla
         doc.setFont(fontName, 'bold');
-        doc.setFontSize(6.8);
+        doc.setFontSize(7.2);
         doc.setTextColor(...cTextGray);
-        doc.text('FASE / PERIODO', 22, y + 15);
-        doc.text('ALIMENTO MILKARF', 64, y + 15);
-        doc.text('ALIMENTO HABITUAL', 100, y + 15);
-        doc.text('OBJETIVO DIGESTIVO', 138, y + 15);
+        doc.text('FASE / PERIODO', 24, y + 15);
+        doc.text('ALIMENTO MILKARF', 76, y + 15);
+        doc.text('ALIMENTO HABITUAL', 125, y + 15);
 
         const steps = [
-            { d: 'Días 1 a 3', pM: '25% Milkarf', pA: '75% Alimento actual', obj: 'Adaptación enzimática y microbiana' },
-            { d: 'Días 4 a 6', pM: '50% Milkarf', pA: '50% Alimento actual', obj: 'Equilibrio de absorción de nutrientes' },
-            { d: 'Días 7 a 9', pM: '75% Milkarf', pA: '25% Alimento actual', obj: 'Consolidación del tracto digestivo' },
-            { d: 'Día 10 en adelante', pM: '100% Milkarf', pA: '0%', obj: 'Nutrición natural completa activa' }
+            { d: 'Días 1 a 3', pM: '25% Milkarf', pA: '75% Alimento actual' },
+            { d: 'Días 4 a 6', pM: '50% Milkarf', pA: '50% Alimento actual' },
+            { d: 'Días 7 a 9', pM: '75% Milkarf', pA: '25% Alimento actual' },
+            { d: 'Día 10 en adelante', pM: '100% Milkarf', pA: '0%' }
         ];
 
         let sy = y + 19;
@@ -9886,27 +9831,21 @@ window.descargarGuiaGeneral = async function () {
             doc.setFont(fontName, 'bold');
             doc.setFontSize(7.8);
             doc.setTextColor(...cPurpleDark);
-            doc.text(s.d, 22, sy + 1.8);
+            doc.text(s.d, 24, sy + 1.8);
 
             // Pastilla % Milkarf
             doc.setFillColor(...cPink);
-            doc.roundedRect(62, sy - 2.2, 28, 5.4, 1, 1, 'F');
+            doc.roundedRect(72, sy - 2.2, 34, 5.4, 1, 1, 'F');
             doc.setTextColor(255, 255, 255);
             doc.setFont(fontName, 'bold');
             doc.setFontSize(7.2);
-            doc.text(s.pM, 76, sy + 1.6, { align: 'center' });
+            doc.text(s.pM, 89, sy + 1.6, { align: 'center' });
 
             // Alimento actual
             doc.setTextColor(...cTextDark);
             doc.setFont(fontName, 'normal');
             doc.setFontSize(7.6);
-            doc.text(`+ ${s.pA}`, 100, sy + 1.8);
-
-            // Objetivo
-            doc.setTextColor(...cTextGray);
-            doc.setFont(fontName, 'italic');
-            doc.setFontSize(7.2);
-            doc.text(`— ${s.obj}`, 138, sy + 1.8);
+            doc.text(`+ ${s.pA}`, 125, sy + 1.8);
 
             sy += 8.6;
         });

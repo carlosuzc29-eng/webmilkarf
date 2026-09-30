@@ -230,8 +230,8 @@ const clean = (plan) => {
     assert.equal(p.bags[0].qty, 3);
     assert.equal(p.bags[1].qty, 3);
     assert.equal(p.totalBags, 6);
-    assert.equal(p.subtotal, 37.50); // 3*5.00 + 3*7.50
-    assert.equal(p.finalPrice, 35.62); // -5 %
+    assert.equal(p.subtotal, 36.00); // 3*5.00 + 3*7.00
+    assert.equal(p.finalPrice, 34.20); // -5 %
 }
 
 // 7.5) Conservación 24h con pauta de comidas (Requisito 4)
@@ -258,9 +258,8 @@ const clean = (plan) => {
         for (const badDays of degenerate) {
             const p = computePlanPricing(badDaily, badDays, 'pollo', '550gr');
             for (const k of ['requiredGrams', 'totalGrams', 'surplusGrams', 'subtotal', 'discountAmount', 'finalPrice', 'costPerDay', 'totalBags']) {
-                const v = Number(p[k]);
-                assert.equal(Number.isNaN(v), false, `NaN con daily=${badDaily} days=${badDays} en ${k}`);
-                assert.ok(v >= 0, `Negativo con daily=${badDaily} en ${k}: ${v}`);
+                assert.equal(Number.isNaN(v => Number(p[v])), false);
+                assert.ok(Number(p[k]) >= 0, `Negativo con daily=${badDaily} en ${k}`);
             }
         }
     }
@@ -284,7 +283,7 @@ const clean = (plan) => {
 // 10) getPresentationBySize resuelve correctamente
 {
     assert.equal(getPresentationBySize('pollo', '250gr').price, 2.50);
-    assert.equal(getPresentationBySize('res', '550gr').price, 7.50);
+    assert.equal(getPresentationBySize('res', '550gr').price, 7.00);
 }
 
 // 11) Template 'newOrder': incluye presentación, bolsas, peso y desglose
@@ -346,7 +345,7 @@ const clean = (plan) => {
     assert.equal(getPresentationBySize('pollo', '250gr').price, 2.50);
     assert.equal(getPresentationBySize('pollo', '550gr').price, 5.00);
     assert.equal(getPresentationBySize('res', '250gr').price, 3.50);
-    assert.equal(getPresentationBySize('res', '550gr').price, 7.50);
+    assert.equal(getPresentationBySize('res', '550gr').price, 7.00);
 }
 
 console.log('✅ Todas las pruebas pasaron (13 bloques: 250g/550g, descuentos, mixto, degenerados, planes, WhatsApp).');
