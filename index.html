@@ -120,12 +120,12 @@
         <!-- MENÚ PRINCIPAL (CLIENTES) -->
         <ul id="main-nav-links" class="nav-links space-y-6 text-center">
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-home">Inicio</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-mision">Por qué Milkarf</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-perros">Nuestras Fórmulas</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-calc">Calcula su porción</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-mision">Por qué Milkarf</a></li>
             <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block" data-target="view-faq">Guía y Ayuda</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-pink hover:text-white tracking-wider uppercase block" data-target="view-dashboard">Mi Cuenta y Puntos</a></li>
-            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-green hover:text-white tracking-wider uppercase block flex items-center gap-3 justify-center" data-target="view-cart">🛒 Mi Pedido</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-green hover:text-white tracking-wider uppercase block" data-target="view-calc">Calcula su porción</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-pink hover:text-white tracking-wider uppercase block" data-target="view-dashboard">Mi Cuenta</a></li>
+            <li class="opacity-0 -translate-y-4 transition-all duration-300"><a href="#" class="nav-link text-2xl md:text-3xl font-extrabold text-white hover:text-green tracking-wider uppercase block flex items-center gap-3 justify-center" data-target="view-cart">🛒 Mi Pedido</a></li>
         </ul>
         
     </nav>
@@ -144,27 +144,27 @@
                 </div>
             </a>
 
-            <!-- Central Nav Links (5 accesos claros) -->
-            <nav class="flex items-center gap-1 bg-[#f5f1fa] dark:bg-[#1a0f30]/80 p-1.5 rounded-full border border-purple-border/40 dark:border-purple/20 shadow-xs">
+            <!-- Central Nav Links (Reordenados según UX: Inicio · Fórmulas · Por qué · Guía y ayuda · Calcula su porción) -->
+            <nav class="flex items-center gap-1.5 bg-[#f5f1fa] dark:bg-[#1a0f30]/80 p-1.5 rounded-full border border-purple-border/40 dark:border-purple/20 shadow-xs">
                 <button onclick="window.navigateTo('view-home')" class="milkarf-nav-link active" data-target="view-home">
                     <i data-lucide="home" class="w-4 h-4 text-purple shrink-0"></i>
                     <span class="whitespace-nowrap">Inicio</span>
-                </button>
-                <button onclick="window.navigateTo('view-mision')" class="milkarf-nav-link" data-target="view-mision">
-                    <i data-lucide="heart" class="w-4 h-4 text-pink shrink-0"></i>
-                    <span class="whitespace-nowrap">Por qué Milkarf</span>
                 </button>
                 <button onclick="window.navigateTo('view-perros')" class="milkarf-nav-link" data-target="view-perros">
                     <i data-lucide="beef" class="w-4 h-4 text-purple shrink-0"></i>
                     <span class="whitespace-nowrap">Fórmulas</span>
                 </button>
-                <button onclick="window.navigateTo('view-calc')" class="milkarf-nav-link" data-target="view-calc">
-                    <i data-lucide="scale" class="w-4 h-4 text-[#5b6b06] dark:text-green shrink-0"></i>
-                    <span class="whitespace-nowrap">Calcula su porción</span>
+                <button onclick="window.navigateTo('view-mision')" class="milkarf-nav-link" data-target="view-mision">
+                    <i data-lucide="heart" class="w-4 h-4 text-pink shrink-0"></i>
+                    <span class="whitespace-nowrap">Por qué Milkarf</span>
                 </button>
                 <button onclick="window.navigateTo('view-faq')" class="milkarf-nav-link" data-target="view-faq">
                     <i data-lucide="help-circle" class="w-4 h-4 text-pink shrink-0"></i>
-                    <span class="whitespace-nowrap">Ayuda</span>
+                    <span class="whitespace-nowrap">Guía y ayuda</span>
+                </button>
+                <button onclick="window.navigateTo('view-calc')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-green text-purple-dark hover:bg-green-dark hover:text-white font-extrabold text-xs transition-all shadow-xs active:scale-95 ml-1" data-target="view-calc">
+                    <i data-lucide="scale" class="w-3.5 h-3.5 shrink-0"></i>
+                    <span class="whitespace-nowrap font-black">Calcula su porción</span>
                 </button>
             </nav>
 
@@ -321,78 +321,115 @@
                         </div>
                     </div>
 
-                    <!-- SECCIÓN B: BENEFICIOS RESUMIDOS -->
-                    <div id="seccion-cambios-observables" class="w-full py-12 md:py-16 text-center border-t border-purple-border/30 dark:border-purple/20">
+                    <!-- FASE 1: LAS DOS FÓRMULAS EN VERSIÓN RESUMIDA -->
+                    <div class="w-full py-10 md:py-14 text-center border-t border-purple-border/30 dark:border-purple/20">
+                        <span class="text-xs font-bold uppercase tracking-wider text-pink mb-1 block font-display">Nuestras opciones</span>
+                        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black text-purple-dark dark:text-white tracking-tight font-display">Fórmulas disponibles</h2>
+                        <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-normal mt-2 max-w-xl mx-auto leading-relaxed">
+                            Conoce nuestras fórmulas de Pollo y Carne, calcula su porción diaria orientativa y elige un plan para organizar sus comidas.
+                        </p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 max-w-4xl mx-auto text-left">
+                            <!-- Tarjeta Resumida Pollo -->
+                            <div class="bg-white dark:bg-darkcard rounded-2xl overflow-hidden shadow-soft-lg border border-purple-border/40 dark:border-purple/25 flex flex-col justify-between">
+                                <div class="h-48 relative bg-purple/10 dark:bg-purple/20 overflow-hidden select-none group">
+                                    <img decoding="async" src="images/formula-pollo.webp?v=2" onerror="this.onerror=null; this.src='images/Gemini_Generated_Image_18qpp218qpp218qp.webp'" alt="Fórmula de Pollo" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/70 via-transparent to-transparent opacity-60"></div>
+                                    <span class="absolute top-4 right-4 bg-pink/90 backdrop-blur-md text-white text-[10px] font-bold tracking-wider px-3 py-1 rounded-full uppercase shadow-sm z-20 border border-white/20">Pollo</span>
+                                </div>
+                                <div class="p-6 space-y-4 flex-grow flex flex-col justify-between">
+                                    <div>
+                                        <span class="text-[10px] font-black uppercase tracking-wider text-pink block">Fórmula de ave</span>
+                                        <h3 class="text-xl font-black text-purple-dark dark:text-white tracking-tight">Pollo</h3>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400 font-semibold block mt-0.5">Con zanahorias frescas y semillas de chía</span>
+                                    </div>
+                                    <div class="bg-purple-light/60 dark:bg-[#0d0718] p-3.5 rounded-xl border border-purple-border/40 dark:border-purple/20">
+                                        <div class="flex items-center justify-between text-xs font-bold text-purple-dark dark:text-white mb-0.5">
+                                            <span>Presentaciones oficiales:</span>
+                                            <span class="text-pink font-black">250 g ($2.50) · 550 g ($5.00)</span>
+                                        </div>
+                                        <p class="text-[11px] text-gray-500 dark:text-gray-400">
+                                            Empacadas al vacío y congeladas. El sistema calcula las porciones exactas para 7, 15 o 30 días con hasta 10% de descuento.
+                                        </p>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2.5 pt-2">
+                                        <button onclick="window.navigateTo('view-perros')" class="w-full py-3 px-3 bg-white dark:bg-darkcard border border-purple-border/80 text-purple-dark dark:text-white hover:bg-purple-light text-xs font-bold rounded-xl transition-all text-center cursor-pointer touch-target-safe">
+                                            Ver fórmula
+                                        </button>
+                                        <button onclick="window.armarPlanDesdeCatalogo('pollo')" class="w-full py-3 px-3 bg-purple hover:bg-purple-dark text-white text-xs font-bold rounded-xl transition-all shadow-sm text-center cursor-pointer touch-target-safe">
+                                            Calcula su plan
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tarjeta Resumida Carne -->
+                            <div class="bg-white dark:bg-darkcard rounded-2xl overflow-hidden shadow-soft-lg border border-purple-border/40 dark:border-purple/25 flex flex-col justify-between">
+                                <div class="h-48 relative bg-purple/10 dark:bg-purple/20 overflow-hidden select-none group">
+                                    <img decoding="async" src="images/formula-carne.webp?v=2" onerror="this.onerror=null; this.src='images/Gemini_Generated_Image_18qpp218qpp218qp.webp'" alt="Fórmula de Carne" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/70 via-transparent to-transparent opacity-60"></div>
+                                    <span class="absolute top-4 right-4 bg-green/90 backdrop-blur-md text-purple-dark text-[10px] font-bold tracking-wider px-3 py-1 rounded-full uppercase shadow-sm z-20 border border-white/20">Carne</span>
+                                </div>
+                                <div class="p-6 space-y-4 flex-grow flex flex-col justify-between">
+                                    <div>
+                                        <span class="text-[10px] font-black uppercase tracking-wider text-green-dark dark:text-green block">Fórmula de res</span>
+                                        <h3 class="text-xl font-black text-purple-dark dark:text-white tracking-tight">Carne</h3>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400 font-semibold block mt-0.5">De res con calabacín fresco</span>
+                                    </div>
+                                    <div class="bg-purple-light/60 dark:bg-[#0d0718] p-3.5 rounded-xl border border-purple-border/40 dark:border-purple/20">
+                                        <div class="flex items-center justify-between text-xs font-bold text-purple-dark dark:text-white mb-0.5">
+                                            <span>Presentaciones oficiales:</span>
+                                            <span class="text-pink font-black">250 g ($3.50) · 550 g ($7.00)</span>
+                                        </div>
+                                        <p class="text-[11px] text-gray-500 dark:text-gray-400">
+                                            Empacadas al vacío y congeladas. El sistema calcula las porciones exactas para 7, 15 o 30 días con hasta 10% de descuento.
+                                        </p>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2.5 pt-2">
+                                        <button onclick="window.navigateTo('view-perros')" class="w-full py-3 px-3 bg-white dark:bg-darkcard border border-purple-border/80 text-purple-dark dark:text-white hover:bg-purple-light text-xs font-bold rounded-xl transition-all text-center cursor-pointer touch-target-safe">
+                                            Ver fórmula
+                                        </button>
+                                        <button onclick="window.armarPlanDesdeCatalogo('res')" class="w-full py-3 px-3 bg-purple hover:bg-purple-dark text-white text-xs font-bold rounded-xl transition-all shadow-sm text-center cursor-pointer touch-target-safe">
+                                            Calcula su plan
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FASE 1: BENEFICIOS EN VERSIÓN CORTA (SOLO LOS 4 TÍTULOS CON ICONO) -->
+                    <div id="seccion-cambios-observables" class="w-full py-10 md:py-14 text-center border-t border-purple-border/30 dark:border-purple/20">
                         <span class="text-xs font-bold uppercase tracking-wider text-pink mb-1 block font-display">Beneficios cotidianos</span>
                         <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black text-purple-dark dark:text-white tracking-tight font-display">Cambios que puedes notar en su día a día</h2>
                         <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-normal mt-2 max-w-xl mx-auto leading-relaxed">
                             Alimentarlo con comida real no solo influye en cómo se siente tu mascota, sino también en cómo organizas su rutina diaria.
                         </p>
 
-                        <!-- Dos bloques: Bienestar de tu perro & Facilidad para tu rutina -->
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-10 text-left max-w-5xl mx-auto">
-                            <!-- Bloque A: En el bienestar de tu perro -->
-                            <div class="bg-white dark:bg-darkcard p-6 sm:p-7 rounded-2xl border border-purple-border/40 dark:border-purple/25 shadow-soft space-y-4">
-                                <div class="inline-flex items-center gap-2 bg-purple/10 text-purple-dark dark:text-purple-light px-3 py-1 rounded-full text-xs font-bold font-display">
-                                    <i data-lucide="heart" class="w-3.5 h-3.5 text-purple"></i>
-                                    <span>En el bienestar de tu perro</span>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 text-left max-w-5xl mx-auto">
+                            <div class="bg-white dark:bg-darkcard p-5 rounded-2xl border border-purple-border/40 dark:border-purple/25 shadow-soft flex items-center gap-3.5">
+                                <div class="w-10 h-10 rounded-xl bg-green/20 text-green-dark flex items-center justify-center shrink-0">
+                                    <i data-lucide="check" class="w-5 h-5 stroke-[3]"></i>
                                 </div>
-                                <div class="space-y-4 pt-1">
-                                    <div class="flex items-start gap-3.5">
-                                        <div class="w-9 h-9 rounded-xl bg-green/20 text-green-dark flex items-center justify-center shrink-0 mt-0.5">
-                                            <i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>
-                                        </div>
-                                        <div>
-                                            <h3 class="text-sm font-bold text-purple-dark dark:text-white">Digestión más favorable</h3>
-                                            <p class="text-xs text-gray-600 dark:text-gray-300 font-normal leading-relaxed mt-0.5">
-                                                Sin rellenos pesados ni carbohidratos innecesarios, lo que suele traducirse en heces más firmes y menor volumen.
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-start gap-3.5">
-                                        <div class="w-9 h-9 rounded-xl bg-pink/20 text-pink flex items-center justify-center shrink-0 mt-0.5">
-                                            <i data-lucide="sparkles" class="w-4 h-4"></i>
-                                        </div>
-                                        <div>
-                                            <h3 class="text-sm font-bold text-purple-dark dark:text-white">Pelaje sano y humedad natural</h3>
-                                            <p class="text-xs text-gray-600 dark:text-gray-300 font-normal leading-relaxed mt-0.5">
-                                                Aporte equilibrado de ácidos grasos y humedad propia de alimentos frescos, favoreciendo el cuidado de su piel y pelaje.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
+                                <h3 class="text-sm font-bold text-purple-dark dark:text-white leading-tight">Digestión más favorable</h3>
                             </div>
-
-                            <!-- Bloque B: En la organización de tu rutina -->
-                            <div class="bg-white dark:bg-darkcard p-6 sm:p-7 rounded-2xl border border-purple-border/40 dark:border-purple/25 shadow-soft space-y-4">
-                                <div class="inline-flex items-center gap-2 bg-pink/10 text-pink px-3 py-1 rounded-full text-xs font-bold font-display">
-                                    <i data-lucide="clock" class="w-3.5 h-3.5 text-pink"></i>
-                                    <span>En tu tranquilidad y rutina</span>
+                            <div class="bg-white dark:bg-darkcard p-5 rounded-2xl border border-purple-border/40 dark:border-purple/25 shadow-soft flex items-center gap-3.5">
+                                <div class="w-10 h-10 rounded-xl bg-pink/20 text-pink flex items-center justify-center shrink-0">
+                                    <i data-lucide="sparkles" class="w-5 h-5"></i>
                                 </div>
-                                <div class="space-y-4 pt-1">
-                                    <div class="flex items-start gap-3.5">
-                                        <div class="w-9 h-9 rounded-xl bg-purple/15 text-purple dark:text-purple-light flex items-center justify-center shrink-0 mt-0.5">
-                                            <i data-lucide="scale" class="w-4 h-4"></i>
-                                        </div>
-                                        <div>
-                                            <h3 class="text-sm font-bold text-purple-dark dark:text-white">Porción calculada a su medida</h3>
-                                            <p class="text-xs text-gray-600 dark:text-gray-300 font-normal leading-relaxed mt-0.5">
-                                                Nuestra calculadora estima la cantidad diaria orientativa según su peso y etapa, evitando cálculos manuales o dudas de ración.
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-start gap-3.5">
-                                        <div class="w-9 h-9 rounded-xl bg-green/20 text-green-dark flex items-center justify-center shrink-0 mt-0.5">
-                                            <i data-lucide="package-check" class="w-4 h-4"></i>
-                                        </div>
-                                        <div>
-                                            <h3 class="text-sm font-bold text-purple-dark dark:text-white">Listo para servir sin cocinar</h3>
-                                            <p class="text-xs text-gray-600 dark:text-gray-300 font-normal leading-relaxed mt-0.5">
-                                                Bolsas prácticas de 250 g y 550 g. Descongelas en refrigeración y sirves directo al plato, manteniendo tu congelador organizado.
-                                            </p>
-                                        </div>
-                                    </div>
+                                <h3 class="text-sm font-bold text-purple-dark dark:text-white leading-tight">Pelaje sano y humedad natural</h3>
+                            </div>
+                            <div class="bg-white dark:bg-darkcard p-5 rounded-2xl border border-purple-border/40 dark:border-purple/25 shadow-soft flex items-center gap-3.5">
+                                <div class="w-10 h-10 rounded-xl bg-purple/15 text-purple dark:text-purple-light flex items-center justify-center shrink-0">
+                                    <i data-lucide="scale" class="w-5 h-5"></i>
                                 </div>
+                                <h3 class="text-sm font-bold text-purple-dark dark:text-white leading-tight">Porción calculada a su medida</h3>
+                            </div>
+                            <div class="bg-white dark:bg-darkcard p-5 rounded-2xl border border-purple-border/40 dark:border-purple/25 shadow-soft flex items-center gap-3.5">
+                                <div class="w-10 h-10 rounded-xl bg-green/20 text-green-dark flex items-center justify-center shrink-0">
+                                    <i data-lucide="package-check" class="w-4 h-4"></i>
+                                </div>
+                                <h3 class="text-sm font-bold text-purple-dark dark:text-white leading-tight">Listo para servir sin cocinar</h3>
                             </div>
                         </div>
 
@@ -406,15 +443,15 @@
                         </div>
                     </div>
 
-                    <!-- SECCIÓN C: CÓMO FUNCIONA EN TRES PASOS -->
-                    <div class="w-full py-12 md:py-16 text-center border-t border-purple-border/30 dark:border-purple/20">
+                    <!-- FASE 1: CÓMO FUNCIONA EN TRES PASOS (mka-steps centrado) -->
+                    <div class="w-full py-10 md:py-14 text-center border-t border-purple-border/30 dark:border-purple/20">
                         <span class="text-xs font-bold uppercase tracking-wider text-pink mb-1 block font-display">Paso a Paso</span>
                         <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black text-purple-dark dark:text-white tracking-tight font-display">Cómo funciona en tres pasos</h2>
                         <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-normal mt-2 max-w-xl mx-auto leading-relaxed">
                             Organizar la alimentación natural de tu perro es rápido, transparente y sin complicaciones.
                         </p>
 
-                        <div id="mka-steps" class="mka-steps max-w-3xl mx-auto mt-8">
+                        <div id="mka-steps" class="mka-steps max-w-4xl mx-auto mt-8">
                             <div class="mka-step">
                                 <button type="button" class="mka-step-head" id="mka-step-head-1" aria-expanded="true" aria-controls="mka-step-body-1">
                                     <span class="mka-step-num bg-purple text-white">1</span>
@@ -465,16 +502,15 @@
                         </div>
                     </div>
 
-                    <!-- SECCIÓN D: EXPERIENCIAS REALES (PREPARADO PARA MATERIAL APROBADO) -->
-                    <!-- NOTA DE PRODUCCIÓN: Esta sección permanece oculta (class="hidden") hasta contar con testimonios y fotografías de clientes verificadas y autorizadas formalmente por la marca. No se publican reseñas ficticias. -->
+                    <!-- SECCIÓN D: EXPERIENCIAS REALES (PERMANECE OCULTA) -->
                     <div id="seccion-experiencias-reales" class="hidden w-full py-12 md:py-16 text-center border-t border-purple-border/30 dark:border-purple/20" aria-hidden="true">
                         <span class="text-xs font-bold uppercase tracking-wider text-pink mb-1 block font-display">Comunidad</span>
                         <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black text-purple-dark dark:text-white tracking-tight font-display">Experiencias reales con Milkarf</h2>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 text-left max-w-5xl mx-auto"></div>
                     </div>
 
-                    <!-- SECCIÓN E: CIERRE E INVITACIÓN A EMPEZAR -->
-                    <div class="w-full py-12 md:py-16 text-center border-t border-purple-border/30 dark:border-purple/20">
+                    <!-- FASE 1: BLOQUE FINAL "EMPIEZA HOY" -->
+                    <div class="w-full py-10 md:py-14 text-center border-t border-purple-border/30 dark:border-purple/20">
                         <div class="w-full max-w-4xl mx-auto bg-gradient-to-br from-purple-dark via-[#351675] to-purple text-white rounded-3xl p-8 sm:p-10 shadow-soft-lg border border-white/10 relative overflow-hidden">
                             <div class="absolute -right-10 -bottom-10 text-white/5 pointer-events-none">
                                 <i data-lucide="sparkles" class="w-48 h-48"></i>
@@ -506,59 +542,22 @@
                         </div>
                     </div>
 
-                    <!-- EXPLORACIÓN COMPLEMENTARIA (Gatos, Snacks, Guía, Misión) -->
-                    <div class="w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 justify-center mt-2">
-                        <div class="nav-card relative h-[260px] rounded-2xl overflow-hidden shadow-soft border border-purple-border/30 dark:border-purple/20 group cursor-pointer flex flex-col justify-end p-5" data-target="view-faq">
-                            <img decoding="async" src="https://images.unsplash.com/photo-1601758125946-6ec2ef64daf8?q=80&w=600&auto=format&fit=crop" alt="Guía de transición" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy">
-                            <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/95 via-purple-dark/50 dark:from-[#180e29]/95 dark:via-[#180e29]/60 to-transparent z-10"></div>
-                            <div class="relative z-20 text-left">
-                                <span class="inline-block bg-white text-purple-dark text-[9px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full mb-1.5 shadow-sm">Aprende</span>
-                                <h3 class="text-lg font-bold text-white leading-tight">Guía de<br>transición</h3>
-                                <p class="text-[11px] text-white/85 font-normal mt-1">Acompañamiento paso a paso.</p>
-                            </div>
-                        </div>
-
-                        <div class="nav-card relative h-[260px] rounded-2xl overflow-hidden shadow-soft border border-purple-border/30 dark:border-purple/20 group cursor-pointer flex flex-col justify-end p-5" data-target="view-mision">
-                            <img decoding="async" src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=600&auto=format&fit=crop" onerror="this.src='images/Gemini_Generated_Image_18qpp218qpp218qp.webp'" alt="Filosofía Milkarf" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy">
-                            <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/95 via-purple-dark/50 dark:from-[#180e29]/95 dark:via-[#180e29]/60 to-transparent z-10"></div>
-                            <div class="relative z-20 text-left">
-                                <span class="inline-block bg-white text-purple-dark text-[9px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full mb-1.5 shadow-sm">Filosofía</span>
-                                <h3 class="text-lg font-bold text-white leading-tight">Filosofía<br>Milkarf</h3>
-                                <p class="text-[11px] text-white/85 font-normal mt-1">Alimentar con intención y ciencia.</p>
-                            </div>
-                        </div>
-
-                        <div class="nav-card relative h-[260px] rounded-2xl overflow-hidden shadow-soft border border-purple-border/30 dark:border-purple/20 group cursor-pointer flex flex-col justify-end p-5" data-target="view-gatos">
-                            <div class="absolute inset-0 w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style="background-image: url('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=600&auto=format&fit=crop');"></div>
-                            <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/95 via-purple-dark/40 dark:from-[#0d0718]/95 dark:via-[#0d0718]/60 to-transparent z-10"></div>
-                            <div class="relative z-20 text-left">
-                                <span class="inline-block bg-purple/40 backdrop-blur-md text-white border border-white/20 text-[9px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full mb-1.5">Felinos</span>
-                                <h3 class="text-lg font-bold text-white leading-tight">Línea<br>felina</h3>
-                                <p class="text-[11px] text-purple-light/80 font-normal mt-1">Próximo lanzamiento.</p>
-                            </div>
-                        </div>
-
-                        <div class="nav-card relative h-[260px] rounded-2xl overflow-hidden shadow-soft border border-purple-border/30 dark:border-purple/20 group cursor-pointer flex flex-col justify-between p-5" data-target="view-snacks">
-                            <img decoding="async" src="https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?q=80&w=600&auto=format&fit=crop" alt="Snacks" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80" loading="lazy">
-                            <div class="absolute inset-0 bg-gradient-to-t from-purple-dark/95 via-purple-dark/50 dark:from-[#0d0718]/95 dark:via-[#0d0718]/60 to-transparent z-10"></div>
-                            <div class="relative z-20 flex justify-end">
-                                <span class="bg-pink text-white text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1 border border-white/20">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> Próximamente
-                                </span>
-                            </div>
-                            <div class="relative z-20 text-left">
-                                <span class="inline-block bg-pink/30 backdrop-blur-md text-pink-light border border-pink/30 text-[9px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full mb-1.5">Premios</span>
-                                <h3 class="text-lg font-bold text-white leading-tight">Snacks</h3>
-                                <p class="text-[11px] text-purple-light/80 font-normal mt-1">Deshidratados sin aditivos.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- FOOTER PROFESIONAL MILKARF -->
-                    <footer class="w-full max-w-4xl mx-auto mt-20 pt-10 border-t border-purple-border/50 dark:border-purple/20 text-center flex flex-col items-center gap-6">
+                    <!-- FOOTER ACTUAL (CON ENLACES DE TEXTO A LAS 4 SECCIONES) -->
+                    <footer class="w-full max-w-4xl mx-auto mt-12 pt-8 border-t border-purple-border/50 dark:border-purple/20 text-center flex flex-col items-center gap-6">
                         <div class="bg-purple/10 dark:bg-purple/5 text-purple-dark dark:text-purple-light px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase border border-purple/20">
                             Alimentación Real para Mascotas
                         </div>
+
+                        <!-- Fila de enlaces a las 4 secciones que salieron del inicio -->
+                        <nav aria-label="Explorar Milkarf" class="flex flex-wrap justify-center items-center gap-x-5 gap-y-2 text-xs font-bold text-purple-dark dark:text-purple-light">
+                            <a href="#ayuda" onclick="event.preventDefault(); window.navigateTo('view-faq');" class="hover:text-pink transition-colors">Guía de transición</a>
+                            <span class="text-gray-300 dark:text-gray-600">·</span>
+                            <a href="#por-que-milkarf" onclick="event.preventDefault(); window.navigateTo('view-mision');" class="hover:text-pink transition-colors">Filosofía Milkarf</a>
+                            <span class="text-gray-300 dark:text-gray-600">·</span>
+                            <a href="#menu-gatos" onclick="event.preventDefault(); window.navigateTo('view-gatos');" class="hover:text-pink transition-colors">Línea felina</a>
+                            <span class="text-gray-300 dark:text-gray-600">·</span>
+                            <a href="#snacks" onclick="event.preventDefault(); window.navigateTo('view-snacks');" class="hover:text-pink transition-colors">Snacks</a>
+                        </nav>
 
                         <!-- Redes Sociales y Contacto Directo -->
                         <div class="flex items-center gap-4">
@@ -596,8 +595,8 @@
                         </div>
                     </footer>
                     
-                    <!-- ESPACIADOR INFERIOR -->
-                    <div class="h-28 w-full shrink-0 pointer-events-none"></div>
+                    <!-- ESPACIADOR INFERIOR COMPACTO (evita hueco blanco innecesario) -->
+                    <div class="h-8 md:h-12 w-full shrink-0 pointer-events-none"></div>
                 </div>
             </div>
         </section>
@@ -1010,9 +1009,34 @@
                                                     <span class="text-lg">🥗</span>
                                                     <div class="text-left">
                                                         <span class="block leading-tight font-black">Plan Mixto</span>
-                                                        <span class="text-[9px] font-medium text-white/70">50% Pollo / 50% Res</span>
+                                                        <span id="formula-btn-mixto-sub" class="text-[9px] font-medium text-white/70">Pollo y Res</span>
                                                     </div>
                                                 </button>
+                                            </div>
+
+                                            <!-- Selector de proporción dentro del Plan Mixto -->
+                                            <div id="mixto-ratio-container" class="hidden mt-3 pt-3 border-t border-white/15">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <span class="text-[10px] font-black uppercase tracking-wider text-green-light">Proporción de la mezcla:</span>
+                                                    <span id="mixto-ratio-badge" class="text-[10px] font-bold text-white/90 bg-white/15 px-2 py-0.5 rounded-full">50% Pollo · 50% Res</span>
+                                                </div>
+                                                <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
+                                                    <button type="button" onclick="window.cambiarRatioMixto('pollo_mayor')" id="ratio-btn-pollo_mayor" class="mixto-ratio-btn p-2 rounded-xl border text-center transition-all bg-white/10 text-white border-white/20 hover:bg-white/20 cursor-pointer">
+                                                        <span class="block text-xs font-black leading-tight">🍗 Más Pollo</span>
+                                                        <span class="block text-[9px] text-white/70 mt-0.5">70% Pollo · 30% Res</span>
+                                                    </button>
+                                                    <button type="button" onclick="window.cambiarRatioMixto('equilibrado')" id="ratio-btn-equilibrado" class="mixto-ratio-btn p-2 rounded-xl border text-center transition-all bg-white text-purple-dark border-white shadow-sm cursor-pointer">
+                                                        <span class="block text-xs font-black leading-tight">⚖️ Equilibrado</span>
+                                                        <span class="block text-[9px] text-gray-500 mt-0.5">50% Pollo · 50% Res</span>
+                                                    </button>
+                                                    <button type="button" onclick="window.cambiarRatioMixto('res_mayor')" id="ratio-btn-res_mayor" class="mixto-ratio-btn p-2 rounded-xl border text-center transition-all bg-white/10 text-white border-white/20 hover:bg-white/20 cursor-pointer">
+                                                        <span class="block text-xs font-black leading-tight">🥩 Más Res</span>
+                                                        <span class="block text-[9px] text-white/70 mt-0.5">30% Pollo · 70% Res</span>
+                                                    </button>
+                                                </div>
+                                                <div class="mt-2 text-center text-[10px] text-white/70 font-medium">
+                                                    💡 En el carrito podrás ajustar manualmente cuántas bolsas exactas de Pollo y Res deseas dentro del total de tu plan.
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1076,81 +1100,9 @@
                     </p>
                 </div>
 
-                <!-- BLOQUE DE BENEFICIOS DE LA ALIMENTACIÓN MILKARF -->
-                <div class="w-full max-w-5xl mb-8 bg-gradient-to-br from-purple-light/40 to-pink/5 dark:from-purple/10 dark:to-transparent border border-purple-border/40 dark:border-purple/25 rounded-3xl p-6 md:p-8 shadow-sm text-left">
-                    <span class="text-xs font-bold uppercase tracking-wider text-pink block mb-1 font-display">Nutrición real para tu perro</span>
-                    <h3 class="text-xl sm:text-2xl font-black text-purple-dark dark:text-white tracking-tight font-display mb-2">
-                        ¿Por qué elegir la alimentación Milkarf?
-                    </h3>
-                    <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-normal leading-relaxed max-w-3xl mb-6">
-                        Formulamos nuestras recetas para responder a la naturaleza digestiva del perro, sustituyendo ultraprocesados secos por alimentos biológicamente asimilables, hidratados y completos.
-                    </p>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                        <!-- Beneficio 1 -->
-                        <div class="bg-white dark:bg-darkcard rounded-2xl p-5 border border-purple-border/30 dark:border-purple/20 shadow-sm flex flex-col justify-between">
-                            <div>
-                                <div class="w-10 h-10 rounded-xl bg-purple/15 text-purple dark:text-purple-light flex items-center justify-center mb-3">
-                                    <i data-lucide="shield-check" class="w-5 h-5"></i>
-                                </div>
-                                <h4 class="text-sm font-bold text-purple-dark dark:text-white mb-1">Ingredientes reales y transparentes</h4>
-                                <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed font-normal">
-                                    Proteína animal fresca, vegetales seleccionados y semillas. Sin subproductos de desecho, harinas de relleno ni químicos artificiales.
-                                </p>
-                            </div>
-                            <div class="mt-3 pt-2.5 border-t border-purple-border/20 text-[10px] text-gray-500 dark:text-gray-400">
-                                *Las vísceras que usamos (corazón, hígado, mollejas) son órganos nobles densos en vitaminas B y hierro, no despojos industriales.
-                            </div>
-                        </div>
 
-                        <!-- Beneficio 2 -->
-                        <div class="bg-white dark:bg-darkcard rounded-2xl p-5 border border-purple-border/30 dark:border-purple/20 shadow-sm flex flex-col justify-between">
-                            <div>
-                                <div class="w-10 h-10 rounded-xl bg-green/20 text-green-dark dark:text-green flex items-center justify-center mb-3">
-                                    <i data-lucide="sparkles" class="w-5 h-5"></i>
-                                </div>
-                                <h4 class="text-sm font-bold text-purple-dark dark:text-white mb-1">Digestión ligera y mayor vitalidad</h4>
-                                <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed font-normal">
-                                    Alta digestibilidad biológica que promueve heces más firmes y reducidas, mejor absorción de nutrientes, pelaje saludable y energía estable.
-                                </p>
-                            </div>
-                            <div class="mt-3 pt-2.5 border-t border-purple-border/20 text-[10px] text-gray-500 dark:text-gray-400">
-                                *Nutrición balanceada formulada como alimento completo bajo estándares de referencia para perros.
-                            </div>
-                        </div>
 
-                        <!-- Beneficio 3 -->
-                        <div class="bg-white dark:bg-darkcard rounded-2xl p-5 border border-purple-border/30 dark:border-purple/20 shadow-sm flex flex-col justify-between">
-                            <div>
-                                <div class="w-10 h-10 rounded-xl bg-pink/15 text-pink flex items-center justify-center mb-3">
-                                    <i data-lucide="clock" class="w-5 h-5"></i>
-                                </div>
-                                <h4 class="text-sm font-bold text-purple-dark dark:text-white mb-1">Organización fácil de sus comidas</h4>
-                                <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed font-normal">
-                                    Porciones herméticas en 250 g y 550 g. Olvídate de cocinar, picar vísceras, moler huesos o calcular dosis: solo descongela y sirve.
-                                </p>
-                            </div>
-                            <div class="mt-3 pt-2.5 border-t border-purple-border/20 text-[10px] text-gray-500 dark:text-gray-400">
-                                *Conservación segura en frío con bolsas listas para el consumo en 24 horas.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SELECTOR DE MASCOTA (SI YA TIENE MASCOTAS REGISTRADAS) -->
-                <div id="menu-pet-selector-wrap" class="hidden w-full max-w-5xl mb-6 bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-5 md:p-6 shadow-soft">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div class="text-left flex-1">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-pink mb-1 block">Asocia este pedido a tu mascota</span>
-                            <h3 class="text-lg font-bold text-purple-dark dark:text-white tracking-tight">¿Para qué mascota es este pedido?</h3>
-                            <p class="text-xs text-gray-600 dark:text-gray-300 font-normal mt-0.5 leading-relaxed">Selecciona tu mascota para asociar las fórmulas y porciones a su perfil.</p>
-                        </div>
-                        <div class="w-full md:w-80">
-                            <select id="menu-active-pet-select" onchange="window.selectPetForPurchase(this.value)" class="w-full bg-purple-light/90 dark:bg-[#0d0718] border border-purple-border/60 dark:border-purple/30 rounded-xl p-3.5 text-sm font-semibold text-purple-dark dark:text-white outline-none focus:border-purple shadow-sm touch-target-safe"></select>
-                        </div>
-                    </div>
-                    <div id="menu-active-pet-hint" class="mt-4 text-xs font-medium text-purple-dark/80 dark:text-gray-300 bg-purple-light/80 dark:bg-purple/15 rounded-xl p-3.5 border border-purple-border/40 dark:border-purple/20 text-left"></div>
-                </div>
 
                 <!-- CATÁLOGO DE FÓRMULAS CON NOMBRES COMERCIALES SIMPLES -->
                 <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-7 justify-center mt-2 pb-6">
@@ -1171,11 +1123,14 @@
                                 <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-normal leading-relaxed">
                                     <strong class="text-purple-dark dark:text-white font-semibold">Ingredientes:</strong> Muslos con piel, patas de pollo (calcio y colágeno natural), mollejas y vísceras selectas de pollo, zanahorias frescas, semillas de chía, vitaminas y minerales.
                                 </p>
-                                <div class="mt-4 bg-purple-light/80 dark:bg-[#0d0718] rounded-xl border border-purple-border/50 dark:border-purple/20 overflow-hidden shadow-sm">
-                                    <div class="px-3.5 py-2.5 border-b border-purple-border/50 dark:border-purple/20 flex items-center gap-2">
-                                        <i data-lucide="clipboard-list" class="w-3.5 h-3.5 text-pink shrink-0"></i>
-                                        <span class="text-[10px] font-bold tracking-wider text-purple-dark dark:text-white uppercase">Aportes nutricionales respaldados</span>
-                                    </div>
+                                <details class="edu-accordion mt-4 bg-purple-light/80 dark:bg-[#0d0718] rounded-xl border border-purple-border/50 dark:border-purple/20 overflow-hidden shadow-sm group">
+                                    <summary class="px-3.5 py-2.5 border-b border-purple-border/50 dark:border-purple/20 flex items-center justify-between cursor-pointer select-none">
+                                        <div class="flex items-center gap-2">
+                                            <i data-lucide="clipboard-list" class="w-3.5 h-3.5 text-pink shrink-0"></i>
+                                            <span class="text-[10px] font-bold tracking-wider text-purple-dark dark:text-white uppercase">Aportes nutricionales respaldados</span>
+                                        </div>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-purple/70 dark:text-gray-400 transition-transform group-open:rotate-180 shrink-0"></i>
+                                    </summary>
                                     <table class="nutrition-table">
                                         <thead class="bg-white/80 dark:bg-darkcard/80 text-purple/70 dark:text-gray-400">
                                             <tr><th class="text-left">Aporte</th><th class="text-left">Fuente</th><th class="text-left">Función</th></tr>
@@ -1188,9 +1143,9 @@
                                             <tr><td>Balance</td><td>Vitaminas y minerales</td><td>Completitud nutricional diaria.</td></tr>
                                         </tbody>
                                     </table>
-                                </div>
+                                </details>
                             </div>
-                            <div class="pt-2">
+                            <div class="pt-2 space-y-3">
                                 <div class="bg-purple-light/60 dark:bg-[#0d0718] p-3.5 rounded-2xl border border-purple-border/40 dark:border-purple/20 text-left">
                                     <div class="flex items-center justify-between text-xs font-bold text-purple-dark dark:text-white mb-1">
                                         <span>Presentaciones oficiales:</span>
@@ -1200,6 +1155,10 @@
                                         Empacadas al vacío y congeladas. El sistema calcula las porciones exactas para 7, 15 o 30 días con hasta 10% de descuento.
                                     </p>
                                 </div>
+                                <button type="button" onclick="window.armarPlanDesdeCatalogo('pollo')" class="w-full inline-flex items-center justify-center gap-2 bg-purple hover:bg-purple-dark text-white font-bold text-xs py-3 px-4 rounded-xl shadow-soft transition-all active:scale-98 cursor-pointer touch-target-safe">
+                                    <i data-lucide="scale" class="w-3.5 h-3.5 text-green"></i>
+                                    <span>Calcula su plan con Pollo</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1232,11 +1191,14 @@
                                     </p>
                                 </div>
 
-                                <div class="mt-4 bg-purple-light/80 dark:bg-[#0d0718] rounded-xl border border-purple-border/50 dark:border-purple/20 overflow-hidden shadow-sm">
-                                    <div class="px-3.5 py-2.5 border-b border-purple-border/50 dark:border-purple/20 flex items-center gap-2">
-                                        <i data-lucide="clipboard-list" class="w-3.5 h-3.5 text-green-dark dark:text-green shrink-0"></i>
-                                        <span class="text-[10px] font-bold tracking-wider text-purple-dark dark:text-white uppercase">Aportes nutricionales respaldados</span>
-                                    </div>
+                                <details class="edu-accordion mt-4 bg-purple-light/80 dark:bg-[#0d0718] rounded-xl border border-purple-border/50 dark:border-purple/20 overflow-hidden shadow-sm group">
+                                    <summary class="px-3.5 py-2.5 border-b border-purple-border/50 dark:border-purple/20 flex items-center justify-between cursor-pointer select-none">
+                                        <div class="flex items-center gap-2">
+                                            <i data-lucide="clipboard-list" class="w-3.5 h-3.5 text-green-dark dark:text-green shrink-0"></i>
+                                            <span class="text-[10px] font-bold tracking-wider text-purple-dark dark:text-white uppercase">Aportes nutricionales respaldados</span>
+                                        </div>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 text-purple/70 dark:text-gray-400 transition-transform group-open:rotate-180 shrink-0"></i>
+                                    </summary>
                                     <table class="nutrition-table">
                                         <thead class="bg-white/80 dark:bg-darkcard/80 text-purple/70 dark:text-gray-400">
                                             <tr><th class="text-left">Aporte</th><th class="text-left">Fuente</th><th class="text-left">Función</th></tr>
@@ -1249,9 +1211,9 @@
                                             <tr><td>Balance</td><td>Vitaminas y minerales</td><td>Fórmula completa y equilibrada.</td></tr>
                                         </tbody>
                                     </table>
-                                </div>
+                                </details>
                             </div>
-                            <div class="pt-2">
+                            <div class="pt-2 space-y-3">
                                 <div class="bg-purple-light/60 dark:bg-[#0d0718] p-3.5 rounded-2xl border border-purple-border/40 dark:border-purple/20 text-left">
                                     <div class="flex items-center justify-between text-xs font-bold text-purple-dark dark:text-white mb-1">
                                         <span>Presentaciones oficiales:</span>
@@ -1261,6 +1223,10 @@
                                         Empacadas al vacío y congeladas. El sistema calcula las porciones exactas para 7, 15 o 30 días con hasta 10% de descuento.
                                     </p>
                                 </div>
+                                <button type="button" onclick="window.armarPlanDesdeCatalogo('res')" class="w-full inline-flex items-center justify-center gap-2 bg-purple hover:bg-purple-dark text-white font-bold text-xs py-3 px-4 rounded-xl shadow-soft transition-all active:scale-98 cursor-pointer touch-target-safe">
+                                    <i data-lucide="scale" class="w-3.5 h-3.5 text-green"></i>
+                                    <span>Calcula su plan con Carne</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1275,60 +1241,7 @@
                     </button>
                 </div>
 
-                <!-- CÓMO ORGANIZAR LAS COMIDAS Y CONSERVACIÓN -->
-                <div class="w-full max-w-5xl mb-8 grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-                    <!-- Tarjeta: Rutina de comidas -->
-                    <div class="bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-3xl p-6 md:p-7 shadow-sm">
-                        <div class="flex items-center gap-3 mb-3">
-                            <div class="w-9 h-9 rounded-xl bg-purple/15 text-purple dark:text-purple-light flex items-center justify-center shrink-0">
-                                <i data-lucide="calendar-check" class="w-5 h-5"></i>
-                            </div>
-                            <h3 class="text-base sm:text-lg font-black text-purple-dark dark:text-white">Cómo organiza tu rutina diaria</h3>
-                        </div>
-                        <ul class="space-y-2.5 text-xs text-gray-600 dark:text-gray-300 leading-relaxed font-normal">
-                            <li class="flex items-start gap-2">
-                                <i data-lucide="check-circle-2" class="w-4 h-4 text-green-dark dark:text-green shrink-0 mt-0.5"></i>
-                                <span><strong>Porciones sin desperdicio:</strong> Nuestras bolsas de 250 g y 550 g se calculan según la ración diaria exacta de tu perro sin sobras que expiren.</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i data-lucide="check-circle-2" class="w-4 h-4 text-green-dark dark:text-green shrink-0 mt-0.5"></i>
-                                <span><strong>Planes semanales o mensuales:</strong> Provisión continua para 7, 15 o 30 días calculada para que nunca te falte alimento fresco.</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <i data-lucide="check-circle-2" class="w-4 h-4 text-green-dark dark:text-green shrink-0 mt-0.5"></i>
-                                <span><strong>Servicio inmediato:</strong> Reparte la ración del día en 2 o 3 tomas según los horarios habituales de tu perro.</span>
-                            </li>
-                        </ul>
-                    </div>
 
-                    <!-- Tarjeta: Preparación y conservación -->
-                    <div class="bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-3xl p-6 md:p-7 shadow-sm">
-                        <div class="flex items-center gap-3 mb-3">
-                            <div class="w-9 h-9 rounded-xl bg-pink/15 text-pink flex items-center justify-center shrink-0">
-                                <i data-lucide="snowflake" class="w-5 h-5"></i>
-                            </div>
-                            <h3 class="text-base sm:text-lg font-black text-purple-dark dark:text-white">Preparación y conservación segura</h3>
-                        </div>
-                        <ul class="space-y-2.5 text-xs text-gray-600 dark:text-gray-300 leading-relaxed font-normal">
-                            <li class="flex items-start gap-2">
-                                <span class="w-5 h-5 rounded-full bg-purple/10 dark:bg-purple/20 text-purple dark:text-purple-light text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
-                                <span><strong>Congelación (-18 °C):</strong> Conserva las bolsas selladas en el congelador para preservar nutrientes y frescura intactos.</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <span class="w-5 h-5 rounded-full bg-purple/10 dark:bg-purple/20 text-purple dark:text-purple-light text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
-                                <span><strong>Descongelación en nevera:</strong> Pasa la porción del día siguiente al refrigerador (2 a 4 °C) 24 horas antes de servirla.</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <span class="w-5 h-5 rounded-full bg-purple/10 dark:bg-purple/20 text-purple dark:text-purple-light text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
-                                <span><strong>Regla de 24 horas:</strong> Una vez descongelada en nevera, debe consumirse dentro de las 24 horas siguientes.</span>
-                            </li>
-                            <li class="flex items-start gap-2">
-                                <span class="w-5 h-5 rounded-full bg-purple/10 dark:bg-purple/20 text-purple dark:text-purple-light text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">4</span>
-                                <span><strong>Servir a temperatura ambiente:</strong> No uses microondas ni cocines el producto para proteger las vitaminas y ácidos grasos esenciales.</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
 
                 <!-- LLAMADO A LA CALCULADORA (CÓMO OBTENER UNA RECOMENDACIÓN) -->
                 <div class="w-full max-w-5xl mb-8 bg-gradient-to-r from-purple-dark via-[#351675] to-purple text-white rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-soft-lg text-left">
@@ -1675,12 +1588,52 @@
                     <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-normal mt-1 leading-relaxed">
                         Pautas prácticas sobre conservación, preparación, transición progresiva y dudas frecuentes para alimentar a tu perro con total seguridad.
                     </p>
+
+                    <!-- Accesos rápidos a temas -->
+                    <div class="flex flex-wrap gap-2 pt-3">
+                        <a href="#faq-sec-conservacion" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple/10 hover:bg-purple/20 text-purple dark:text-purple-light text-xs font-bold transition-all">
+                            <i data-lucide="snowflake" class="w-3.5 h-3.5"></i> Conservación
+                        </a>
+                        <a href="#faq-sec-preparacion" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-pink/10 hover:bg-pink/20 text-pink text-xs font-bold transition-all">
+                            <i data-lucide="utensils" class="w-3.5 h-3.5"></i> Preparación
+                        </a>
+                        <a href="#faq-sec-transicion" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green/15 hover:bg-green/25 text-green-dark dark:text-green text-xs font-bold transition-all">
+                            <i data-lucide="calendar-days" class="w-3.5 h-3.5"></i> Transición
+                        </a>
+                        <a href="#faq-sec-preguntas" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-light dark:bg-purple/15 text-purple-dark dark:text-white text-xs font-bold transition-all">
+                            <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Preguntas frecuentes
+                        </a>
+                    </div>
                 </div>
 
                 <div class="max-w-2xl w-full space-y-4 pb-8 text-left">
 
+                    <!-- Tarjeta: Rutina de comidas diaria -->
+                    <div class="bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-5 sm:p-6 shadow-soft">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-9 h-9 rounded-xl bg-purple/15 text-purple dark:text-purple-light flex items-center justify-center shrink-0">
+                                <i data-lucide="calendar-check" class="w-5 h-5"></i>
+                            </div>
+                            <h3 class="text-base sm:text-lg font-black text-purple-dark dark:text-white">Cómo organiza tu rutina diaria</h3>
+                        </div>
+                        <ul class="space-y-2.5 text-xs text-gray-600 dark:text-gray-300 leading-relaxed font-normal">
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check-circle-2" class="w-4 h-4 text-green-dark dark:text-green shrink-0 mt-0.5"></i>
+                                <span><strong>Porciones sin desperdicio:</strong> Nuestras bolsas de 250 g y 550 g se calculan según la ración diaria exacta de tu perro sin sobras que expiren.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check-circle-2" class="w-4 h-4 text-green-dark dark:text-green shrink-0 mt-0.5"></i>
+                                <span><strong>Planes semanales o mensuales:</strong> Provisión continua para 7, 15 o 30 días calculada para que nunca te falte alimento fresco.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check-circle-2" class="w-4 h-4 text-green-dark dark:text-green shrink-0 mt-0.5"></i>
+                                <span><strong>Servicio inmediato:</strong> Reparte la ración del día en 2 o 3 tomas según los horarios habituales de tu perro.</span>
+                            </li>
+                        </ul>
+                    </div>
+
                     <!-- BLOQUE 1: CONSERVACIÓN (DESPLEGABLE) -->
-                    <details class="group bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-5 sm:p-6 shadow-soft transition-all" open>
+                    <details id="faq-sec-conservacion" class="group bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-5 sm:p-6 shadow-soft transition-all" open>
                         <summary class="cursor-pointer font-bold text-base text-purple-dark dark:text-white flex items-center justify-between gap-3 select-none">
                             <span class="flex items-center gap-3">
                                 <span class="w-10 h-10 rounded-xl bg-purple/15 text-purple dark:text-purple-light flex items-center justify-center shrink-0">
@@ -1716,7 +1669,7 @@
                     </details>
 
                     <!-- BLOQUE 2: PREPARACIÓN Y SERVICIO (DESPLEGABLE) -->
-                    <details class="group bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-5 sm:p-6 shadow-soft transition-all">
+                    <details id="faq-sec-preparacion" class="group bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-5 sm:p-6 shadow-soft transition-all">
                         <summary class="cursor-pointer font-bold text-base text-purple-dark dark:text-white flex items-center justify-between gap-3 select-none">
                             <span class="flex items-center gap-3">
                                 <span class="w-10 h-10 rounded-xl bg-pink/15 text-pink flex items-center justify-center shrink-0">
@@ -1752,7 +1705,7 @@
                     </details>
 
                     <!-- BLOQUE 3: TRANSICIÓN PROGRESIVA (DESPLEGABLE) -->
-                    <details class="group bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-5 sm:p-6 shadow-soft transition-all">
+                    <details id="faq-sec-transicion" class="group bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-5 sm:p-6 shadow-soft transition-all">
                         <summary class="cursor-pointer font-bold text-base text-purple-dark dark:text-white flex items-center justify-between gap-3 select-none">
                             <span class="flex items-center gap-3">
                                 <span class="w-10 h-10 rounded-xl bg-green/20 text-green-dark dark:text-green flex items-center justify-center shrink-0">
@@ -1794,7 +1747,7 @@
                     </details>
 
                     <!-- BLOQUE 4: PREGUNTAS FRECUENTES (DESPLEGABLE) -->
-                    <details class="group bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-5 sm:p-6 shadow-soft transition-all">
+                    <details id="faq-sec-preguntas" class="group bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-5 sm:p-6 shadow-soft transition-all">
                         <summary class="cursor-pointer font-bold text-base text-purple-dark dark:text-white flex items-center justify-between gap-3 select-none">
                             <span class="flex items-center gap-3">
                                 <span class="w-10 h-10 rounded-xl bg-purple/10 text-purple dark:text-purple-light flex items-center justify-center shrink-0">
@@ -1939,6 +1892,21 @@
                     <p class="text-[10px] text-gray-500 dark:text-gray-400 text-left leading-relaxed">
                         Al continuar, preparas tu solicitud conforme a nuestros <a href="#terminos" onclick="event.preventDefault(); window.navigateTo('view-terminos');" class="text-purple dark:text-purple-light font-bold underline hover:text-pink">Términos y Condiciones</a> y <a href="#entregas" onclick="event.preventDefault(); window.navigateTo('view-entregas');" class="text-purple dark:text-purple-light font-bold underline hover:text-pink">Condiciones de Entrega</a>. Consulta nuestra <a href="#privacidad" onclick="event.preventDefault(); window.navigateTo('view-privacidad');" class="text-purple dark:text-purple-light font-bold underline hover:text-pink">Política de Privacidad</a>.
                     </p>
+
+                    <!-- SELECTOR DE MASCOTA ASOCIADA AL PEDIDO -->
+                    <div id="menu-pet-selector-wrap" class="hidden w-full bg-white dark:bg-darkcard border border-purple-border/40 dark:border-purple/25 rounded-2xl p-4 sm:p-5 shadow-soft text-left">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div class="text-left flex-1">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-pink mb-0.5 block">Mascota del pedido</span>
+                                <h3 class="text-sm font-bold text-purple-dark dark:text-white tracking-tight">¿Para qué mascota es este pedido?</h3>
+                                <p class="text-[11px] text-gray-500 dark:text-gray-400 font-normal leading-tight">Asociaremos el pedido a su perfil guardado.</p>
+                            </div>
+                            <div class="w-full sm:w-64">
+                                <select id="menu-active-pet-select" onchange="window.selectPetForPurchase(this.value)" class="w-full bg-purple-light/90 dark:bg-[#0d0718] border border-purple-border/60 dark:border-purple/30 rounded-xl p-3 text-xs font-semibold text-purple-dark dark:text-white outline-none focus:border-purple shadow-sm touch-target-safe"></select>
+                            </div>
+                        </div>
+                        <div id="menu-active-pet-hint" class="mt-3 text-[11px] font-medium text-purple-dark/80 dark:text-gray-300 bg-purple-light/80 dark:bg-purple/15 rounded-xl p-3 border border-purple-border/40 dark:border-purple/20 text-left"></div>
+                    </div>
 
                     <!-- Acción Principal de Envío -->
                     <a id="btn-finalizar-pedido" href="#" target="_self" rel="noopener noreferrer" onclick="return window.finalizarPedido(event)" class="w-full flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-base py-4 rounded-xl shadow-soft-lg hover:shadow-lg transition-all active:scale-[0.98] group touch-target-safe cursor-pointer">
@@ -2541,6 +2509,11 @@
             <span id="cart-badge" class="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-pink text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-soft px-1 border-2 border-white dark:border-darkcard">0</span>
         </button>
 
+        <!-- BOTÓN FLOTANTE PERSISTENTE DE WHATSAPP (Milkarf Asistencia) -->
+        <a id="floating-wa-btn" href="#" onclick="event.preventDefault(); window.openWhatsApp('general');" aria-label="Contactar por WhatsApp" class="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-[900] w-13 h-13 md:w-14 md:h-14 bg-[#25D366] hover:bg-[#20ba59] text-white rounded-full shadow-lg hover:shadow-xl flex items-center justify-center transition-all duration-300 active:scale-90 hover:scale-105 touch-target-safe group">
+            <i data-lucide="message-circle" class="w-7 h-7 text-white fill-current transition-transform duration-300 group-hover:scale-110"></i>
+        </a>
+
         <!-- BARRA DE NAVEGACIÓN MÓVIL (7 ACCESOS PRINCIPALES - EN TOTAL ARMONÍA CON EL MENÚ PC) -->
         <nav id="mobile-bottom-nav" aria-label="Navegación móvil principal" class="md:hidden">
             <button class="nav-btn mobile-nav-item active-mobile-nav" data-target="view-home" aria-label="Inicio" aria-current="page">
@@ -2549,29 +2522,29 @@
                 </span>
                 <span class="mobile-nav-label">Inicio</span>
             </button>
-            <button class="nav-btn mobile-nav-item" data-target="view-mision" aria-label="Por qué Milkarf">
-                <span class="mobile-nav-icon-wrap">
-                    <i data-lucide="heart"></i>
-                </span>
-                <span class="mobile-nav-label">Por qué</span>
-            </button>
             <button class="nav-btn mobile-nav-item" data-target="view-perros" aria-label="Nuestras Fórmulas">
                 <span class="mobile-nav-icon-wrap">
                     <i data-lucide="beef"></i>
                 </span>
                 <span class="mobile-nav-label">Fórmulas</span>
             </button>
-            <button class="nav-btn mobile-nav-item" data-target="view-calc" aria-label="Calcula su porción">
+            <button class="nav-btn mobile-nav-item" data-target="view-mision" aria-label="Por qué Milkarf">
                 <span class="mobile-nav-icon-wrap">
-                    <i data-lucide="scale"></i>
+                    <i data-lucide="heart"></i>
                 </span>
-                <span class="mobile-nav-label">Calcular</span>
+                <span class="mobile-nav-label">Por qué</span>
             </button>
             <button class="nav-btn mobile-nav-item" data-target="view-faq" aria-label="Guía y Ayuda">
                 <span class="mobile-nav-icon-wrap">
                     <i data-lucide="help-circle"></i>
                 </span>
                 <span class="mobile-nav-label">Ayuda</span>
+            </button>
+            <button class="nav-btn mobile-nav-item" data-target="view-calc" aria-label="Calcula su porción">
+                <span class="mobile-nav-icon-wrap">
+                    <i data-lucide="scale"></i>
+                </span>
+                <span class="mobile-nav-label">Calcular</span>
             </button>
             <button class="nav-btn mobile-nav-item" data-target="view-dashboard" aria-label="Mi Cuenta">
                 <span class="mobile-nav-icon-wrap">

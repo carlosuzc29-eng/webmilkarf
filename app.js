@@ -24,6 +24,9 @@ const ADMIN_EMAILS = [
 ];
 window.ADMIN_EMAILS = ADMIN_EMAILS;
 
+const VIP_ENABLED = false;
+window.VIP_ENABLED = false;
+
 window.checkIsAdminDynamic = async function (email) {
     if (!email) return false;
     if (ADMIN_EMAILS.includes(email)) return true;
@@ -595,29 +598,90 @@ window.calculatePlanConsumption = function (dailyGrams, days, formula = 'pollo',
             });
         }
     } else if (formula === 'mixto') {
-        const polloDaily = Math.round((dG / 2) * 10) / 10;
-        const resDaily = Math.round((dG - polloDaily) * 10) / 10;
+        const ratio = window.activeMixtoRatio || 'equilibrado';
+        const polloPctReq = ratio === 'pollo_mayor' ? 0.70 : (ratio === 'res_mayor' ? 0.30 : 0.50);
+        const resPctReq = 1 - polloPctReq;
+        const polloDaily = Math.round((dG * polloPctReq) * 10) / 10;
+        const resDaily = Math.round((dG * resPctReq) * 10) / 10;
 
-        const optPollo = window.optimizeBagsForFormula('pollo', polloDaily, pts, bagSize);
-        const optRes = window.optimizeBagsForFormula('res', resDaily, pts, bagSize);
+        let optPollo = window.optimizeBagsForFormula('pollo', polloDaily, pts, bagSize);
+        let optRes = window.optimizeBagsForFormula('res', resDaily, pts, bagSize);
 
-        bags = [...optPollo.bags, ...optRes.bags];
-        totalBags = optPollo.totalBags + optRes.totalBags;
-        totalGramsProvided = optPollo.totalGrams + optRes.totalGrams;
-        subtotalCost = optPollo.cost + optRes.cost;
-        discardedSurplusGrams = Math.max(0, totalGramsProvided - requiredGrams);
+        // Si existen bolsas personalizadas manuales para este plan
+        const customBags = window.mixtoCustomBagsMap?.[pts];
+        if (customBags && (customBags.pollo !== undefined || customBags.res !== undefined)) {
+            const pPres = window.getPresentationBySize('pollo', bagSize) || { price: bagGrams === 250 ? 2.50 : 5.00 };
+            const rPres = window.getPresentationBySize('res', bagSize) || { price: bagGrams === 250 ? 3.50 : 7.00 };
+            const qPollo = Number(customBags.pollo) || 0;
+            const qRes = Number(customBags.res) || 0;
 
-        const polloProv = optPollo.totalGrams;
-        const resProv = optRes.totalGrams;
-        const polloPct = totalGramsProvided > 0 ? Math.round((polloProv / totalGramsProvided) * 100) : 50;
-        const resPct = 100 - polloPct;
+            const bagsList = [];
+            if (qPollo > 0) {
+                bagsList.push({
+                    formula: 'pollo',
+                    formulaName: window.MILKARF_CONFIG?.catalog?.pollo?.name || 'Pollo con Zanahoria',
+                    size: bagSize,
+                    weight: `${bagGrams} g`,
+                    grams: bagGrams,
+                    qty: qPollo,
+                    unitPrice: pPres.price
+                });
+            }
+            if (qRes > 0) {
+                bagsList.push({
+                    formula: 'res',
+                    formulaName: window.MILKARF_CONFIG?.catalog?.res?.name || 'Carne de Res con Calabacín',
+                    size: bagSize,
+                    weight: `${bagGrams} g`,
+                    grams: bagGrams,
+                    qty: qRes,
+                    unitPrice: rPres.price
+                });
+            }
 
-        split = {
-            polloGrams: Math.round(polloDaily * pts),
-            resGrams: Math.round(resDaily * pts),
-            polloPct,
-            resPct
-        };
+            bags = bagsList;
+            totalBags = qPollo + qRes;
+            totalGramsProvided = totalBags * bagGrams;
+            subtotalCost = (qPollo * pPres.price) + (qRes * rPres.price);
+            discardedSurplusGrams = Math.max(0, totalGramsProvided - requiredGrams);
+
+            const polloProv = qPollo * bagGrams;
+            const resProv = qRes * bagGrams;
+            const polloPct = totalGramsProvided > 0 ? Math.round((polloProv / totalGramsProvided) * 100) : 50;
+            const resPct = 100 - polloPct;
+
+            split = {
+                ratioKey: 'custom',
+                polloGrams: polloProv,
+                resGrams: resProv,
+                polloBags: qPollo,
+                resBags: qRes,
+                polloPct,
+                resPct,
+                isCustomManual: true
+            };
+        } else {
+            bags = [...optPollo.bags, ...optRes.bags];
+            totalBags = optPollo.totalBags + optRes.totalBags;
+            totalGramsProvided = optPollo.totalGrams + optRes.totalGrams;
+            subtotalCost = optPollo.cost + optRes.cost;
+            discardedSurplusGrams = Math.max(0, totalGramsProvided - requiredGrams);
+
+            const polloProv = optPollo.totalGrams;
+            const resProv = optRes.totalGrams;
+            const polloPct = totalGramsProvided > 0 ? Math.round((polloProv / totalGramsProvided) * 100) : Math.round(polloPctReq * 100);
+            const resPct = 100 - polloPct;
+
+            split = {
+                ratioKey: ratio,
+                polloGrams: Math.round(polloDaily * pts),
+                resGrams: Math.round(resDaily * pts),
+                polloBags: optPollo.totalBags,
+                resBags: optRes.totalBags,
+                polloPct,
+                resPct
+            };
+        }
     } else {
         const opt = window.optimizeBagsForFormula(formula, dG, pts, bagSize);
         bags = opt.bags;
@@ -704,7 +768,18 @@ window.buildFeedingPlan = function (dailyGrams, days, formula, petName = '', bag
     const pricing = window.calculatePlanConsumption(dG, pts, formula, bagSize);
     const discountInfo = pricing.discountInfo;
 
-    const formulaLabel = formula === 'pollo' ? 'Pollo con Zanahoria' : (formula === 'res' ? 'Carne de Res con Calabacín' : 'Plan Mixto (Pollo y Res)');
+    let formulaLabel = formula === 'pollo' ? 'Pollo con Zanahoria' : (formula === 'res' ? 'Carne de Res con Calabacín' : 'Plan Mixto (Pollo y Res)');
+    if (formula === 'mixto' && pricing.split) {
+        if (pricing.split.isCustomManual) {
+            formulaLabel = `Plan Mixto (${pricing.split.polloBags} Pollo + ${pricing.split.resBags} Res)`;
+        } else if (pricing.split.ratioKey === 'pollo_mayor') {
+            formulaLabel = 'Plan Mixto (Más Pollo 70/30)';
+        } else if (pricing.split.ratioKey === 'res_mayor') {
+            formulaLabel = 'Plan Mixto (Más Res 30/70)';
+        } else {
+            formulaLabel = 'Plan Mixto (Pollo y Res 50/50)';
+        }
+    }
 
     return {
         id: 'plan_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
@@ -767,6 +842,8 @@ window.generateFeedingPlans = function (dailyGrams, formula = 'pollo', petName =
 
 window.state = { nombreMascota: '', etapa: null, cachorroEdad: null, esterilizado: false, actividad: 'bajo' };
 window.activePlanFormula = 'pollo';
+window.activeMixtoRatio = 'equilibrado';
+window.mixtoCustomBagsMap = {};
 window.activePlanPresentation = '250gr';
 window.__presentationUserTouched = false;
 window.currentWeightPollo = '250gr';
@@ -1320,7 +1397,7 @@ window.navigateTo = function (targetId) {
     });
     window.lastScrollY = 0;
     if (targetId === 'view-calc') window.prepareCalculatorInputs?.(true);
-    if (['view-perros', 'view-gatos', 'view-snacks'].includes(targetId)) {
+    if (['view-perros', 'view-gatos', 'view-snacks', 'view-cart'].includes(targetId)) {
         window.renderMenuPetSelector?.();
         window.refreshIcons?.();
     }
@@ -1900,7 +1977,7 @@ window.actualizarUIAuth = function () {
         if (dText) dText.textContent = primerNombre;
 
         if (topPts) {
-            if (hasRealPoints) {
+            if (VIP_ENABLED && hasRealPoints) {
                 topPts.textContent = puntosDisp + ' ptos';
                 topPts.classList.remove('hidden');
             } else {
@@ -1909,7 +1986,7 @@ window.actualizarUIAuth = function () {
             }
         }
         if (dPts) {
-            if (hasRealPoints) {
+            if (VIP_ENABLED && hasRealPoints) {
                 dPts.textContent = puntosDisp + ' pts';
                 dPts.classList.remove('hidden');
             } else {
@@ -1934,7 +2011,7 @@ window.actualizarUIAuth = function () {
         const benUserPtsWrap = document.getElementById('ben-user-pts-wrap');
         const benUserPts = document.getElementById('ben-user-pts');
         if (benUserPtsWrap && benUserPts) {
-            if (hasRealPoints) {
+            if (VIP_ENABLED && hasRealPoints) {
                 benUserPts.textContent = puntosDisp;
                 benUserPtsWrap.classList.remove('hidden');
             } else {
@@ -1945,7 +2022,7 @@ window.actualizarUIAuth = function () {
         const dashboardVipPointsWrap = document.getElementById('dashboard-vip-points-wrap');
         const dashboardVipPointsVal = document.getElementById('dashboard-vip-points-val');
         if (dashboardVipPointsWrap && dashboardVipPointsVal) {
-            if (hasRealPoints) {
+            if (VIP_ENABLED && hasRealPoints) {
                 dashboardVipPointsVal.textContent = puntosDisp;
                 dashboardVipPointsWrap.classList.remove('hidden');
             } else {
@@ -5283,7 +5360,274 @@ window.cambiarFormulaPlan = function (formula) {
         }
     });
 
+    const ratioContainer = document.getElementById('mixto-ratio-container');
+    if (ratioContainer) {
+        if (formula === 'mixto') {
+            ratioContainer.classList.remove('hidden');
+        } else {
+            ratioContainer.classList.add('hidden');
+        }
+    }
+
+    const standardGrid = document.getElementById('feeding-plans-cards-grid');
+    if (standardGrid) standardGrid.classList.remove('hidden');
     window.renderActiveFeedingPlans();
+};
+
+window.cambiarRatioMixto = function (ratioKey) {
+    window.vibrate?.(15);
+    window.activeMixtoRatio = ratioKey;
+
+    const badge = document.getElementById('mixto-ratio-badge');
+    const subLabel = document.getElementById('formula-btn-mixto-sub');
+
+    const ratiosInfo = {
+        pollo_mayor: { label: '70% Pollo · 30% Res', short: 'Más Pollo (70/30)' },
+        equilibrado: { label: '50% Pollo · 50% Res', short: 'Equilibrado (50/50)' },
+        res_mayor: { label: '30% Pollo · 70% Res', short: 'Más Res (30/70)' }
+    };
+
+    const info = ratiosInfo[ratioKey] || ratiosInfo.equilibrado;
+    if (badge) badge.textContent = info.label;
+    if (subLabel) subLabel.textContent = info.short;
+
+    ['pollo_mayor', 'equilibrado', 'res_mayor'].forEach(r => {
+        const btn = document.getElementById(`ratio-btn-${r}`);
+        if (!btn) return;
+        const isSelected = r === ratioKey;
+        if (isSelected) {
+            btn.className = 'mixto-ratio-btn p-2 rounded-xl border text-center transition-all bg-white text-purple-dark border-white shadow-sm cursor-pointer';
+            const sub = btn.querySelector('span:last-child');
+            if (sub) sub.className = 'block text-[9px] text-gray-500 mt-0.5';
+        } else {
+            btn.className = 'mixto-ratio-btn p-2 rounded-xl border text-center transition-all bg-white/10 text-white border-white/20 hover:bg-white/20 cursor-pointer';
+            const sub = btn.querySelector('span:last-child');
+            if (sub) sub.className = 'block text-[9px] text-white/70 mt-0.5';
+        }
+    });
+
+    window.renderActiveFeedingPlans();
+};
+
+// Estado y funciones del Plan Personalizado
+window.customPlanBags = {
+    pollo_250: 0,
+    pollo_550: 0,
+    res_250: 0,
+    res_550: 0
+};
+
+window.initCustomPlanDefaults = function () {
+    const dailyGrams = Number(window.lastCalcResult?.gramos) || 0;
+    const totalCurrent = Object.values(window.customPlanBags).reduce((a, b) => a + b, 0);
+    if (totalCurrent === 0 && dailyGrams > 0) {
+        if (dailyGrams <= 250) {
+            window.customPlanBags.pollo_250 = 4;
+            window.customPlanBags.res_250 = 4;
+        } else {
+            window.customPlanBags.pollo_550 = 3;
+            window.customPlanBags.res_550 = 3;
+        }
+    }
+};
+
+window.adjustCustomBagQty = function (key, delta) {
+    window.vibrate?.(15);
+    if (!window.customPlanBags) window.customPlanBags = { pollo_250: 0, pollo_550: 0, res_250: 0, res_550: 0 };
+    const cur = window.customPlanBags[key] || 0;
+    const next = Math.max(0, cur + Number(delta));
+    window.customPlanBags[key] = next;
+    const el = document.getElementById(`custom-qty-${key}`);
+    if (el) el.textContent = String(next);
+    window.updateCustomPlanTotals();
+};
+
+window.updateCustomPlanTotals = function () {
+    const bags = window.customPlanBags || { pollo_250: 0, pollo_550: 0, res_250: 0, res_550: 0 };
+    // Refrescar números en spans
+    ['pollo_250', 'pollo_550', 'res_250', 'res_550'].forEach(k => {
+        const span = document.getElementById(`custom-qty-${k}`);
+        if (span) span.textContent = String(bags[k] || 0);
+    });
+
+    const prices = {
+        pollo_250: 2.50,
+        pollo_550: 5.00,
+        res_250: 3.50,
+        res_550: 7.00
+    };
+
+    const gramsPerBag = {
+        pollo_250: 250,
+        pollo_550: 550,
+        res_250: 250,
+        res_550: 550
+    };
+
+    const totalPolloGrams = (bags.pollo_250 * gramsPerBag.pollo_250) + (bags.pollo_550 * gramsPerBag.pollo_550);
+    const totalResGrams = (bags.res_250 * gramsPerBag.res_250) + (bags.res_550 * gramsPerBag.res_550);
+    const totalGrams = totalPolloGrams + totalResGrams;
+    const totalBags = bags.pollo_250 + bags.pollo_550 + bags.res_250 + bags.res_550;
+
+    const subtotal = (bags.pollo_250 * prices.pollo_250) +
+                     (bags.pollo_550 * prices.pollo_550) +
+                     (bags.res_250 * prices.res_250) +
+                     (bags.res_550 * prices.res_550);
+
+    const dailyGrams = Number(window.lastCalcResult?.gramos) || 0;
+    const estDays = dailyGrams > 0 ? Math.floor(totalGrams / dailyGrams) : 0;
+
+    // Descuento según días cubiertos
+    let discountPct = 0;
+    if (estDays >= 30) {
+        discountPct = 0.10;
+    } else if (estDays >= 15) {
+        discountPct = 0.07;
+    } else if (estDays >= 7) {
+        discountPct = 0.05;
+    }
+
+    const discountAmount = subtotal * discountPct;
+    const finalPrice = Math.max(0, subtotal - discountAmount);
+
+    // Actualizar UI
+    const badge = document.getElementById('custom-plan-total-bags-badge');
+    if (badge) badge.textContent = `${totalBags} bolsa${totalBags === 1 ? '' : 's'}`;
+
+    const totalKgEl = document.getElementById('custom-plan-total-kg');
+    if (totalKgEl) totalKgEl.textContent = `${(totalGrams / 1000).toFixed(2)} kg (${totalBags} bolsas)`;
+
+    const estDaysEl = document.getElementById('custom-plan-est-days');
+    if (estDaysEl) {
+        if (dailyGrams > 0) {
+            estDaysEl.textContent = `${estDays} días (${dailyGrams} g/día)`;
+        } else {
+            estDaysEl.textContent = `Calcula su porción para ver días`;
+        }
+    }
+
+    const discLabelEl = document.getElementById('custom-plan-discount-label');
+    if (discLabelEl) {
+        const pctText = (discountPct * 100).toFixed(0);
+        discLabelEl.textContent = `${pctText}% (-$${discountAmount.toFixed(2)})`;
+    }
+
+    const finalPriceEl = document.getElementById('custom-plan-final-price');
+    if (finalPriceEl) finalPriceEl.textContent = `$${finalPrice.toFixed(2)}`;
+
+    // Proporciones
+    const pctPollo = totalGrams > 0 ? Math.round((totalPolloGrams / totalGrams) * 100) : 50;
+    const pctRes = totalGrams > 0 ? (100 - pctPollo) : 50;
+
+    const ratioPolloEl = document.getElementById('custom-plan-ratio-pollo');
+    if (ratioPolloEl) ratioPolloEl.textContent = `🍗 Pollo: ${pctPollo}% (${(totalPolloGrams / 1000).toFixed(2)} kg)`;
+
+    const ratioResEl = document.getElementById('custom-plan-ratio-res');
+    if (ratioResEl) ratioResEl.textContent = `🥩 Res: ${pctRes}% (${(totalResGrams / 1000).toFixed(2)} kg)`;
+
+    const barPollo = document.getElementById('custom-plan-bar-pollo');
+    if (barPollo) barPollo.style.width = `${pctPollo}%`;
+
+    const barRes = document.getElementById('custom-plan-bar-res');
+    if (barRes) barRes.style.width = `${pctRes}%`;
+
+    const addBtn = document.getElementById('btn-add-custom-plan');
+    if (addBtn) {
+        if (totalBags === 0) {
+            addBtn.disabled = true;
+            addBtn.classList.add('opacity-50', 'pointer-events-none');
+        } else {
+            addBtn.disabled = false;
+            addBtn.classList.remove('opacity-50', 'pointer-events-none');
+        }
+    }
+};
+
+window.addCustomPlanToCart = function () {
+    window.vibrate?.([30, 50]);
+    const bags = window.customPlanBags || { pollo_250: 0, pollo_550: 0, res_250: 0, res_550: 0 };
+    const totalBags = bags.pollo_250 + bags.pollo_550 + bags.res_250 + bags.res_550;
+    if (totalBags === 0) {
+        window.showToast?.('Selecciona al menos una bolsa para tu plan personalizado.', 'error');
+        return;
+    }
+
+    const prices = { pollo_250: 2.50, pollo_550: 5.00, res_250: 3.50, res_550: 7.00 };
+    const gramsPerBag = { pollo_250: 250, pollo_550: 550, res_250: 250, res_550: 550 };
+
+    const totalPolloGrams = (bags.pollo_250 * gramsPerBag.pollo_250) + (bags.pollo_550 * gramsPerBag.pollo_550);
+    const totalResGrams = (bags.res_250 * gramsPerBag.res_250) + (bags.res_550 * gramsPerBag.res_550);
+    const totalGrams = totalPolloGrams + totalResGrams;
+
+    const subtotal = (bags.pollo_250 * prices.pollo_250) +
+                     (bags.pollo_550 * prices.pollo_550) +
+                     (bags.res_250 * prices.res_250) +
+                     (bags.res_550 * prices.res_550);
+
+    const dailyGrams = Number(window.lastCalcResult?.gramos) || 0;
+    const estDays = dailyGrams > 0 ? Math.max(1, Math.floor(totalGrams / dailyGrams)) : 7;
+
+    let discountPct = 0;
+    if (estDays >= 30) discountPct = 0.10;
+    else if (estDays >= 15) discountPct = 0.07;
+    else if (estDays >= 7) discountPct = 0.05;
+
+    const discountAmount = subtotal * discountPct;
+    const finalPrice = Math.max(0, subtotal - discountAmount);
+
+    const petName = window.state.nombreMascota || 'tu perro';
+    const petWeight = Number(window.lastCalcResult?.peso || 0);
+
+    // Desglose de bolsas legibles
+    const bagItems = [];
+    if (bags.pollo_250 > 0) bagItems.push({ name: 'Pollo 250g', qty: bags.pollo_250, weight: '250 g', size: '250gr', formula: 'pollo' });
+    if (bags.pollo_550 > 0) bagItems.push({ name: 'Pollo 550g', qty: bags.pollo_550, weight: '550 g', size: '550gr', formula: 'pollo' });
+    if (bags.res_250 > 0) bagItems.push({ name: 'Res 250g', qty: bags.res_250, weight: '250 g', size: '250gr', formula: 'res' });
+    if (bags.res_550 > 0) bagItems.push({ name: 'Res 550g', qty: bags.res_550, weight: '550 g', size: '550gr', formula: 'res' });
+
+    const planItem = {
+        type: 'feeding_plan',
+        id: 'plan_custom_' + Date.now(),
+        formula: 'personalizado',
+        formulaName: 'Plan Personalizado (Pollo y Res)',
+        petName: petName,
+        petWeight: petWeight,
+        dailyGrams: dailyGrams,
+        days: estDays,
+        durationDays: estDays,
+        presentation: 'Combinada',
+        presentationGrams: 0,
+        presentationPrice: 0,
+        bags: bagItems,
+        bagsCount: totalBags,
+        totalGramsRequired: dailyGrams > 0 ? (dailyGrams * estDays) : totalGrams,
+        totalGramsProvided: totalGrams,
+        surplusGrams: Math.max(0, totalGrams - (dailyGrams * estDays)),
+        originalSubtotal: subtotal,
+        discountPercent: (discountPct * 100).toFixed(0),
+        discountAmount: discountAmount,
+        finalPrice: finalPrice
+    };
+
+    if (!window.cart) window.cart = [];
+    window.cartPostOrderActive = false;
+    window.clearCartPostOrderPersistedState?.();
+    const postOrderCard = document.getElementById('cart-post-order');
+    if (postOrderCard) postOrderCard.classList.add('hidden');
+
+    const existingIndex = window.cart.findIndex(i => i.type === 'feeding_plan' && (i.petName || '').toLowerCase() === (planItem.petName || '').toLowerCase());
+    if (existingIndex >= 0) {
+        window.cart[existingIndex] = planItem;
+        window.showToast?.(`Plan personalizado actualizado para ${planItem.petName}.`, 'success');
+    } else {
+        window.cart.push(planItem);
+        window.showToast?.(`Plan personalizado para ${planItem.petName} agregado al pedido.`, 'success');
+    }
+
+    window.saveCartToStorage?.();
+    window.updateCartUI?.();
+    window.updateFlowStepper?.(4);
+    window.navigateTo('view-cart');
 };
 
 // =========================================================================
@@ -5489,7 +5833,7 @@ window.renderActiveFeedingPlans = function () {
 
                 <!-- Bolsas calculadas -->
                 <div class="mb-2 text-[10px] text-gray-500 dark:text-gray-400 font-semibold leading-tight">
-                    ${plan.bagsCount} bolsas (${(plan.totalGramsProvided / 1000).toFixed(2)} kg)
+                    ${plan.split ? `${plan.split.polloBags || 0} Pollo + ${plan.split.resBags || 0} Res (${plan.bagsCount} b.)` : `${plan.bagsCount} bolsas (${(plan.totalGramsProvided / 1000).toFixed(2)} kg)`}
                 </div>
             </div>
 
@@ -5857,6 +6201,54 @@ window.removePlanFromCart = function (planId) {
     window.updateCartUI();
     window.saveCartToStorage?.();
     window.showToast?.('Plan eliminado del pedido.');
+};
+
+window.adjustMixtoCartBags = function (planId, protein, delta) {
+    window.vibrate?.(15);
+    const plan = (window.cart || []).find(i => i.id === planId);
+    if (!plan || plan.formula !== 'mixto') return;
+
+    const bagSize = plan.presentation || '550gr';
+    const bagGrams = bagSize === '250gr' ? 250 : 550;
+    const totalBagsLimit = Number(plan.bagsCount) || (Array.isArray(plan.bags) ? plan.bags.reduce((acc, b) => acc + (Number(b.qty) || 0), 0) : 0);
+    if (totalBagsLimit <= 0) return;
+
+    let curPollo = 0;
+    let curRes = 0;
+    if (plan.split && plan.split.polloBags !== undefined && plan.split.resBags !== undefined) {
+        curPollo = Number(plan.split.polloBags) || 0;
+        curRes = Number(plan.split.resBags) || 0;
+    } else if (Array.isArray(plan.bags)) {
+        const bPollo = plan.bags.find(b => b.formula === 'pollo');
+        const bRes = plan.bags.find(b => b.formula === 'res');
+        curPollo = bPollo ? Number(bPollo.qty) || 0 : 0;
+        curRes = bRes ? Number(bRes.qty) || 0 : 0;
+    }
+
+    let nextPollo = curPollo;
+    let nextRes = curRes;
+
+    if (protein === 'pollo') {
+        nextPollo = Math.max(0, Math.min(totalBagsLimit, curPollo + Number(delta)));
+        nextRes = totalBagsLimit - nextPollo;
+    } else if (protein === 'res') {
+        nextRes = Math.max(0, Math.min(totalBagsLimit, curRes + Number(delta)));
+        nextPollo = totalBagsLimit - nextRes;
+    }
+
+    if (nextPollo === curPollo && nextRes === curRes) return;
+
+    // Actualizar registro en window.mixtoCustomBagsMap para sincronía
+    if (!window.mixtoCustomBagsMap) window.mixtoCustomBagsMap = {};
+    window.mixtoCustomBagsMap[plan.days] = { pollo: nextPollo, res: nextRes };
+
+    // Reconstruir plan con las nuevas cantidades
+    const updated = window.buildFeedingPlan(plan.dailyGrams, plan.days, 'mixto', plan.petName, bagSize);
+    Object.assign(plan, updated, { id: planId, type: 'feeding_plan' });
+
+    window.updateCartUI();
+    window.saveCartToStorage?.();
+    window.showToast?.(`Mezcla ajustada: ${nextPollo} Pollo + ${nextRes} Res`, 'success');
 };
 
 window.updatePlanDuration = function (planId, newDays) {
@@ -6400,6 +6792,43 @@ window.updateCartUI = function () {
                                 </span>
                                 <span class="font-black text-purple-dark dark:text-white">${window.escapeHTML(bagsDesc || `${i.bagsCount || 0} bolsas`)}</span>
                             </div>
+
+                            ${i.formula === 'mixto' ? `
+                            <!-- Control Manual de Bolsas para Plan Mixto manteniendo el límite del plan -->
+                            <div class="pt-1 pb-2 border-b border-purple-border/20 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] font-black uppercase text-purple-dark dark:text-purple-light">Ajustar mezcla manual:</span>
+                                    <span class="text-[10px] font-bold text-pink bg-pink/10 px-2 py-0.5 rounded-full">Límite exacto: ${i.bagsCount} bolsas</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <!-- Selector Pollo -->
+                                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-xl p-2.5 flex items-center justify-between">
+                                        <div>
+                                            <span class="block font-black text-xs text-purple-dark dark:text-white leading-tight">🍗 Pollo</span>
+                                            <span class="block text-[9px] text-gray-500">${i.presentation || '550g'}</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5 bg-purple-light/80 dark:bg-purple/20 rounded-lg p-0.5">
+                                            <button type="button" onclick="window.adjustMixtoCartBags('${i.id}', 'pollo', -1)" class="w-6 h-6 rounded-md bg-white dark:bg-darkcard text-purple-dark dark:text-white font-black text-xs flex items-center justify-center hover:bg-purple hover:text-white transition-colors cursor-pointer shadow-xs">−</button>
+                                            <span class="w-5 text-center font-black text-xs text-purple-dark dark:text-white">${i.split ? (i.split.polloBags || 0) : ((i.bags || []).find(b=>b.formula==='pollo')?.qty || 0)}</span>
+                                            <button type="button" onclick="window.adjustMixtoCartBags('${i.id}', 'pollo', 1)" class="w-6 h-6 rounded-md bg-white dark:bg-darkcard text-purple-dark dark:text-white font-black text-xs flex items-center justify-center hover:bg-purple hover:text-white transition-colors cursor-pointer shadow-xs">+</button>
+                                        </div>
+                                    </div>
+                                    <!-- Selector Res -->
+                                    <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-xl p-2.5 flex items-center justify-between">
+                                        <div>
+                                            <span class="block font-black text-xs text-purple-dark dark:text-white leading-tight">🥩 Res</span>
+                                            <span class="block text-[9px] text-gray-500">${i.presentation || '550g'}</span>
+                                        </div>
+                                        <div class="flex items-center gap-1.5 bg-purple-light/80 dark:bg-purple/20 rounded-lg p-0.5">
+                                            <button type="button" onclick="window.adjustMixtoCartBags('${i.id}', 'res', -1)" class="w-6 h-6 rounded-md bg-white dark:bg-darkcard text-purple-dark dark:text-white font-black text-xs flex items-center justify-center hover:bg-purple hover:text-white transition-colors cursor-pointer shadow-xs">−</button>
+                                            <span class="w-5 text-center font-black text-xs text-purple-dark dark:text-white">${i.split ? (i.split.resBags || 0) : ((i.bags || []).find(b=>b.formula==='res')?.qty || 0)}</span>
+                                            <button type="button" onclick="window.adjustMixtoCartBags('${i.id}', 'res', 1)" class="w-6 h-6 rounded-md bg-white dark:bg-darkcard text-purple-dark dark:text-white font-black text-xs flex items-center justify-center hover:bg-purple hover:text-white transition-colors cursor-pointer shadow-xs">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
+
                             <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
                                 <span>Alimento requerido (${curDays} días):</span>
                                 <span class="font-semibold text-purple-dark dark:text-white">${kgReq} kg</span>
@@ -7003,6 +7432,18 @@ window.initPreloader = function () {
         return;
     }
 
+    // No mostrar el preloader si ya se mostró en la sesión actual
+    try {
+        if (sessionStorage.getItem('milkarf_preloader_seen') === '1') {
+            preloader.classList.add('hidden');
+            window.entryReady = true;
+            window.refreshIcons?.();
+            showWelcomeSafely();
+            return;
+        }
+        sessionStorage.setItem('milkarf_preloader_seen', '1');
+    } catch (e) { }
+
     let done = false;
     const finish = () => {
         if (done) return;
@@ -7016,13 +7457,13 @@ window.initPreloader = function () {
                 preloader.classList.add('hidden');
                 window.refreshIcons?.();
                 showWelcomeSafely();
-            }, 260);
+            }, 180);
         });
     };
 
     preloaderBar.style.width = '35%';
     requestAnimationFrame(() => { preloaderBar.style.width = '88%'; });
-    const maxWait = window.matchMedia('(max-width: 768px)').matches ? 560 : 720;
+    const maxWait = 500; // Máximo 600ms total incluyendo fade
     setTimeout(finish, maxWait);
 };
 
@@ -7577,6 +8018,16 @@ window.refreshMobileBottomNav = function (targetId) {
     document.querySelectorAll('.milkarf-header .milkarf-nav-link').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-target') === targetId);
     });
+
+    const floatingWa = document.getElementById('floating-wa-btn');
+    if (floatingWa) {
+        const hideOnViews = ['view-calc', 'view-cart', 'view-privacidad', 'view-terminos', 'view-entregas', 'view-cookies', 'view-admin'];
+        if (hideOnViews.includes(targetId)) {
+            floatingWa.classList.add('hidden', 'pointer-events-none');
+        } else {
+            floatingWa.classList.remove('hidden', 'pointer-events-none');
+        }
+    }
 };
 
 const __originalNavigateToFastUX = window.navigateTo;

@@ -221,6 +221,7 @@ const clean = (plan) => {
 
 // 7) Plan mixto según consumo del periodo (DAILY=457g, 7 días: 3 bolsas Pollo + 3 bolsas Res = 6 bolsas de 550g)
 {
+    sandbox.activeMixtoRatio = 'equilibrado';
     const p = computePlanPricing(DAILY, 7, 'mixto', '550gr');
     assert.equal(p.split.polloPct, 50);
     assert.equal(p.split.resPct, 50);
@@ -232,6 +233,32 @@ const clean = (plan) => {
     assert.equal(p.totalBags, 6);
     assert.equal(p.subtotal, 36.00); // 3*5.00 + 3*7.00
     assert.equal(p.finalPrice, 34.20); // -5 %
+
+    // Ratio Más Pollo (70% Pollo / 30% Res)
+    sandbox.activeMixtoRatio = 'pollo_mayor';
+    const pPolloMayor = computePlanPricing(DAILY, 7, 'mixto', '550gr');
+    assert.equal(pPolloMayor.split.ratioKey, 'pollo_mayor');
+    assert.ok(pPolloMayor.split.polloBags > pPolloMayor.split.resBags, 'Debe haber más bolsas de pollo que de res');
+
+    // Ratio Más Res (30% Pollo / 70% Res)
+    sandbox.activeMixtoRatio = 'res_mayor';
+    const pResMayor = computePlanPricing(DAILY, 7, 'mixto', '550gr');
+    assert.equal(pResMayor.split.ratioKey, 'res_mayor');
+    assert.ok(pResMayor.split.resBags > pResMayor.split.polloBags, 'Debe haber más bolsas de res que de pollo');
+
+    // Ajuste manual de bolsas (manteniendo el total exacto de bolsas del plan)
+    sandbox.mixtoCustomBagsMap = { 7: { pollo: 4, res: 2 } };
+    const pManual = computePlanPricing(DAILY, 7, 'mixto', '550gr');
+    assert.equal(pManual.split.isCustomManual, true);
+    assert.equal(pManual.split.polloBags, 4);
+    assert.equal(pManual.split.resBags, 2);
+    assert.equal(pManual.totalBags, 6);
+    assert.equal(pManual.subtotal, 4 * 5.00 + 2 * 7.00); // 34.00
+    assert.equal(pManual.finalPrice, 32.30); // -5%
+    delete sandbox.mixtoCustomBagsMap;
+
+    // Restaurar a equilibrado
+    sandbox.activeMixtoRatio = 'equilibrado';
 }
 
 // 7.5) Conservación 24h con pauta de comidas (Requisito 4)
@@ -348,4 +375,44 @@ const clean = (plan) => {
     assert.equal(getPresentationBySize('res', '550gr').price, 7.00);
 }
 
-console.log('✅ Todas las pruebas pasaron (13 bloques: 250g/550g, descuentos, mixto, degenerados, planes, WhatsApp).');
+// 14) Plan personalizado: desglose de bolsas mixtas en template WhatsApp
+{
+    const customItem = {
+        type: 'feeding_plan',
+        id: 'plan_custom_123',
+        formula: 'personalizado',
+        formulaName: 'Plan Personalizado (Pollo y Res)',
+        petName: 'Luna',
+        dailyGrams: 300,
+        days: 10,
+        durationDays: 10,
+        presentation: 'Combinada',
+        bags: [
+            { name: 'Pollo 550g', qty: 3, weight: '550 g', size: '550gr', formula: 'pollo' },
+            { name: 'Res 550g', qty: 3, weight: '550 g', size: '550gr', formula: 'res' }
+        ],
+        bagsCount: 6,
+        totalGramsRequired: 3000,
+        totalGramsProvided: 3300,
+        originalSubtotal: 36.00,
+        discountPercent: '5',
+        discountAmount: 1.80,
+        finalPrice: 34.20
+    };
+    const msg = getWhatsAppTemplate('newOrder', {
+        items: [customItem],
+        finalTotal: 34.20,
+        contactPhone: '',
+        userName: 'Cliente',
+        orderId: 'custom_test_1',
+        location: 'Mérida'
+    });
+    assert.match(msg, /Plan para Luna/);
+    assert.match(msg, /Plan Personalizado/);
+    assert.match(msg, /3x 550gr \+ 3x 550gr/);
+    assert.match(msg, /3\.30 kg provistos/);
+    assert.equal(msg.includes('undefined'), false);
+    assert.equal(msg.includes('NaN'), false);
+}
+
+console.log('✅ Todas las pruebas pasaron (14 bloques: 250g/550g, descuentos, mixto, personalizado, degenerados, planes, WhatsApp).');
