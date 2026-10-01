@@ -1119,7 +1119,7 @@ ${itemsFormatted}
 💰 *TOTAL A PAGAR:* ${currency(data.finalTotal)}`;
 
             if (data.discountAmount > 0) {
-                const label = data.discountLabel || (data.discountType === 'welcome' ? 'Descuento de bienvenida (-20%)' : 'Descuento de plan');
+                const label = data.discountLabel || 'Descuento de plan';
                 msg += `\n• ${label}: -${currency(data.discountAmount)}`;
             }
 
@@ -4774,7 +4774,7 @@ window.buildAdminOrderCard = function (o) {
                 <div class="absolute top-0 left-0 w-1 h-full ${window.getOrderStatusInfo(status).bar}"></div>
                 <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 pl-2">
                     <div class="min-w-0"><div class="flex items-center gap-2 flex-wrap mb-2">${window.renderStatusBadge(status)}<span class="text-[9px] font-black uppercase tracking-widest text-gray-400">#${window.escapeHTML(o.id.slice(0, 8))}</span></div><h4 class="font-black text-purple-dark dark:text-white text-base leading-tight truncate">${window.escapeHTML(window.capitalizeName(o.userName || o.email || 'Usuario Invitado'))}</h4><p class="text-[10px] text-gray-500 font-bold mt-1">${window.formatAdminDate(o.createdAt)}</p></div>
-                    <div class="text-left md:text-right shrink-0"><span class="text-[10px] text-gray-400 font-black uppercase tracking-widest block">Total</span><span class="font-black text-purple dark:text-white text-2xl">$${totalNumber.toFixed(2)}</span>${o.descuentoAplicado ? '<p class="text-[9px] font-black text-pink uppercase tracking-widest">20% aplicado</p>' : ''}${Number(o.pointsAwarded || o.pointsGranted || 0) > 0 ? `<p class="text-[9px] font-black text-green-dark dark:text-green uppercase tracking-widest mt-1">+${Number(o.pointsAwarded || o.pointsGranted || 0)} ptos</p>` : ''}</div>
+                    <div class="text-left md:text-right shrink-0"><span class="text-[10px] text-gray-400 font-black uppercase tracking-widest block">Total</span><span class="font-black text-purple dark:text-white text-2xl">$${totalNumber.toFixed(2)}</span>${Number(o.pointsAwarded || o.pointsGranted || 0) > 0 ? `<p class="text-[9px] font-black text-green-dark dark:text-green uppercase tracking-widest mt-1">+${Number(o.pointsAwarded || o.pointsGranted || 0)} ptos</p>` : ''}</div>
                 </div>
                 <div class="bg-purple-light/70 dark:bg-[#0d0718] rounded-2xl p-4 my-4 border border-purple-border/30 dark:border-purple/20 ml-2"><ul class="space-y-2">${items}</ul></div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 ml-2">
@@ -8993,26 +8993,7 @@ window.savePreparedOrderNonBlocking = function (prepared) {
     void (async () => {
         try {
             const { pendingOrder, isLogged, clientNameForOrder, contactPhone, clientToken, items, finalTotal, discountApplied, discountType, discountAmount, orderType, localOrderId, createdAt } = prepared;
-            if (discountApplied && discountType === 'welcome' && isLogged) {
-                try {
-                    let reclamados = [];
-                    try { reclamados = JSON.parse(localStorage.getItem('milkarf_descuentos_uids') || '[]'); } catch (e) { }
-                    if (!reclamados.includes(window.currentUser.uid)) {
-                        reclamados.push(window.currentUser.uid);
-                        try { localStorage.setItem('milkarf_descuentos_uids', JSON.stringify(reclamados)); } catch (e) { }
-                    }
-                    if (window.currentUser.data) window.currentUser.data.descuento_usado = true;
-                    if (db && window.currentUser?.uid) {
-                        try {
-                            await setDoc(window.getUserPath(window.currentUser.uid), {
-                                uid: window.currentUser.uid,
-                                descuento_usado: true,
-                                updatedAt: serverTimestamp()
-                            }, { merge: true });
-                        } catch (errDoc) { console.warn('Error al marcar descuento_usado en Firestore:', errDoc); }
-                    }
-                } catch (e) { }
-            }
+
 
             if (!db) return;
 
