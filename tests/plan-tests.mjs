@@ -350,14 +350,18 @@ const clean = (plan) => {
         location: 'Mérida'
     });
     assert.match(msg, /Plan para Rex/);
-    assert.match(msg, /550 g/);
-    assert.match(msg, /Presentación: 550 g/);
-    assert.match(msg, /Bolsas: 25x 550gr/);
+    assert.match(msg, /🐔 Pollo con Zanahoria: 25x 550 g/);
+    assert.match(msg, /13\.75 kg provistos/);
+    assert.match(msg, /30 días/);
+    assert.match(msg, /Subtotal: \$125\.00/);
+    assert.match(msg, /Descuento Plan mensual \(30 días\) −10%: −\$12\.50/);
+    assert.match(msg, /Total del plan: \$112\.50/);
+    assert.match(msg, /🧾 \*Subtotal:\* \$125\.00/);
+    assert.match(msg, /🏷️ \*Descuento por plan:\* −\$12\.50/);
+    assert.match(msg, /💰 \*TOTAL A PAGAR:\* \$112\.50/);
     assert.equal(msg.includes('undefined'), false, 'No debe contener "undefined"');
     assert.equal(msg.includes('NaN'), false, 'No debe contener "NaN"');
     assert.equal(msg.includes('null '), false, 'No debe contener "null"');
-    assert.match(msg, /30 días/);
-    assert.match(msg, /13\.75 kg provistos/);
 }
 
 // 12) El template no estalla con datos ausentes (guardas para mensaje incompleto)
@@ -409,10 +413,126 @@ const clean = (plan) => {
     });
     assert.match(msg, /Plan para Luna/);
     assert.match(msg, /Plan Personalizado/);
-    assert.match(msg, /3x 550gr \+ 3x 550gr/);
+    assert.match(msg, /🐔 Pollo con Zanahoria: 3x 550 g/);
+    assert.match(msg, /🥩 Carne de Res con Calabacín: 3x 550 g/);
     assert.match(msg, /3\.30 kg provistos/);
     assert.equal(msg.includes('undefined'), false);
     assert.equal(msg.includes('NaN'), false);
 }
 
-console.log('✅ Todas las pruebas pasaron (14 bloques: 250g/550g, descuentos, mixto, personalizado, degenerados, planes, WhatsApp).');
+// 15) Mixto con 4 pollo + 5 res: muestra ambas proteínas con su cantidad y formulaName en cabecera
+{
+    const mixtoItem = {
+        type: 'feeding_plan',
+        id: 'plan_mixto_4_5',
+        formula: 'mixto',
+        formulaName: 'Plan Mixto (4 Pollo + 5 Res)',
+        petName: 'Rex',
+        dailyGrams: 330,
+        durationDays: 15,
+        presentation: '550gr',
+        bags: [
+            { formula: 'pollo', formulaName: 'Pollo con Zanahoria', size: '550gr', weight: '550 g', qty: 4, unitPrice: 5.00 },
+            { formula: 'res', formulaName: 'Carne de Res con Calabacín', size: '550gr', weight: '550 g', qty: 5, unitPrice: 7.00 }
+        ],
+        bagsCount: 9,
+        totalGramsRequired: 4950,
+        totalGramsProvided: 4950,
+        originalSubtotal: 55.00,
+        discountPct: 0.075,
+        discountAmount: 4.13,
+        finalPrice: 50.87
+    };
+    const msg = getWhatsAppTemplate('newOrder', {
+        items: [mixtoItem],
+        subtotal: 55.00,
+        discountAmount: 4.13,
+        discountLabel: 'Descuento por plan',
+        finalTotal: 50.87,
+        userName: 'Ana Pérez',
+        orderId: 'mixto_123',
+        location: 'Mérida'
+    });
+    assert.match(msg, /1\. \*Plan para Rex\* — Plan Mixto \(4 Pollo \+ 5 Res\) · 15 días/);
+    assert.match(msg, /🐔 Pollo con Zanahoria: 4x 550 g/);
+    assert.match(msg, /🥩 Carne de Res con Calabacín: 5x 550 g/);
+    assert.match(msg, /4\.95 kg provistos/);
+    assert.match(msg, /Subtotal: \$55\.00/);
+    assert.match(msg, /Descuento Plan quincenal \(15 días\) −7,5%: −\$4\.13/);
+    assert.match(msg, /Total del plan: \$50\.87/);
+    assert.match(msg, /🧾 \*Subtotal:\* \$55\.00/);
+    assert.match(msg, /🏷️ \*Descuento por plan:\* −\$4\.13/);
+    assert.match(msg, /💰 \*TOTAL A PAGAR:\* \$50\.87/);
+    assert.equal(msg.includes('undefined'), false);
+    assert.equal(msg.includes('NaN'), false);
+}
+
+// 16) Plan quincenal (15 días): formatea el descuento como 7,5% (no redondeado a 8%)
+{
+    const plan15 = buildFeedingPlan(DAILY, 15, 'pollo', 'Rex');
+    const item15 = {
+        type: 'feeding_plan',
+        petName: plan15.petName,
+        durationDays: 15,
+        formula: 'pollo',
+        formulaName: plan15.formulaName,
+        presentation: plan15.presentation,
+        bags: plan15.bags,
+        bagsCount: plan15.bagsCount,
+        totalGramsProvided: plan15.totalGramsProvided,
+        originalSubtotal: plan15.originalSubtotal,
+        discountPct: plan15.discountPct,
+        discountAmount: plan15.discountAmount,
+        finalPrice: plan15.finalPrice
+    };
+    const msg = getWhatsAppTemplate('newOrder', {
+        items: [item15],
+        subtotal: plan15.originalSubtotal,
+        discountAmount: plan15.discountAmount,
+        discountLabel: 'Descuento por plan',
+        finalTotal: plan15.finalPrice,
+        userName: 'Cliente'
+    });
+    assert.match(msg, /7,5%/);
+    assert.equal(msg.includes('8%'), false, 'El descuento no debe redondearse a 8%');
+    assert.equal(msg.includes('undefined'), false);
+    assert.equal(msg.includes('NaN'), false);
+}
+
+// 17) Plan sin descuento: no muestra la línea de descuento en el desglose ni al final
+{
+    const itemSinDescuento = {
+        type: 'feeding_plan',
+        petName: 'Rocky',
+        durationDays: 3,
+        formula: 'pollo',
+        formulaName: 'Pollo con Zanahoria',
+        presentation: '550gr',
+        bags: [
+            { formula: 'pollo', formulaName: 'Pollo con Zanahoria', size: '550gr', weight: '550 g', qty: 3, unitPrice: 5.00 }
+        ],
+        bagsCount: 3,
+        totalGramsProvided: 1650,
+        originalSubtotal: 15.00,
+        discountPct: 0,
+        discountAmount: 0,
+        finalPrice: 15.00
+    };
+    const msg = getWhatsAppTemplate('newOrder', {
+        items: [itemSinDescuento],
+        subtotal: 15.00,
+        discountAmount: 0,
+        finalTotal: 15.00,
+        userName: 'Rocky Tutor'
+    });
+    assert.match(msg, /Subtotal: \$15\.00/);
+    assert.match(msg, /Total del plan: \$15\.00/);
+    assert.equal(msg.includes('Descuento'), false, 'No debe aparecer ninguna línea de descuento');
+    assert.match(msg, /🧾 \*Subtotal:\* \$15\.00/);
+    assert.match(msg, /💰 \*TOTAL A PAGAR:\* \$15\.00/);
+    assert.equal(msg.includes('🏷️'), false, 'No debe haber emoji de etiqueta de descuento si es 0');
+    assert.equal(msg.includes('undefined'), false);
+    assert.equal(msg.includes('NaN'), false);
+}
+
+console.log('✅ Todas las pruebas pasaron (17 bloques: 250g/550g, descuentos, mixto, personalizado, degenerados, planes, WhatsApp).');

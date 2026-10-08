@@ -331,7 +331,7 @@ window.MILKARF_CONFIG = {
             id: 'pollo',
             name: 'Pollo con Zanahoria',
             shortName: 'Pollo',
-            emoji: '🍗',
+            emoji: '🐔',
             available: true,
             caloricDensity: 1.55, // 1.550 kcal/kg — valor indicado por la marca
             presentations: [
@@ -1064,6 +1064,81 @@ window.getWhatsAppTemplate = function (type = 'general', data = {}) {
     const currency = (value) => '$' + Number(value || 0).toFixed(2);
     const userName = window.capitalizeName(data.userName || data.email || 'Cliente Milkarf');
 
+    const formatPercent = (pct) => {
+        let val = Number(pct || 0);
+        if (val > 0 && val < 1) {
+            val = val * 100;
+        }
+        const rounded = Math.round(val * 100) / 100;
+        return String(rounded).replace('.', ',') + '%';
+    };
+
+    const normalizeBagSize = (b) => {
+        if (b && b.grams) return `${b.grams} g`;
+        const raw = String(b?.weight || b?.size || '550 g');
+        const match = raw.match(/\d+/);
+        if (match) return `${match[0]} g`;
+        return raw.replace(/gr\b/g, ' g').trim();
+    };
+
+    const formatBagLines = (i) => {
+        const bags = Array.isArray(i.bags) ? i.bags : [];
+        if (!bags.length) {
+            const f = (i.formula || 'pollo').toLowerCase();
+            const formulaKey = f === 'res' ? 'res' : 'pollo';
+            const cat = window.MILKARF_CONFIG?.catalog?.[formulaKey];
+            const emoji = cat?.emoji || (formulaKey === 'res' ? '🥩' : '🐔');
+            const name = cat?.name || (formulaKey === 'res' ? 'Carne de Res con Calabacín' : 'Pollo con Zanahoria');
+            const pres = i.presentation ? String(i.presentation).replace(/gr\b/g, ' g').trim() : '550 g';
+            const qty = Number(i.bagsCount || 1);
+            return [`   ${emoji} ${name}: ${qty}x ${pres}`];
+        }
+
+        const formulaGroups = new Map();
+        for (const b of bags) {
+            let f = (b && b.formula ? String(b.formula) : '').toLowerCase();
+            if (!f) {
+                f = (i.formula ? String(i.formula) : '').toLowerCase();
+            }
+            if (!f || f === 'mixto' || f === 'personalizado') {
+                const bName = String(b?.name || b?.formulaName || '').toLowerCase();
+                if (bName.includes('res')) f = 'res';
+                else if (bName.includes('pollo')) f = 'pollo';
+                else f = 'pollo';
+            }
+            if (!window.MILKARF_CONFIG?.catalog?.[f]) {
+                if (f.includes('res')) f = 'res';
+                else if (f.includes('pollo')) f = 'pollo';
+                else f = 'pollo';
+            }
+
+            if (!formulaGroups.has(f)) {
+                formulaGroups.set(f, new Map());
+            }
+            const sizeMap = formulaGroups.get(f);
+            const sz = normalizeBagSize(b);
+            const qty = Number(b?.qty || 1);
+            sizeMap.set(sz, (sizeMap.get(sz) || 0) + qty);
+        }
+
+        const lines = [];
+        for (const [formulaKey, sizeMap] of formulaGroups.entries()) {
+            const cat = window.MILKARF_CONFIG?.catalog?.[formulaKey];
+            const emoji = cat?.emoji || (formulaKey === 'res' ? '🥩' : '🐔');
+            const name = cat?.name || (formulaKey === 'res' ? 'Carne de Res con Calabacín' : 'Pollo con Zanahoria');
+
+            const sortedSizes = Array.from(sizeMap.entries()).sort((a, b) => {
+                const numA = Number(a[0].match(/\d+/)?.[0] || 0);
+                const numB = Number(b[0].match(/\d+/)?.[0] || 0);
+                return numB - numA;
+            });
+
+            const sizeStrings = sortedSizes.map(([sz, qty]) => `${qty}x ${sz}`);
+            lines.push(`   ${emoji} ${name}: ${sizeStrings.join(' + ')}`);
+        }
+        return lines;
+    };
+
     switch (type) {
         case 'general':
             return `Hola, equipo Milkarf.
@@ -1087,48 +1162,139 @@ Quisiera confirmar recomendaciones de fórmulas, costo de entrega y siguientes p
             if (hasFeedingPlans) {
                 itemsFormatted = items.map((i, index) => {
                     if (i.type === 'feeding_plan') {
-                        const bagsText = Array.isArray(i.bags) ? i.bags.map(b => `${b.qty}x ${b.size || b.weight}`).join(' + ') : '';
-                        const provKg = (Number(i.totalGramsProvided || 0) / 1000).toFixed(2);
-                        const presText = i.presentation ? String(i.presentation).replace('gr', ' g') : (Array.isArray(i.bags) && i.bags[0] ? String(i.bags[0].weight || i.bags[0].size).replace('gr', ' g') : '550 g');
-                        const bagsCount = Number(i.bagsCount) || (Array.isArray(i.bags) ? i.bags.reduce((s, b) => s + (Number(b.qty) || 0), 0) : 0);
-                        const totalNum = Number(i.finalPrice || i.price || 0);
-                        const days = Number(i.durationDays) || 7;
-                        const formula = i.formula === 'res' ? 'Carne de Res' : (i.formula === 'mixto' ? 'Mixto' : (i.formulaName || 'Pollo'));
-                        const formulaTag = formula ? `${formula} · ` : '';
                         const pet = i.petName || i.forPet || 'Mascota';
-                        return `${index + 1}. *Plan para ${pet}* (${formulaTag}${days} días)
-   • Presentación: ${presText} · Bolsas: ${bagsText || (bagsCount + ' bolsa(s)')} (${provKg} kg provistos)
-   • Total plan: ${currency(totalNum)}`;
+                        const days = Number(i.durationDays || i.days || 7);
+                        const daysText = `${days} ${days === 1 ? 'día' : 'días'}`;
+
+                        let formulaHeader = '';
+                        if (i.formulaName && i.formulaName.trim() && i.formulaName.toLowerCase() !== 'mixto') {
+                            formulaHeader = i.formulaName.trim();
+                        } else if (i.formula === 'mixto') {
+                            const bPollo = Array.isArray(i.bags) ? i.bags.filter(b => (b.formula || '').toLowerCase() === 'pollo').reduce((s, b) => s + (Number(b.qty) || 0), 0) : 0;
+                            const bRes = Array.isArray(i.bags) ? i.bags.filter(b => (b.formula || '').toLowerCase() === 'res').reduce((s, b) => s + (Number(b.qty) || 0), 0) : 0;
+                            if (bPollo > 0 && bRes > 0) {
+                                formulaHeader = `Plan Mixto (${bPollo} Pollo + ${bRes} Res)`;
+                            } else {
+                                formulaHeader = 'Plan Mixto (Pollo y Res)';
+                            }
+                        } else if (i.formula === 'personalizado') {
+                            formulaHeader = 'Plan Personalizado (Pollo y Res)';
+                        } else if (i.formula === 'res') {
+                            formulaHeader = window.MILKARF_CONFIG?.catalog?.res?.name || 'Carne de Res con Calabacín';
+                        } else {
+                            formulaHeader = window.MILKARF_CONFIG?.catalog?.pollo?.name || 'Pollo con Zanahoria';
+                        }
+
+                        const headerLine = `${index + 1}. *Plan para ${pet}* — ${formulaHeader} · ${daysText}`;
+                        const bagLines = formatBagLines(i);
+
+                        let provGrams = Number(i.totalGramsProvided || i.totalGrams || 0);
+                        if (!provGrams && Array.isArray(i.bags) && i.bags.length) {
+                            provGrams = i.bags.reduce((sum, b) => {
+                                const g = Number(b.grams || (String(b.weight || b.size || '').includes('250') ? 250 : 550));
+                                return sum + (Number(b.qty || 1) * g);
+                            }, 0);
+                        }
+                        const provKg = (provGrams / 1000).toFixed(2);
+                        const provLine = `   • ${provKg} kg provistos`;
+
+                        const itemSubtotal = Number(i.originalSubtotal ?? ((Number(i.finalPrice ?? i.price ?? 0)) + Number(i.discountAmount || 0)));
+                        const itemDiscount = Math.max(0, Number(i.discountAmount || 0));
+                        const itemTotal = Number(i.finalPrice ?? i.price ?? Math.max(0, itemSubtotal - itemDiscount));
+
+                        let discPct = (i.discountPct !== undefined && i.discountPct !== null && !isNaN(Number(i.discountPct)))
+                            ? Number(i.discountPct)
+                            : (window.MILKARF_CONFIG?.planDiscounts?.[days]?.discountPct ?? (itemSubtotal > 0 && itemDiscount > 0 ? (itemDiscount / itemSubtotal) : 0));
+
+                        const planDiscountConfig = window.MILKARF_CONFIG?.planDiscounts?.[days];
+                        const pLabel = i.planLabel || i.discountLabel || i.label || planDiscountConfig?.label || `Plan ${days} días`;
+                        const labelWithDays = pLabel.includes(`${days} días`) || pLabel.includes(`${days}d`)
+                            ? pLabel
+                            : `${pLabel} (${days} días)`;
+
+                        const subtotalLine = `   • Subtotal: ${currency(itemSubtotal)}`;
+                        const discountLine = itemDiscount > 0
+                            ? `   • Descuento ${labelWithDays} −${formatPercent(discPct)}: −${currency(itemDiscount)}`
+                            : '';
+                        const totalPlanLine = `   • Total del plan: ${currency(itemTotal)}`;
+
+                        const planLines = [
+                            headerLine,
+                            ...bagLines,
+                            provLine,
+                            subtotalLine,
+                            ...(discountLine ? [discountLine] : []),
+                            totalPlanLine
+                        ];
+                        return planLines.join('\n');
                     }
                     const pet = i.forPet ? ` (para ${i.forPet})` : '';
-                    return `${index + 1}. ${Number(i.qty || 1)}x ${i.name || 'Fórmula'} (${i.weight || 'presentación'})${pet} - ${currency((i.price || 0) * (i.qty || 1))}`;
+                    const weight = i.weight ? ` (${i.weight})` : '';
+                    return `${index + 1}. ${Number(i.qty || 1)}x ${i.name || 'Fórmula'}${weight}${pet} - ${currency((i.price || 0) * (i.qty || 1))}`;
                 }).join('\n\n');
             } else if (items.length) {
                 itemsFormatted = items.map((i, index) => {
                     const pet = i.forPet ? ` (para ${i.forPet})` : '';
-                    return `${index + 1}. ${Number(i.qty || 1)}x ${i.name || 'Fórmula'} (${i.weight || 'presentación'})${pet} - ${currency((i.price || 0) * (i.qty || 1))}`;
+                    const weight = i.weight ? ` (${i.weight})` : '';
+                    return `${index + 1}. ${Number(i.qty || 1)}x ${i.name || 'Fórmula'}${weight}${pet} - ${currency((i.price || 0) * (i.qty || 1))}`;
                 }).join('\n');
             } else {
                 itemsFormatted = 'Pedido Milkarf';
             }
 
-            let msg = `¡Hola, equipo Milkarf! Quiero realizar el siguiente pedido:
+            let orderSubtotal = Number(data.subtotal);
+            if (isNaN(orderSubtotal) || orderSubtotal === 0) {
+                orderSubtotal = items.reduce((sum, i) => {
+                    if (i.type === 'feeding_plan') {
+                        return sum + Number(i.originalSubtotal ?? ((Number(i.finalPrice ?? i.price ?? 0)) + Number(i.discountAmount || 0)));
+                    }
+                    return sum + (Number(i.price || 0) * Number(i.qty || 1));
+                }, 0);
+            }
+
+            let totalDiscount = Number(data.discountAmount || 0);
+            if (!totalDiscount && items.some(i => Number(i.discountAmount || 0) > 0)) {
+                totalDiscount = items.reduce((sum, i) => sum + Number(i.discountAmount || 0), 0);
+            }
+
+            const finalTotal = Number(data.finalTotal ?? Math.max(0, orderSubtotal - totalDiscount));
+
+            const footerParts = [];
+            footerParts.push(`🧾 *Subtotal:* ${currency(orderSubtotal)}`);
+
+            if (totalDiscount > 0) {
+                const discountedPlans = items.filter(i => i.type === 'feeding_plan' && Number(i.discountAmount || 0) > 0);
+                if (discountedPlans.length > 1) {
+                    footerParts.push(`🏷️ *Descuento por planes:* −${currency(totalDiscount)}`);
+                    for (const p of discountedPlans) {
+                        const pPet = p.petName || p.forPet || 'Mascota';
+                        const pDays = Number(p.durationDays || p.days || 7);
+                        const pPct = (p.discountPct !== undefined && p.discountPct !== null && !isNaN(Number(p.discountPct)))
+                            ? Number(p.discountPct)
+                            : (window.MILKARF_CONFIG?.planDiscounts?.[pDays]?.discountPct ?? (Number(p.originalSubtotal || 0) > 0 ? (Number(p.discountAmount || 0) / Number(p.originalSubtotal)) : 0));
+                        const pDiscCfg = window.MILKARF_CONFIG?.planDiscounts?.[pDays];
+                        const pLabel = p.planLabel || p.discountLabel || p.label || pDiscCfg?.label || `Plan ${pDays} días`;
+                        const pLabelWithDays = pLabel.includes(`${pDays} días`) || pLabel.includes(`${pDays}d`) ? pLabel : `${pLabel} (${pDays} días)`;
+                        const pctStr = pPct > 0 ? ` −${formatPercent(pPct)}` : '';
+                        footerParts.push(`   • Plan para ${pPet} · ${pLabelWithDays}${pctStr}: −${currency(p.discountAmount)}`);
+                    }
+                } else {
+                    const label = data.discountLabel || (hasFeedingPlans ? 'Descuento por plan' : 'Descuento');
+                    footerParts.push(`🏷️ *${label}:* −${currency(totalDiscount)}`);
+                }
+            }
+
+            footerParts.push(`💰 *TOTAL A PAGAR:* ${currency(finalTotal)}`);
+            footerParts.push(`📍 *Dirección de entrega:*`);
+            if (data.location && String(data.location).trim()) {
+                footerParts.push(String(data.location).trim());
+            }
+
+            return `¡Hola, equipo Milkarf! Quiero realizar el siguiente pedido:
 👤 *Cliente:* ${userName}
 📦 *PEDIDO:*
 ${itemsFormatted}
-💰 *TOTAL A PAGAR:* ${currency(data.finalTotal)}`;
-
-            if (data.discountAmount > 0) {
-                const label = data.discountLabel || 'Descuento de plan';
-                msg += `\n• ${label}: -${currency(data.discountAmount)}`;
-            }
-
-            msg += `\n📍 *Dirección de entrega:*`;
-            if (data.location) {
-                msg += `\n${data.location}`;
-            }
-
-            return msg;
+${footerParts.join('\n')}`;
         }
 
         case 'userRedeem':
@@ -4131,12 +4297,14 @@ window.getOrderClientPhone = function (order = {}) {
 
 window.getDeliveryNoteItems = function (order = {}) {
     return Array.isArray(order.items) ? order.items.map(item => ({
+        ...item,
         name: item.name || 'Producto Milkarf',
         weight: item.weight || item.tam || item.presentation || '',
         qty: Number(item.qty || 0),
         price: Number(item.price || item.precio || 0),
         forPet: item.forPet || item.petName || '',
-        personalizado: !!item.personalizado
+        personalizado: !!item.personalizado,
+        bags: Array.isArray(item.bags) ? item.bags : []
     })) : [];
 };
 
@@ -4154,11 +4322,13 @@ window.getDeliveryNotePayload = function (order = {}) {
     const deliveryCost = Math.max(0, Number(feeInput?.value || order.deliveryCost || 0));
     const deliveryDate = document.getElementById('delivery-note-date')?.value || order.deliveryDate || '';
     const items = window.getDeliveryNoteItems(order);
-    const rawSubtotal = items.reduce((sum, i) => sum + (Number(i.price || 0) * Number(i.qty || 0)), 0);
-    const hasDiscount = false;
-    const discountAmount = 0;
-    const productTotal = rawSubtotal;
-    const finalTotal = productTotal + deliveryCost;
+    const rawSubtotal = items.reduce((sum, i) => sum + (Number(i.originalSubtotal || (Number(i.price || 0) * (i.type === 'feeding_plan' ? 1 : Number(i.qty || 1))))), 0);
+    const orderDiscount = Number(order.discountAmount || 0);
+    const itemsDiscount = items.reduce((sum, i) => sum + (Number(i.discountAmount || 0)), 0);
+    const discountAmount = Math.max(orderDiscount, itemsDiscount);
+    const hasDiscount = discountAmount > 0;
+    const productTotal = Number(order.subtotal || rawSubtotal);
+    const finalTotal = Math.max(0, productTotal - discountAmount) + deliveryCost;
 
     const clientName = window.capitalizeName(order.userName || order.nombre_persona || order.nombre || order.displayName || order.email || 'Cliente Milkarf');
     const petName = order.selectedPet || items.find(i => i.forPet)?.forPet || 'tu mascota';
@@ -4168,6 +4338,7 @@ window.getDeliveryNotePayload = function (order = {}) {
         productTotal,
         hasDiscount,
         discountAmount,
+        discountLabel: order.discountLabel || (hasDiscount ? 'Descuento por plan' : ''),
         deliveryCost,
         finalTotal,
         deliveryDate,
@@ -4235,11 +4406,29 @@ window.updateDeliveryNotePreview = function () {
     if (dateEl) dateEl.textContent = 'Entrega: ' + payload.deliveryDateLabel;
     if (itemsEl) {
         itemsEl.innerHTML = payload.items.length ? payload.items.map(item => {
-            const lineTotal = Number(item.price || 0) * Number(item.qty || 0);
+            const lineTotal = Number(item.price || item.finalPrice || 0) * (item.type === 'feeding_plan' ? 1 : Number(item.qty || 1));
+            let bagsDetail = '';
+            if (Array.isArray(item.bags) && item.bags.length) {
+                const bLines = [];
+                const fMap = new Map();
+                for (const b of item.bags) {
+                    const f = (b.formula || item.formula || 'pollo').toLowerCase();
+                    const emoji = f === 'res' ? '🥩' : '🐔';
+                    const name = f === 'res' ? 'Res' : 'Pollo';
+                    const sz = b.weight || b.size || `${b.grams || 550} g`;
+                    const key = `${emoji} ${name}`;
+                    fMap.set(key, (fMap.get(key) || []).concat(`${b.qty}x ${sz}`));
+                }
+                for (const [k, v] of fMap.entries()) {
+                    bLines.push(`${k}: ${v.join(' + ')}`);
+                }
+                bagsDetail = `<p class="text-[10px] font-bold text-purple dark:text-green mt-1">${window.escapeHTML(bLines.join(' · '))}</p>`;
+            }
             return `<div class="flex items-start justify-between gap-3 bg-purple-light/70 dark:bg-darkcard rounded-xl p-3 border border-purple-border/30 dark:border-purple/20">
                         <div class="min-w-0">
                             <p class="text-xs font-black text-purple-dark dark:text-white">${window.escapeHTML(item.name)} ${item.weight ? `<span class="font-bold text-purple/55 dark:text-gray-500">(${window.escapeHTML(item.weight)})</span>` : ''}</p>
-                            <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mt-0.5">${Number(item.qty || 0)} unidad(es)${item.forPet ? ` · Para ${window.escapeHTML(item.forPet)}` : ''}</p>
+                            <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mt-0.5">${Number(item.qty || 1)} unidad(es)${item.forPet ? ` · Para ${window.escapeHTML(item.forPet)}` : ''}</p>
+                            ${bagsDetail}
                         </div>
                         <p class="text-xs font-black text-purple-dark dark:text-white shrink-0">$${lineTotal.toFixed(2)}</p>
                     </div>`;
@@ -4247,7 +4436,14 @@ window.updateDeliveryNotePreview = function () {
     }
     if (productsTotalEl) productsTotalEl.textContent = '$' + payload.productTotal.toFixed(2);
     if (discountRowEl) {
-        discountRowEl.classList.add('hidden');
+        if (payload.hasDiscount && payload.discountAmount > 0) {
+            discountRowEl.classList.remove('hidden');
+            const labelEl = discountRowEl.querySelector('span');
+            if (labelEl) labelEl.textContent = (payload.discountLabel || 'Descuento') + ':';
+            if (discountAmountEl) discountAmountEl.textContent = '-$' + payload.discountAmount.toFixed(2);
+        } else {
+            discountRowEl.classList.add('hidden');
+        }
     }
     if (deliveryTotalEl) deliveryTotalEl.textContent = '$' + payload.deliveryCost.toFixed(2);
     if (finalTotalEl) finalTotalEl.textContent = '$' + payload.finalTotal.toFixed(2);
@@ -4266,17 +4462,41 @@ window.renderDeliveryNoteCapture = function (payload = {}) {
     const safe = window.escapeHTML || ((v) => String(v ?? ''));
     const items = Array.isArray(payload.items) ? payload.items : [];
     const itemsHtml = items.length ? items.map(item => {
-        const lineTotal = Number(item.price || 0) * Number(item.qty || 0);
+        const lineTotal = Number(item.price || item.finalPrice || 0) * (item.type === 'feeding_plan' ? 1 : Number(item.qty || 1));
         const weight = item.weight ? ` (${safe(item.weight)})` : '';
         const pet = item.forPet ? `Para ${safe(item.forPet)}` : 'Para la mascota registrada';
+
+        let bagsDetail = '';
+        if (Array.isArray(item.bags) && item.bags.length) {
+            const bLines = [];
+            const fMap = new Map();
+            for (const b of item.bags) {
+                const f = (b.formula || item.formula || 'pollo').toLowerCase();
+                const emoji = f === 'res' ? '🥩' : '🐔';
+                const name = f === 'res' ? 'Res' : 'Pollo';
+                const sz = b.weight || b.size || `${b.grams || 550} g`;
+                const key = `${emoji} ${name}`;
+                fMap.set(key, (fMap.get(key) || []).concat(`${b.qty}x ${sz}`));
+            }
+            for (const [k, v] of fMap.entries()) {
+                bLines.push(`${k}: ${v.join(' + ')}`);
+            }
+            bagsDetail = `<div class="delivery-capture-item-sub" style="margin-top:3px; font-weight:700; color:#5c357a;">${safe(bLines.join(' · '))}</div>`;
+        }
+
         return `<div class="delivery-capture-item">
                     <div>
                         <div class="delivery-capture-item-name">${safe(item.name || 'Producto Milkarf')}${weight}</div>
-                        <div class="delivery-capture-item-sub">${Number(item.qty || 0)} unidad(es) · ${pet}</div>
+                        <div class="delivery-capture-item-sub">${Number(item.qty || 1)} unidad(es) · ${pet}</div>
+                        ${bagsDetail}
                     </div>
                     <div class="delivery-capture-item-price">$${lineTotal.toFixed(2)}</div>
                 </div>`;
     }).join('') : '<div class="delivery-capture-item"><div class="delivery-capture-item-name">Pedido Milkarf</div><div class="delivery-capture-item-price">$0.00</div></div>';
+
+    const discountRowHtml = (payload.hasDiscount && payload.discountAmount > 0)
+        ? `<div class="delivery-capture-total-row" style="color:#2e7d32; font-weight:bold;"><span>${safe(payload.discountLabel || 'Descuento por plan')}</span><span>-$${Number(payload.discountAmount || 0).toFixed(2)}</span></div>`
+        : '';
 
     target.innerHTML = `<div class="delivery-capture-card">
                 <div class="delivery-capture-inner">
@@ -4300,7 +4520,7 @@ window.renderDeliveryNoteCapture = function (payload = {}) {
                         </div>
                         <div class="delivery-capture-totals">
                             <div class="delivery-capture-total-row"><span>Total productos</span><span>$${Number(payload.productTotal || 0).toFixed(2)}</span></div>
-
+                            ${discountRowHtml}
                             <div class="delivery-capture-total-row"><span>Delivery</span><span>$${Number(payload.deliveryCost || 0).toFixed(2)}</span></div>
                             <div class="delivery-capture-total-row delivery-capture-final"><span>Total a pagar</span><span>$${Number(payload.finalTotal || 0).toFixed(2)}</span></div>
                         </div>
@@ -8889,33 +9109,43 @@ window.prepareOrderForCheckout = function () {
 
     const items = window.cart.map(i => {
         if (i.type === 'feeding_plan') {
+            const durationDays = Number(i.durationDays || i.days || 7);
+            const discountConfig = window.MILKARF_CONFIG?.planDiscounts?.[durationDays];
+            const discountPct = (i.discountPct !== undefined && i.discountPct !== null && !isNaN(Number(i.discountPct)))
+                ? Number(i.discountPct)
+                : (discountConfig?.discountPct ?? 0);
+            const planLabel = i.planLabel || i.label || discountConfig?.label || `Plan ${durationDays} días`;
+
             return {
                 type: 'feeding_plan',
-                name: `Plan ${i.durationDays}d - ${i.formulaName || 'Fórmula'}`,
+                name: `Plan ${durationDays}d - ${i.formulaName || 'Fórmula'}`,
                 weight: `${(Number(i.totalGramsProvided || 0)/1000).toFixed(2)} kg`,
                 qty: 1,
                 price: Number(i.finalPrice || i.price || 0),
                 originalSubtotal: Number(i.originalSubtotal || 0),
-                discountPercent: Number(i.discountPercent || 0),
+                discountPct,
+                planLabel,
+                discountLabel: planLabel,
+                discountPercent: Number(i.discountPercent || (discountPct * 100)),
                 discountAmount: Number(i.discountAmount || 0),
                 finalPrice: Number(i.finalPrice || 0),
                 forPet: i.petName || i.forPet || '',
                 petName: i.petName || '',
                 dailyGrams: Number(i.dailyGrams || 0),
-                durationDays: Number(i.durationDays || 7),
+                durationDays,
                 formula: i.formula || 'pollo',
                 formulaName: i.formulaName || '',
                 totalGramsRequired: Number(i.totalGramsRequired || 0),
                 totalGramsProvided: Number(i.totalGramsProvided || 0),
                 surplusGrams: Number(i.surplusGrams || 0),
                 bags: i.bags || [],
-                presentation: i.presentation || (Array.isArray(i.bags) && i.bags[0] ? i.bags[0].weight : '550gr'),
+                presentation: i.presentation || (Array.isArray(i.bags) && i.bags[0] ? (i.bags[0].weight || i.bags[0].size) : '550gr'),
                 presentationGrams: Number(i.presentationGrams || 0),
                 presentationPrice: Number(i.presentationPrice || 0),
                 bagsCount: Number(i.bagsCount) || (Array.isArray(i.bags) ? i.bags.reduce((s, b) => s + (Number(b.qty) || 0), 0) : 0),
                 petWeight: Number(i.petWeight) || null,
                 presentationBreakdown: i.presentationBreakdown || {
-                    bagSize: i.presentation || (Array.isArray(i.bags) && i.bags[0] ? i.bags[0].weight : '550gr'),
+                    bagSize: i.presentation || (Array.isArray(i.bags) && i.bags[0] ? (i.bags[0].weight || i.bags[0].size) : '550gr'),
                     bagGrams: Number(i.presentationGrams || 0),
                     bagPrice: Number(i.presentationPrice || 0),
                     bagsCount: Number(i.bagsCount) || 0,
