@@ -1074,24 +1074,23 @@ window.getWhatsAppTemplate = function (type = 'general', data = {}) {
     };
 
     const normalizeBagSize = (b) => {
-        if (b && b.grams) return `${b.grams} g`;
-        const raw = String(b?.weight || b?.size || '550 g');
+        if (b && b.grams) return `${b.grams}g`;
+        const raw = String(b?.weight || b?.size || '550g');
         const match = raw.match(/\d+/);
-        if (match) return `${match[0]} g`;
-        return raw.replace(/gr\b/g, ' g').trim();
+        if (match) return `${match[0]}g`;
+        return raw.replace(/\s+/g, '').trim();
     };
 
     const formatBagLines = (i) => {
         const bags = Array.isArray(i.bags) ? i.bags : [];
         if (!bags.length) {
             const f = (i.formula || 'pollo').toLowerCase();
-            const formulaKey = f === 'res' ? 'res' : 'pollo';
-            const cat = window.MILKARF_CONFIG?.catalog?.[formulaKey];
-            const emoji = cat?.emoji || (formulaKey === 'res' ? '🥩' : '🐔');
-            const name = cat?.name || (formulaKey === 'res' ? 'Carne de Res con Calabacín' : 'Pollo con Zanahoria');
-            const pres = i.presentation ? String(i.presentation).replace(/gr\b/g, ' g').trim() : '550 g';
+            const isRes = f === 'res' || f.includes('res');
+            const emoji = isRes ? '🥩' : '🐔';
+            const label = isRes ? 'CARNE' : 'POLLO';
+            const pres = normalizeBagSize({ size: i.presentation || '550g' });
             const qty = Number(i.bagsCount || 1);
-            return [`   ${emoji} ${name}: ${qty}x ${pres}`];
+            return [`   ${emoji} ${label}: ${qty} x ${pres}`];
         }
 
         const formulaGroups = new Map();
@@ -1106,16 +1105,12 @@ window.getWhatsAppTemplate = function (type = 'general', data = {}) {
                 else if (bName.includes('pollo')) f = 'pollo';
                 else f = 'pollo';
             }
-            if (!window.MILKARF_CONFIG?.catalog?.[f]) {
-                if (f.includes('res')) f = 'res';
-                else if (f.includes('pollo')) f = 'pollo';
-                else f = 'pollo';
-            }
+            const key = f.includes('res') ? 'res' : 'pollo';
 
-            if (!formulaGroups.has(f)) {
-                formulaGroups.set(f, new Map());
+            if (!formulaGroups.has(key)) {
+                formulaGroups.set(key, new Map());
             }
-            const sizeMap = formulaGroups.get(f);
+            const sizeMap = formulaGroups.get(key);
             const sz = normalizeBagSize(b);
             const qty = Number(b?.qty || 1);
             sizeMap.set(sz, (sizeMap.get(sz) || 0) + qty);
@@ -1123,9 +1118,9 @@ window.getWhatsAppTemplate = function (type = 'general', data = {}) {
 
         const lines = [];
         for (const [formulaKey, sizeMap] of formulaGroups.entries()) {
-            const cat = window.MILKARF_CONFIG?.catalog?.[formulaKey];
-            const emoji = cat?.emoji || (formulaKey === 'res' ? '🥩' : '🐔');
-            const name = cat?.name || (formulaKey === 'res' ? 'Carne de Res con Calabacín' : 'Pollo con Zanahoria');
+            const isRes = formulaKey === 'res';
+            const emoji = isRes ? '🥩' : '🐔';
+            const label = isRes ? 'CARNE' : 'POLLO';
 
             const sortedSizes = Array.from(sizeMap.entries()).sort((a, b) => {
                 const numA = Number(a[0].match(/\d+/)?.[0] || 0);
@@ -1133,8 +1128,8 @@ window.getWhatsAppTemplate = function (type = 'general', data = {}) {
                 return numB - numA;
             });
 
-            const sizeStrings = sortedSizes.map(([sz, qty]) => `${qty}x ${sz}`);
-            lines.push(`   ${emoji} ${name}: ${sizeStrings.join(' + ')}`);
+            const sizeStrings = sortedSizes.map(([sz, qty]) => `${qty} x ${sz}`);
+            lines.push(`   ${emoji} ${label}: ${sizeStrings.join(' + ')}`);
         }
         return lines;
     };
@@ -1164,14 +1159,14 @@ Quisiera confirmar recomendaciones de fórmulas, costo de entrega y siguientes p
                     if (i.type === 'feeding_plan') {
                         const pet = i.petName || i.forPet || 'Mascota';
                         const days = Number(i.durationDays || i.days || 7);
-                        const daysText = `${days} ${days === 1 ? 'día' : 'días'}`;
+                        const daysText = `${days} dias`;
 
                         let formulaHeader = '';
                         if (i.formulaName && i.formulaName.trim() && i.formulaName.toLowerCase() !== 'mixto') {
                             formulaHeader = i.formulaName.trim();
                         } else if (i.formula === 'mixto') {
-                            const bPollo = Array.isArray(i.bags) ? i.bags.filter(b => (b.formula || '').toLowerCase() === 'pollo').reduce((s, b) => s + (Number(b.qty) || 0), 0) : 0;
-                            const bRes = Array.isArray(i.bags) ? i.bags.filter(b => (b.formula || '').toLowerCase() === 'res').reduce((s, b) => s + (Number(b.qty) || 0), 0) : 0;
+                            const bPollo = Array.isArray(i.bags) ? i.bags.filter(b => (b.formula || '').toLowerCase().includes('pollo')).reduce((s, b) => s + (Number(b.qty) || 0), 0) : 0;
+                            const bRes = Array.isArray(i.bags) ? i.bags.filter(b => (b.formula || '').toLowerCase().includes('res')).reduce((s, b) => s + (Number(b.qty) || 0), 0) : 0;
                             if (bPollo > 0 && bRes > 0) {
                                 formulaHeader = `Plan Mixto (${bPollo} Pollo + ${bRes} Res)`;
                             } else {
@@ -1185,7 +1180,7 @@ Quisiera confirmar recomendaciones de fórmulas, costo de entrega y siguientes p
                             formulaHeader = window.MILKARF_CONFIG?.catalog?.pollo?.name || 'Pollo con Zanahoria';
                         }
 
-                        const headerLine = `${index + 1}. *Plan para ${pet}* — ${formulaHeader} · ${daysText}`;
+                        const headerLine = `${index + 1}. Plan de ${daysText} para ${pet} — ${formulaHeader}`;
                         const bagLines = formatBagLines(i);
 
                         let provGrams = Number(i.totalGramsProvided || i.totalGrams || 0);
@@ -1196,47 +1191,18 @@ Quisiera confirmar recomendaciones de fórmulas, costo de entrega y siguientes p
                             }, 0);
                         }
                         const provKg = (provGrams / 1000).toFixed(2);
-                        const provLine = `   • ${provKg} kg provistos`;
 
-                        const itemSubtotal = Number(i.originalSubtotal ?? ((Number(i.finalPrice ?? i.price ?? 0)) + Number(i.discountAmount || 0)));
-                        const itemDiscount = Math.max(0, Number(i.discountAmount || 0));
-                        const itemTotal = Number(i.finalPrice ?? i.price ?? Math.max(0, itemSubtotal - itemDiscount));
-
-                        let discPct = (i.discountPct !== undefined && i.discountPct !== null && !isNaN(Number(i.discountPct)))
-                            ? Number(i.discountPct)
-                            : (window.MILKARF_CONFIG?.planDiscounts?.[days]?.discountPct ?? (itemSubtotal > 0 && itemDiscount > 0 ? (itemDiscount / itemSubtotal) : 0));
-
-                        const planDiscountConfig = window.MILKARF_CONFIG?.planDiscounts?.[days];
-                        const pLabel = i.planLabel || i.discountLabel || i.label || planDiscountConfig?.label || `Plan ${days} días`;
-                        const labelWithDays = pLabel.includes(`${days} días`) || pLabel.includes(`${days}d`)
-                            ? pLabel
-                            : `${pLabel} (${days} días)`;
-
-                        const subtotalLine = `   • Subtotal: ${currency(itemSubtotal)}`;
-                        const discountLine = itemDiscount > 0
-                            ? `   • Descuento ${labelWithDays} −${formatPercent(discPct)}: −${currency(itemDiscount)}`
-                            : '';
-                        const totalPlanLine = `   • Total del plan: ${currency(itemTotal)}`;
-
-                        const planLines = [
-                            headerLine,
-                            ...bagLines,
-                            provLine,
-                            subtotalLine,
-                            ...(discountLine ? [discountLine] : []),
-                            totalPlanLine
-                        ];
-                        return planLines.join('\n');
+                        return `${headerLine}\n\n${bagLines.join('\n')}\n\n   (${provKg} kg provistos)`;
                     }
                     const pet = i.forPet ? ` (para ${i.forPet})` : '';
-                    const weight = i.weight ? ` (${i.weight})` : '';
-                    return `${index + 1}. ${Number(i.qty || 1)}x ${i.name || 'Fórmula'}${weight}${pet} - ${currency((i.price || 0) * (i.qty || 1))}`;
+                    const weight = i.weight ? ` (${String(i.weight).replace(/\s+/g, '')})` : '';
+                    return `${index + 1}. ${Number(i.qty || 1)} x ${i.name || 'Fórmula'}${weight}${pet} - ${currency((i.price || 0) * (i.qty || 1))}`;
                 }).join('\n\n');
             } else if (items.length) {
                 itemsFormatted = items.map((i, index) => {
                     const pet = i.forPet ? ` (para ${i.forPet})` : '';
-                    const weight = i.weight ? ` (${i.weight})` : '';
-                    return `${index + 1}. ${Number(i.qty || 1)}x ${i.name || 'Fórmula'}${weight}${pet} - ${currency((i.price || 0) * (i.qty || 1))}`;
+                    const weight = i.weight ? ` (${String(i.weight).replace(/\s+/g, '')})` : '';
+                    return `${index + 1}. ${Number(i.qty || 1)} x ${i.name || 'Fórmula'}${weight}${pet} - ${currency((i.price || 0) * (i.qty || 1))}`;
                 }).join('\n');
             } else {
                 itemsFormatted = 'Pedido Milkarf';
@@ -1260,12 +1226,12 @@ Quisiera confirmar recomendaciones de fórmulas, costo de entrega y siguientes p
             const finalTotal = Number(data.finalTotal ?? Math.max(0, orderSubtotal - totalDiscount));
 
             const footerParts = [];
-            footerParts.push(`🧾 *Subtotal:* ${currency(orderSubtotal)}`);
+            footerParts.push(`🧾 Subtotal: ${currency(orderSubtotal)}`);
 
             if (totalDiscount > 0) {
                 const discountedPlans = items.filter(i => i.type === 'feeding_plan' && Number(i.discountAmount || 0) > 0);
                 if (discountedPlans.length > 1) {
-                    footerParts.push(`🏷️ *Descuento por planes:* −${currency(totalDiscount)}`);
+                    footerParts.push(`🏷️ Descuento por planes: −${currency(totalDiscount)}`);
                     for (const p of discountedPlans) {
                         const pPet = p.petName || p.forPet || 'Mascota';
                         const pDays = Number(p.durationDays || p.days || 7);
@@ -1280,20 +1246,24 @@ Quisiera confirmar recomendaciones de fórmulas, costo de entrega y siguientes p
                     }
                 } else {
                     const label = data.discountLabel || (hasFeedingPlans ? 'Descuento por plan' : 'Descuento');
-                    footerParts.push(`🏷️ *${label}:* −${currency(totalDiscount)}`);
+                    footerParts.push(`🏷️ ${label}: −${currency(totalDiscount)}`);
                 }
             }
 
-            footerParts.push(`💰 *TOTAL A PAGAR:* ${currency(finalTotal)}`);
-            footerParts.push(`📍 *Dirección de entrega:*`);
+            footerParts.push(`💰 TOTAL A PAGAR: ${currency(finalTotal)}`);
+            footerParts.push('');
+            footerParts.push(`📍 Dirección de entrega:`);
             if (data.location && String(data.location).trim()) {
                 footerParts.push(String(data.location).trim());
             }
 
             return `¡Hola, equipo Milkarf! Quiero realizar el siguiente pedido:
-👤 *Cliente:* ${userName}
-📦 *PEDIDO:*
+
+👤 Cliente: ${userName}
+
+📦 PEDIDO:
 ${itemsFormatted}
+
 ${footerParts.join('\n')}`;
         }
 

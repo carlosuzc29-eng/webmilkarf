@@ -349,16 +349,12 @@ const clean = (plan) => {
         orderId: 'local_123',
         location: 'Mérida'
     });
-    assert.match(msg, /Plan para Rex/);
-    assert.match(msg, /🐔 Pollo con Zanahoria: 25x 550 g/);
-    assert.match(msg, /13\.75 kg provistos/);
-    assert.match(msg, /30 días/);
-    assert.match(msg, /Subtotal: \$125\.00/);
-    assert.match(msg, /Descuento Plan mensual \(30 días\) −10%: −\$12\.50/);
-    assert.match(msg, /Total del plan: \$112\.50/);
-    assert.match(msg, /🧾 \*Subtotal:\* \$125\.00/);
-    assert.match(msg, /🏷️ \*Descuento por plan:\* −\$12\.50/);
-    assert.match(msg, /💰 \*TOTAL A PAGAR:\* \$112\.50/);
+    assert.match(msg, /Plan de 30 dias para Rex — Pollo con Zanahoria/);
+    assert.match(msg, /🐔 POLLO: 25 x 550g/);
+    assert.match(msg, /\(13\.75 kg provistos\)/);
+    assert.match(msg, /🧾 Subtotal: \$125\.00/);
+    assert.match(msg, /🏷️ Descuento por plan: −\$12\.50/);
+    assert.match(msg, /💰 TOTAL A PAGAR: \$112\.50/);
     assert.equal(msg.includes('undefined'), false, 'No debe contener "undefined"');
     assert.equal(msg.includes('NaN'), false, 'No debe contener "NaN"');
     assert.equal(msg.includes('null '), false, 'No debe contener "null"');
@@ -411,16 +407,15 @@ const clean = (plan) => {
         orderId: 'custom_test_1',
         location: 'Mérida'
     });
-    assert.match(msg, /Plan para Luna/);
-    assert.match(msg, /Plan Personalizado/);
-    assert.match(msg, /🐔 Pollo con Zanahoria: 3x 550 g/);
-    assert.match(msg, /🥩 Carne de Res con Calabacín: 3x 550 g/);
-    assert.match(msg, /3\.30 kg provistos/);
+    assert.match(msg, /Plan de 10 dias para Luna — Plan Personalizado \(Pollo y Res\)/);
+    assert.match(msg, /🐔 POLLO: 3 x 550g/);
+    assert.match(msg, /🥩 CARNE: 3 x 550g/);
+    assert.match(msg, /\(3\.30 kg provistos\)/);
     assert.equal(msg.includes('undefined'), false);
     assert.equal(msg.includes('NaN'), false);
 }
 
-// 15) Mixto con 4 pollo + 5 res: muestra ambas proteínas con su cantidad y formulaName en cabecera
+// 15) Mixto con 4 pollo + 5 res: muestra ambas proteínas con su cantidad y formato exacto
 {
     const mixtoItem = {
         type: 'feeding_plan',
@@ -451,18 +446,16 @@ const clean = (plan) => {
         finalTotal: 50.87,
         userName: 'Ana Pérez',
         orderId: 'mixto_123',
-        location: 'Mérida'
+        location: 'Av. Las Américas, Res. Los Sauces, Mérida'
     });
-    assert.match(msg, /1\. \*Plan para Rex\* — Plan Mixto \(4 Pollo \+ 5 Res\) · 15 días/);
-    assert.match(msg, /🐔 Pollo con Zanahoria: 4x 550 g/);
-    assert.match(msg, /🥩 Carne de Res con Calabacín: 5x 550 g/);
-    assert.match(msg, /4\.95 kg provistos/);
-    assert.match(msg, /Subtotal: \$55\.00/);
-    assert.match(msg, /Descuento Plan quincenal \(15 días\) −7,5%: −\$4\.13/);
-    assert.match(msg, /Total del plan: \$50\.87/);
-    assert.match(msg, /🧾 \*Subtotal:\* \$55\.00/);
-    assert.match(msg, /🏷️ \*Descuento por plan:\* −\$4\.13/);
-    assert.match(msg, /💰 \*TOTAL A PAGAR:\* \$50\.87/);
+    assert.match(msg, /1\. Plan de 15 dias para Rex — Plan Mixto \(4 Pollo \+ 5 Res\)/);
+    assert.match(msg, /🐔 POLLO: 4 x 550g/);
+    assert.match(msg, /🥩 CARNE: 5 x 550g/);
+    assert.match(msg, /\(4\.95 kg provistos\)/);
+    assert.match(msg, /🧾 Subtotal: \$55\.00/);
+    assert.match(msg, /🏷️ Descuento por plan: −\$4\.13/);
+    assert.match(msg, /💰 TOTAL A PAGAR: \$50\.87/);
+    assert.match(msg, /📍 Dirección de entrega:\nAv\. Las Américas, Res\. Los Sauces, Mérida/);
     assert.equal(msg.includes('undefined'), false);
     assert.equal(msg.includes('NaN'), false);
 }
@@ -470,27 +463,14 @@ const clean = (plan) => {
 // 16) Plan quincenal (15 días): formatea el descuento como 7,5% (no redondeado a 8%)
 {
     const plan15 = buildFeedingPlan(DAILY, 15, 'pollo', 'Rex');
-    const item15 = {
-        type: 'feeding_plan',
-        petName: plan15.petName,
-        durationDays: 15,
-        formula: 'pollo',
-        formulaName: plan15.formulaName,
-        presentation: plan15.presentation,
-        bags: plan15.bags,
-        bagsCount: plan15.bagsCount,
-        totalGramsProvided: plan15.totalGramsProvided,
-        originalSubtotal: plan15.originalSubtotal,
-        discountPct: plan15.discountPct,
-        discountAmount: plan15.discountAmount,
-        finalPrice: plan15.finalPrice
-    };
+    assert.equal(plan15.discountPct, 0.075);
+    const item1 = { ...plan15, type: 'feeding_plan', durationDays: 15 };
+    const item2 = { ...plan15, type: 'feeding_plan', durationDays: 7, petName: 'Luna', discountPct: 0.05, discountAmount: 2.00, originalSubtotal: 40.00, finalPrice: 38.00 };
     const msg = getWhatsAppTemplate('newOrder', {
-        items: [item15],
-        subtotal: plan15.originalSubtotal,
-        discountAmount: plan15.discountAmount,
-        discountLabel: 'Descuento por plan',
-        finalTotal: plan15.finalPrice,
+        items: [item1, item2],
+        subtotal: plan15.originalSubtotal + 40.00,
+        discountAmount: plan15.discountAmount + 2.00,
+        finalTotal: plan15.finalPrice + 38.00,
         userName: 'Cliente'
     });
     assert.match(msg, /7,5%/);
@@ -525,11 +505,9 @@ const clean = (plan) => {
         finalTotal: 15.00,
         userName: 'Rocky Tutor'
     });
-    assert.match(msg, /Subtotal: \$15\.00/);
-    assert.match(msg, /Total del plan: \$15\.00/);
     assert.equal(msg.includes('Descuento'), false, 'No debe aparecer ninguna línea de descuento');
-    assert.match(msg, /🧾 \*Subtotal:\* \$15\.00/);
-    assert.match(msg, /💰 \*TOTAL A PAGAR:\* \$15\.00/);
+    assert.match(msg, /🧾 Subtotal: \$15\.00/);
+    assert.match(msg, /💰 TOTAL A PAGAR: \$15\.00/);
     assert.equal(msg.includes('🏷️'), false, 'No debe haber emoji de etiqueta de descuento si es 0');
     assert.equal(msg.includes('undefined'), false);
     assert.equal(msg.includes('NaN'), false);
