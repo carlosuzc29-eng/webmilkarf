@@ -298,6 +298,36 @@ window.sanitizeClientOrderForWrite = function (order = {}) {
     return clean;
 };
 
+window.getOrderProductsPoints = function (order = {}) {
+    if (!order) return 0;
+    const deliveryCost = Math.max(0, Number(order.deliveryCost || 0));
+    const items = Array.isArray(order.items) ? order.items : [];
+
+    let productsAmount = 0;
+    if (items.length > 0) {
+        const rawProductsTotal = items.reduce((sum, item) => {
+            const price = Number(item.finalPrice ?? item.price ?? 0);
+            const qty = item.type === 'feeding_plan' ? 1 : Math.max(1, Number(item.qty || 1));
+            return sum + (price * qty);
+        }, 0);
+        const hasPerItemDiscount = items.some(i => Number(i.discountAmount || 0) > 0);
+        const orderDiscount = Number(order.discountAmount || 0);
+        productsAmount = hasPerItemDiscount ? rawProductsTotal : Math.max(0, rawProductsTotal - orderDiscount);
+    } else if (typeof order.totalWithDelivery === 'number' && order.totalWithDelivery > 0) {
+        productsAmount = Math.max(0, Number(order.totalWithDelivery) - deliveryCost);
+    } else if (typeof order.subtotal === 'number' && order.subtotal > 0) {
+        const discountAmount = Number(order.discountAmount || 0);
+        productsAmount = Math.max(0, Number(order.subtotal) - discountAmount);
+    } else if (typeof order.total === 'number' && order.total > 0) {
+        if (deliveryCost > 0 && order.total >= deliveryCost && order.total === order.totalWithDelivery) {
+            productsAmount = Math.max(0, order.total - deliveryCost);
+        } else {
+            productsAmount = Number(order.total);
+        }
+    }
+    return Math.max(0, Math.floor(productsAmount));
+};
+
 window.normalizeUserProfileForWrite = function (data = {}) {
     const clean = { ...data };
     // Campos que el cliente no debe escribir con reglas seguras.
@@ -1308,13 +1338,11 @@ Por favor, revisar el pedido desde el panel de administración.`;
             const deliveryDate = data.deliveryDateLabel || 'Por confirmar';
             const orderIdShort = order.id ? `#${String(order.id).slice(-8).toUpperCase()}` : '#PEDIDO';
             const direccion = order.direccion || order.address || order.dir || 'A convenir';
-            const ptsSumados = Number(order.pointsAwarded || order.pointsGranted || Math.floor(finalTotal));
 
             return `Hola, ${clientName}. Te compartimos la nota de entrega correspondiente a tu pedido en Milkarf para ${petText}.
 
 Total a pagar: $${finalTotal.toFixed(2)}
 Fecha de entrega: ${deliveryDate}
-Puntos acumulados: +${ptsSumados} puntos
 
 Adjuntamos el resumen detallado para su verificación. Si tienes alguna duda, estamos a tu disposición.`;
         }
@@ -3492,20 +3520,20 @@ window.renderAdminOrders = function (orders) {
     }
     container.innerHTML = filterHeader + filteredOrders.map(o => {
         const date = o.createdAt ? new Date(o.createdAt).toLocaleString('es-VE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Sin fecha';
-        const pts = Math.floor(Number(o.total || 0));
+        const pts = window.getOrderProductsPoints ? window.getOrderProductsPoints(o) : Math.floor(Number(o.total || 0));
         const statusInfo = window.getOrderStatusInfo(o.status);
         const status = String(o.status || 'en_proceso').toLowerCase();
         let actionButton = '';
         if (status === 'pendiente' || status === 'en_proceso' || status === 'solicitado') {
             actionButton = `<button onclick="window.marcarConfirmadoAdmin('${o.id}')" class="bg-blue-500 text-white text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-blue-600 transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check-circle" class="w-4 h-4"></i> Confirmar pedido</button>`;
         } else if (status === 'confirmado' || status === 'verificado') {
-            if (o.registeredUser === true && o.uid && o.uid !== 'anonimo') {
+            if (o.registeredUser === true && o.uid && o.uid !== 'anonimo' && !String(o.uid).startsWith('guest_')) {
                 actionButton = `<button onclick="window.aprobarPedidoAdmin('${o.id}', '${o.uid}', ${pts})" class="bg-green text-purple-dark text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-[#a6b621] transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check-square" class="w-4 h-4"></i> Completar pedido y dar puntos</button>`;
             } else {
                 actionButton = `<button onclick="window.marcarCompletadoAdmin('${o.id}')" class="bg-purple text-white text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-pink transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check-square" class="w-4 h-4"></i> Marcar completado</button>`;
             }
         }
-        const safeUser = window.escapeHTML(o.userName || 'Usuario');
+        const safeUser = window.escapeHTML(o.userName || o.nombre || o.nombre_persona || 'Usuario Invitado');
         const isFeedingPlanOrder = o.orderType === 'feeding_plan_order' || (Array.isArray(o.items) && o.items.some(i => i.type === 'feeding_plan'));
         const safeItems = Array.isArray(o.items) ? o.items.map(i => {
             if (i.type === 'feeding_plan') {
@@ -4110,7 +4138,9 @@ window.aprobarPedidoAdmin = async function (orderId, uid, basePts) {
     try {
         const userRef = window.getUserPath(uid);
         const docSnap = await getDoc(userRef);
-        let pointsToGive = Math.max(0, Math.floor(Number(basePts || 0)));
+        const order = window.getAdminOrderById?.(orderId) || window.adminCache?.orders?.find?.(o => String(o.id) === String(orderId));
+        const effectiveBase = order && window.getOrderProductsPoints ? window.getOrderProductsPoints(order) : Math.max(0, Math.floor(Number(basePts || 0)));
+        let pointsToGive = effectiveBase;
         let isVIP = false;
 
         if (docSnap.exists()) {
@@ -4500,7 +4530,7 @@ window.renderDeliveryNoteCapture = function (payload = {}) {
                             Cuenta: 0102 0443 7700 0093 1771<br>
                             C.I: 20.530.321<br>
                             Pago móvil: 0414-179-1136<br><br>
-                            Pago en Bs. a tasa BCV del día. Si pagas en divisas, puedes consultarnos por el descuento disponible.
+                            Pago en Bs. o divisas. Si pagas en divisas, puedes consultarnos por el descuento disponible.
                         </div>
                     </div>
                     <div class="delivery-capture-footer">
@@ -4944,21 +4974,22 @@ window.clearAdminOrderFilter = function () {
 window.buildAdminOrderCard = function (o) {
     const status = String(o.status || 'en_proceso').toLowerCase();
     const totalNumber = Number(o.total || 0);
-    const pts = Math.floor(totalNumber);
+    const pts = window.getOrderProductsPoints ? window.getOrderProductsPoints(o) : Math.floor(totalNumber);
     const items = Array.isArray(o.items) ? o.items.map(i => `<li class="flex justify-between gap-3 text-xs"><span><strong>${Number(i.qty || 0)}x</strong> ${window.escapeHTML(i.name || 'Producto')} ${i.weight ? `(${window.escapeHTML(i.weight)})` : ''} ${i.forPet ? `<em class="text-purple/50 dark:text-gray-500">para ${window.escapeHTML(i.forPet)}</em>` : ''}</span><span class="font-black text-purple-dark dark:text-white">$${(Number(i.price || 0) * Number(i.qty || 0)).toFixed(2)}</span></li>`).join('') : '<li class="text-xs text-gray-500">Pedido sin detalle</li>';
     let primary = '';
     if (['pendiente', 'en_proceso', 'solicitado'].includes(status)) {
         primary = `<button onclick="window.marcarConfirmadoAdmin('${o.id}')" class="bg-blue-500 text-white text-[10px] font-black px-4 py-3 rounded-xl shadow-md hover:bg-blue-600 transition-all flex items-center gap-2 justify-center"><i data-lucide="check-circle" class="w-4 h-4"></i> Confirmar pedido</button>`;
     } else if (['confirmado', 'verificado'].includes(status)) {
-        primary = (o.registeredUser === true && o.uid && o.uid !== 'anonimo')
+        primary = (o.registeredUser === true && o.uid && o.uid !== 'anonimo' && !String(o.uid).startsWith('guest_'))
             ? `<button onclick="window.aprobarPedidoAdmin('${o.id}', '${o.uid}', ${pts})" class="bg-green text-purple-dark text-[10px] font-black px-4 py-3 rounded-xl shadow-md hover:bg-[#a6b621] transition-all flex items-center gap-2 justify-center"><i data-lucide="check-square" class="w-4 h-4"></i> Completar + puntos</button>`
             : `<button onclick="window.marcarCompletadoAdmin('${o.id}')" class="bg-purple text-white text-[10px] font-black px-4 py-3 rounded-xl shadow-md hover:bg-pink transition-all flex items-center gap-2 justify-center"><i data-lucide="check-square" class="w-4 h-4"></i> Completar</button>`;
     }
     const canCancel = !['completado', 'cancelado'].includes(status);
+    const clientPhone = o.phone || o.telefono || o.whatsapp || '';
     return `<div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-1 h-full ${window.getOrderStatusInfo(status).bar}"></div>
                 <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 pl-2">
-                    <div class="min-w-0"><div class="flex items-center gap-2 flex-wrap mb-2">${window.renderStatusBadge(status)}<span class="text-[9px] font-black uppercase tracking-widest text-gray-400">#${window.escapeHTML(o.id.slice(0, 8))}</span></div><h4 class="font-black text-purple-dark dark:text-white text-base leading-tight truncate">${window.escapeHTML(window.capitalizeName(o.userName || o.email || 'Usuario Invitado'))}</h4><p class="text-[10px] text-gray-500 font-bold mt-1">${window.formatAdminDate(o.createdAt)}</p></div>
+                    <div class="min-w-0"><div class="flex items-center gap-2 flex-wrap mb-2">${window.renderStatusBadge(status)}<span class="text-[9px] font-black uppercase tracking-widest text-gray-400">#${window.escapeHTML(o.id.slice(0, 8))}</span></div><h4 class="font-black text-purple-dark dark:text-white text-base leading-tight truncate">${window.escapeHTML(window.capitalizeName(o.userName || o.nombre || o.nombre_persona || o.email || 'Usuario Invitado'))}</h4><p class="text-[10px] text-gray-500 font-bold mt-1">${window.formatAdminDate(o.createdAt)}${clientPhone ? ` · 📞 ${window.escapeHTML(clientPhone)}` : ''}</p></div>
                     <div class="text-left md:text-right shrink-0"><span class="text-[10px] text-gray-400 font-black uppercase tracking-widest block">Total</span><span class="font-black text-purple dark:text-white text-2xl">$${totalNumber.toFixed(2)}</span>${Number(o.pointsAwarded || o.pointsGranted || 0) > 0 ? `<p class="text-[9px] font-black text-green-dark dark:text-green uppercase tracking-widest mt-1">+${Number(o.pointsAwarded || o.pointsGranted || 0)} ptos</p>` : ''}</div>
                 </div>
                 <div class="bg-purple-light/70 dark:bg-[#0d0718] rounded-2xl p-4 my-4 border border-purple-border/30 dark:border-purple/20 ml-2"><ul class="space-y-2">${items}</ul></div>
@@ -8578,13 +8609,15 @@ window.syncPendingOrders = async function () {
                 try {
                     const anonCred = await signInAnonymously(auth);
                     writeUid = anonCred?.user?.uid || null;
-                    window.currentUser = anonCred?.user || window.currentUser;
+                    if (writeUid) window.currentUser = anonCred?.user || window.currentUser;
                 } catch (authError) {
                     console.warn('No se pudo crear sesión anónima para sincronizar pedido:', authError);
                 }
             }
-            if (!writeUid) throw new Error('No hay sesión autenticada para sincronizar el pedido.');
-            const cleanOrder = { ...order, uid: order.uid && order.uid !== 'anonimo' ? order.uid : writeUid, localOnly: false, localId: orderId };
+            const guestUid = writeUid || (order.clientToken ? `guest_${order.clientToken}` : `guest_${orderId}`);
+            const effectiveUid = (order.uid && order.uid !== 'anonimo' && !String(order.uid).startsWith('local_')) ? order.uid : (writeUid || guestUid);
+            const isReallyRegistered = !!(order.registeredUser && effectiveUid && !String(effectiveUid).startsWith('guest_') && effectiveUid !== 'anonimo');
+            const cleanOrder = { ...order, uid: effectiveUid, localOnly: false, localId: orderId, registeredUser: isReallyRegistered };
             delete cleanOrder.id;
             await setDoc(window.getOrderDocRef(orderId), window.sanitizeClientOrderForWrite(cleanOrder), { merge: true });
             window.cacheUserOrderLocal?.({ ...order, id: orderId, localOnly: false });
@@ -9197,23 +9230,24 @@ window.savePreparedOrderNonBlocking = function (prepared) {
                 try {
                     const anonCred = await signInAnonymously(auth);
                     writeUid = anonCred?.user?.uid || null;
-                    window.currentUser = anonCred?.user || window.currentUser;
+                    if (writeUid) window.currentUser = anonCred?.user || window.currentUser;
                 } catch (authError) {
                     console.warn('No se pudo crear sesión anónima para registrar el pedido:', authError);
                 }
             }
-            if (!writeUid) throw new Error('No hay sesión autenticada para registrar el pedido.');
+            const guestUid = writeUid || (clientToken ? `guest_${clientToken}` : `guest_${localOrderId}`);
+            const finalUid = isLogged ? window.currentUser.uid : guestUid;
 
             const primaryPet = items.find(i => i.petName)?.petName || window.state?.nombreMascota || '';
 
             const orderData = {
-                uid: isLogged ? window.currentUser.uid : writeUid,
+                uid: finalUid,
                 orderType: orderType || 'feeding_plan_order',
                 registeredUser: !!isLogged,
                 clientToken,
-                userName: isLogged ? (clientNameForOrder || window.currentUser.email) : 'Usuario Invitado',
-                nombre: isLogged ? clientNameForOrder : '',
-                nombre_persona: isLogged ? clientNameForOrder : '',
+                userName: isLogged ? (clientNameForOrder || window.currentUser.email) : (clientNameForOrder || 'Usuario Invitado'),
+                nombre: clientNameForOrder || '',
+                nombre_persona: clientNameForOrder || '',
                 email: isLogged ? (window.currentUser.email || '') : '',
                 phone: contactPhone,
                 telefono: contactPhone,

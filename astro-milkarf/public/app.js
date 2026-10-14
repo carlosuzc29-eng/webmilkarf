@@ -997,13 +997,11 @@ Por favor, revisar el pedido desde el panel de administración.`;
             const deliveryDate = data.deliveryDateLabel || 'Por confirmar';
             const orderIdShort = order.id ? `#${String(order.id).slice(-8).toUpperCase()}` : '#PEDIDO';
             const direccion = order.direccion || order.address || order.dir || 'A convenir';
-            const ptsSumados = Number(order.pointsAwarded || order.pointsGranted || Math.floor(finalTotal));
 
             return `Hola, ${clientName}. Te compartimos la nota de entrega correspondiente a tu pedido en Milkarf para ${petText}.
 
 Total a pagar: $${finalTotal.toFixed(2)}
 Fecha de entrega: ${deliveryDate}
-Puntos acumulados: +${ptsSumados} puntos
 
 Adjuntamos el resumen detallado para su verificación. Si tienes alguna duda, estamos a tu disposición.`;
         }
@@ -4183,7 +4181,7 @@ window.renderDeliveryNoteCapture = function (payload = {}) {
                             Cuenta: 0102 0443 7700 0093 1771<br>
                             C.I: 20.530.321<br>
                             Pago móvil: 0414-179-1136<br><br>
-                            Pago en Bs. a tasa BCV del día. Si pagas en divisas, puedes consultarnos por el descuento disponible.
+                            Pago en Bs. o divisas. Si pagas en divisas, puedes consultarnos por el descuento disponible.
                         </div>
                     </div>
                     <div class="delivery-capture-footer">
