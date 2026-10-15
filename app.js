@@ -1557,8 +1557,13 @@ window.navigateTo = function (targetId) {
         if (view.id === targetId) view.classList.add('active');
         else if (targetId === 'view-home') view.classList.add('next');
         else view.classList.add(view.id === 'view-home' ? 'prev' : 'next');
-        try { view.scrollTop = 0; } catch (e) { }
+        try { view.scrollTop = 0; view.scrollLeft = 0; } catch (e) { }
     });
+    try {
+        if (window.scrollX !== 0 || window.scrollY !== 0) window.scrollTo(0, 0);
+        document.documentElement.scrollLeft = 0;
+        document.body.scrollLeft = 0;
+    } catch (e) { }
     window.lastScrollY = 0;
     if (targetId === 'view-calc') window.prepareCalculatorInputs?.(true);
     if (['view-perros', 'view-gatos', 'view-snacks', 'view-cart'].includes(targetId)) {
