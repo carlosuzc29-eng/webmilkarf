@@ -6291,7 +6291,7 @@ window.seleccionarYContinuarPlan = function (days) {
     }
     const formula = window.activePlanFormula || 'pollo';
     const petName = window.state.nombreMascota || 'tu perro';
-    const plan = window.buildFeedingPlan(window.lastCalcResult.gramos, Number(days), formula, petName);
+    const plan = window.buildFeedingPlan(window.lastCalcResult.gramos, Number(days), formula, petName, window.activePlanPresentation);
     window.addFeedingPlanToCart(plan);
     window.renderActiveFeedingPlans();
     window.updateFlowStepper(3);
@@ -6304,7 +6304,7 @@ window.selectPlanFromModal = function (days) {
     if (!window.lastCalcResult?.gramos) { window.showToast?.('Calcula primero la porción de tu mascota.'); return; }
     const formula = window.activePlanFormula || 'pollo';
     const petName = window.state.nombreMascota || 'tu perro';
-    const plan = window.buildFeedingPlan(window.lastCalcResult.gramos, Number(days), formula, petName);
+    const plan = window.buildFeedingPlan(window.lastCalcResult.gramos, Number(days), formula, petName, window.activePlanPresentation);
     window.addFeedingPlanToCart(plan);
     window.renderActiveFeedingPlans();
     window.closePlanModal();
@@ -6639,9 +6639,11 @@ window.calcularRacion = function () {
     }
 
     const oldPres = window.activePlanPresentation;
-    window.activePlanPresentation = rec.size;
-    if (oldPres && oldPres !== rec.size) {
-        window.showToast?.('Actualizamos la presentación según su nueva porción.', 'success');
+    if (!window.__presentationUserTouched) {
+        window.activePlanPresentation = rec.size;
+        if (oldPres && oldPres !== rec.size) {
+            window.showToast?.('Actualizamos la presentación según su nueva porción.', 'success');
+        }
     }
 
     window.lastCalcResult = {
@@ -7012,6 +7014,19 @@ window.updateCartUI = function () {
                                     <i data-lucide="package" class="w-3.5 h-3.5 text-pink"></i> Bolsas incluidas:
                                 </span>
                                 <span class="font-black text-purple-dark dark:text-white">${window.escapeHTML(bagsDesc || `${i.bagsCount || 0} bolsas`)}</span>
+                            </div>
+
+                            <!-- Selector de tamaño de presentación en el carrito -->
+                            <div class="flex items-center justify-between pb-1.5 border-b border-purple-border/20">
+                                <span class="text-gray-600 dark:text-gray-300 font-medium">Tamaño de bolsa:</span>
+                                <div class="inline-flex rounded-xl p-0.5 bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 shadow-xs">
+                                    <button type="button" onclick="window.updatePlanPresentation('${i.id}', '250gr')" class="px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${(i.presentation === '250gr' || Number(i.presentationGrams) === 250) ? 'bg-purple text-white shadow-xs' : 'text-purple-dark dark:text-white hover:bg-purple/10'}">
+                                        250g
+                                    </button>
+                                    <button type="button" onclick="window.updatePlanPresentation('${i.id}', '550gr')" class="px-2.5 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${(i.presentation !== '250gr' && Number(i.presentationGrams) !== 250) ? 'bg-purple text-white shadow-xs' : 'text-purple-dark dark:text-white hover:bg-purple/10'}">
+                                        550g
+                                    </button>
+                                </div>
                             </div>
 
                             ${i.formula === 'mixto' ? `
