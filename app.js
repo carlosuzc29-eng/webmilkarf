@@ -7693,13 +7693,13 @@ window.initPreloader = function () {
                 preloader.classList.add('hidden');
                 window.refreshIcons?.();
                 showWelcomeSafely();
-            }, 180);
+            }, 120);
         });
     };
 
-    preloaderBar.style.width = '35%';
-    requestAnimationFrame(() => { preloaderBar.style.width = '88%'; });
-    const maxWait = 500; // Máximo 600ms total incluyendo fade
+    preloaderBar.style.width = '45%';
+    requestAnimationFrame(() => { preloaderBar.style.width = '90%'; });
+    const maxWait = 140; // Tiempo de apertura ágil sin retardo artificial
     setTimeout(finish, maxWait);
 };
 

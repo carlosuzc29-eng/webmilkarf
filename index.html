@@ -43,11 +43,19 @@
     </script>
 
     <link rel="stylesheet" href="styles.css">
+    <script>
+        // Ocultación ultra-inmediata del preloader si ya se vio en esta sesión (evita parpadeo)
+        try {
+            if (sessionStorage.getItem('milkarf_preloader_seen') === '1') {
+                document.documentElement.classList.add('preloader-skipped');
+            }
+        } catch(e) {}
+    </script>
 </head>
 <body class="text-gray-800 dark:text-gray-200 antialiased font-sans transition-colors duration-500">
 
     <!-- PANTALLA DE CARGA (PRELOADER) -->
-    <div id="preloader" class="fixed inset-0 z-[99999] bg-[#faf7f2] dark:bg-darkbg flex flex-col items-center justify-center transition-opacity duration-300">
+    <div id="preloader" class="fixed inset-0 z-[99999] bg-[#faf7f2] dark:bg-darkbg flex flex-col items-center justify-center transition-opacity duration-150 will-change-[opacity]">
         <div class="mb-4">
             <img decoding="async" src="logo.png" fetchpriority="high" alt="Milkarf Logo" class="w-24 h-24 object-contain animate-bounce" onerror="this.outerHTML='<div class=\'w-16 h-16 bg-purple dark:bg-darkcard rounded-3xl flex items-center justify-center shadow-lg text-white dark:border dark:border-purple/30 animate-bounce\'><i data-lucide=\'paw-print\' class=\'w-9 h-9 text-green\'></i></div>'">
         </div>
