@@ -380,9 +380,76 @@ window.roundUSD = function (value) {
     return Math.round((n + Number.EPSILON) * 100) / 100;
 };
 
+// Convierte fechas de Firestore (Timestamp, ISO string, número o { seconds }) de forma segura.
+window.toDateSafe = function (value) {
+    if (!value && value !== 0) return null;
+    try {
+        if (value instanceof Date) {
+            return isNaN(value.getTime()) ? null : value;
+        }
+        if (typeof value?.toDate === 'function') {
+            const d = value.toDate();
+            return (d instanceof Date && !isNaN(d.getTime())) ? d : null;
+        }
+        if (typeof value === 'object') {
+            const secs = value.seconds ?? value._seconds;
+            if (typeof secs === 'number' && Number.isFinite(secs)) {
+                const ns = Number(value.nanoseconds ?? value._nanoseconds ?? 0);
+                const d = new Date((secs * 1000) + Math.floor((Number.isFinite(ns) ? ns : 0) / 1e6));
+                return isNaN(d.getTime()) ? null : d;
+            }
+        }
+        if (typeof value === 'number' && Number.isFinite(value)) {
+            const ms = value < 1e12 ? value * 1000 : value;
+            const d = new Date(ms);
+            return isNaN(d.getTime()) ? null : d;
+        }
+        if (typeof value === 'string') {
+            const trimmed = value.trim();
+            if (!trimmed) return null;
+            if (/^\d{10,16}$/.test(trimmed)) {
+                const n = Number(trimmed);
+                const d = new Date(n < 1e12 ? n * 1000 : n);
+                return isNaN(d.getTime()) ? null : d;
+            }
+            const d = new Date(trimmed);
+            return isNaN(d.getTime()) ? null : d;
+        }
+    } catch (e) { }
+    return null;
+};
+
+window.toTimestampMs = function (value) {
+    const d = window.toDateSafe(value);
+    return d ? d.getTime() : 0;
+};
+
+window.getOrderCreatedAtValue = function (order = {}) {
+    if (!order || typeof order !== 'object') return null;
+    const direct = order.createdAt ?? order.created_at ?? order.fecha ?? order.fechaCreacion ?? order.updatedAt;
+    if (direct !== undefined && direct !== null && direct !== '') return direct;
+    const match = String(order.id || order.localId || '').match(/^local_(\d{10,16})$/);
+    return match ? Number(match[1]) : null;
+};
+
+window.normalizeSearchText = function (value = '') {
+    return String(value ?? '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+};
+
+window.isFirestorePermissionError = function (error) {
+    const code = String(error?.code || '').toLowerCase();
+    const msg = String(error?.message || '').toLowerCase();
+    return code.includes('permission-denied') || msg.includes('missing or insufficient permissions');
+};
+
 window.getCaracasDateParts = function (dateInput = new Date()) {
-    const d = dateInput?.toDate ? dateInput.toDate() : (dateInput instanceof Date ? dateInput : new Date(dateInput));
-    if (isNaN(d.getTime())) return null;
+    const d = window.toDateSafe ? window.toDateSafe(dateInput) : (dateInput?.toDate ? dateInput.toDate() : (dateInput instanceof Date ? dateInput : new Date(dateInput)));
+    if (!d || isNaN(d.getTime())) return null;
     try {
         const parts = new Intl.DateTimeFormat('en-GB', {
             timeZone: 'America/Caracas',
@@ -558,7 +625,8 @@ window.getOrderFinancials = function (order = {}) {
 // Actualiza incrementalmente el resumen del mes al completar o cancelar un pedido (sin recontar la colección).
 window.applyOrderDeltaToSummary = async function (order = {}, targetStatus = '', previousStatus = '') {
     if (!db || !order) return null;
-    const yyyyMM = window.getCaracasYearMonth(order.createdAt || new Date());
+    const createdVal = window.getOrderCreatedAtValue ? window.getOrderCreatedAtValue(order) : order.createdAt;
+    const yyyyMM = window.getCaracasYearMonth(createdVal || new Date());
     if (!yyyyMM) return null;
     const prev = String(previousStatus || '').toLowerCase();
     const next = String(targetStatus || '').toLowerCase();
@@ -4665,9 +4733,14 @@ window.adminTabInactiveClass = "text-purple-dark dark:text-gray-300 hover:bg-pur
 window.formatAdminDate = function (value, withTime = true) {
     if (!value) return 'Sin fecha';
     try {
-        const d = value?.toDate ? value.toDate() : new Date(value);
-        if (isNaN(d.getTime())) return 'Sin fecha';
-        return d.toLocaleString('es-VE', withTime ? { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' } : { day: '2-digit', month: 'short', year: 'numeric' });
+        const d = window.toDateSafe ? window.toDateSafe(value) : (value?.toDate ? value.toDate() : new Date(value));
+        if (!d || isNaN(d.getTime())) return 'Sin fecha';
+        return d.toLocaleString('es-VE', {
+            timeZone: 'America/Caracas',
+            ...(withTime
+                ? { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }
+                : { day: '2-digit', month: 'short', year: 'numeric' })
+        });
     } catch (e) { return 'Sin fecha'; }
 };
 
@@ -5331,9 +5404,13 @@ window.loadAdminSummary = async function () {
 
 window.buildAdminMiniOrder = function (o) {
     const items = Array.isArray(o.items) ? o.items.map(i => `${Number(i.qty || 0)}x ${i.name || 'Producto'}`).join(' · ') : 'Pedido Milkarf';
+    const clientName = o.userName || o.nombre || o.nombre_persona || o.clientName || o.customerName || o.fullName || o.cliente || o.displayName || o.email || 'Usuario';
+    const createdVal = window.getOrderCreatedAtValue ? window.getOrderCreatedAtValue(o) : o.createdAt;
+    const prodAmt = window.getOrderProductsAmount ? window.getOrderProductsAmount(o) : Number(o.total || 0);
+    const totalShown = Number(o.totalWithDelivery || (prodAmt + Math.max(0, Number(o.deliveryCost || 0))) || o.total || 0);
     return `<div class="rounded-2xl border border-purple-border/30 dark:border-purple/20 bg-purple-light/40 dark:bg-[#0d0718] p-4 text-left">
-                <div class="flex justify-between items-start gap-3"><div class="min-w-0"><p class="text-sm font-black text-purple-dark dark:text-white truncate">${window.escapeHTML(window.capitalizeName(o.userName || o.email || 'Usuario'))}</p><p class="text-[10px] text-gray-500 font-bold mt-1 truncate">${window.escapeHTML(items)}</p></div>${window.renderStatusBadge(o.status)}</div>
-                <p class="text-[10px] text-gray-400 font-bold mt-2">${window.formatAdminDate(o.createdAt)} · $${Number(o.total || 0).toFixed(2)}</p>
+                <div class="flex justify-between items-start gap-3"><div class="min-w-0"><p class="text-sm font-black text-purple-dark dark:text-white truncate">${window.escapeHTML(window.capitalizeName(clientName))}</p><p class="text-[10px] text-gray-500 font-bold mt-1 truncate">${window.escapeHTML(items)}</p></div>${window.renderStatusBadge(o.status || o.estado)}</div>
+                <p class="text-[10px] text-gray-400 font-bold mt-2">${window.formatAdminDate(createdVal)} · $${totalShown.toFixed(2)}</p>
             </div>`;
 };
 
@@ -5348,6 +5425,8 @@ window.getAdminOrderRangeLabel = function (st = window.adminOrdersState) {
     if (range === '3d') return 'últimos 3 días + abiertos';
     if (range === '7d') return 'últimos 7 días';
     if (range === '30d') return 'últimos 30 días';
+    if (range === 'recent100') return 'últimos 100 pedidos (todas las fechas)';
+    if (range === 'all_scan') return 'toda la base (búsqueda manual)';
     if (range === 'custom') {
         const from = st?.customFrom || '';
         const to = st?.customTo || '';
@@ -5366,7 +5445,8 @@ window.rebuildMergedAdminOrders = function () {
     } else {
         st.rangeMap?.forEach((o, id) => byId.set(id, o));
     }
-    const sorted = [...byId.values()].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    const getMs = (o) => window.toTimestampMs ? window.toTimestampMs(window.getOrderCreatedAtValue?.(o) ?? o.createdAt) : (new Date(o.createdAt || 0).getTime() || 0);
+    const sorted = [...byId.values()].sort((a, b) => getMs(b) - getMs(a));
     window.adminCache = window.adminCache || {};
     window.adminCache.orders = sorted;
 };
@@ -5409,6 +5489,90 @@ window.applyAdminCustomOrderRange = function () {
     window.loadAdminOrders('custom');
 };
 
+// Búsqueda manual paginada en toda la colección (solo al pulsar el botón; no se ejecuta en carga normal).
+window.searchAllOrdersAdmin = async function () {
+    if (!window.isAdmin || !db) {
+        window.showToast?.('Debes iniciar sesión como administrador.');
+        return;
+    }
+    const ordersRef = window.getOrdersCollectionRef();
+    try {
+        let totalEst = null;
+        try {
+            const cSnap = await getCountFromServer(ordersRef);
+            totalEst = Number(cSnap.data().count || 0);
+        } catch (e) { }
+
+        if (totalEst !== null && totalEst > 250) {
+            const ok = confirm(`Esta búsqueda leerá aproximadamente ${totalEst.toLocaleString('es-VE')} pedidos en Firestore (${totalEst.toLocaleString('es-VE')} lecturas del plan Spark).\n\n¿Deseas continuar?`);
+            if (!ok) return;
+        } else if (totalEst === null) {
+            const ok = confirm('Se buscará en toda la colección de pedidos (lectura paginada).\n\n¿Deseas continuar?');
+            if (!ok) return;
+        }
+
+        window.clearAdminOrdersListeners?.();
+        const runId = (window.__adminOrdersRunId = (window.__adminOrdersRunId || 0) + 1);
+        const st = window.adminOrdersState = window.adminOrdersState || {};
+        st.range = 'all_scan';
+        st.rangeMap = new Map();
+        st.loading = true;
+        st.fromCache = false;
+        st.legacyRulesFallback = false;
+        window.adminCache = window.adminCache || {};
+        window.adminCache.orders = [];
+        window.renderAdminOrdersPanel();
+
+        const list = document.getElementById('admin-orders-list');
+        let docs = [];
+        try {
+            docs = await window.adminFetchAllDocs(ordersRef, {
+                pageSize: 500,
+                maxPages: 25,
+                onProgress: (count) => {
+                    if (window.__adminOrdersRunId === runId && list) {
+                        list.innerHTML = window.adminLoadingState(`Buscando en toda la base… ${count.toLocaleString('es-VE')} pedidos`);
+                    }
+                }
+            });
+        } catch (err) {
+            if (window.isFirestorePermissionError?.(err)) {
+                // Reglas anteriores exigen limit <= 100 por página: paginar de 100 en 100 con startAfter.
+                st.legacyRulesFallback = true;
+                docs = await window.adminFetchAllDocs(ordersRef, {
+                    pageSize: 100,
+                    maxPages: 50,
+                    onProgress: (count) => {
+                        if (window.__adminOrdersRunId === runId && list) {
+                            list.innerHTML = window.adminLoadingState(`Buscando en lotes de 100… ${count.toLocaleString('es-VE')} pedidos`);
+                        }
+                    }
+                });
+            } else {
+                throw err;
+            }
+        }
+
+        if (window.__adminOrdersRunId !== runId) return;
+        const next = new Map();
+        docs.forEach(d => {
+            if (d && d.id) next.set(String(d.id), d);
+        });
+        st.rangeMap = next;
+        st.loading = false;
+        st.fromCache = false;
+        st.lastSyncAt = new Date().toISOString();
+        window.rebuildMergedAdminOrders();
+        window.filterAdminOrders();
+        window.showToast?.(`Se cargaron ${next.size.toLocaleString('es-VE')} pedidos para filtrar.`, 'success');
+    } catch (error) {
+        window.logFirestoreIndexHint?.(error, 'Búsqueda manual completa de pedidos');
+        if (window.adminOrdersState) window.adminOrdersState.loading = false;
+        window.filterAdminOrders?.();
+        window.showToast?.('No se pudo completar la búsqueda en toda la base.');
+    }
+};
+
 window.loadAdminOrders = function (rangeOverride) {
     const container = document.getElementById('admin-orders-container');
     if (!window.isAdmin) {
@@ -5429,12 +5593,14 @@ window.loadAdminOrders = function (rangeOverride) {
         searchQuery: '',
         lastSyncAt: null,
         fromCache: false,
+        legacyRulesFallback: false,
         recentMap: new Map(),
         openMap: new Map(),
         rangeMap: new Map(),
         unsubs: []
     };
     if (typeof rangeOverride === 'string' && rangeOverride) st.range = rangeOverride;
+    if (st.range === 'all_scan') st.range = '3d';
 
     window.clearAdminOrdersListeners?.();
     const runId = (window.__adminOrdersRunId = (window.__adminOrdersRunId || 0) + 1);
@@ -5445,6 +5611,7 @@ window.loadAdminOrders = function (rangeOverride) {
     st.rangeMap = new Map();
     st.loading = true;
     st.fromCache = false;
+    st.legacyRulesFallback = false;
     window.adminCache = window.adminCache || {};
     window.adminCache.orders = [];
 
@@ -5469,8 +5636,54 @@ window.loadAdminOrders = function (rangeOverride) {
                 : window.adminEmptyState('Error al cargar pedidos', 'Verifica conexión o permisos de Firestore.', 'alert-triangle');
             window.refreshIcons?.(list);
         } else {
+            window.filterAdminOrders();
             window.showToast?.(`Error parcial en ${ctxLabel}. Revisa consola.`);
         }
+    };
+
+    // Adjunta listener onSnapshot con caché inicial y respaldo automático limit(100) si aún están activas reglas anteriores.
+    const attachWithLegacyLimitFallback = ({ baseQuery, buildLimitedQuery, onCacheSnap, onServerSnap, onFinalError, ctxLabel }) => {
+        let activeUnsub = null;
+        let retriedLimited = false;
+        const cleanup = () => {
+            if (typeof activeUnsub === 'function') {
+                try { activeUnsub(); } catch (e) { }
+                activeUnsub = null;
+            }
+        };
+        st.unsubs.push(cleanup);
+
+        getDocsFromCache(baseQuery).then(snap => {
+            if (window.__adminOrdersRunId !== runId || snap.empty) return;
+            onCacheSnap(snap);
+        }).catch(() => { });
+
+        const subscribe = (targetQuery) => {
+            if (window.__adminOrdersRunId !== runId) return;
+            cleanup();
+            activeUnsub = onSnapshot(targetQuery, { includeMetadataChanges: true }, (snap) => {
+                if (window.__adminOrdersRunId !== runId) return;
+                onServerSnap(snap);
+            }, (error) => {
+                if (window.__adminOrdersRunId !== runId) return;
+                cleanup();
+                if (!retriedLimited && window.isFirestorePermissionError?.(error) && typeof buildLimitedQuery === 'function') {
+                    retriedLimited = true;
+                    st.legacyRulesFallback = true;
+                    console.warn(`[Milkarf] Reglas anteriores activas en "${ctxLabel}"; aplicando respaldo con limit(100).`);
+                    const limitedQ = buildLimitedQuery();
+                    getDocsFromCache(limitedQ).then(snap => {
+                        if (window.__adminOrdersRunId !== runId || snap.empty) return;
+                        onCacheSnap(snap);
+                    }).catch(() => { });
+                    subscribe(limitedQ);
+                    return;
+                }
+                onFinalError(error);
+            });
+        };
+
+        subscribe(baseQuery);
     };
 
     if (st.range === '3d') {
@@ -5478,52 +5691,65 @@ window.loadAdminOrders = function (rangeOverride) {
         const qRecent = query(ordersRef, where('createdAt', '>=', threeDaysAgoIso), orderBy('createdAt', 'desc'));
         const qOpen = query(ordersRef, where('status', 'in', window.ADMIN_OPEN_ORDER_STATUSES));
 
-        const stateFlags = { recent: false, open: false };
+        const stateFlags = { recentServer: false, openServer: false };
 
-        // 1) Pintado inmediato desde caché local si existe.
-        Promise.allSettled([
-            getDocsFromCache(qRecent).then(snap => {
-                if (window.__adminOrdersRunId !== runId || snap.empty) return;
+        attachWithLegacyLimitFallback({
+            baseQuery: qRecent,
+            buildLimitedQuery: () => query(ordersRef, where('createdAt', '>=', threeDaysAgoIso), orderBy('createdAt', 'desc'), limit(100)),
+            ctxLabel: 'Pedidos recientes (3 días)',
+            onCacheSnap: (snap) => {
                 snap.forEach(d => st.recentMap.set(d.id, { id: d.id, ...d.data() }));
                 st.loading = false;
                 finishRender(true);
-            }).catch(() => { }),
-            getDocsFromCache(qOpen).then(snap => {
-                if (window.__adminOrdersRunId !== runId || snap.empty) return;
+            },
+            onServerSnap: (snap) => {
+                const next = new Map();
+                snap.forEach(d => next.set(d.id, { id: d.id, ...d.data() }));
+                st.recentMap = next;
+                if (!snap.metadata?.fromCache) stateFlags.recentServer = true;
+                if (snap.size > 0 || (stateFlags.recentServer && stateFlags.openServer)) {
+                    st.loading = false;
+                }
+                finishRender(snap.metadata?.fromCache);
+            },
+            onFinalError: (error) => {
+                stateFlags.recentServer = true;
+                handleError(error, 'Pedidos recientes (3 días)');
+            }
+        });
+
+        attachWithLegacyLimitFallback({
+            baseQuery: qOpen,
+            buildLimitedQuery: () => query(ordersRef, where('status', 'in', window.ADMIN_OPEN_ORDER_STATUSES), limit(100)),
+            ctxLabel: 'Pedidos abiertos',
+            onCacheSnap: (snap) => {
                 snap.forEach(d => st.openMap.set(d.id, { id: d.id, ...d.data() }));
                 st.loading = false;
                 finishRender(true);
-            }).catch(() => { })
-        ]);
-
-        // 2) Listeners en vivo (recientes 3d + abiertos sin cerrar de cualquier fecha).
-        const uRecent = onSnapshot(qRecent, { includeMetadataChanges: true }, (snap) => {
-            if (window.__adminOrdersRunId !== runId) return;
-            const next = new Map();
-            snap.forEach(d => next.set(d.id, { id: d.id, ...d.data() }));
-            st.recentMap = next;
-            stateFlags.recent = true;
-            if (stateFlags.open || snap.size > 0) st.loading = false;
-            finishRender(snap.metadata?.fromCache);
-        }, (error) => {
-            stateFlags.recent = true;
-            handleError(error, 'Pedidos recientes (3 días)');
+            },
+            onServerSnap: (snap) => {
+                const next = new Map();
+                snap.forEach(d => next.set(d.id, { id: d.id, ...d.data() }));
+                st.openMap = next;
+                if (!snap.metadata?.fromCache) stateFlags.openServer = true;
+                if (snap.size > 0 || (stateFlags.recentServer && stateFlags.openServer)) {
+                    st.loading = false;
+                }
+                finishRender(snap.metadata?.fromCache);
+            },
+            onFinalError: (error) => {
+                stateFlags.openServer = true;
+                handleError(error, 'Pedidos abiertos');
+            }
         });
 
-        const uOpen = onSnapshot(qOpen, { includeMetadataChanges: true }, (snap) => {
-            if (window.__adminOrdersRunId !== runId) return;
-            const next = new Map();
-            snap.forEach(d => next.set(d.id, { id: d.id, ...d.data() }));
-            st.openMap = next;
-            stateFlags.open = true;
-            if (stateFlags.recent || snap.size > 0) st.loading = false;
-            finishRender(snap.metadata?.fromCache);
-        }, (error) => {
-            stateFlags.open = true;
-            handleError(error, 'Pedidos abiertos');
-        });
+        setTimeout(() => {
+            if (window.__adminOrdersRunId === runId && st.loading) {
+                st.loading = false;
+                window.filterAdminOrders?.();
+            }
+        }, 6000);
 
-        st.unsubs.push(uRecent, uOpen);
         unsubAdmin = () => {
             const list = st.unsubs.splice(0);
             list.forEach(fn => { try { if (typeof fn === 'function') fn(); } catch (e) { } });
@@ -5531,17 +5757,23 @@ window.loadAdminOrders = function (rangeOverride) {
         return;
     }
 
-    // Consultas por rango único: 7d, 30d o personalizado (siempre filtrando en Firestore por createdAt).
+    // Consultas por rango único: 7d, 30d, recent100 o personalizado.
     let qRange = null;
+    let buildLimitedRangeQuery = null;
     let ctxLabel = 'Pedidos';
     if (st.range === '7d') {
         const sinceIso = new Date(Date.now() - 7 * 86400000).toISOString();
         qRange = query(ordersRef, where('createdAt', '>=', sinceIso), orderBy('createdAt', 'desc'));
+        buildLimitedRangeQuery = () => query(ordersRef, where('createdAt', '>=', sinceIso), orderBy('createdAt', 'desc'), limit(100));
         ctxLabel = 'Pedidos (7 días)';
     } else if (st.range === '30d') {
         const sinceIso = new Date(Date.now() - 30 * 86400000).toISOString();
         qRange = query(ordersRef, where('createdAt', '>=', sinceIso), orderBy('createdAt', 'desc'));
+        buildLimitedRangeQuery = () => query(ordersRef, where('createdAt', '>=', sinceIso), orderBy('createdAt', 'desc'), limit(100));
         ctxLabel = 'Pedidos (30 días)';
+    } else if (st.range === 'recent100') {
+        qRange = query(ordersRef, orderBy('createdAt', 'desc'), limit(100));
+        ctxLabel = 'Últimos 100 pedidos';
     } else {
         const todayStr = window.getCaracasDateString?.(new Date()) || new Date().toISOString().slice(0, 10);
         const fromStr = st.customFrom || window.getCaracasDateString?.(new Date(Date.now() - 7 * 86400000)) || todayStr;
@@ -5549,30 +5781,42 @@ window.loadAdminOrders = function (rangeOverride) {
         const startIso = new Date(`${fromStr}T00:00:00.000-04:00`).toISOString();
         const endIso = new Date(`${toStr}T23:59:59.999-04:00`).toISOString();
         qRange = query(ordersRef, where('createdAt', '>=', startIso), where('createdAt', '<=', endIso), orderBy('createdAt', 'desc'));
+        buildLimitedRangeQuery = () => query(ordersRef, where('createdAt', '>=', startIso), where('createdAt', '<=', endIso), orderBy('createdAt', 'desc'), limit(100));
         ctxLabel = `Pedidos (${fromStr} a ${toStr})`;
     }
 
-    getDocsFromCache(qRange).then(snap => {
-        if (window.__adminOrdersRunId !== runId || snap.empty) return;
-        snap.forEach(d => st.rangeMap.set(d.id, { id: d.id, ...d.data() }));
-        st.loading = false;
-        finishRender(true);
-    }).catch(() => { });
+    attachWithLegacyLimitFallback({
+        baseQuery: qRange,
+        buildLimitedQuery: buildLimitedRangeQuery,
+        ctxLabel,
+        onCacheSnap: (snap) => {
+            snap.forEach(d => st.rangeMap.set(d.id, { id: d.id, ...d.data() }));
+            st.loading = false;
+            finishRender(true);
+        },
+        onServerSnap: (snap) => {
+            const next = new Map();
+            snap.forEach(d => next.set(d.id, { id: d.id, ...d.data() }));
+            st.rangeMap = next;
+            if (snap.size > 0 || !snap.metadata?.fromCache) {
+                st.loading = false;
+            }
+            finishRender(snap.metadata?.fromCache);
+        },
+        onFinalError: (error) => handleError(error, ctxLabel)
+    });
 
-    const uRange = onSnapshot(qRange, { includeMetadataChanges: true }, (snap) => {
-        if (window.__adminOrdersRunId !== runId) return;
-        const next = new Map();
-        snap.forEach(d => next.set(d.id, { id: d.id, ...d.data() }));
-        st.rangeMap = next;
-        st.loading = false;
-        finishRender(snap.metadata?.fromCache);
-    }, (error) => handleError(error, ctxLabel));
+    setTimeout(() => {
+        if (window.__adminOrdersRunId === runId && st.loading) {
+            st.loading = false;
+            window.filterAdminOrders?.();
+        }
+    }, 6000);
 
-    st.unsubs.push(uRange);
     unsubAdmin = () => {
-            const list = st.unsubs.splice(0);
-            list.forEach(fn => { try { if (typeof fn === 'function') fn(); } catch (e) { } });
-        };
+        const list = st.unsubs.splice(0);
+        list.forEach(fn => { try { if (typeof fn === 'function') fn(); } catch (e) { } });
+    };
 };
 
 window.renderAdminOrdersPanel = function () {
@@ -5592,7 +5836,10 @@ window.renderAdminOrdersPanel = function () {
                         <h3 class="text-xl font-black text-purple-dark dark:text-white">Control de pedidos</h3>
                         <p class="text-xs text-gray-500 font-semibold mt-1">Por defecto carga los últimos 3 días más todos los pedidos abiertos sin cerrar.</p>
                     </div>
-                    <button onclick="window.loadAdminOrders()" class="inline-flex items-center justify-center gap-2 bg-purple-light dark:bg-purple/20 text-purple dark:text-white font-black text-[10px] uppercase tracking-widest px-4 py-3 rounded-xl hover:bg-purple hover:text-white transition-all"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Actualizar</button>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" onclick="window.searchAllOrdersAdmin()" class="inline-flex items-center justify-center gap-2 bg-green/15 border border-green/30 text-green-dark dark:text-green font-black text-[10px] uppercase tracking-widest px-3.5 py-3 rounded-xl hover:bg-green hover:text-purple-dark transition-all"><i data-lucide="database" class="w-4 h-4"></i> Buscar en toda la base</button>
+                        <button type="button" onclick="window.loadAdminOrders()" class="inline-flex items-center justify-center gap-2 bg-purple-light dark:bg-purple/20 text-purple dark:text-white font-black text-[10px] uppercase tracking-widest px-4 py-3 rounded-xl hover:bg-purple hover:text-white transition-all"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Actualizar</button>
+                    </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                     <input id="admin-order-search" type="search" value="${window.escapeHTML(st.searchQuery || '')}" placeholder="Buscar cliente, correo, tel, ID, producto o mascota" oninput="window.filterAdminOrders()" class="md:col-span-2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl p-3 text-sm font-semibold outline-none focus:border-purple">
@@ -5607,6 +5854,7 @@ window.renderAdminOrdersPanel = function () {
                         <option value="3d">Últimos 3 días (+ abiertos)</option>
                         <option value="7d">Últimos 7 días</option>
                         <option value="30d">Últimos 30 días</option>
+                        <option value="recent100">Últimos 100 pedidos (todas las fechas)</option>
                         <option value="custom">Rango personalizado</option>
                     </select>
                 </div>
@@ -5621,6 +5869,7 @@ window.renderAdminOrdersPanel = function () {
                     </div>
                     <button type="button" onclick="window.applyAdminCustomOrderRange()" class="bg-purple hover:bg-purple-dark text-white font-black text-xs uppercase tracking-widest px-5 py-3 rounded-xl transition-all shrink-0">Aplicar rango</button>
                 </div>
+                <div id="admin-orders-rules-banner" class="hidden rounded-2xl border border-pink/30 bg-pink/10 px-4 py-3 text-xs font-semibold text-purple-dark dark:text-gray-200"></div>
                 <div id="admin-orders-status-bar" class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-purple-border/20 text-xs font-semibold text-gray-500 dark:text-gray-400"></div>
             </div>
             <div id="admin-orders-list" class="space-y-4"></div>`;
@@ -5630,7 +5879,7 @@ window.renderAdminOrdersPanel = function () {
     const statusEl = document.getElementById('admin-order-status-filter');
     if (statusEl && st.statusFilter) statusEl.value = st.statusFilter;
     const rangeEl = document.getElementById('admin-order-range-select');
-    if (rangeEl && st.range) rangeEl.value = st.range;
+    if (rangeEl && ['3d', '7d', '30d', 'recent100', 'custom'].includes(st.range)) rangeEl.value = st.range;
     const customWrap = document.getElementById('admin-order-custom-range-wrap');
     if (customWrap) customWrap.classList.toggle('hidden', st.range !== 'custom');
 
@@ -5643,33 +5892,49 @@ window.filterAdminOrders = function () {
     const st = window.adminOrdersState = window.adminOrdersState || { range: '3d', statusFilter: 'todos', searchQuery: '' };
     const searchEl = document.getElementById('admin-order-search');
     const statusEl = document.getElementById('admin-order-status-filter');
-    const q = (searchEl ? searchEl.value : (st.searchQuery || '')).trim().toLowerCase();
+    const rawSearch = searchEl ? searchEl.value : (st.searchQuery || '');
+    const normFn = window.normalizeSearchText || (s => String(s || '').toLowerCase().trim());
+    const qNorm = normFn(rawSearch);
+    const qTokens = qNorm ? qNorm.split(' ').filter(Boolean) : [];
     const statusFilter = statusEl ? statusEl.value : (st.statusFilter || 'todos');
-    st.searchQuery = searchEl ? searchEl.value : (st.searchQuery || '');
+    st.searchQuery = rawSearch;
     st.statusFilter = statusFilter;
 
     const allLoaded = [...(window.adminCache?.orders || [])];
     let orders = allLoaded;
 
-    if (q) {
+    if (qTokens.length) {
         orders = orders.filter(o => {
             const itemTokens = Array.isArray(o.items)
-                ? o.items.flatMap(i => [i.name, i.producto, i.title, i.weight, i.tam, i.presentation, i.forPet, i.petName, i.formulaLabel])
+                ? o.items.flatMap(i => [i.name, i.producto, i.title, i.weight, i.tam, i.presentation, i.forPet, i.petName, i.formulaLabel, i.formulaName])
                 : [];
-            const hay = [
+            const hay = normFn([
                 o.userName,
                 o.nombre,
                 o.nombre_persona,
+                o.clientName,
+                o.customerName,
+                o.fullName,
+                o.cliente,
                 o.displayName,
                 o.email,
                 o.phone,
                 o.telefono,
                 o.whatsapp,
+                o.contactPhone,
+                o.userPhone,
+                o.direccion,
+                o.address,
+                o.notas,
+                o.nota,
+                o.observations,
                 o.selectedPet,
+                o.petName,
                 o.id,
+                o.localId,
                 ...itemTokens
-            ].join(' ').toLowerCase();
-            return hay.includes(q);
+            ].join(' '));
+            return qTokens.every(tok => hay.includes(tok));
         });
     }
 
@@ -5680,6 +5945,16 @@ window.filterAdminOrders = function () {
             if (statusFilter === 'confirmado') return ['confirmado', 'verificado'].includes(s);
             return s === statusFilter;
         });
+    }
+
+    const rulesBanner = document.getElementById('admin-orders-rules-banner');
+    if (rulesBanner) {
+        if (st.legacyRulesFallback) {
+            rulesBanner.innerHTML = '<strong>Aviso de reglas Firestore:</strong> Firebase todavía tiene publicadas las reglas anteriores (límite de 100 documentos por consulta). Publica el archivo <code class="font-mono">firestore.rules</code> actualizado en Firebase Console para habilitar rangos completos sin límite y resúmenes mensuales.';
+            rulesBanner.classList.remove('hidden');
+        } else {
+            rulesBanner.classList.add('hidden');
+        }
     }
 
     const statusBar = document.getElementById('admin-orders-status-bar');
@@ -5703,10 +5978,23 @@ window.filterAdminOrders = function () {
     }
 
     if (!orders.length) {
-        const clearBtn = (q || statusFilter !== 'todos')
-            ? '<div class="mt-3 text-center"><button type="button" onclick="window.clearAdminOrderFilter()" class="px-4 py-2 rounded-xl bg-purple-light dark:bg-purple/20 text-purple dark:text-white text-xs font-black uppercase tracking-widest">Limpiar filtros</button></div>'
+        const actionButtons = [];
+        if (qTokens.length || statusFilter !== 'todos') {
+            actionButtons.push('<button type="button" onclick="window.clearAdminOrderFilter()" class="px-4 py-2 rounded-xl bg-purple-light dark:bg-purple/20 text-purple dark:text-white text-xs font-black uppercase tracking-widest">Limpiar filtros</button>');
+        }
+        if (st.range === '3d' || st.range === '7d') {
+            actionButtons.push('<button type="button" onclick="window.onAdminOrderRangeChange(\'30d\')" class="px-4 py-2 rounded-xl bg-purple text-white text-xs font-black uppercase tracking-widest">Probar últimos 30 días</button>');
+        }
+        if (st.range !== 'recent100' && st.range !== 'all_scan') {
+            actionButtons.push('<button type="button" onclick="window.onAdminOrderRangeChange(\'recent100\')" class="px-4 py-2 rounded-xl bg-green/20 text-green-dark dark:text-green text-xs font-black uppercase tracking-widest">Cargar últimos 100</button>');
+        }
+        if (st.range !== 'all_scan') {
+            actionButtons.push('<button type="button" onclick="window.searchAllOrdersAdmin()" class="px-4 py-2 rounded-xl border border-purple/30 text-purple dark:text-white text-xs font-black uppercase tracking-widest">Buscar en toda la base</button>');
+        }
+        const actionsHtml = actionButtons.length
+            ? `<div class="mt-3 flex flex-wrap justify-center gap-2">${actionButtons.join('')}</div>`
             : '';
-        list.innerHTML = window.adminEmptyState('Sin pedidos para mostrar', 'Ajusta la búsqueda, el estado o selecciona un rango más amplio.', 'search') + clearBtn;
+        list.innerHTML = window.adminEmptyState('Sin pedidos para mostrar', 'Ajusta la búsqueda, el estado o amplía el rango de fechas para incluir pedidos cerrados de más días.', 'search') + actionsHtml;
         window.refreshIcons?.(list);
         return;
     }
@@ -5757,15 +6045,16 @@ window.buildAdminOrderCard = function (o) {
             : `<button onclick="window.marcarCompletadoAdmin('${o.id}')" class="bg-purple text-white text-[10px] font-black px-4 py-3 rounded-xl shadow-md hover:bg-pink transition-all flex items-center gap-2 justify-center"><i data-lucide="check-square" class="w-4 h-4"></i> Completar</button>`;
     }
     const canCancel = !['completado', 'cancelado'].includes(status);
-    const clientPhone = o.phone || o.telefono || o.whatsapp || '';
-    const clientDisplay = o.userName || o.nombre || o.nombre_persona || o.displayName || o.email || 'Usuario Invitado';
+    const clientPhone = o.phone || o.telefono || o.whatsapp || o.contactPhone || o.userPhone || '';
+    const clientDisplay = o.userName || o.nombre || o.nombre_persona || o.clientName || o.customerName || o.fullName || o.cliente || o.displayName || o.email || 'Usuario Invitado';
+    const createdVal = window.getOrderCreatedAtValue ? window.getOrderCreatedAtValue(o) : o.createdAt;
     return `<div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-1 h-full ${window.getOrderStatusInfo(status).bar}"></div>
                 <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 pl-2">
                     <div class="min-w-0">
                         <div class="flex items-center gap-2 flex-wrap mb-2">${window.renderStatusBadge(status)}<span class="text-[9px] font-black uppercase tracking-widest text-gray-400">#${window.escapeHTML(String(o.id || '').slice(0, 12))}</span>${o.selectedPet ? `<span class="text-[9px] font-black bg-purple-light dark:bg-purple/20 text-purple dark:text-white px-2 py-0.5 rounded-md">${window.escapeHTML(o.selectedPet)}</span>` : ''}</div>
                         <h4 class="font-black text-purple-dark dark:text-white text-base leading-tight truncate">${window.escapeHTML(window.capitalizeName(clientDisplay))}</h4>
-                        <p class="text-[10px] text-gray-500 font-bold mt-1">${window.formatAdminDate(o.createdAt)}${clientPhone ? ` · 📞 ${window.escapeHTML(clientPhone)}` : ''}${o.email ? ` · ✉️ ${window.escapeHTML(o.email)}` : ''}</p>
+                        <p class="text-[10px] text-gray-500 font-bold mt-1">${window.formatAdminDate(createdVal)}${clientPhone ? ` · 📞 ${window.escapeHTML(clientPhone)}` : ''}${o.email ? ` · ✉️ ${window.escapeHTML(o.email)}` : ''}</p>
                     </div>
                     <div class="text-left md:text-right shrink-0">
                         <span class="text-[10px] text-gray-400 font-black uppercase tracking-widest block">Total${deliveryCost > 0 ? ' c/deliv.' : ''}</span>
@@ -5818,10 +6107,27 @@ window.renderAdminUsersPanel = function () {
 window.filterAdminUsers = function () {
     const list = document.getElementById('admin-users-list');
     if (!list) return;
-    const q = (document.getElementById('admin-user-search')?.value || '').trim().toLowerCase();
+    const normFn = window.normalizeSearchText || (s => String(s || '').toLowerCase().trim());
+    const qNorm = normFn(document.getElementById('admin-user-search')?.value || '');
+    const qTokens = qNorm ? qNorm.split(' ').filter(Boolean) : [];
     const level = document.getElementById('admin-user-level-filter')?.value || 'todos';
     let users = [...(window.adminCache.users || [])];
-    if (q) users = users.filter(u => [u.email, u.nombre, u.name, ...(Array.isArray(u.mascotas) ? u.mascotas.flatMap(m => [m.nombre, m.raza, m.tipo]) : [])].join(' ').toLowerCase().includes(q));
+    if (qTokens.length) {
+        users = users.filter(u => {
+            const hay = normFn([
+                u.email,
+                u.nombre,
+                u.nombre_persona,
+                u.name,
+                u.userName,
+                u.displayName,
+                u.telefono,
+                u.phone,
+                ...(Array.isArray(u.mascotas) ? u.mascotas.flatMap(m => [m.nombre, m.raza, m.tipo]) : [])
+            ].join(' '));
+            return qTokens.every(tok => hay.includes(tok));
+        });
+    }
     if (level !== 'todos') users = users.filter(u => {
         const ptsHist = Number(u.puntos_historicos || u.puntos || 0);
         const l = window.getLevelInfo(ptsHist).nombre.toLowerCase();
@@ -6149,10 +6455,11 @@ window.buildAndDownloadSalesWorkbook = async function ({
     periodLabel = ''
 } = {}) {
     const XLSX = await window.loadSheetJsLib();
-    const sortedOrders = [...(orders || [])].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    const getOrderMs = (o) => window.toTimestampMs ? window.toTimestampMs(window.getOrderCreatedAtValue?.(o) ?? o.createdAt) : (new Date(o.createdAt || 0).getTime() || 0);
+    const sortedOrders = [...(orders || [])].sort((a, b) => getOrderMs(b) - getOrderMs(a));
 
     // Calcular fechas efectivas si no vienen definidas (caso "Todo lo que hay en la base").
-    const caracasDates = sortedOrders.map(o => window.getCaracasDateString(o.createdAt)).filter(Boolean);
+    const caracasDates = sortedOrders.map(o => window.getCaracasDateString(window.getOrderCreatedAtValue ? window.getOrderCreatedAtValue(o) : o.createdAt)).filter(Boolean);
     const todayStr = window.getCaracasDateString(new Date()) || 'hoy';
     const effectiveHasta = hasta || caracasDates[0] || todayStr;
     const effectiveDesde = desde || caracasDates[caracasDates.length - 1] || effectiveHasta;
@@ -6176,11 +6483,12 @@ window.buildAndDownloadSalesWorkbook = async function ({
         const statusLabel = window.getExportOrderReadableStatus(statusRaw);
         const fin = window.getOrderFinancials(o);
         const isRegistered = Boolean(o.registeredUser === true && o.uid && o.uid !== 'anonimo' && !String(o.uid).startsWith('guest_'));
-        const clientName = window.capitalizeName(o.userName || o.nombre || o.nombre_persona || o.displayName || o.email || 'Usuario Invitado');
-        const clientPhone = o.phone || o.telefono || o.whatsapp || '';
+        const clientName = window.capitalizeName(o.userName || o.nombre || o.nombre_persona || o.clientName || o.customerName || o.fullName || o.cliente || o.displayName || o.email || 'Usuario Invitado');
+        const clientPhone = o.phone || o.telefono || o.whatsapp || o.contactPhone || o.userPhone || '';
         const items = Array.isArray(o.items) ? o.items : [];
         const itemsCount = items.reduce((acc, it) => acc + Math.max(1, Number(it.qty || 1)), 0);
-        const createdMs = new Date(o.createdAt || 0).getTime() || 0;
+        const createdVal = window.getOrderCreatedAtValue ? window.getOrderCreatedAtValue(o) : o.createdAt;
+        const createdMs = getOrderMs(o);
 
         if (statusRaw === 'completado') {
             completedCount++;
@@ -6213,13 +6521,13 @@ window.buildAndDownloadSalesWorkbook = async function ({
         }
         if (createdMs >= prevC.lastOrderMs) {
             prevC.lastOrderMs = createdMs;
-            prevC.lastOrderIso = o.createdAt || prevC.lastOrderIso;
+            prevC.lastOrderIso = createdVal || prevC.lastOrderIso;
         }
         customerMap.set(cKey, prevC);
 
         orderRows.push([
             String(o.id || ''),
-            window.formatVenezuelaDateTime(o.createdAt),
+            window.formatVenezuelaDateTime(createdVal),
             clientName,
             String(clientPhone),
             String(o.email || ''),
@@ -6250,7 +6558,7 @@ window.buildAndDownloadSalesWorkbook = async function ({
 
             itemRows.push([
                 String(o.id || ''),
-                window.formatVenezuelaDateTime(o.createdAt),
+                window.formatVenezuelaDateTime(createdVal),
                 clientName,
                 prodName,
                 weightText,
@@ -6594,9 +6902,11 @@ window.startAdminCleanupScan = async function () {
         });
 
         // Solo estados cerrados ('completado' o 'cancelado'). Nunca se borran abiertos.
+        const cutoffMs = new Date(cutoffIso).getTime();
         const eligibleAll = oldOrders.filter(o => {
             const st = String(o.status || o.estado || '').toLowerCase();
-            return (st === 'completado' || st === 'cancelado') && o.createdAt && String(o.createdAt) < cutoffIso;
+            const createdMs = window.toTimestampMs ? window.toTimestampMs(window.getOrderCreatedAtValue?.(o) ?? o.createdAt) : (new Date(o.createdAt || 0).getTime() || 0);
+            return (st === 'completado' || st === 'cancelado') && createdMs > 0 && createdMs < cutoffMs;
         });
 
         if (!eligibleAll.length) {
@@ -6607,7 +6917,7 @@ window.startAdminCleanupScan = async function () {
         const capped = eligibleAll.length > window.ADMIN_CLEANUP_DAILY_MAX;
         const candidates = capped ? eligibleAll.slice(0, window.ADMIN_CLEANUP_DAILY_MAX) : eligibleAll;
 
-        const dates = candidates.map(o => window.getCaracasDateString(o.createdAt)).filter(Boolean).sort();
+        const dates = candidates.map(o => window.getCaracasDateString(window.getOrderCreatedAtValue ? window.getOrderCreatedAtValue(o) : o.createdAt)).filter(Boolean).sort();
         const desde = dates[0] || window.getCaracasDateString(new Date(cutoffIso));
         const hasta = dates[dates.length - 1] || desde;
         const totalSalesUSD = window.roundUSD(
@@ -6615,7 +6925,7 @@ window.startAdminCleanupScan = async function () {
                 .filter(o => String(o.status || o.estado || '').toLowerCase() === 'completado')
                 .reduce((acc, o) => acc + window.getOrderFinancials(o).ventasConDeliveryUSD, 0)
         );
-        const affectedMonths = [...new Set(candidates.map(o => window.getCaracasYearMonth(o.createdAt)).filter(Boolean))].sort();
+        const affectedMonths = [...new Set(candidates.map(o => window.getCaracasYearMonth(window.getOrderCreatedAtValue ? window.getOrderCreatedAtValue(o) : o.createdAt)).filter(Boolean))].sort();
 
         setStatus(`
             <div class="space-y-1">
@@ -6801,9 +7111,11 @@ window.executeAdminCleanupBatches = async function () {
     if (btnStart) btnStart.disabled = true;
 
     // Doble verificación de seguridad: solo cerrados con >30 días.
+    const cutoffMs = new Date(st.cutoffIso).getTime();
     const safeTargets = st.candidates.filter(o => {
         const s = String(o.status || o.estado || '').toLowerCase();
-        return (s === 'completado' || s === 'cancelado') && o.createdAt && String(o.createdAt) < st.cutoffIso && o.id;
+        const createdMs = window.toTimestampMs ? window.toTimestampMs(window.getOrderCreatedAtValue?.(o) ?? o.createdAt) : (new Date(o.createdAt || 0).getTime() || 0);
+        return (s === 'completado' || s === 'cancelado') && createdMs > 0 && createdMs < cutoffMs && o.id;
     });
 
     const total = safeTargets.length;
@@ -9856,8 +10168,9 @@ window.getLocalUserOrders = function () {
 
 window.setLocalUserOrders = function (orders = []) {
     try {
+        const getOrderMs = (o) => window.toTimestampMs ? window.toTimestampMs(window.getOrderCreatedAtValue?.(o) ?? o.createdAt) : (new Date(o.createdAt || 0).getTime() || 0);
         const unique = Array.from(new Map((orders || []).filter(Boolean).map(o => [String(o.id || o.localId || Math.random()), o])).values())
-            .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+            .sort((a, b) => getOrderMs(b) - getOrderMs(a))
             .slice(0, 20);
         localStorage.setItem(window.getLocalOrdersKey(), JSON.stringify(unique));
     } catch (e) { }
@@ -9874,12 +10187,13 @@ window.cacheUserOrderLocal = function (order) {
 
 window.mergeOrdersById = function (...lists) {
     const map = new Map();
+    const getOrderMs = (o) => window.toTimestampMs ? window.toTimestampMs(window.getOrderCreatedAtValue?.(o) ?? o.createdAt) : (new Date(o.createdAt || 0).getTime() || 0);
     lists.flat().filter(Boolean).forEach(o => {
-        const id = String(o.id || o.localId || JSON.stringify(o.items || []) + (o.createdAt || ''));
+        const id = String(o.id || o.localId || JSON.stringify(o.items || []) + (window.getOrderCreatedAtValue?.(o) || o.createdAt || ''));
         const prev = map.get(id) || {};
         map.set(id, { ...prev, ...o, id });
     });
-    return Array.from(map.values()).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    return Array.from(map.values()).sort((a, b) => getOrderMs(b) - getOrderMs(a));
 };
 
 window.toggleUserOrdersHistory = function (force) {
@@ -9899,7 +10213,8 @@ window.toggleUserOrdersHistory = function (force) {
 window.buildUserOrderCard = function (o, { compact = false } = {}) {
     const status = String(o.status || o.estado || 'en_proceso').toLowerCase();
     const info = window.getOrderStatusInfo(status);
-    const date = o.createdAt ? new Date(o.createdAt).toLocaleString('es-VE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Pedido reciente';
+    const createdVal = window.getOrderCreatedAtValue ? window.getOrderCreatedAtValue(o) : o.createdAt;
+    const date = createdVal ? (window.formatAdminDate ? window.formatAdminDate(createdVal) : new Date(createdVal).toLocaleString('es-VE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })) : 'Pedido reciente';
     const itemsArr = Array.isArray(o.items) ? o.items : [];
     const items = itemsArr.length ? itemsArr.map(i => `${Number(i.qty || 0)}x ${i.name || 'Producto'} ${i.weight ? '(' + i.weight + ')' : ''}${i.forPet ? ' · ' + i.forPet : ''}`).join(' · ') : 'Pedido Milkarf';
     const total = typeof o.total === 'number' ? '$' + o.total.toFixed(2) : '';
@@ -9930,7 +10245,8 @@ window.renderUserOrders = function (orders = []) {
     const activeContainer = document.getElementById('user-active-order') || document.getElementById('user-orders-list');
     const historyContainer = document.getElementById('user-orders-history');
     if (!activeContainer) return;
-    const merged = window.mergeOrdersById(orders, window.getLocalUserOrders()).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    const getOrderMs = (o) => window.toTimestampMs ? window.toTimestampMs(window.getOrderCreatedAtValue?.(o) ?? o.createdAt) : (new Date(o.createdAt || 0).getTime() || 0);
+    const merged = window.mergeOrdersById(orders, window.getLocalUserOrders()).sort((a, b) => getOrderMs(b) - getOrderMs(a));
     window.userOrdersCache = merged;
     window.setLocalUserOrders(merged);
 
@@ -9945,7 +10261,7 @@ window.renderUserOrders = function (orders = []) {
     const history = historyAll.filter(o => {
         const st = String(o.status || o.estado || '').toLowerCase();
         if (openOtherStatuses.includes(st)) return true;
-        const createdMs = new Date(o.createdAt || 0).getTime();
+        const createdMs = getOrderMs(o);
         if (!Number.isFinite(createdMs) || createdMs <= 0) return true;
         return createdMs >= cutoff30dMs;
     });
@@ -10805,7 +11121,10 @@ window.loadAdminSummary = async function () {
         } else if (recentOrdersRes.status === 'rejected') {
             ordersError = recentOrdersRes.reason;
         }
-        recentOrdersPool.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        recentOrdersPool.sort((a, b) => {
+            const getOrderMs = (o) => window.toTimestampMs ? window.toTimestampMs(window.getOrderCreatedAtValue?.(o) ?? o.createdAt) : (new Date(o.createdAt || 0).getTime() || 0);
+            return getOrderMs(b) - getOrderMs(a);
+        });
         const recentOrders = recentOrdersPool.slice(0, 5);
 
         // 3) Canjes recientes (limit(10), con respaldo sin orderBy si falta índice/campo)
@@ -10818,7 +11137,10 @@ window.loadAdminSummary = async function () {
             if (fallbackRedeems.ok) redeems = fallbackRedeems.items;
             else redeemsError = recentRedeemsRes.reason || fallbackRedeems.error;
         }
-        redeems.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        redeems.sort((a, b) => {
+            const getRedeemMs = (r) => window.toTimestampMs ? window.toTimestampMs(r.createdAt || r.updatedAt) : (new Date(r.createdAt || 0).getTime() || 0);
+            return getRedeemMs(b) - getRedeemMs(a);
+        });
         window.adminCache.redeems = redeems;
         const recentRedeems = redeems.slice(0, 4);
 
@@ -10879,10 +11201,22 @@ window.loadAdminSummary = async function () {
         };
         const currentMonthTopProd = getTopProd(currentMonthDoc.unidadesPorProducto);
 
-        const errorsHtml = [summariesError, ordersError, redeemsError]
-            .filter(Boolean)
-            .map(err => window.renderFirestorePermissionHelp?.(err, 'Resumen') || '')
-            .join('');
+        let summariesHelpNotice = '';
+        if (summariesError) {
+            if (window.isFirestorePermissionError?.(summariesError)) {
+                summariesHelpNotice = `
+                    <div class="rounded-3xl border border-purple-border/40 dark:border-purple/30 bg-purple-light/70 dark:bg-purple/15 p-4 text-xs font-semibold text-purple-dark dark:text-gray-200 text-left">
+                        <strong class="text-purple dark:text-purple-light">Aviso de resumenes_ventas:</strong> La colección de resúmenes mensuales aún requiere publicar el archivo <code class="font-mono">firestore.rules</code> actualizado en Firebase Console. Los pedidos individuales y la operación en vivo continúan funcionando con normalidad.
+                    </div>`;
+            } else {
+                summariesHelpNotice = window.renderFirestorePermissionHelp?.(summariesError, 'resumenes_ventas') || '';
+            }
+        }
+        const errorsHtml = [
+            summariesHelpNotice,
+            ordersError ? window.renderFirestorePermissionHelp?.(ordersError, 'pedidos') : '',
+            redeemsError ? window.renderFirestorePermissionHelp?.(redeemsError, 'canjes') : ''
+        ].filter(Boolean).join('');
 
         const monthlyRowsHtml = summaries.length
             ? summaries.map(s => {
