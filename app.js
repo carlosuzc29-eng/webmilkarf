@@ -690,21 +690,42 @@ window.recalcularResumenMes = async function (yyyyMM, options = {}) {
     if (!bounds) throw new Error(`Mes inválido: ${yyyyMM}. Usa el formato YYYY-MM.`);
 
     const summaryRef = window.getSalesSummaryDocRef(yyyyMM);
-    const existingSnap = await getDoc(summaryRef);
-    const existingData = existingSnap.exists() ? existingSnap.data() : null;
+    let existingData = null;
+    try {
+        const existingSnap = await getDoc(summaryRef);
+        existingData = existingSnap.exists() ? existingSnap.data() : null;
+    } catch (e) {
+        console.warn(`No se pudo leer resumen existente de ${yyyyMM}:`, e);
+    }
 
     if (existingData?.archivado === true && options.forceIfArchived !== true) {
         return { ...existingData, id: yyyyMM, skippedBecauseArchived: true };
     }
 
-    const orders = await window.adminFetchAllDocs(window.getOrdersCollectionRef(), {
-        pageSize: 500,
-        constraints: [
-            where('createdAt', '>=', bounds.startIso),
-            where('createdAt', '<=', bounds.endIso),
-            orderBy('createdAt', 'asc')
-        ]
-    });
+    let orders = [];
+    try {
+        orders = await window.adminFetchAllDocs(window.getOrdersCollectionRef(), {
+            pageSize: 500,
+            constraints: [
+                where('createdAt', '>=', bounds.startIso),
+                where('createdAt', '<=', bounds.endIso),
+                orderBy('createdAt', 'asc')
+            ]
+        });
+    } catch (err) {
+        if (window.isFirestorePermissionError?.(err)) {
+            orders = await window.adminFetchAllDocs(window.getOrdersCollectionRef(), {
+                pageSize: 100,
+                constraints: [
+                    where('createdAt', '>=', bounds.startIso),
+                    where('createdAt', '<=', bounds.endIso),
+                    orderBy('createdAt', 'asc')
+                ]
+            });
+        } else {
+            throw err;
+        }
+    }
 
     let pedidosCompletados = 0;
     let pedidosCancelados = 0;
@@ -11073,6 +11094,7 @@ window.loadAdminSummary = async function () {
             summariesRes,
             inProcessCountRes,
             confirmedCountRes,
+            completedCountRes,
             usersCountRes,
             pendingRedeemsCountRes,
             topUserRes,
@@ -11083,12 +11105,13 @@ window.loadAdminSummary = async function () {
             window.withAdminTimeout(getDocs(query(summariesRef, orderBy('mes', 'desc'), limit(24))), 'resumenes_ventas', 5500),
             window.withAdminTimeout(getCountFromServer(query(ordersRef, where('status', 'in', ['en_proceso', 'pendiente', 'proceso', 'solicitado']))), 'conteo en_proceso', 4500),
             window.withAdminTimeout(getCountFromServer(query(ordersRef, where('status', 'in', ['confirmado', 'verificado']))), 'conteo confirmados', 4500),
+            window.withAdminTimeout(getCountFromServer(query(ordersRef, where('status', 'in', ['completado']))), 'conteo completados', 4500),
             window.withAdminTimeout(getCountFromServer(usersRef), 'conteo clientes', 4500),
             window.withAdminTimeout(getCountFromServer(query(redeemsRef, where('status', 'in', ['solicitado', 'pendiente']))), 'conteo canjes', 4500),
             window.withAdminTimeout(getDocs(query(usersRef, orderBy('puntos_historicos', 'desc'), limit(1))), 'cliente top', 4500),
             hasLoadedSec2Orders
                 ? Promise.resolve(null)
-                : window.withAdminTimeout(getDocs(query(ordersRef, orderBy('createdAt', 'desc'), limit(20))), 'pedidos recientes', 5500),
+                : window.withAdminTimeout(getDocs(query(ordersRef, orderBy('createdAt', 'desc'), limit(100))), 'pedidos recientes', 5500),
             window.withAdminTimeout(getDocs(query(redeemsRef, orderBy('createdAt', 'desc'), limit(10))), 'canjes recientes', 5000)
         ]);
 
@@ -11110,7 +11133,7 @@ window.loadAdminSummary = async function () {
         window.adminCache = window.adminCache || {};
         window.adminCache.summaries = summaries;
 
-        // 2) Pedidos recientes (reusa Sec 2 si ya está cargado, o limit(20))
+        // 2) Pedidos recientes (reusa Sec 2 si ya está cargado, o limit(100))
         let recentOrdersPool = [];
         let ordersError = null;
         if (hasLoadedSec2Orders) {
@@ -11153,36 +11176,74 @@ window.loadAdminSummary = async function () {
             topUser = window.adminCache.users.slice().sort((a, b) => Number(b.puntos_historicos || b.puntos || 0) - Number(a.puntos_historicos || a.puntos || 0))[0];
         }
 
-        // 5) Contadores operativos con fallback seguro a lo ya cargado (Sec 2 / limit(20))
-        const getStatus = o => String(o.status || o.estado || 'en_proceso').toLowerCase();
-        const inProcessFallback = recentOrdersPool.filter(o => ['pendiente', 'en_proceso', 'proceso', 'solicitado'].includes(getStatus(o))).length;
-        const confirmedFallback = recentOrdersPool.filter(o => ['confirmado', 'verificado'].includes(getStatus(o))).length;
-        const inProcess = (inProcessCountRes.status === 'fulfilled')
-            ? Number(inProcessCountRes.value.data().count || 0)
-            : inProcessFallback;
-        const confirmed = (confirmedCountRes.status === 'fulfilled')
-            ? Number(confirmedCountRes.value.data().count || 0)
-            : confirmedFallback;
-        const usersCount = (usersCountRes.status === 'fulfilled')
-            ? Number(usersCountRes.value.data().count || 0)
-            : (Array.isArray(window.adminCache?.users) ? window.adminCache.users.length : 0);
-        const pendingRedeems = (pendingRedeemsCountRes.status === 'fulfilled')
-            ? Number(pendingRedeemsCountRes.value.data().count || 0)
-            : redeems.filter(r => ['solicitado', 'pendiente'].includes(String(r.status || r.estado || '').toLowerCase())).length;
+        // 5) Cálculo en vivo de respaldo a partir de los pedidos en memoria
+        const poolOrders = (Array.isArray(window.adminCache?.orders) && window.adminCache.orders.length)
+            ? window.adminCache.orders
+            : recentOrdersPool;
 
-        // 6) Métricas del mes actual y total acumulado del año desde resumenes_ventas
+        const getStatus = o => String(o.status || o.estado || 'en_proceso').toLowerCase();
+        const completedPool = poolOrders.filter(o => ['completado'].includes(getStatus(o)));
+        const completedMonthPool = completedPool.filter(o => {
+            const ym = window.getCaracasYearMonth(window.getOrderCreatedAtValue?.(o) ?? o.createdAt);
+            return ym === currentYM;
+        });
+
+        const activeCompletedList = completedMonthPool.length ? completedMonthPool : completedPool;
+        let liveMonthVentasUSD = 0;
+        let liveMonthProdUSD = 0;
+        let liveMonthDelivUSD = 0;
+        let liveMonthDescUSD = 0;
+        const liveUnitsMap = {};
+
+        activeCompletedList.forEach(o => {
+            const fin = window.getOrderFinancials ? window.getOrderFinancials(o) : { ventasConDeliveryUSD: Number(o.total || 0), ventasProductosUSD: Number(o.total || 0), deliveryUSD: 0, descuentosUSD: 0, unidadesPorProducto: {} };
+            liveMonthVentasUSD = window.roundUSD(liveMonthVentasUSD + fin.ventasConDeliveryUSD);
+            liveMonthProdUSD = window.roundUSD(liveMonthProdUSD + fin.ventasProductosUSD);
+            liveMonthDelivUSD = window.roundUSD(liveMonthDelivUSD + fin.deliveryUSD);
+            liveMonthDescUSD = window.roundUSD(liveMonthDescUSD + fin.descuentosUSD);
+            Object.entries(fin.unidadesPorProducto || {}).forEach(([k, q]) => {
+                liveUnitsMap[k] = (liveUnitsMap[k] || 0) + Number(q || 0);
+            });
+        });
+
+        // Si aún no hay pedidos con estatus completado, extraer productos de todos los pedidos cargados
+        // para que "Producto más vendido / pedido" refleje de inmediato lo más demandado
+        if (!Object.keys(liveUnitsMap).length) {
+            poolOrders.forEach(o => {
+                (Array.isArray(o.items) ? o.items : []).forEach(it => {
+                    const key = window.getOrderItemKey ? window.getOrderItemKey(it) : (it.name || 'Producto');
+                    const qty = Math.max(1, Number(it.qty || 1));
+                    liveUnitsMap[key] = (liveUnitsMap[key] || 0) + qty;
+                });
+            });
+        }
+
+        // 6) Métricas del mes actual y total acumulado del año desde resumenes_ventas (con respaldo en vivo)
         const currentMonthDoc = summaries.find(s => String(s.mes || s.id || '') === currentYM) || {
             mes: currentYM,
-            pedidosCompletados: 0,
+            pedidosCompletados: completedMonthPool.length || completedPool.length || 0,
             pedidosCancelados: 0,
-            ventasProductosUSD: 0,
-            ventasConDeliveryUSD: 0,
-            deliveryUSD: 0,
-            descuentosUSD: 0,
-            unidadesPorProducto: {},
-            clientesUnicos: 0,
+            ventasProductosUSD: liveMonthProdUSD,
+            ventasConDeliveryUSD: liveMonthVentasUSD,
+            deliveryUSD: liveMonthDelivUSD,
+            descuentosUSD: liveMonthDescUSD,
+            unidadesPorProducto: liveUnitsMap,
+            clientesUnicos: new Set(activeCompletedList.map(o => window.getOrderCustomerKey?.(o) || o.id)).size,
             archivado: false
         };
+
+        if (Number(currentMonthDoc.ventasConDeliveryUSD || 0) === 0 && liveMonthVentasUSD > 0) {
+            currentMonthDoc.ventasConDeliveryUSD = liveMonthVentasUSD;
+            currentMonthDoc.ventasProductosUSD = liveMonthProdUSD;
+            currentMonthDoc.deliveryUSD = liveMonthDelivUSD;
+            currentMonthDoc.descuentosUSD = liveMonthDescUSD;
+            if (!Number(currentMonthDoc.pedidosCompletados || 0)) {
+                currentMonthDoc.pedidosCompletados = completedMonthPool.length || completedPool.length || 0;
+            }
+            if (!Object.keys(currentMonthDoc.unidadesPorProducto || {}).length) {
+                currentMonthDoc.unidadesPorProducto = liveUnitsMap;
+            }
+        }
 
         const ytdDocs = summaries.filter(s => String(s.mes || s.id || '').startsWith(`${currentYear}-`));
         const ytd = ytdDocs.reduce((acc, s) => {
@@ -11195,11 +11256,49 @@ window.loadAdminSummary = async function () {
             return acc;
         }, { pedidosCompletados: 0, pedidosCancelados: 0, ventasProductosUSD: 0, ventasConDeliveryUSD: 0, deliveryUSD: 0, descuentosUSD: 0 });
 
+        if (ytd.ventasConDeliveryUSD === 0 && liveMonthVentasUSD > 0) {
+            ytd.ventasConDeliveryUSD = liveMonthVentasUSD;
+            ytd.ventasProductosUSD = liveMonthProdUSD;
+            ytd.deliveryUSD = liveMonthDelivUSD;
+            ytd.descuentosUSD = liveMonthDescUSD;
+            ytd.pedidosCompletados = currentMonthDoc.pedidosCompletados || activeCompletedList.length;
+        }
+
         const getTopProd = (unitsMap = {}) => {
-            const top = Object.entries(unitsMap || {}).sort((a, b) => Number(b[1] || 0) - Number(a[1] || 0))[0];
-            return top ? `${top[0]} (${Number(top[1] || 0)})` : 'Sin datos';
+            const entries = Object.entries(unitsMap || {}).filter(([k, v]) => Number(v || 0) > 0);
+            if (!entries.length) return 'Sin datos';
+            const top = entries.sort((a, b) => Number(b[1] || 0) - Number(a[1] || 0))[0];
+            return top ? `${top[0]} (${Number(top[1] || 0)} uds)` : 'Sin datos';
         };
-        const currentMonthTopProd = getTopProd(currentMonthDoc.unidadesPorProducto);
+        let currentMonthTopProd = getTopProd(currentMonthDoc.unidadesPorProducto);
+        if (currentMonthTopProd === 'Sin datos' && Object.keys(liveUnitsMap).length) {
+            currentMonthTopProd = getTopProd(liveUnitsMap);
+        }
+
+        // 7) Contadores operativos con agregados del servidor y respaldo en memoria
+        const inProcessFallback = poolOrders.filter(o => ['pendiente', 'en_proceso', 'proceso', 'solicitado'].includes(getStatus(o))).length;
+        const confirmedFallback = poolOrders.filter(o => ['confirmado', 'verificado'].includes(getStatus(o))).length;
+        const completedFallback = completedPool.length || Number(currentMonthDoc.pedidosCompletados || 0);
+
+        const inProcess = (inProcessCountRes.status === 'fulfilled')
+            ? Number(inProcessCountRes.value.data().count || 0)
+            : inProcessFallback;
+        const confirmed = (confirmedCountRes.status === 'fulfilled')
+            ? Number(confirmedCountRes.value.data().count || 0)
+            : confirmedFallback;
+        const completed = (completedCountRes.status === 'fulfilled')
+            ? Number(completedCountRes.value.data().count || 0)
+            : completedFallback;
+        const usersCount = (usersCountRes.status === 'fulfilled')
+            ? Number(usersCountRes.value.data().count || 0)
+            : (Array.isArray(window.adminCache?.users) ? window.adminCache.users.length : 0);
+        const pendingRedeems = (pendingRedeemsCountRes.status === 'fulfilled')
+            ? Number(pendingRedeemsCountRes.value.data().count || 0)
+            : redeems.filter(r => ['solicitado', 'pendiente'].includes(String(r.status || r.estado || '').toLowerCase())).length;
+
+        const totalVentasUSD = (ytd.ventasConDeliveryUSD > 0)
+            ? ytd.ventasConDeliveryUSD
+            : (Number(currentMonthDoc.ventasConDeliveryUSD || 0) > 0 ? Number(currentMonthDoc.ventasConDeliveryUSD) : liveMonthVentasUSD);
 
         let summariesHelpNotice = '';
         if (summariesError) {
@@ -11285,16 +11384,16 @@ window.loadAdminSummary = async function () {
             <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-6">
                 ${window.adminMetricCard('En proceso', inProcess, 'clock', 'pink', "window.applyAdminOrderFilter('en_proceso')")}
                 ${window.adminMetricCard('Confirmados', confirmed, 'check-circle', 'green', "window.applyAdminOrderFilter('confirmado')")}
-                ${window.adminMetricCard('Completados mes', Number(currentMonthDoc.pedidosCompletados || 0), 'package-check', 'purple', "window.applyAdminOrderFilter('completado')")}
+                ${window.adminMetricCard('Ventas hechas', completed, 'package-check', 'purple', "window.applyAdminOrderFilter('completado')")}
                 ${window.adminMetricCard('Clientes', usersCount, 'users', 'purple', "window.switchAdminTab('usuarios')")}
                 ${window.adminMetricCard('Canjes pendientes', pendingRedeems, 'gift', 'pink', "window.switchAdminTab('canjes')")}
-                ${window.adminMetricCard('Ventas año ' + currentYear, '$' + ytd.ventasConDeliveryUSD.toFixed(2), 'trending-up', 'green', "window.switchAdminTab('herramientas')")}
+                ${window.adminMetricCard('Ventas completadas', '$' + totalVentasUSD.toFixed(2), 'trending-up', 'green', "window.switchAdminTab('herramientas')")}
             </div>
 
             <!-- DESTACADOS -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6 text-left">
                 <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-5 shadow-sm">
-                    <p class="text-[10px] font-black uppercase tracking-widest text-purple/50 mb-1">Producto más vendido (${window.escapeHTML(window.formatMonthLabelES(currentYM))})</p>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-purple/50 mb-1">Producto más vendido / pedido</p>
                     <h3 class="text-lg font-black text-purple-dark dark:text-white">${window.escapeHTML(currentMonthTopProd)}</h3>
                 </div>
                 <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-5 shadow-sm">
