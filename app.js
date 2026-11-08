@@ -1,6 +1,6 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, linkWithCredential, EmailAuthProvider, signOut, signInWithCustomToken, signInAnonymously, setPersistence, browserLocalPersistence, updateProfile, sendPasswordResetEmail, verifyPasswordResetCode, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, getDoc, addDoc, getDocs, serverTimestamp, onSnapshot, deleteDoc, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, getDocsFromCache, clearIndexedDbPersistence, terminate, writeBatch, increment, getCountFromServer, getAggregateFromServer, sum, collection, doc, setDoc, getDoc, addDoc, getDocs, serverTimestamp, onSnapshot, deleteDoc, query, where, limit, startAfter, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         // =========================================================================================
 // CONFIGURACIÓN FIREBASE
 // =========================================================================================
@@ -16,6 +16,8 @@ const manualConfig = {
 const configToUse = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : manualConfig;
 let db = null;
 let auth = null;
+let firebaseAppInstance = null;
+let unsubAuthState = null;
 let appId = typeof __app_id !== 'undefined' ? __app_id : 'milkarf-app';
 const ADMIN_EMAILS = [
     'milkarffood@gmail.com',
@@ -72,9 +74,26 @@ window.loadDynamicStoreConfig = async function () {
     }
 };
 
-if (configToUse.apiKey) {
+function initFirestoreDb(app) {
+    try {
+        return initializeFirestore(app, {
+            localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+        });
+    } catch (error) {
+        console.warn('Caché persistente de Firestore no disponible, usando caché en memoria:', error);
+        return getFirestore(app);
+    }
+}
+
+function bootstrapFirebase() {
+    if (!configToUse.apiKey) return;
+    if (unsubAuthState) {
+        try { unsubAuthState(); } catch (e) { }
+        unsubAuthState = null;
+    }
     const app = initializeApp(configToUse);
-    db = getFirestore(app);
+    firebaseAppInstance = app;
+    db = initFirestoreDb(app);
     auth = getAuth(app);
     window.loadDynamicStoreConfig?.();
     setPersistence(auth, browserLocalPersistence).catch((error) => {
@@ -88,7 +107,7 @@ if (configToUse.apiKey) {
     };
 
     // OPTIMIZACIÓN: 1 sola lectura por sesión (no consume extra en free tier)
-    onAuthStateChanged(auth, async user => {
+    unsubAuthState = onAuthStateChanged(auth, async user => {
         window.authReady = true;
         window.currentUser = user;
         window.loadDynamicStoreConfig?.();
@@ -227,6 +246,8 @@ if (configToUse.apiKey) {
     });
 }
 
+bootstrapFirebase();
+
 window.getUserPath = function (uid) {
     return typeof __firebase_config !== 'undefined'
         ? doc(db, 'artifacts', appId, 'users', uid)
@@ -263,14 +284,69 @@ window.getSecureCollectionRef = function (name) {
         : collection(db, name);
 };
 
+window.getSalesSummariesCollectionRef = function () {
+    return typeof __firebase_config !== 'undefined'
+        ? collection(db, 'artifacts', appId, 'resumenes_ventas')
+        : collection(db, 'resumenes_ventas');
+};
+
+window.getSalesSummaryDocRef = function (yyyyMM) {
+    return typeof __firebase_config !== 'undefined'
+        ? doc(db, 'artifacts', appId, 'resumenes_ventas', String(yyyyMM))
+        : doc(db, 'resumenes_ventas', String(yyyyMM));
+};
+
+window.getConfigDocRef = function (docId) {
+    return typeof __firebase_config !== 'undefined'
+        ? doc(db, 'artifacts', appId, 'config', String(docId))
+        : doc(db, 'config', String(docId));
+};
+
 // =========================================================================================
-// CONSULTAS FIRESTORE SEGURAS (compatibles con reglas cerradas)
+// CONSULTAS FIRESTORE SEGURAS (compatibles con reglas cerradas y plan Spark)
 // =========================================================================================
 window.ADMIN_QUERY_LIMIT = 50;
 window.USER_QUERY_LIMIT = 20;
+window.ADMIN_OPEN_ORDER_STATUSES = ['en_proceso', 'pendiente', 'proceso', 'solicitado', 'confirmado', 'verificado'];
 
 window.secureAdminQuery = function (ref, max = window.ADMIN_QUERY_LIMIT) {
     return query(ref, limit(Math.min(Number(max) || window.ADMIN_QUERY_LIMIT, window.ADMIN_QUERY_LIMIT)));
+};
+
+window.logFirestoreIndexHint = function (error, context = 'consulta Firestore') {
+    if (!error) return;
+    const msg = String(error?.message || '');
+    const match = msg.match(/https:\/\/console\.firebase\.google\.com[^\s"']+/);
+    if (error?.code === 'failed-precondition' || match) {
+        console.error(`[Milkarf Índice Firestore requerido en "${context}"]`, match ? `Enlace directo: ${match[0]}` : msg, error);
+    } else {
+        console.error(`[Milkarf error en "${context}"]`, error);
+    }
+};
+
+// Lee documentos de forma paginada (500 por defecto para exportación y limpieza).
+window.ADMIN_PAGE_SIZE = 500;
+window.adminFetchAllDocs = async function (ref, optionsOrMaxPages = {}) {
+    const opts = typeof optionsOrMaxPages === 'number' ? { maxPages: optionsOrMaxPages } : (optionsOrMaxPages || {});
+    const pageSize = Math.max(1, Math.min(Number(opts.pageSize || window.ADMIN_PAGE_SIZE), 500));
+    const maxPages = Math.max(1, Number(opts.maxPages || 1000));
+    const constraints = Array.isArray(opts.constraints) ? opts.constraints : [];
+    const onProgress = typeof opts.onProgress === 'function' ? opts.onProgress : null;
+    const items = [];
+    let last = null;
+    for (let page = 0; page < maxPages; page++) {
+        const q = last
+            ? query(ref, ...constraints, startAfter(last), limit(pageSize))
+            : query(ref, ...constraints, limit(pageSize));
+        const snap = await getDocs(q);
+        snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+        if (onProgress) {
+            try { onProgress(items.length, page + 1); } catch (e) { }
+        }
+        if (snap.size < pageSize) break;
+        last = snap.docs[snap.docs.length - 1];
+    }
+    return items;
 };
 
 window.secureUserQuery = function (ref, uid, max = window.USER_QUERY_LIMIT) {
@@ -298,17 +374,102 @@ window.sanitizeClientOrderForWrite = function (order = {}) {
     return clean;
 };
 
-window.getOrderProductsPoints = function (order = {}) {
+window.roundUSD = function (value) {
+    const n = Number(value || 0);
+    if (!Number.isFinite(n)) return 0;
+    return Math.round((n + Number.EPSILON) * 100) / 100;
+};
+
+window.getCaracasDateParts = function (dateInput = new Date()) {
+    const d = dateInput?.toDate ? dateInput.toDate() : (dateInput instanceof Date ? dateInput : new Date(dateInput));
+    if (isNaN(d.getTime())) return null;
+    try {
+        const parts = new Intl.DateTimeFormat('en-GB', {
+            timeZone: 'America/Caracas',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        }).formatToParts(d);
+        const map = {};
+        parts.forEach(p => { if (p.type !== 'literal') map[p.type] = p.value; });
+        const hour = map.hour === '24' ? '00' : (map.hour || '00');
+        return {
+            year: map.year,
+            month: map.month,
+            day: map.day,
+            hour,
+            minute: map.minute || '00',
+            second: map.second || '00'
+        };
+    } catch (e) {
+        // Respaldo fijo UTC-4 (Venezuela no usa horario de verano)
+        const ve = new Date(d.getTime() - 4 * 3600000);
+        return {
+            year: String(ve.getUTCFullYear()),
+            month: String(ve.getUTCMonth() + 1).padStart(2, '0'),
+            day: String(ve.getUTCDate()).padStart(2, '0'),
+            hour: String(ve.getUTCHours()).padStart(2, '0'),
+            minute: String(ve.getUTCMinutes()).padStart(2, '0'),
+            second: String(ve.getUTCSeconds()).padStart(2, '0')
+        };
+    }
+};
+
+window.getCaracasDateString = function (dateInput = new Date()) {
+    const p = window.getCaracasDateParts(dateInput);
+    return p ? `${p.year}-${p.month}-${p.day}` : '';
+};
+
+window.getCaracasYearMonth = function (dateInput = new Date()) {
+    const p = window.getCaracasDateParts(dateInput);
+    return p ? `${p.year}-${p.month}` : '';
+};
+
+window.formatVenezuelaDateTime = function (dateInput) {
+    if (!dateInput) return '';
+    const p = window.getCaracasDateParts(dateInput);
+    return p ? `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}` : '';
+};
+
+window.formatMonthLabelES = function (yyyyMM = '') {
+    const m = String(yyyyMM || '').match(/^(\d{4})-(\d{2})$/);
+    if (!m) return String(yyyyMM || '-');
+    const names = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const idx = Number(m[2]) - 1;
+    return `${names[idx] || m[2]} ${m[1]}`;
+};
+
+window.getCaracasMonthIsoBounds = function (yyyyMM = '') {
+    const m = String(yyyyMM || '').match(/^(\d{4})-(\d{2})$/);
+    if (!m) return null;
+    const year = Number(m[1]);
+    const month = Number(m[2]);
+    if (month < 1 || month > 12) return null;
+    const mm = String(month).padStart(2, '0');
+    const lastDay = String(new Date(Date.UTC(year, month, 0)).getUTCDate()).padStart(2, '0');
+    return {
+        startIso: new Date(`${m[1]}-${mm}-01T00:00:00.000-04:00`).toISOString(),
+        endIso: new Date(`${m[1]}-${mm}-${lastDay}T23:59:59.999-04:00`).toISOString(),
+        desdeStr: `${m[1]}-${mm}-01`,
+        hastaStr: `${m[1]}-${mm}-${lastDay}`
+    };
+};
+
+window.getOrderProductsAmount = function (order = {}) {
     if (!order) return 0;
     const deliveryCost = Math.max(0, Number(order.deliveryCost || 0));
     const items = Array.isArray(order.items) ? order.items : [];
 
     let productsAmount = 0;
     if (items.length > 0) {
-        const rawProductsTotal = items.reduce((sum, item) => {
+        const rawProductsTotal = items.reduce((acc, item) => {
             const price = Number(item.finalPrice ?? item.price ?? 0);
             const qty = item.type === 'feeding_plan' ? 1 : Math.max(1, Number(item.qty || 1));
-            return sum + (price * qty);
+            return acc + (price * qty);
         }, 0);
         const hasPerItemDiscount = items.some(i => Number(i.discountAmount || 0) > 0);
         const orderDiscount = Number(order.discountAmount || 0);
@@ -325,7 +486,201 @@ window.getOrderProductsPoints = function (order = {}) {
             productsAmount = Number(order.total);
         }
     }
-    return Math.max(0, Math.floor(productsAmount));
+    return window.roundUSD(Math.max(0, productsAmount));
+};
+
+window.getOrderProductsPoints = function (order = {}) {
+    return Math.max(0, Math.floor(window.getOrderProductsAmount(order)));
+};
+
+window.getOrderItemKey = function (item = {}) {
+    const name = String(item.name || item.producto || item.title || 'Producto').trim();
+    const weight = String(item.weight || item.tam || item.presentation || '').trim();
+    const combined = weight ? `${name} ${weight}` : name;
+    return combined.replace(/\s+/g, ' ').trim() || 'Producto';
+};
+
+window.getOrderCustomerKey = function (order = {}) {
+    const uid = String(order.uid || '').trim();
+    if (order.registeredUser === true && uid && uid !== 'anonimo' && !uid.startsWith('guest_')) {
+        return `uid:${uid}`;
+    }
+    const phone = window.normalizePhone ? window.normalizePhone(order.phone || order.telefono || order.whatsapp || '') : String(order.phone || order.telefono || order.whatsapp || '').replace(/\D+/g, '');
+    if (phone && phone.length >= 7) return `tel:${phone}`;
+    const email = String(order.email || '').trim().toLowerCase();
+    if (email) return `email:${email}`;
+    if (order.clientToken) return `tok:${order.clientToken}`;
+    const name = String(order.userName || order.nombre || order.nombre_persona || '').trim().toLowerCase();
+    if (name && name !== 'usuario invitado') return `name:${name}`;
+    return `ord:${order.id || Math.random().toString(36).slice(2)}`;
+};
+
+window.getOrderFinancials = function (order = {}) {
+    const items = Array.isArray(order.items) ? order.items : [];
+    const deliveryUSD = window.roundUSD(Math.max(0, Number(order.deliveryCost || 0)));
+    const ventasProductosUSD = window.getOrderProductsAmount(order);
+    const orderDiscount = Math.max(0, Number(order.discountAmount || 0));
+    const itemsDiscount = items.reduce((acc, i) => acc + Math.max(0, Number(i.discountAmount || 0)), 0);
+    const descuentosUSD = window.roundUSD(Math.max(orderDiscount, itemsDiscount));
+
+    let subtotalUSD = 0;
+    if (typeof order.subtotal === 'number' && order.subtotal > 0) {
+        subtotalUSD = window.roundUSD(order.subtotal);
+    } else if (items.length > 0) {
+        const rawOrig = items.reduce((acc, i) => {
+            const qty = i.type === 'feeding_plan' ? 1 : Math.max(1, Number(i.qty || 1));
+            const orig = Number(i.originalSubtotal ?? (Number(i.price || 0) * qty));
+            return acc + Math.max(0, orig);
+        }, 0);
+        subtotalUSD = window.roundUSD(Math.max(rawOrig, ventasProductosUSD + descuentosUSD));
+    } else {
+        subtotalUSD = window.roundUSD(ventasProductosUSD + descuentosUSD);
+    }
+
+    const ventasConDeliveryUSD = window.roundUSD(ventasProductosUSD + deliveryUSD);
+    const unidadesPorProducto = {};
+    items.forEach(item => {
+        const key = window.getOrderItemKey(item);
+        const qty = Math.max(1, Number(item.qty || 1));
+        unidadesPorProducto[key] = (unidadesPorProducto[key] || 0) + qty;
+    });
+
+    return {
+        subtotalUSD,
+        descuentosUSD,
+        ventasProductosUSD,
+        deliveryUSD,
+        ventasConDeliveryUSD,
+        unidadesPorProducto
+    };
+};
+
+// Actualiza incrementalmente el resumen del mes al completar o cancelar un pedido (sin recontar la colección).
+window.applyOrderDeltaToSummary = async function (order = {}, targetStatus = '', previousStatus = '') {
+    if (!db || !order) return null;
+    const yyyyMM = window.getCaracasYearMonth(order.createdAt || new Date());
+    if (!yyyyMM) return null;
+    const prev = String(previousStatus || '').toLowerCase();
+    const next = String(targetStatus || '').toLowerCase();
+    const summaryRef = window.getSalesSummaryDocRef(yyyyMM);
+    const nowIso = new Date().toISOString();
+    const fin = window.getOrderFinancials(order);
+
+    const buildUnitsDelta = (sign) => {
+        const map = {};
+        Object.entries(fin.unidadesPorProducto || {}).forEach(([k, q]) => {
+            if (q > 0) map[k] = increment(sign * q);
+        });
+        return map;
+    };
+
+    try {
+        if (next === 'completado' && prev !== 'completado') {
+            const payload = {
+                mes: yyyyMM,
+                pedidosCompletados: increment(1),
+                ventasProductosUSD: increment(fin.ventasProductosUSD),
+                ventasConDeliveryUSD: increment(fin.ventasConDeliveryUSD),
+                deliveryUSD: increment(fin.deliveryUSD),
+                descuentosUSD: increment(fin.descuentosUSD),
+                actualizadoEn: nowIso
+            };
+            const unitsDelta = buildUnitsDelta(1);
+            if (Object.keys(unitsDelta).length) payload.unidadesPorProducto = unitsDelta;
+            await setDoc(summaryRef, payload, { merge: true });
+            return yyyyMM;
+        }
+
+        if (next === 'cancelado' && prev !== 'cancelado') {
+            const payload = {
+                mes: yyyyMM,
+                pedidosCancelados: increment(1),
+                actualizadoEn: nowIso
+            };
+            if (prev === 'completado') {
+                payload.pedidosCompletados = increment(-1);
+                payload.ventasProductosUSD = increment(-fin.ventasProductosUSD);
+                payload.ventasConDeliveryUSD = increment(-fin.ventasConDeliveryUSD);
+                payload.deliveryUSD = increment(-fin.deliveryUSD);
+                payload.descuentosUSD = increment(-fin.descuentosUSD);
+                const unitsDelta = buildUnitsDelta(-1);
+                if (Object.keys(unitsDelta).length) payload.unidadesPorProducto = unitsDelta;
+            }
+            await setDoc(summaryRef, payload, { merge: true });
+            return yyyyMM;
+        }
+    } catch (error) {
+        console.warn(`No se pudo actualizar incrementalmente resumenes_ventas/${yyyyMM}:`, error);
+    }
+    return null;
+};
+
+// Recalcula el resumen completo de un mes YYYY-MM desde Firestore.
+window.recalcularResumenMes = async function (yyyyMM, options = {}) {
+    if (!db) throw new Error('Firebase no está disponible.');
+    const bounds = window.getCaracasMonthIsoBounds(yyyyMM);
+    if (!bounds) throw new Error(`Mes inválido: ${yyyyMM}. Usa el formato YYYY-MM.`);
+
+    const summaryRef = window.getSalesSummaryDocRef(yyyyMM);
+    const existingSnap = await getDoc(summaryRef);
+    const existingData = existingSnap.exists() ? existingSnap.data() : null;
+
+    if (existingData?.archivado === true && options.forceIfArchived !== true) {
+        return { ...existingData, id: yyyyMM, skippedBecauseArchived: true };
+    }
+
+    const orders = await window.adminFetchAllDocs(window.getOrdersCollectionRef(), {
+        pageSize: 500,
+        constraints: [
+            where('createdAt', '>=', bounds.startIso),
+            where('createdAt', '<=', bounds.endIso),
+            orderBy('createdAt', 'asc')
+        ]
+    });
+
+    let pedidosCompletados = 0;
+    let pedidosCancelados = 0;
+    let ventasProductosUSD = 0;
+    let ventasConDeliveryUSD = 0;
+    let deliveryUSD = 0;
+    let descuentosUSD = 0;
+    const unidadesPorProducto = {};
+    const customerSet = new Set();
+
+    orders.forEach(o => {
+        const status = String(o.status || o.estado || 'en_proceso').toLowerCase();
+        if (status === 'completado') {
+            pedidosCompletados++;
+            const fin = window.getOrderFinancials(o);
+            ventasProductosUSD += fin.ventasProductosUSD;
+            ventasConDeliveryUSD += fin.ventasConDeliveryUSD;
+            deliveryUSD += fin.deliveryUSD;
+            descuentosUSD += fin.descuentosUSD;
+            Object.entries(fin.unidadesPorProducto).forEach(([k, qty]) => {
+                unidadesPorProducto[k] = (unidadesPorProducto[k] || 0) + qty;
+            });
+            customerSet.add(window.getOrderCustomerKey(o));
+        } else if (status === 'cancelado') {
+            pedidosCancelados++;
+        }
+    });
+
+    const summaryDoc = {
+        mes: yyyyMM,
+        pedidosCompletados,
+        pedidosCancelados,
+        ventasProductosUSD: window.roundUSD(ventasProductosUSD),
+        ventasConDeliveryUSD: window.roundUSD(ventasConDeliveryUSD),
+        deliveryUSD: window.roundUSD(deliveryUSD),
+        descuentosUSD: window.roundUSD(descuentosUSD),
+        unidadesPorProducto,
+        clientesUnicos: customerSet.size,
+        archivado: typeof options.archivado === 'boolean' ? options.archivado : Boolean(existingData?.archivado),
+        actualizadoEn: new Date().toISOString()
+    };
+
+    await setDoc(summaryRef, summaryDoc);
+    return { id: yyyyMM, ...summaryDoc };
 };
 
 window.normalizeUserProfileForWrite = function (data = {}) {
@@ -3280,16 +3635,122 @@ window.salirAdmin = async function () {
     }
 };
 
+window.adminOrdersState = window.adminOrdersState || {
+    range: '3d',
+    customFrom: '',
+    customTo: '',
+    statusFilter: 'todos',
+    searchQuery: '',
+    lastSyncAt: null,
+    fromCache: false,
+    recentMap: new Map(),
+    openMap: new Map(),
+    rangeMap: new Map(),
+    unsubs: []
+};
+
+window.clearAdminOrdersListeners = function () {
+    const legacyUnsub = unsubAdmin;
+    unsubAdmin = null;
+    if (typeof legacyUnsub === 'function') {
+        try { legacyUnsub(); } catch (e) { }
+    }
+    if (Array.isArray(window.adminOrdersState?.unsubs)) {
+        const list = window.adminOrdersState.unsubs.splice(0);
+        list.forEach(fn => {
+            try { if (typeof fn === 'function') fn(); } catch (e) { }
+        });
+    }
+};
+
+window.clearAdminClientCaches = function () {
+    window.adminCache = {
+        orders: [],
+        users: [],
+        redeems: [],
+        summaries: [],
+        maintenance: null
+    };
+    window.__adminCleanupState = null;
+    if (window.adminOrdersState) {
+        window.adminOrdersState.recentMap = new Map();
+        window.adminOrdersState.openMap = new Map();
+        window.adminOrdersState.rangeMap = new Map();
+        window.adminOrdersState.lastSyncAt = null;
+        window.adminOrdersState.fromCache = false;
+    }
+    [
+        'admin-summary-container',
+        'admin-orders-container',
+        'admin-users-container',
+        'admin-redeems-container',
+        'admin-birthdays-container',
+        'admin-tools-container'
+    ].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '';
+    });
+    ['modal-admin-cleanup-confirm', 'modal-admin-export-confirm'].forEach(id => {
+        const dlg = document.getElementById(id);
+        if (dlg && dlg.open) {
+            try { dlg.close('cancel'); } catch (e) { }
+        }
+    });
+    try {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+            const k = localStorage.key(i) || '';
+            if (k.startsWith('milkarf_admin_')) localStorage.removeItem(k);
+        }
+    } catch (e) { }
+};
+
 window.cerrarSesionAdmin = async function () {
     window.vibrate(20);
     try {
-        if (unsubAdmin) { unsubAdmin(); unsubAdmin = null; }
+        window.clearAdminOrdersListeners?.();
+        if (typeof unsubUserOrders !== 'undefined' && unsubUserOrders) {
+            try { unsubUserOrders(); } catch (e) { }
+            unsubUserOrders = null;
+        }
+        if (typeof unsubUserRedeems !== 'undefined' && unsubUserRedeems) {
+            try { unsubUserRedeems(); } catch (e) { }
+            unsubUserRedeems = null;
+        }
+
         window.isAdmin = false;
         window.cerrarModalCanje?.();
         window.cerrarModalAdmin?.();
+        window.closeDeliveryNoteModal?.();
         window.forceCloseMenu?.();
-        if (auth) await signOut(auth);
+        window.clearAdminClientCaches?.();
+
+        if (auth) {
+            try { await signOut(auth); } catch (e) { console.warn('Error en signOut admin:', e); }
+        }
         window.resetAppStateForLogout?.();
+
+        // Limpia la caché persistente de Firestore tras cerrar sesión para no dejar datos de clientes en el navegador.
+        const oldDb = db;
+        const oldApp = firebaseAppInstance;
+        db = null;
+        auth = null;
+        if (oldDb) {
+            try {
+                await terminate(oldDb);
+            } catch (e) {
+                console.warn('No se pudo terminar Firestore antes de limpiar caché:', e);
+            }
+            try {
+                await clearIndexedDbPersistence(oldDb);
+            } catch (e) {
+                console.warn('No se pudo borrar IndexedDB de Firestore (puede haber otra pestaña abierta):', e);
+            }
+        }
+        if (oldApp) {
+            try { await deleteApp(oldApp); } catch (e) { console.warn('No se pudo liberar app Firebase:', e); }
+            firebaseAppInstance = null;
+        }
+        bootstrapFirebase();
 
         const isAdminPage = window.location.pathname.endsWith('admin.html');
         if (isAdminPage) {
@@ -3298,7 +3759,7 @@ window.cerrarSesionAdmin = async function () {
             const adminView = document.getElementById('view-admin');
             if (adminView) { adminView.classList.add('hidden'); adminView.classList.remove('active'); }
             if (adminAuthScreen) adminAuthScreen.classList.remove('hidden');
-            window.showToast('Sesión administrativa cerrada.', 'info');
+            window.showToast('Sesión administrativa y caché local cerradas.', 'info');
             return;
         }
 
@@ -3311,9 +3772,6 @@ window.cerrarSesionAdmin = async function () {
         window.actualizarUIAuth?.();
         window.navigateTo('view-home');
         window.showToast('Sesión de administrador cerrada.', 'success');
-        if (auth) {
-            try { await signInAnonymously(auth); } catch (e) { console.warn('No se pudo restaurar sesión invitada:', e); }
-        }
     } catch (error) {
         console.error(error);
         window.showToast('No se pudo cerrar la sesión admin. Inténtalo de nuevo.');
@@ -3372,6 +3830,8 @@ window.getOrderStatusInfo = function (status) {
     const map = {
         pendiente: { label: 'En proceso', classes: 'bg-pink/10 text-pink border-pink/20', bar: 'bg-pink' },
         en_proceso: { label: 'En proceso', classes: 'bg-pink/10 text-pink border-pink/20', bar: 'bg-pink' },
+        proceso: { label: 'En proceso', classes: 'bg-pink/10 text-pink border-pink/20', bar: 'bg-pink' },
+        solicitado: { label: 'En proceso', classes: 'bg-pink/10 text-pink border-pink/20', bar: 'bg-pink' },
         confirmado: { label: 'Confirmado', classes: 'bg-green/20 text-green-dark dark:text-green border-green/30', bar: 'bg-green' },
         verificado: { label: 'Confirmado', classes: 'bg-green/20 text-green-dark dark:text-green border-green/30', bar: 'bg-green' },
         completado: { label: 'Completado', classes: 'bg-purple/10 text-purple dark:text-purple-light border-purple/20', bar: 'bg-purple' },
@@ -3455,148 +3915,25 @@ window.renderUserOrders = function (orders = []) {
 };
 
 window.loadAdminOrders = function () {
-    const container = document.getElementById('admin-orders-container');
-    if (!window.isAdmin) {
-        window.showToast('Debes iniciar sesión como administrador.');
-        if (container) container.innerHTML = '<p class="text-center text-pink font-bold py-10 text-sm bg-pink/10 rounded-3xl border border-pink/20">Debes iniciar sesión como administrador.</p>';
-        return;
-    }
-    if (!db) {
-        if (container) container.innerHTML = '<p class="text-center text-pink font-bold py-10 text-sm bg-pink/10 rounded-3xl border border-pink/20">Firebase no está disponible.</p>';
-        return;
-    }
-    if (!container) {
-        console.warn('admin-orders-container no encontrado.');
-        return;
-    }
-
-    const ordersRef = window.getOrdersCollectionRef();
-
-    if (unsubAdmin) { unsubAdmin(); unsubAdmin = null; }
-    unsubAdmin = onSnapshot(window.secureAdminQuery(ordersRef), (snapshot) => {
-        let orders = [];
-        snapshot.forEach(doc => orders.push({ id: doc.id, ...doc.data() }));
-        orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        window.renderAdminOrders(orders);
-    }, (error) => {
-        console.error("Error fetching orders", error);
-        container.innerHTML = `<div class="bg-pink/10 border border-pink/30 p-4 rounded-xl text-center"><p class="text-pink font-bold text-sm">❌ Error al cargar pedidos.</p><p class="text-xs text-gray-500 mt-2">Verifica permisos de Firebase/Firestore.</p></div>`;
-    });
+    // Reimplementado abajo con caché local, 2 listeners por defecto (3 días + abiertos) y selector de rango.
+    return;
 };
 
-window.applyAdminOrderFilter = function(status) {
+window.applyAdminOrderFilter = function (status = 'todos') {
+    window.adminOrdersState = window.adminOrdersState || {};
+    window.adminOrdersState.statusFilter = status || 'todos';
     window.switchAdminTab('pedidos');
     setTimeout(() => {
         const select = document.getElementById('admin-order-status-filter');
         if (select) {
-            select.value = status;
-            window.filterAdminOrders();
+            select.value = window.adminOrdersState.statusFilter;
+            window.filterAdminOrders?.();
         }
-    }, 50);
+    }, 60);
 };
 
-window.renderAdminOrders = function (orders) {
-    const container = document.getElementById('admin-orders-container');
-    if (!container) return;
-    
-    let filteredOrders = orders;
-    let filterHeader = '';
-    
-    if (window.adminOrderFilter) {
-        filteredOrders = orders.filter(o => String(o.status || 'en_proceso').toLowerCase() === window.adminOrderFilter.toLowerCase());
-        const filterLabels = {
-            'en_proceso': 'En Proceso',
-            'confirmado': 'Confirmados',
-            'completado': 'Completados'
-        };
-        const label = filterLabels[window.adminOrderFilter] || window.adminOrderFilter;
-        filterHeader = `
-            <div class="flex items-center justify-between bg-purple-light dark:bg-purple/10 border border-purple/20 p-3 rounded-2xl mb-4">
-                <span class="text-xs font-black text-purple-dark dark:text-white flex items-center gap-2"><i data-lucide="filter" class="w-4 h-4 text-purple"></i> Filtrando: ${window.escapeHTML(label)}</span>
-                <button onclick="window.clearAdminOrderFilter()" class="text-[10px] bg-white dark:bg-darkcard border border-purple/20 text-pink hover:bg-pink hover:text-white px-3 py-1.5 rounded-xl font-bold uppercase tracking-widest transition-all">Quitar filtro</button>
-            </div>
-        `;
-    }
-
-    if (filteredOrders.length === 0) {
-        container.innerHTML = filterHeader + '<p class="text-center text-gray-500 py-10 font-semibold text-sm bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-purple-border/30 dark:border-purple/20">No hay pedidos para mostrar.</p>';
-        window.refreshIcons?.(container);
-        return;
-    }
-    container.innerHTML = filterHeader + filteredOrders.map(o => {
-        const date = o.createdAt ? new Date(o.createdAt).toLocaleString('es-VE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Sin fecha';
-        const pts = window.getOrderProductsPoints ? window.getOrderProductsPoints(o) : Math.floor(Number(o.total || 0));
-        const statusInfo = window.getOrderStatusInfo(o.status);
-        const status = String(o.status || 'en_proceso').toLowerCase();
-        let actionButton = '';
-        if (status === 'pendiente' || status === 'en_proceso' || status === 'solicitado') {
-            actionButton = `<button onclick="window.marcarConfirmadoAdmin('${o.id}')" class="bg-blue-500 text-white text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-blue-600 transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check-circle" class="w-4 h-4"></i> Confirmar pedido</button>`;
-        } else if (status === 'confirmado' || status === 'verificado') {
-            if (o.registeredUser === true && o.uid && o.uid !== 'anonimo' && !String(o.uid).startsWith('guest_')) {
-                actionButton = `<button onclick="window.aprobarPedidoAdmin('${o.id}', '${o.uid}', ${pts})" class="bg-green text-purple-dark text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-[#a6b621] transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check-square" class="w-4 h-4"></i> Completar pedido y dar puntos</button>`;
-            } else {
-                actionButton = `<button onclick="window.marcarCompletadoAdmin('${o.id}')" class="bg-purple text-white text-[10px] md:text-xs font-black px-4 py-2.5 rounded-xl shadow-md hover:bg-pink transition-all active:scale-95 flex items-center gap-1.5 w-full sm:w-auto justify-center mt-3 sm:mt-0"><i data-lucide="check-square" class="w-4 h-4"></i> Marcar completado</button>`;
-            }
-        }
-        const safeUser = window.escapeHTML(o.userName || o.nombre || o.nombre_persona || 'Usuario Invitado');
-        const isFeedingPlanOrder = o.orderType === 'feeding_plan_order' || (Array.isArray(o.items) && o.items.some(i => i.type === 'feeding_plan'));
-        const safeItems = Array.isArray(o.items) ? o.items.map(i => {
-            if (i.type === 'feeding_plan') {
-                const bagsText = Array.isArray(i.bags) ? i.bags.map(b => `${b.qty}x ${b.weight}`).join(' + ') : '';
-                const reqKg = (Number(i.totalGramsRequired || 0) / 1000).toFixed(2);
-                const provKg = (Number(i.totalGramsProvided || 0) / 1000).toFixed(2);
-                const surplus = Number(i.surplusGrams || 0);
-                return `
-                    <li class="py-1">
-                        <div class="font-bold text-purple-dark dark:text-white">🐾 Plan ${i.durationDays || 7} días para ${window.escapeHTML(i.petName || i.forPet || 'Mascota')} - ${window.escapeHTML(i.formulaName || i.name)}</div>
-                        <div class="text-[11px] text-gray-500 dark:text-gray-400">
-                            Ración: <span class="font-semibold text-purple">${i.dailyGrams || 0} g/día</span> · Bolsas: <span class="font-semibold">${window.escapeHTML(bagsText)}</span>
-                        </div>
-                        <div class="text-[11px] text-gray-500 dark:text-gray-400">
-                            Alimento: ${reqKg} kg req / ${provKg} kg prov (+${surplus}g excedente) · Subtotal: $${Number(i.finalPrice || i.price || 0).toFixed(2)} ${i.discountAmount > 0 ? `(Ahorro: -$${Number(i.discountAmount).toFixed(2)})` : ''}
-                        </div>
-                    </li>
-                `;
-            }
-            return `<li><span class="font-bold text-purple-dark dark:text-gray-300">${Number(i.qty || 0)}x</span> ${window.escapeHTML(i.name || 'Producto')} (${window.escapeHTML(i.weight || '')}) ${i.forPet ? `<span class="opacity-60 italic">- ${window.escapeHTML(i.forPet)}</span>` : ''}</li>`;
-        }).join('') : '<li>Pedido sin detalle</li>';
-        const totalNumber = Number(o.total || 0);
-        return `
-                <div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left relative overflow-hidden transition-all">
-                    <div class="absolute top-0 left-0 w-1 h-full ${statusInfo.bar}"></div>
-                    <div class="flex justify-between items-start mb-3 pl-1 gap-2">
-                        <div class="min-w-0 flex-1 pr-2">
-                            <div class="flex items-center gap-2 flex-wrap mb-1">
-                                <h4 class="font-black text-purple-dark dark:text-white text-sm md:text-base leading-tight break-words">${safeUser}</h4>
-                                <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${isFeedingPlanOrder ? 'bg-purple/10 text-purple-dark dark:text-purple-light border border-purple/20' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'}">
-                                    ${isFeedingPlanOrder ? 'Plan de alimentación' : 'Pedido de catálogo'}
-                                </span>
-                            </div>
-                            <p class="text-[10px] text-purple/50 dark:text-gray-500 font-bold mt-0.5">${date}</p>
-                        </div>
-                        <span class="px-2.5 py-1 rounded-md border text-[9px] font-black uppercase tracking-widest shrink-0 ${statusInfo.classes}">
-                            ${statusInfo.label}
-                        </span>
-                    </div>
-                    <div class="bg-purple-light dark:bg-[#0d0718] rounded-xl p-3 mb-4 border border-purple-border/30 dark:border-purple/20 pl-1 overflow-hidden">
-                        <ul class="text-xs text-gray-600 dark:text-gray-400 pl-4 list-disc space-y-1.5 font-medium break-words">
-                            ${safeItems}
-                        </ul>
-                    </div>
-                    <div class="flex flex-col sm:flex-row justify-between sm:items-center pl-1 gap-3">
-                        <div>
-                            <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest block leading-tight">Total Cobrado</span>
-                            <span class="font-black text-purple dark:text-white text-lg">$${totalNumber.toFixed(2)}</span>
-                            ${o.descuentoAplicado ? `<span class="ml-2 text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-2 py-0.5 rounded-md">Descuento aplicado</span>` : ''}
-                        </div>
-                        <div class="flex items-center gap-2 flex-wrap">
-                            ${actionButton}
-                        </div>
-                    </div>
-                </div>
-                `;
-    }).join('');
-    if (window.lucide) window.lucide.createIcons({ root: container });
+window.renderAdminOrders = function () {
+    window.renderAdminOrdersPanel?.();
 };
 
 window.loadAdminUsers = async function () {
@@ -4136,15 +4473,52 @@ window.canjearPuntosUsuario = async function (itemId) {
     return { success: false, paused: true };
 };
 
+window.syncLocalAdminOrderCache = function (orderId, patch = {}) {
+    const id = String(orderId || '');
+    if (!id) return;
+    if (Array.isArray(window.adminCache?.orders)) {
+        const idx = window.adminCache.orders.findIndex(o => String(o.id) === id);
+        if (idx >= 0) window.adminCache.orders[idx] = { ...window.adminCache.orders[idx], ...patch, id };
+    }
+    if (Array.isArray(window.adminCache?.summaryRecentOrders)) {
+        const idx = window.adminCache.summaryRecentOrders.findIndex(o => String(o.id) === id);
+        if (idx >= 0) window.adminCache.summaryRecentOrders[idx] = { ...window.adminCache.summaryRecentOrders[idx], ...patch, id };
+    }
+    const st = window.adminOrdersState;
+    if (st) {
+        [st.recentMap, st.openMap, st.rangeMap].forEach(map => {
+            if (map instanceof Map && map.has(id)) {
+                map.set(id, { ...map.get(id), ...patch, id });
+            }
+        });
+    }
+    if (window.adminCurrentTab === 'pedidos' && document.getElementById('admin-orders-list')) {
+        window.rebuildMergedAdminOrders?.();
+        window.filterAdminOrders?.();
+    }
+};
+
 window.aprobarPedidoAdmin = async function (orderId, uid, basePts) {
     window.vibrate(20);
     if (!window.isAdmin) { window.showToast('Debes iniciar sesión como administrador.'); return; }
     if (!db) { window.showToast('Firebase no está disponible.'); return; }
     try {
+        const orderRef = window.getOrderDocRef(orderId);
+        const liveOrderSnap = await getDoc(orderRef);
+        const cachedOrder = window.getAdminOrderById?.(orderId) || null;
+        const liveOrder = liveOrderSnap.exists() ? { ...(cachedOrder || {}), ...liveOrderSnap.data(), id: orderId } : cachedOrder;
+        const prevStatus = String(liveOrder?.status || liveOrder?.estado || 'en_proceso').toLowerCase();
+        if (prevStatus === 'completado') {
+            window.syncLocalAdminOrderCache(orderId, liveOrder || { status: 'completado' });
+            window.showToast('Este pedido ya fue completado anteriormente.', 'info');
+            return;
+        }
+
         const userRef = window.getUserPath(uid);
         const docSnap = await getDoc(userRef);
-        const order = window.getAdminOrderById?.(orderId) || window.adminCache?.orders?.find?.(o => String(o.id) === String(orderId));
-        const effectiveBase = order && window.getOrderProductsPoints ? window.getOrderProductsPoints(order) : Math.max(0, Math.floor(Number(basePts || 0)));
+        const effectiveBase = liveOrder && window.getOrderProductsPoints
+            ? window.getOrderProductsPoints(liveOrder)
+            : Math.max(0, Math.floor(Number(basePts || 0)));
         let pointsToGive = effectiveBase;
         let isVIP = false;
 
@@ -4163,14 +4537,19 @@ window.aprobarPedidoAdmin = async function (orderId, uid, basePts) {
             }, { merge: true });
         }
 
-        const orderRef = window.getOrderDocRef(orderId);
-        await setDoc(orderRef, {
+        const nowIso = new Date().toISOString();
+        const patch = {
             status: 'completado',
-            confirmedAt: new Date().toISOString(),
-            completedAt: new Date().toISOString(),
+            estado: 'completado',
+            confirmedAt: liveOrder?.confirmedAt || nowIso,
+            completedAt: nowIso,
+            updatedAt: nowIso,
             pointsAwarded: pointsToGive,
             pointsGranted: pointsToGive
-        }, { merge: true });
+        };
+        await setDoc(orderRef, patch, { merge: true });
+        window.syncLocalAdminOrderCache(orderId, patch);
+        await window.applyOrderDeltaToSummary?.({ ...(liveOrder || {}), ...patch }, 'completado', prevStatus);
 
         window.showToast(`Pedido completado. +${pointsToGive} ptos ${isVIP ? '(VIP 1.5x)' : ''}`, 'success');
         if (window.adminCurrentTab === 'resumen') window.loadAdminSummary?.();
@@ -4186,8 +4565,30 @@ window.confirmarPedidoInvitadoAdmin = async function (orderId) {
     if (!db) { window.showToast('Firebase no está disponible.'); return; }
     try {
         const orderRef = window.getOrderDocRef(orderId);
-        await setDoc(orderRef, { status: 'completado', confirmedAt: new Date().toISOString(), completedAt: new Date().toISOString(), pointsAwarded: 0, pointsGranted: 0 }, { merge: true });
+        const liveOrderSnap = await getDoc(orderRef);
+        const cachedOrder = window.getAdminOrderById?.(orderId) || null;
+        const liveOrder = liveOrderSnap.exists() ? { ...(cachedOrder || {}), ...liveOrderSnap.data(), id: orderId } : cachedOrder;
+        const prevStatus = String(liveOrder?.status || liveOrder?.estado || 'en_proceso').toLowerCase();
+        if (prevStatus === 'completado') {
+            window.syncLocalAdminOrderCache(orderId, liveOrder || { status: 'completado' });
+            window.showToast('Este pedido ya fue completado anteriormente.', 'info');
+            return;
+        }
+        const nowIso = new Date().toISOString();
+        const patch = {
+            status: 'completado',
+            estado: 'completado',
+            confirmedAt: liveOrder?.confirmedAt || nowIso,
+            completedAt: nowIso,
+            updatedAt: nowIso,
+            pointsAwarded: 0,
+            pointsGranted: 0
+        };
+        await setDoc(orderRef, patch, { merge: true });
+        window.syncLocalAdminOrderCache(orderId, patch);
+        await window.applyOrderDeltaToSummary?.({ ...(liveOrder || {}), ...patch }, 'completado', prevStatus);
         window.showToast('Pedido completado.', 'success');
+        if (window.adminCurrentTab === 'resumen') window.loadAdminSummary?.();
     } catch (error) {
         console.error(error);
         window.showToast('Error al confirmar pedido.');
@@ -4200,8 +4601,28 @@ window.marcarCompletadoAdmin = async function (orderId) {
     if (!db) { window.showToast('Firebase no está disponible.'); return; }
     try {
         const orderRef = window.getOrderDocRef(orderId);
-        await setDoc(orderRef, { status: 'completado', completedAt: new Date().toISOString() }, { merge: true });
+        const liveOrderSnap = await getDoc(orderRef);
+        const cachedOrder = window.getAdminOrderById?.(orderId) || null;
+        const liveOrder = liveOrderSnap.exists() ? { ...(cachedOrder || {}), ...liveOrderSnap.data(), id: orderId } : cachedOrder;
+        const prevStatus = String(liveOrder?.status || liveOrder?.estado || 'en_proceso').toLowerCase();
+        if (prevStatus === 'completado') {
+            window.syncLocalAdminOrderCache(orderId, liveOrder || { status: 'completado' });
+            window.showToast('Este pedido ya fue completado anteriormente.', 'info');
+            return;
+        }
+        const nowIso = new Date().toISOString();
+        const patch = {
+            status: 'completado',
+            estado: 'completado',
+            confirmedAt: liveOrder?.confirmedAt || nowIso,
+            completedAt: nowIso,
+            updatedAt: nowIso
+        };
+        await setDoc(orderRef, patch, { merge: true });
+        window.syncLocalAdminOrderCache(orderId, patch);
+        await window.applyOrderDeltaToSummary?.({ ...(liveOrder || {}), ...patch }, 'completado', prevStatus);
         window.showToast(`Pedido marcado como completado.`, 'success');
+        if (window.adminCurrentTab === 'resumen') window.loadAdminSummary?.();
     } catch (e) {
         window.showToast("Error al actualizar pedido.");
         console.error(e);
@@ -4213,9 +4634,18 @@ window.marcarConfirmadoAdmin = async function (orderId) {
     if (!window.isAdmin) { window.showToast('Debes iniciar sesión como administrador.'); return; }
     if (!db) { window.showToast('Firebase no está disponible.'); return; }
     try {
+        const nowIso = new Date().toISOString();
+        const patch = {
+            status: 'confirmado',
+            estado: 'confirmado',
+            confirmedAt: nowIso,
+            updatedAt: nowIso
+        };
         const orderRef = window.getOrderDocRef(orderId);
-        await setDoc(orderRef, { status: 'confirmado', confirmedAt: new Date().toISOString() }, { merge: true });
+        await setDoc(orderRef, patch, { merge: true });
+        window.syncLocalAdminOrderCache(orderId, patch);
         window.showToast(`Pedido confirmado correctamente.`, 'success');
+        if (window.adminCurrentTab === 'resumen') window.loadAdminSummary?.();
     } catch (e) {
         window.showToast("Error al confirmar pedido.");
         console.error(e);
@@ -4293,7 +4723,14 @@ window.getAdminContactLink = function (order) {
 };
 
 window.getAdminOrderById = function (orderId) {
-    return (window.adminCache?.orders || []).find(order => String(order.id) === String(orderId)) || null;
+    const id = String(orderId || '');
+    if (!id) return null;
+    const fromCache = (window.adminCache?.orders || []).find(o => String(o.id) === id);
+    if (fromCache) return fromCache;
+    const fromSummary = (window.adminCache?.summaryRecentOrders || []).find(o => String(o.id) === id);
+    if (fromSummary) return fromSummary;
+    const st = window.adminOrdersState;
+    return st?.recentMap?.get(id) || st?.openMap?.get(id) || st?.rangeMap?.get(id) || null;
 };
 
 window.getOrderClientPhone = function (order = {}) {
@@ -4686,18 +5123,42 @@ window.sendDeliveryNoteToClient = async function () {
     const message = window.getWhatsAppTemplate('deliveryNote', payload);
     const totalWithDelivery = payload.finalTotal;
 
-    if (db && order.id && !String(order.id).startsWith('local_')) {
+    if (db && order.id && !order.localOnly) {
         try {
-            await setDoc(window.getOrderDocRef(order.id), {
+            const nowIso = new Date().toISOString();
+            const orderRef = window.getOrderDocRef(order.id);
+            const liveSnap = await getDoc(orderRef).catch(() => null);
+            const liveData = liveSnap?.exists?.() ? liveSnap.data() : order;
+            const prevDelivery = window.roundUSD(Number(liveData?.deliveryCost || 0));
+            const patch = {
                 deliveryCost,
                 totalWithDelivery,
                 deliveryDate,
                 phone,
                 telefono: phone,
+                whatsapp: phone,
                 deliveryNoteMessage: message,
-                deliveryNoteSentAt: new Date().toISOString()
-            }, { merge: true });
-            if (order.uid && order.uid !== 'anonimo') {
+                deliveryNoteSentAt: nowIso,
+                updatedAt: nowIso
+            };
+            await setDoc(orderRef, patch, { merge: true });
+            window.syncLocalAdminOrderCache?.(order.id, patch);
+
+            const liveStatus = String(liveData?.status || liveData?.estado || '').toLowerCase();
+            const deltaDelivery = window.roundUSD(deliveryCost - prevDelivery);
+            if (liveStatus === 'completado' && deltaDelivery !== 0) {
+                const yyyyMM = window.getCaracasYearMonth(liveData?.createdAt || order.createdAt || nowIso);
+                if (yyyyMM) {
+                    await setDoc(window.getSalesSummaryDocRef(yyyyMM), {
+                        mes: yyyyMM,
+                        deliveryUSD: increment(deltaDelivery),
+                        ventasConDeliveryUSD: increment(deltaDelivery),
+                        actualizadoEn: nowIso
+                    }, { merge: true });
+                }
+            }
+
+            if (order.uid && order.uid !== 'anonimo' && !String(order.uid).startsWith('guest_')) {
                 await setDoc(window.getUserPath(order.uid), {
                     phone,
                     telefono: phone,
@@ -4882,82 +5343,374 @@ window.buildAdminRedeemMini = function (r) {
             </div>`;
 };
 
-window.loadAdminOrders = function () {
+window.getAdminOrderRangeLabel = function (st = window.adminOrdersState) {
+    const range = st?.range || '3d';
+    if (range === '3d') return 'últimos 3 días + abiertos';
+    if (range === '7d') return 'últimos 7 días';
+    if (range === '30d') return 'últimos 30 días';
+    if (range === 'custom') {
+        const from = st?.customFrom || '';
+        const to = st?.customTo || '';
+        return (from && to) ? `${from} al ${to}` : 'rango personalizado';
+    }
+    return 'últimos 3 días + abiertos';
+};
+
+window.rebuildMergedAdminOrders = function () {
+    const st = window.adminOrdersState;
+    if (!st) return;
+    const byId = new Map();
+    if (st.range === '3d') {
+        st.openMap?.forEach((o, id) => byId.set(id, o));
+        st.recentMap?.forEach((o, id) => byId.set(id, o));
+    } else {
+        st.rangeMap?.forEach((o, id) => byId.set(id, o));
+    }
+    const sorted = [...byId.values()].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    window.adminCache = window.adminCache || {};
+    window.adminCache.orders = sorted;
+};
+
+window.onAdminOrderRangeChange = function (newRange) {
+    const st = window.adminOrdersState = window.adminOrdersState || {};
+    st.range = newRange || '3d';
+    const customWrap = document.getElementById('admin-order-custom-range-wrap');
+    if (customWrap) customWrap.classList.toggle('hidden', st.range !== 'custom');
+    if (st.range === 'custom') {
+        const todayStr = window.getCaracasDateString?.(new Date()) || new Date().toISOString().slice(0, 10);
+        const weekAgoStr = window.getCaracasDateString?.(new Date(Date.now() - 7 * 86400000)) || todayStr;
+        const fromEl = document.getElementById('admin-order-date-from');
+        const toEl = document.getElementById('admin-order-date-to');
+        if (fromEl && !fromEl.value) fromEl.value = st.customFrom || weekAgoStr;
+        if (toEl && !toEl.value) toEl.value = st.customTo || todayStr;
+        st.customFrom = fromEl?.value || weekAgoStr;
+        st.customTo = toEl?.value || todayStr;
+    }
+    window.loadAdminOrders(st.range);
+};
+
+window.applyAdminCustomOrderRange = function () {
+    const st = window.adminOrdersState = window.adminOrdersState || {};
+    const fromEl = document.getElementById('admin-order-date-from');
+    const toEl = document.getElementById('admin-order-date-to');
+    const fromVal = fromEl?.value || '';
+    const toVal = toEl?.value || '';
+    if (!fromVal || !toVal) {
+        window.showToast?.('Selecciona fecha desde y hasta para consultar.', 'info');
+        return;
+    }
+    if (fromVal > toVal) {
+        window.showToast?.('La fecha "Desde" no puede ser mayor que "Hasta".', 'info');
+        return;
+    }
+    st.range = 'custom';
+    st.customFrom = fromVal;
+    st.customTo = toVal;
+    window.loadAdminOrders('custom');
+};
+
+window.loadAdminOrders = function (rangeOverride) {
     const container = document.getElementById('admin-orders-container');
-    if (!window.isAdmin) { if (container) container.innerHTML = window.adminEmptyState('Acceso restringido', 'Debes iniciar sesión como administrador.', 'lock'); return; }
-    if (!db) { if (container) container.innerHTML = window.adminEmptyState('Firebase no disponible', 'No se pudo conectar con la base de datos.', 'wifi-off'); return; }
+    if (!window.isAdmin) {
+        if (container) container.innerHTML = window.adminEmptyState('Acceso restringido', 'Debes iniciar sesión como administrador.', 'lock');
+        return;
+    }
+    if (!db) {
+        if (container) container.innerHTML = window.adminEmptyState('Firebase no disponible', 'No se pudo conectar con la base de datos.', 'wifi-off');
+        return;
+    }
     if (!container) return;
-    if (unsubAdmin) { unsubAdmin(); unsubAdmin = null; }
-    container.innerHTML = window.adminLoadingState('Sincronizando pedidos...');
-    unsubAdmin = onSnapshot(window.secureAdminQuery(window.getOrdersCollectionRef()), (snapshot) => {
-        const orders = [];
-        snapshot.forEach(docSnap => orders.push({ id: docSnap.id, ...docSnap.data() }));
-        orders.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-        window.adminCache.orders = orders;
-        window.renderAdminOrdersPanel();
-    }, (error) => {
-        console.error('Error cargando pedidos admin:', error);
-        container.innerHTML = window.adminEmptyState('Error al cargar pedidos', 'Verifica permisos de Firebase/Firestore.', 'alert-triangle');
-    });
+
+    const st = window.adminOrdersState = window.adminOrdersState || {
+        range: '3d',
+        customFrom: '',
+        customTo: '',
+        statusFilter: 'todos',
+        searchQuery: '',
+        lastSyncAt: null,
+        fromCache: false,
+        recentMap: new Map(),
+        openMap: new Map(),
+        rangeMap: new Map(),
+        unsubs: []
+    };
+    if (typeof rangeOverride === 'string' && rangeOverride) st.range = rangeOverride;
+
+    window.clearAdminOrdersListeners?.();
+    const runId = (window.__adminOrdersRunId = (window.__adminOrdersRunId || 0) + 1);
+    const ordersRef = window.getOrdersCollectionRef();
+
+    st.recentMap = new Map();
+    st.openMap = new Map();
+    st.rangeMap = new Map();
+    st.loading = true;
+    st.fromCache = false;
+    window.adminCache = window.adminCache || {};
+    window.adminCache.orders = [];
+
+    window.renderAdminOrdersPanel();
+
+    const finishRender = (fromCacheFlag) => {
+        if (window.__adminOrdersRunId !== runId) return;
+        st.fromCache = Boolean(fromCacheFlag);
+        st.lastSyncAt = new Date().toISOString();
+        window.rebuildMergedAdminOrders();
+        window.filterAdminOrders();
+    };
+
+    const handleError = (error, ctxLabel) => {
+        if (window.__adminOrdersRunId !== runId) return;
+        window.logFirestoreIndexHint?.(error, ctxLabel);
+        st.loading = false;
+        const list = document.getElementById('admin-orders-list');
+        if (list && (!window.adminCache?.orders?.length)) {
+            list.innerHTML = window.renderFirestorePermissionHelp
+                ? window.renderFirestorePermissionHelp(error, ctxLabel)
+                : window.adminEmptyState('Error al cargar pedidos', 'Verifica conexión o permisos de Firestore.', 'alert-triangle');
+            window.refreshIcons?.(list);
+        } else {
+            window.showToast?.(`Error parcial en ${ctxLabel}. Revisa consola.`);
+        }
+    };
+
+    if (st.range === '3d') {
+        const threeDaysAgoIso = new Date(Date.now() - 3 * 86400000).toISOString();
+        const qRecent = query(ordersRef, where('createdAt', '>=', threeDaysAgoIso), orderBy('createdAt', 'desc'));
+        const qOpen = query(ordersRef, where('status', 'in', window.ADMIN_OPEN_ORDER_STATUSES));
+
+        const stateFlags = { recent: false, open: false };
+
+        // 1) Pintado inmediato desde caché local si existe.
+        Promise.allSettled([
+            getDocsFromCache(qRecent).then(snap => {
+                if (window.__adminOrdersRunId !== runId || snap.empty) return;
+                snap.forEach(d => st.recentMap.set(d.id, { id: d.id, ...d.data() }));
+                st.loading = false;
+                finishRender(true);
+            }).catch(() => { }),
+            getDocsFromCache(qOpen).then(snap => {
+                if (window.__adminOrdersRunId !== runId || snap.empty) return;
+                snap.forEach(d => st.openMap.set(d.id, { id: d.id, ...d.data() }));
+                st.loading = false;
+                finishRender(true);
+            }).catch(() => { })
+        ]);
+
+        // 2) Listeners en vivo (recientes 3d + abiertos sin cerrar de cualquier fecha).
+        const uRecent = onSnapshot(qRecent, { includeMetadataChanges: true }, (snap) => {
+            if (window.__adminOrdersRunId !== runId) return;
+            const next = new Map();
+            snap.forEach(d => next.set(d.id, { id: d.id, ...d.data() }));
+            st.recentMap = next;
+            stateFlags.recent = true;
+            if (stateFlags.open || snap.size > 0) st.loading = false;
+            finishRender(snap.metadata?.fromCache);
+        }, (error) => {
+            stateFlags.recent = true;
+            handleError(error, 'Pedidos recientes (3 días)');
+        });
+
+        const uOpen = onSnapshot(qOpen, { includeMetadataChanges: true }, (snap) => {
+            if (window.__adminOrdersRunId !== runId) return;
+            const next = new Map();
+            snap.forEach(d => next.set(d.id, { id: d.id, ...d.data() }));
+            st.openMap = next;
+            stateFlags.open = true;
+            if (stateFlags.recent || snap.size > 0) st.loading = false;
+            finishRender(snap.metadata?.fromCache);
+        }, (error) => {
+            stateFlags.open = true;
+            handleError(error, 'Pedidos abiertos');
+        });
+
+        st.unsubs.push(uRecent, uOpen);
+        unsubAdmin = () => {
+            const list = st.unsubs.splice(0);
+            list.forEach(fn => { try { if (typeof fn === 'function') fn(); } catch (e) { } });
+        };
+        return;
+    }
+
+    // Consultas por rango único: 7d, 30d o personalizado (siempre filtrando en Firestore por createdAt).
+    let qRange = null;
+    let ctxLabel = 'Pedidos';
+    if (st.range === '7d') {
+        const sinceIso = new Date(Date.now() - 7 * 86400000).toISOString();
+        qRange = query(ordersRef, where('createdAt', '>=', sinceIso), orderBy('createdAt', 'desc'));
+        ctxLabel = 'Pedidos (7 días)';
+    } else if (st.range === '30d') {
+        const sinceIso = new Date(Date.now() - 30 * 86400000).toISOString();
+        qRange = query(ordersRef, where('createdAt', '>=', sinceIso), orderBy('createdAt', 'desc'));
+        ctxLabel = 'Pedidos (30 días)';
+    } else {
+        const todayStr = window.getCaracasDateString?.(new Date()) || new Date().toISOString().slice(0, 10);
+        const fromStr = st.customFrom || window.getCaracasDateString?.(new Date(Date.now() - 7 * 86400000)) || todayStr;
+        const toStr = st.customTo || todayStr;
+        const startIso = new Date(`${fromStr}T00:00:00.000-04:00`).toISOString();
+        const endIso = new Date(`${toStr}T23:59:59.999-04:00`).toISOString();
+        qRange = query(ordersRef, where('createdAt', '>=', startIso), where('createdAt', '<=', endIso), orderBy('createdAt', 'desc'));
+        ctxLabel = `Pedidos (${fromStr} a ${toStr})`;
+    }
+
+    getDocsFromCache(qRange).then(snap => {
+        if (window.__adminOrdersRunId !== runId || snap.empty) return;
+        snap.forEach(d => st.rangeMap.set(d.id, { id: d.id, ...d.data() }));
+        st.loading = false;
+        finishRender(true);
+    }).catch(() => { });
+
+    const uRange = onSnapshot(qRange, { includeMetadataChanges: true }, (snap) => {
+        if (window.__adminOrdersRunId !== runId) return;
+        const next = new Map();
+        snap.forEach(d => next.set(d.id, { id: d.id, ...d.data() }));
+        st.rangeMap = next;
+        st.loading = false;
+        finishRender(snap.metadata?.fromCache);
+    }, (error) => handleError(error, ctxLabel));
+
+    st.unsubs.push(uRange);
+    unsubAdmin = () => {
+            const list = st.unsubs.splice(0);
+            list.forEach(fn => { try { if (typeof fn === 'function') fn(); } catch (e) { } });
+        };
 };
 
 window.renderAdminOrdersPanel = function () {
     const container = document.getElementById('admin-orders-container');
     if (!container) return;
-    container.innerHTML = `
-                <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-5 shadow-sm space-y-4">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                        <div><h3 class="text-xl font-black text-purple-dark dark:text-white">Control de pedidos</h3><p class="text-xs text-gray-500 font-semibold mt-1">Filtra, confirma, contacta y completa pedidos.</p></div>
-                        <button onclick="window.loadAdminOrders()" class="inline-flex items-center justify-center gap-2 bg-purple-light dark:bg-purple/20 text-purple dark:text-white font-black text-[10px] uppercase tracking-widest px-4 py-3 rounded-xl hover:bg-purple hover:text-white transition-all"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Actualizar</button>
+    const st = window.adminOrdersState = window.adminOrdersState || { range: '3d', statusFilter: 'todos', searchQuery: '' };
+    const todayStr = window.getCaracasDateString?.(new Date()) || new Date().toISOString().slice(0, 10);
+    const defaultFrom = st.customFrom || window.getCaracasDateString?.(new Date(Date.now() - 7 * 86400000)) || todayStr;
+    const defaultTo = st.customTo || todayStr;
+
+    // Preserva el foco del buscador evitando reconstruir los controles si ya existen.
+    if (!document.getElementById('admin-orders-controls-ready')) {
+        container.innerHTML = `
+            <div id="admin-orders-controls-ready" class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-5 shadow-sm space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-xl font-black text-purple-dark dark:text-white">Control de pedidos</h3>
+                        <p class="text-xs text-gray-500 font-semibold mt-1">Por defecto carga los últimos 3 días más todos los pedidos abiertos sin cerrar.</p>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                        <input id="admin-order-search" type="search" placeholder="Buscar cliente, producto o mascota" oninput="window.filterAdminOrders()" class="md:col-span-2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl p-3 text-sm font-semibold outline-none focus:border-purple">
-                        <select id="admin-order-status-filter" onchange="window.filterAdminOrders()" class="bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl p-3 text-sm font-bold outline-none focus:border-purple">
-                            <option value="todos">Todos los estados</option><option value="en_proceso">En proceso</option><option value="confirmado">Confirmados</option><option value="completado">Completados</option><option value="cancelado">Cancelados</option>
-                        </select>
-                        <select id="admin-order-date-filter" onchange="window.filterAdminOrders()" class="bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl p-3 text-sm font-bold outline-none focus:border-purple">
-                            <option value="todos">Todas las fechas</option><option value="hoy">Hoy</option><option value="7d">Últimos 7 días</option>
-                        </select>
-                    </div>
+                    <button onclick="window.loadAdminOrders()" class="inline-flex items-center justify-center gap-2 bg-purple-light dark:bg-purple/20 text-purple dark:text-white font-black text-[10px] uppercase tracking-widest px-4 py-3 rounded-xl hover:bg-purple hover:text-white transition-all"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Actualizar</button>
                 </div>
-                <div id="admin-orders-list" class="space-y-4"></div>`;
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <input id="admin-order-search" type="search" value="${window.escapeHTML(st.searchQuery || '')}" placeholder="Buscar cliente, correo, tel, ID, producto o mascota" oninput="window.filterAdminOrders()" class="md:col-span-2 bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl p-3 text-sm font-semibold outline-none focus:border-purple">
+                    <select id="admin-order-status-filter" onchange="window.filterAdminOrders()" class="bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl p-3 text-sm font-bold outline-none focus:border-purple">
+                        <option value="todos">Todos los estados</option>
+                        <option value="en_proceso">En proceso</option>
+                        <option value="confirmado">Confirmados</option>
+                        <option value="completado">Completados</option>
+                        <option value="cancelado">Cancelados</option>
+                    </select>
+                    <select id="admin-order-range-select" onchange="window.onAdminOrderRangeChange(this.value)" class="bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl p-3 text-sm font-bold outline-none focus:border-purple">
+                        <option value="3d">Últimos 3 días (+ abiertos)</option>
+                        <option value="7d">Últimos 7 días</option>
+                        <option value="30d">Últimos 30 días</option>
+                        <option value="custom">Rango personalizado</option>
+                    </select>
+                </div>
+                <div id="admin-order-custom-range-wrap" class="${st.range === 'custom' ? '' : 'hidden'} flex flex-col sm:flex-row items-stretch sm:items-end gap-3 pt-2 border-t border-purple-border/20">
+                    <div class="flex-1">
+                        <label for="admin-order-date-from" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Desde</label>
+                        <input id="admin-order-date-from" type="date" value="${window.escapeHTML(defaultFrom)}" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-2.5 text-sm font-bold outline-none focus:border-purple">
+                    </div>
+                    <div class="flex-1">
+                        <label for="admin-order-date-to" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Hasta</label>
+                        <input id="admin-order-date-to" type="date" value="${window.escapeHTML(defaultTo)}" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-2.5 text-sm font-bold outline-none focus:border-purple">
+                    </div>
+                    <button type="button" onclick="window.applyAdminCustomOrderRange()" class="bg-purple hover:bg-purple-dark text-white font-black text-xs uppercase tracking-widest px-5 py-3 rounded-xl transition-all shrink-0">Aplicar rango</button>
+                </div>
+                <div id="admin-orders-status-bar" class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-purple-border/20 text-xs font-semibold text-gray-500 dark:text-gray-400"></div>
+            </div>
+            <div id="admin-orders-list" class="space-y-4"></div>`;
+        window.refreshIcons?.(container);
+    }
+
+    const statusEl = document.getElementById('admin-order-status-filter');
+    if (statusEl && st.statusFilter) statusEl.value = st.statusFilter;
+    const rangeEl = document.getElementById('admin-order-range-select');
+    if (rangeEl && st.range) rangeEl.value = st.range;
+    const customWrap = document.getElementById('admin-order-custom-range-wrap');
+    if (customWrap) customWrap.classList.toggle('hidden', st.range !== 'custom');
+
     window.filterAdminOrders();
-    window.refreshIcons?.(container);
 };
 
 window.filterAdminOrders = function () {
     const list = document.getElementById('admin-orders-list');
     if (!list) return;
-    const q = (document.getElementById('admin-order-search')?.value || '').trim().toLowerCase();
-    const statusFilter = document.getElementById('admin-order-status-filter')?.value || 'todos';
-    const dateFilter = document.getElementById('admin-order-date-filter')?.value || 'todos';
-    const now = new Date();
-    let orders = [...(window.adminCache.orders || [])];
+    const st = window.adminOrdersState = window.adminOrdersState || { range: '3d', statusFilter: 'todos', searchQuery: '' };
+    const searchEl = document.getElementById('admin-order-search');
+    const statusEl = document.getElementById('admin-order-status-filter');
+    const q = (searchEl ? searchEl.value : (st.searchQuery || '')).trim().toLowerCase();
+    const statusFilter = statusEl ? statusEl.value : (st.statusFilter || 'todos');
+    st.searchQuery = searchEl ? searchEl.value : (st.searchQuery || '');
+    st.statusFilter = statusFilter;
+
+    const allLoaded = [...(window.adminCache?.orders || [])];
+    let orders = allLoaded;
+
     if (q) {
         orders = orders.filter(o => {
-            const hay = [o.userName, o.email, o.phone, o.telefono, o.id, ...(Array.isArray(o.items) ? o.items.flatMap(i => [i.name, i.weight, i.forPet]) : [])].join(' ').toLowerCase();
+            const itemTokens = Array.isArray(o.items)
+                ? o.items.flatMap(i => [i.name, i.producto, i.title, i.weight, i.tam, i.presentation, i.forPet, i.petName, i.formulaLabel])
+                : [];
+            const hay = [
+                o.userName,
+                o.nombre,
+                o.nombre_persona,
+                o.displayName,
+                o.email,
+                o.phone,
+                o.telefono,
+                o.whatsapp,
+                o.selectedPet,
+                o.id,
+                ...itemTokens
+            ].join(' ').toLowerCase();
             return hay.includes(q);
         });
     }
+
     if (statusFilter !== 'todos') {
         orders = orders.filter(o => {
-            const s = String(o.status || 'en_proceso').toLowerCase();
-            if (statusFilter === 'en_proceso') return ['pendiente', 'en_proceso', 'solicitado'].includes(s);
+            const s = String(o.status || o.estado || 'en_proceso').toLowerCase();
+            if (statusFilter === 'en_proceso') return ['pendiente', 'en_proceso', 'proceso', 'solicitado'].includes(s);
             if (statusFilter === 'confirmado') return ['confirmado', 'verificado'].includes(s);
             return s === statusFilter;
         });
     }
-    if (dateFilter !== 'todos') {
-        orders = orders.filter(o => {
-            const d = new Date(o.createdAt || 0);
-            if (isNaN(d.getTime())) return false;
-            const diffDays = (now - d) / 86400000;
-            if (dateFilter === 'hoy') return d.toDateString() === now.toDateString();
-            if (dateFilter === '7d') return diffDays <= 7;
-            return true;
-        });
+
+    const statusBar = document.getElementById('admin-orders-status-bar');
+    if (statusBar) {
+        const rangeLabel = window.getAdminOrderRangeLabel(st);
+        const syncText = st.lastSyncAt
+            ? new Date(st.lastSyncAt).toLocaleTimeString('es-VE', { timeZone: 'America/Caracas', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+            : 'Sincronizando...';
+        const cacheBadge = st.fromCache
+            ? '<span class="px-2.5 py-0.5 rounded-full bg-purple-light dark:bg-purple/20 text-purple dark:text-purple-light font-black text-[10px] uppercase tracking-wider">Caché local</span>'
+            : '<span class="px-2.5 py-0.5 rounded-full bg-green/15 text-green-dark dark:text-green font-black text-[10px] uppercase tracking-wider">En vivo</span>';
+        const filterNote = orders.length !== allLoaded.length ? ` <span class="text-purple dark:text-purple-light font-bold">(de ${allLoaded.length} cargados)</span>` : '';
+        statusBar.innerHTML = `
+            <span>Mostrando <strong class="text-purple-dark dark:text-white">${orders.length}</strong> pedidos de <strong>${window.escapeHTML(rangeLabel)}</strong>${filterNote}</span>
+            <span class="inline-flex items-center gap-2">${cacheBadge} <span>Última sincronización: <strong>${window.escapeHTML(syncText)}</strong></span></span>`;
     }
-    if (!orders.length) { list.innerHTML = window.adminEmptyState('Sin pedidos con esos filtros', 'Ajusta la búsqueda o cambia el estado seleccionado.', 'search'); return; }
+
+    if (st.loading && !allLoaded.length) {
+        list.innerHTML = window.adminLoadingState('Sincronizando pedidos...');
+        return;
+    }
+
+    if (!orders.length) {
+        const clearBtn = (q || statusFilter !== 'todos')
+            ? '<div class="mt-3 text-center"><button type="button" onclick="window.clearAdminOrderFilter()" class="px-4 py-2 rounded-xl bg-purple-light dark:bg-purple/20 text-purple dark:text-white text-xs font-black uppercase tracking-widest">Limpiar filtros</button></div>'
+            : '';
+        list.innerHTML = window.adminEmptyState('Sin pedidos para mostrar', 'Ajusta la búsqueda, el estado o selecciona un rango más amplio.', 'search') + clearBtn;
+        window.refreshIcons?.(list);
+        return;
+    }
+
     list.innerHTML = orders.map(o => window.buildAdminOrderCard(o)).join('');
     window.refreshIcons?.(list);
 };
@@ -4965,24 +5718,38 @@ window.filterAdminOrders = function () {
 window.clearAdminOrderFilter = function () {
     window.vibrate?.(10);
     window.adminOrderFilter = null;
+    if (window.adminOrdersState) {
+        window.adminOrdersState.searchQuery = '';
+        window.adminOrdersState.statusFilter = 'todos';
+    }
     const search = document.getElementById('admin-order-search');
     const status = document.getElementById('admin-order-status-filter');
-    const date = document.getElementById('admin-order-date-filter');
     if (search) search.value = '';
     if (status) status.value = 'todos';
-    if (date) date.value = 'todos';
     window.filterAdminOrders?.();
-    const container = document.getElementById('admin-orders-container');
-    if (container && window.adminCache?.orders?.length) window.renderAdminOrders(window.adminCache.orders);
 };
 
 window.buildAdminOrderCard = function (o) {
-    const status = String(o.status || 'en_proceso').toLowerCase();
-    const totalNumber = Number(o.total || 0);
-    const pts = window.getOrderProductsPoints ? window.getOrderProductsPoints(o) : Math.floor(totalNumber);
-    const items = Array.isArray(o.items) ? o.items.map(i => `<li class="flex justify-between gap-3 text-xs"><span><strong>${Number(i.qty || 0)}x</strong> ${window.escapeHTML(i.name || 'Producto')} ${i.weight ? `(${window.escapeHTML(i.weight)})` : ''} ${i.forPet ? `<em class="text-purple/50 dark:text-gray-500">para ${window.escapeHTML(i.forPet)}</em>` : ''}</span><span class="font-black text-purple-dark dark:text-white">$${(Number(i.price || 0) * Number(i.qty || 0)).toFixed(2)}</span></li>`).join('') : '<li class="text-xs text-gray-500">Pedido sin detalle</li>';
+    const status = String(o.status || o.estado || 'en_proceso').toLowerCase();
+    const productsAmount = window.getOrderProductsAmount ? window.getOrderProductsAmount(o) : Number(o.total || 0);
+    const deliveryCost = Math.max(0, Number(o.deliveryCost || 0));
+    const totalShown = Number(o.totalWithDelivery || (productsAmount + deliveryCost) || o.total || 0);
+    const pts = window.getOrderProductsPoints ? window.getOrderProductsPoints(o) : Math.floor(productsAmount);
+    const items = Array.isArray(o.items) && o.items.length
+        ? o.items.map(i => {
+            if (i.type === 'feeding_plan') {
+                const bagsText = Array.isArray(i.bags) ? i.bags.map(b => `${b.qty}x ${b.weight}`).join(' + ') : (i.weight || '');
+                const petLabel = i.petName || i.forPet || o.selectedPet || 'Mascota';
+                return `<li class="flex justify-between gap-3 text-xs"><span><strong>Plan ${Number(i.durationDays || i.planDays || 7)}d · ${window.escapeHTML(petLabel)}</strong> — ${window.escapeHTML(i.formulaLabel || i.formulaName || i.name || 'Fórmula')} ${bagsText ? `(${window.escapeHTML(bagsText)})` : ''}</span><span class="font-black text-purple-dark dark:text-white shrink-0">$${Number(i.finalPrice ?? i.price ?? 0).toFixed(2)}</span></li>`;
+            }
+            const qty = Math.max(1, Number(i.qty || 1));
+            const lineTotal = Number(i.finalPrice ?? (Number(i.price || 0) * qty));
+            return `<li class="flex justify-between gap-3 text-xs"><span><strong>${qty}x</strong> ${window.escapeHTML(i.name || i.producto || 'Producto')} ${i.weight ? `(${window.escapeHTML(i.weight)})` : ''} ${(i.forPet || i.petName) ? `<em class="text-purple/50 dark:text-gray-500">para ${window.escapeHTML(i.forPet || i.petName)}</em>` : ''}</span><span class="font-black text-purple-dark dark:text-white shrink-0">$${lineTotal.toFixed(2)}</span></li>`;
+        }).join('')
+        : '<li class="text-xs text-gray-500">Pedido sin detalle</li>';
+
     let primary = '';
-    if (['pendiente', 'en_proceso', 'solicitado'].includes(status)) {
+    if (['pendiente', 'en_proceso', 'proceso', 'solicitado'].includes(status)) {
         primary = `<button onclick="window.marcarConfirmadoAdmin('${o.id}')" class="bg-blue-500 text-white text-[10px] font-black px-4 py-3 rounded-xl shadow-md hover:bg-blue-600 transition-all flex items-center gap-2 justify-center"><i data-lucide="check-circle" class="w-4 h-4"></i> Confirmar pedido</button>`;
     } else if (['confirmado', 'verificado'].includes(status)) {
         primary = (o.registeredUser === true && o.uid && o.uid !== 'anonimo' && !String(o.uid).startsWith('guest_'))
@@ -4991,16 +5758,26 @@ window.buildAdminOrderCard = function (o) {
     }
     const canCancel = !['completado', 'cancelado'].includes(status);
     const clientPhone = o.phone || o.telefono || o.whatsapp || '';
+    const clientDisplay = o.userName || o.nombre || o.nombre_persona || o.displayName || o.email || 'Usuario Invitado';
     return `<div class="bg-white dark:bg-darkcard rounded-3xl p-5 shadow-sm border border-purple-border/50 dark:border-purple/20 text-left relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-1 h-full ${window.getOrderStatusInfo(status).bar}"></div>
                 <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 pl-2">
-                    <div class="min-w-0"><div class="flex items-center gap-2 flex-wrap mb-2">${window.renderStatusBadge(status)}<span class="text-[9px] font-black uppercase tracking-widest text-gray-400">#${window.escapeHTML(o.id.slice(0, 8))}</span></div><h4 class="font-black text-purple-dark dark:text-white text-base leading-tight truncate">${window.escapeHTML(window.capitalizeName(o.userName || o.nombre || o.nombre_persona || o.email || 'Usuario Invitado'))}</h4><p class="text-[10px] text-gray-500 font-bold mt-1">${window.formatAdminDate(o.createdAt)}${clientPhone ? ` · 📞 ${window.escapeHTML(clientPhone)}` : ''}</p></div>
-                    <div class="text-left md:text-right shrink-0"><span class="text-[10px] text-gray-400 font-black uppercase tracking-widest block">Total</span><span class="font-black text-purple dark:text-white text-2xl">$${totalNumber.toFixed(2)}</span>${Number(o.pointsAwarded || o.pointsGranted || 0) > 0 ? `<p class="text-[9px] font-black text-green-dark dark:text-green uppercase tracking-widest mt-1">+${Number(o.pointsAwarded || o.pointsGranted || 0)} ptos</p>` : ''}</div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap mb-2">${window.renderStatusBadge(status)}<span class="text-[9px] font-black uppercase tracking-widest text-gray-400">#${window.escapeHTML(String(o.id || '').slice(0, 12))}</span>${o.selectedPet ? `<span class="text-[9px] font-black bg-purple-light dark:bg-purple/20 text-purple dark:text-white px-2 py-0.5 rounded-md">${window.escapeHTML(o.selectedPet)}</span>` : ''}</div>
+                        <h4 class="font-black text-purple-dark dark:text-white text-base leading-tight truncate">${window.escapeHTML(window.capitalizeName(clientDisplay))}</h4>
+                        <p class="text-[10px] text-gray-500 font-bold mt-1">${window.formatAdminDate(o.createdAt)}${clientPhone ? ` · 📞 ${window.escapeHTML(clientPhone)}` : ''}${o.email ? ` · ✉️ ${window.escapeHTML(o.email)}` : ''}</p>
+                    </div>
+                    <div class="text-left md:text-right shrink-0">
+                        <span class="text-[10px] text-gray-400 font-black uppercase tracking-widest block">Total${deliveryCost > 0 ? ' c/deliv.' : ''}</span>
+                        <span class="font-black text-purple dark:text-white text-2xl">$${totalShown.toFixed(2)}</span>
+                        ${deliveryCost > 0 ? `<p class="text-[9px] font-bold text-gray-500 mt-0.5">Productos $${productsAmount.toFixed(2)} + Deliv. $${deliveryCost.toFixed(2)}</p>` : ''}
+                        ${Number(o.pointsAwarded || o.pointsGranted || 0) > 0 ? `<p class="text-[9px] font-black text-green-dark dark:text-green uppercase tracking-widest mt-1">+${Number(o.pointsAwarded || o.pointsGranted || 0)} ptos</p>` : ''}
+                    </div>
                 </div>
                 <div class="bg-purple-light/70 dark:bg-[#0d0718] rounded-2xl p-4 my-4 border border-purple-border/30 dark:border-purple/20 ml-2"><ul class="space-y-2">${items}</ul></div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 ml-2">
                     ${primary}
-                    <a href="${window.getAdminContactLink(o)}" target="_blank" class="bg-[#25D366]/15 border border-[#25D366]/30 text-[#168d43] dark:text-green text-[10px] font-black px-4 py-3 rounded-xl transition-all flex items-center gap-2 justify-center"><i data-lucide="message-circle" class="w-4 h-4"></i> WhatsApp</a>
+                    <a href="${window.getAdminContactLink(o)}" target="_blank" rel="noopener noreferrer" class="bg-[#25D366]/15 border border-[#25D366]/30 text-[#168d43] dark:text-green text-[10px] font-black px-4 py-3 rounded-xl transition-all flex items-center gap-2 justify-center"><i data-lucide="message-circle" class="w-4 h-4"></i> WhatsApp</a>
                     <button onclick="window.openDeliveryNoteModal('${o.id}')" class="bg-green/15 border border-green/25 text-green-dark dark:text-green text-[10px] font-black px-4 py-3 rounded-xl transition-all flex items-center gap-2 justify-center"><i data-lucide="truck" class="w-4 h-4"></i> Nota entrega</button>
                     ${canCancel ? `<button onclick="window.cancelarPedidoAdmin('${o.id}')" class="bg-pink/10 border border-pink/20 text-pink text-[10px] font-black px-4 py-3 rounded-xl transition-all flex items-center gap-2 justify-center"><i data-lucide="x-circle" class="w-4 h-4"></i> Cancelar</button>` : ''}
                 </div>
@@ -5208,15 +5985,996 @@ window.cancelarPedidoAdmin = async function (orderId) {
     const ok = confirm('¿Seguro que deseas cancelar este pedido?');
     if (!ok) return;
     try {
-        await setDoc(window.getOrderDocRef(orderId), { status: 'cancelado', cancelledAt: new Date().toISOString() }, { merge: true });
+        const orderRef = window.getOrderDocRef(orderId);
+        const liveOrderSnap = await getDoc(orderRef);
+        const cachedOrder = window.getAdminOrderById?.(orderId) || null;
+        const liveOrder = liveOrderSnap.exists() ? { ...(cachedOrder || {}), ...liveOrderSnap.data(), id: orderId } : cachedOrder;
+        const prevStatus = String(liveOrder?.status || liveOrder?.estado || 'en_proceso').toLowerCase();
+        if (prevStatus === 'cancelado') {
+            window.syncLocalAdminOrderCache(orderId, liveOrder || { status: 'cancelado' });
+            window.showToast('Este pedido ya estaba cancelado.', 'info');
+            return;
+        }
+        const nowIso = new Date().toISOString();
+        const patch = {
+            status: 'cancelado',
+            estado: 'cancelado',
+            cancelledAt: nowIso,
+            updatedAt: nowIso
+        };
+        await setDoc(orderRef, patch, { merge: true });
+        window.syncLocalAdminOrderCache(orderId, patch);
+        await window.applyOrderDeltaToSummary?.({ ...(liveOrder || {}), ...patch }, 'cancelado', prevStatus);
         window.showToast('Pedido cancelado.', 'success');
+        if (window.adminCurrentTab === 'resumen') window.loadAdminSummary?.();
     } catch (e) { console.error(e); window.showToast('No se pudo cancelar el pedido.'); }
 };
 
-window.loadAdminTools = function () {
+// =========================================================================================
+// SECCIONES 4 Y 5: EXPORTACIÓN A EXCEL (SHEETJS) + MANTENIMIENTO Y LIMPIEZA SEGURA
+// =========================================================================================
+window.ADMIN_CLEANUP_DAYS = 30;
+window.ADMIN_CLEANUP_BATCH_SIZE = 400;
+window.ADMIN_CLEANUP_DAILY_MAX = 15000;
+
+window.fetchAdminMaintenanceStatus = async function (forceRefresh = false) {
+    if (!db) return null;
+    if (!forceRefresh && window.adminCache?.maintenance !== undefined && window.adminCache?.maintenance !== null) {
+        return window.adminCache.maintenance;
+    }
+    try {
+        const snap = await getDoc(window.getConfigDocRef('mantenimiento'));
+        const data = snap.exists() ? snap.data() : { ultimaLimpieza: null };
+        window.adminCache = window.adminCache || {};
+        window.adminCache.maintenance = data;
+        return data;
+    } catch (e) {
+        console.warn('No se pudo leer config/mantenimiento:', e);
+        return null;
+    }
+};
+
+window.shouldShowCleanupBanner = function (maintDoc) {
+    if (!maintDoc || !maintDoc.ultimaLimpieza) return true;
+    const lastMs = new Date(maintDoc.ultimaLimpieza).getTime();
+    if (!Number.isFinite(lastMs)) return true;
+    return (Date.now() - lastMs) > 7 * 86400000;
+};
+
+window.buildMaintenanceAlertCard = function (maintDoc) {
+    if (!window.shouldShowCleanupBanner(maintDoc)) return '';
+    const lastLabel = maintDoc?.ultimaLimpieza
+        ? `Última limpieza: ${window.formatVenezuelaDateTime(maintDoc.ultimaLimpieza)}`
+        : 'Aún no se ha ejecutado una limpieza de pedidos cerrados.';
+    return `
+        <div class="bg-pink/10 dark:bg-pink/15 border border-pink/30 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left shadow-sm">
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-pink/20 text-pink flex items-center justify-center shrink-0">
+                    <i data-lucide="archive" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h4 class="text-sm font-black text-purple-dark dark:text-white leading-tight">Hay pedidos cerrados con más de 30 días. Archívalos para mantener el panel rápido</h4>
+                    <p class="text-[11px] font-semibold text-gray-600 dark:text-gray-300 mt-1">${window.escapeHTML(lastLabel)} Se descargará un respaldo Excel antes de eliminar.</p>
+                </div>
+            </div>
+            <button type="button" onclick="window.goToAdminCleanupSection()" class="shrink-0 bg-pink hover:bg-pink-dark text-white font-black text-[10px] uppercase tracking-widest px-5 py-3 rounded-xl shadow-md transition-all active:scale-95">Archivar y limpiar</button>
+        </div>`;
+};
+
+window.goToAdminCleanupSection = function () {
+    window.switchAdminTab?.('herramientas');
+    setTimeout(() => {
+        const el = document.getElementById('admin-cleanup-card');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+};
+
+window.loadSheetJsLib = function () {
+    if (window.XLSX?.utils?.book_new && window.XLSX?.writeFile) {
+        return Promise.resolve(window.XLSX);
+    }
+    if (window.__sheetJsPromise) return window.__sheetJsPromise;
+
+    const loadScript = (src) => new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.async = true;
+        s.onload = () => {
+            if (window.XLSX?.utils?.book_new && window.XLSX?.writeFile) resolve(window.XLSX);
+            else reject(new Error('SheetJS no expuso window.XLSX'));
+        };
+        s.onerror = () => reject(new Error(`No se pudo cargar ${src}`));
+        document.head.appendChild(s);
+    });
+
+    window.__sheetJsPromise = loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js')
+        .catch(() => loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'))
+        .catch((err) => {
+            window.__sheetJsPromise = null;
+            throw err;
+        });
+    return window.__sheetJsPromise;
+};
+
+window.getExportOrderReadableStatus = function (rawStatus) {
+    const s = String(rawStatus || 'en_proceso').toLowerCase();
+    if (['en_proceso', 'pendiente', 'proceso', 'solicitado'].includes(s)) return 'En proceso';
+    if (['confirmado', 'verificado'].includes(s)) return 'Confirmado';
+    if (s === 'completado') return 'Completado';
+    if (s === 'cancelado') return 'Cancelado';
+    return s;
+};
+
+window.formatExcelWorksheet = function (XLSX, aoa, { currencyCols = [], intCols = [] } = {}) {
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    const ref = ws['!ref'] || 'A1:A1';
+    const range = XLSX.utils.decode_range(ref);
+    const colWidths = [];
+
+    for (let C = range.s.c; C <= range.e.c; C++) {
+        let maxLen = 10;
+        for (let R = range.s.r; R <= range.e.r; R++) {
+            const addr = XLSX.utils.encode_cell({ c: C, r: R });
+            const cell = ws[addr];
+            if (!cell) continue;
+            if (R > 0) {
+                if (currencyCols.includes(C) && typeof cell.v === 'number') {
+                    cell.t = 'n';
+                    cell.z = '#,##0.00';
+                } else if (intCols.includes(C) && typeof cell.v === 'number') {
+                    cell.t = 'n';
+                    cell.z = '#,##0';
+                }
+            }
+            const strVal = String(cell.v ?? '');
+            const len = strVal.length + (R === 0 ? 4 : 2);
+            if (len > maxLen) maxLen = len;
+        }
+        colWidths.push({ wch: Math.min(46, Math.max(11, maxLen)) });
+    }
+
+    ws['!cols'] = colWidths;
+    // Congela la fila de encabezado tanto en Excel como en Google Sheets.
+    ws['!views'] = [{ state: 'frozen', ySplit: 1 }];
+    ws['!freeze'] = { xSplit: 0, ySplit: 1, topLeftCell: 'A2', activePane: 'bottomLeft' };
+    return ws;
+};
+
+window.buildAndDownloadSalesWorkbook = async function ({
+    orders = [],
+    summaries = [],
+    filePrefix = 'milkarf-ventas',
+    desde = '',
+    hasta = '',
+    periodLabel = ''
+} = {}) {
+    const XLSX = await window.loadSheetJsLib();
+    const sortedOrders = [...(orders || [])].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    // Calcular fechas efectivas si no vienen definidas (caso "Todo lo que hay en la base").
+    const caracasDates = sortedOrders.map(o => window.getCaracasDateString(o.createdAt)).filter(Boolean);
+    const todayStr = window.getCaracasDateString(new Date()) || 'hoy';
+    const effectiveHasta = hasta || caracasDates[0] || todayStr;
+    const effectiveDesde = desde || caracasDates[caracasDates.length - 1] || effectiveHasta;
+
+    let completedCount = 0;
+    let cancelledCount = 0;
+    let inProgressCount = 0;
+    let salesProductsUSD = 0;
+    let salesDeliveryUSD = 0;
+    let salesWithDeliveryUSD = 0;
+    let discountsUSD = 0;
+    const completedCustomers = new Set();
+    const productStats = new Map(); // key -> { units, amountUSD }
+    const customerMap = new Map();  // key -> { name, phone, ordersCount, totalSpentUSD, lastOrderMs, lastOrderIso }
+
+    const orderRows = [];
+    const itemRows = [];
+
+    sortedOrders.forEach(o => {
+        const statusRaw = String(o.status || o.estado || 'en_proceso').toLowerCase();
+        const statusLabel = window.getExportOrderReadableStatus(statusRaw);
+        const fin = window.getOrderFinancials(o);
+        const isRegistered = Boolean(o.registeredUser === true && o.uid && o.uid !== 'anonimo' && !String(o.uid).startsWith('guest_'));
+        const clientName = window.capitalizeName(o.userName || o.nombre || o.nombre_persona || o.displayName || o.email || 'Usuario Invitado');
+        const clientPhone = o.phone || o.telefono || o.whatsapp || '';
+        const items = Array.isArray(o.items) ? o.items : [];
+        const itemsCount = items.reduce((acc, it) => acc + Math.max(1, Number(it.qty || 1)), 0);
+        const createdMs = new Date(o.createdAt || 0).getTime() || 0;
+
+        if (statusRaw === 'completado') {
+            completedCount++;
+            salesProductsUSD += fin.ventasProductosUSD;
+            salesDeliveryUSD += fin.deliveryUSD;
+            salesWithDeliveryUSD += fin.ventasConDeliveryUSD;
+            discountsUSD += fin.descuentosUSD;
+            completedCustomers.add(window.getOrderCustomerKey(o));
+        } else if (statusRaw === 'cancelado') {
+            cancelledCount++;
+        } else {
+            inProgressCount++;
+        }
+
+        // Agrupar clientes (solo compras no canceladas en gasto acumulado)
+        const cKey = window.getOrderCustomerKey(o);
+        const prevC = customerMap.get(cKey) || {
+            name: clientName,
+            phone: clientPhone,
+            ordersCount: 0,
+            totalSpentUSD: 0,
+            lastOrderMs: 0,
+            lastOrderIso: ''
+        };
+        if (prevC.name === 'Usuario Invitado' && clientName !== 'Usuario Invitado') prevC.name = clientName;
+        if (!prevC.phone && clientPhone) prevC.phone = clientPhone;
+        if (statusRaw !== 'cancelado') {
+            prevC.ordersCount += 1;
+            prevC.totalSpentUSD = window.roundUSD(prevC.totalSpentUSD + fin.ventasConDeliveryUSD);
+        }
+        if (createdMs >= prevC.lastOrderMs) {
+            prevC.lastOrderMs = createdMs;
+            prevC.lastOrderIso = o.createdAt || prevC.lastOrderIso;
+        }
+        customerMap.set(cKey, prevC);
+
+        orderRows.push([
+            String(o.id || ''),
+            window.formatVenezuelaDateTime(o.createdAt),
+            clientName,
+            String(clientPhone),
+            String(o.email || ''),
+            isRegistered ? 'Registrado' : 'Invitado',
+            String(o.selectedPet || ''),
+            statusLabel,
+            itemsCount,
+            fin.subtotalUSD,
+            fin.descuentosUSD,
+            fin.ventasProductosUSD,
+            fin.deliveryUSD,
+            fin.ventasConDeliveryUSD,
+            window.formatVenezuelaDateTime(o.confirmedAt),
+            window.formatVenezuelaDateTime(o.completedAt),
+            window.formatVenezuelaDateTime(o.cancelledAt)
+        ]);
+
+        items.forEach(item => {
+            const qty = Math.max(1, Number(item.qty || 1));
+            const lineTotal = window.roundUSD(Number(item.finalPrice ?? (Number(item.price || 0) * qty)));
+            const unitPrice = item.type === 'feeding_plan' ? lineTotal : window.roundUSD(Number(item.price ?? (lineTotal / qty)));
+            const itemDiscount = window.roundUSD(Number(item.discountAmount || 0));
+            const weightText = item.type === 'feeding_plan'
+                ? (Array.isArray(item.bags) && item.bags.length ? item.bags.map(b => `${b.qty}x ${b.weight}`).join(' + ') : (item.weight || `Plan ${item.durationDays || 7}d`))
+                : String(item.weight || item.tam || item.presentation || '');
+            const petName = String(item.forPet || item.petName || o.selectedPet || '');
+            const prodName = String(item.name || item.producto || item.title || 'Producto');
+
+            itemRows.push([
+                String(o.id || ''),
+                window.formatVenezuelaDateTime(o.createdAt),
+                clientName,
+                prodName,
+                weightText,
+                qty,
+                unitPrice,
+                itemDiscount,
+                lineTotal,
+                petName,
+                statusLabel
+            ]);
+
+            if (statusRaw === 'completado') {
+                const pKey = window.getOrderItemKey(item);
+                const prevP = productStats.get(pKey) || { name: pKey, units: 0, amountUSD: 0 };
+                prevP.units += qty;
+                prevP.amountUSD = window.roundUSD(prevP.amountUSD + lineTotal);
+                productStats.set(pKey, prevP);
+            }
+        });
+    });
+
+    const productSalesRows = [...productStats.values()]
+        .sort((a, b) => b.amountUSD - a.amountUSD)
+        .map(p => [p.name, p.units, p.amountUSD]);
+
+    const topProduct = productStats.size
+        ? [...productStats.values()].sort((a, b) => b.units - a.units)[0]?.name || 'Sin datos'
+        : 'Sin datos';
+
+    const ticketPromedio = completedCount > 0 ? window.roundUSD(salesProductsUSD / completedCount) : 0;
+
+    const summarySheetAoa = [
+        ['Indicador', 'Valor'],
+        ['Período exportado', periodLabel || `${effectiveDesde} a ${effectiveHasta}`],
+        ['Total de pedidos', sortedOrders.length],
+        ['Completados', completedCount],
+        ['Cancelados', cancelledCount],
+        ['En proceso / abiertos', inProgressCount],
+        ['Ventas de productos USD (completados)', window.roundUSD(salesProductsUSD)],
+        ['Delivery USD (completados)', window.roundUSD(salesDeliveryUSD)],
+        ['Ventas con delivery USD (completados)', window.roundUSD(salesWithDeliveryUSD)],
+        ['Descuentos USD (completados)', window.roundUSD(discountsUSD)],
+        ['Ticket promedio productos USD', ticketPromedio],
+        ['Clientes únicos (completados)', completedCustomers.size],
+        ['Producto más vendido', topProduct]
+    ];
+
+    const ordersSheetAoa = [
+        [
+            'ID', 'Fecha de creación', 'Cliente', 'Teléfono', 'Email', 'Tipo', 'Mascota',
+            'Estado', 'Cantidad de ítems', 'Subtotal USD', 'Descuento USD',
+            'Total de productos USD', 'Delivery USD', 'Total con delivery USD',
+            'Fecha de confirmación', 'Fecha de completado', 'Fecha de cancelación'
+        ],
+        ...orderRows
+    ];
+
+    const detailsSheetAoa = [
+        [
+            'ID del pedido', 'Fecha', 'Cliente', 'Producto', 'Presentación/Peso',
+            'Cantidad', 'Precio unitario USD', 'Descuento USD', 'Total de la línea USD',
+            'Mascota', 'Estado del pedido'
+        ],
+        ...itemRows
+    ];
+
+    const productsSheetAoa = [
+        ['Producto + Presentación', 'Unidades vendidas', 'Monto USD'],
+        ...productSalesRows
+    ];
+
+    const sortedSummaries = [...(summaries || [])].sort((a, b) => String(b.mes || b.id || '').localeCompare(String(a.mes || a.id || '')));
+    const monthsSheetAoa = [
+        [
+            'Mes', 'Estado archivo', 'Pedidos completados', 'Pedidos cancelados',
+            'Ventas productos USD', 'Delivery USD', 'Ventas con delivery USD',
+            'Descuentos USD', 'Clientes únicos', 'Producto más vendido', 'Actualizado en'
+        ],
+        ...sortedSummaries.map(s => {
+            const topMonthProd = Object.entries(s.unidadesPorProducto || {}).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Sin datos';
+            return [
+                String(s.mes || s.id || ''),
+                s.archivado ? 'Archivado' : 'Activo',
+                Number(s.pedidosCompletados || 0),
+                Number(s.pedidosCancelados || 0),
+                window.roundUSD(s.ventasProductosUSD),
+                window.roundUSD(s.deliveryUSD),
+                window.roundUSD(s.ventasConDeliveryUSD),
+                window.roundUSD(s.descuentosUSD),
+                Number(s.clientesUnicos || 0),
+                topMonthProd,
+                window.formatVenezuelaDateTime(s.actualizadoEn)
+            ];
+        })
+    ];
+
+    const customerRows = [...customerMap.values()]
+        .filter(c => c.ordersCount > 0 || c.totalSpentUSD > 0)
+        .sort((a, b) => b.totalSpentUSD - a.totalSpentUSD)
+        .map(c => [
+            c.name,
+            String(c.phone || ''),
+            c.ordersCount,
+            c.totalSpentUSD,
+            window.formatVenezuelaDateTime(c.lastOrderIso)
+        ]);
+    const customersSheetAoa = [
+        ['Cliente', 'Teléfono', 'Número de pedidos', 'Total comprado USD', 'Último pedido'],
+        ...customerRows
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, window.formatExcelWorksheet(XLSX, summarySheetAoa), 'Resumen');
+    // Dar formato numérico explícito a filas numéricas clave de la hoja Resumen
+    const wsRes = wb.Sheets['Resumen'];
+    [2, 3, 4, 5, 11].forEach(r => { const cell = wsRes[`B${r + 1}`]; if (cell && typeof cell.v === 'number') { cell.t = 'n'; cell.z = '#,##0'; } });
+    [6, 7, 8, 9, 10].forEach(r => { const cell = wsRes[`B${r + 1}`]; if (cell && typeof cell.v === 'number') { cell.t = 'n'; cell.z = '#,##0.00'; } });
+
+    XLSX.utils.book_append_sheet(wb, window.formatExcelWorksheet(XLSX, ordersSheetAoa, {
+        intCols: [8],
+        currencyCols: [9, 10, 11, 12, 13]
+    }), 'Pedidos');
+
+    XLSX.utils.book_append_sheet(wb, window.formatExcelWorksheet(XLSX, detailsSheetAoa, {
+        intCols: [5],
+        currencyCols: [6, 7, 8]
+    }), 'Detalle productos');
+
+    XLSX.utils.book_append_sheet(wb, window.formatExcelWorksheet(XLSX, productsSheetAoa, {
+        intCols: [1],
+        currencyCols: [2]
+    }), 'Ventas por producto');
+
+    XLSX.utils.book_append_sheet(wb, window.formatExcelWorksheet(XLSX, monthsSheetAoa, {
+        intCols: [2, 3, 8],
+        currencyCols: [4, 5, 6, 7]
+    }), 'Ventas por mes');
+
+    XLSX.utils.book_append_sheet(wb, window.formatExcelWorksheet(XLSX, customersSheetAoa, {
+        intCols: [2],
+        currencyCols: [3]
+    }), 'Clientes');
+
+    const filename = `${filePrefix}_${effectiveDesde}_${effectiveHasta}.xlsx`;
+    XLSX.writeFile(wb, filename);
+    return {
+        filename,
+        totalOrders: sortedOrders.length,
+        completedCount,
+        salesWithDeliveryUSD: window.roundUSD(salesWithDeliveryUSD),
+        desde: effectiveDesde,
+        hasta: effectiveHasta
+    };
+};
+
+window.confirmNativeExportAllDialog = async function (approxCountText) {
+    const dlg = document.getElementById('modal-admin-export-confirm');
+    const desc = document.getElementById('export-confirm-modal-desc');
+    if (!dlg || typeof dlg.showModal !== 'function') return true;
+    if (desc) desc.textContent = approxCountText;
+
+    return new Promise((resolve) => {
+        const onClose = () => {
+            const val = dlg.returnValue;
+            dlg.returnValue = '';
+            resolve(val === 'confirm');
+        };
+        dlg.addEventListener('close', onClose, { once: true });
+        dlg.showModal();
+    });
+};
+
+window.updateExportRangeVisibility = function () {
+    const sel = document.getElementById('admin-export-range')?.value || 'mes_actual';
+    const customWrap = document.getElementById('admin-export-custom-wrap');
+    if (customWrap) customWrap.classList.toggle('hidden', sel !== 'custom');
+};
+
+window.getExportRangeConfig = function () {
+    const mode = document.getElementById('admin-export-range')?.value || 'mes_actual';
+    const now = new Date();
+    const currentYM = window.getCaracasYearMonth(now) || now.toISOString().slice(0, 7);
+
+    if (mode === 'mes_actual') {
+        const bounds = window.getCaracasMonthIsoBounds(currentYM);
+        return { mode, ...bounds, startYM: currentYM, endYM: currentYM, label: `Mes actual (${currentYM})` };
+    }
+    if (mode === 'mes_anterior') {
+        const [y, m] = currentYM.split('-').map(Number);
+        const prevDate = new Date(Date.UTC(y, m - 2, 15));
+        const prevYM = `${prevDate.getUTCFullYear()}-${String(prevDate.getUTCMonth() + 1).padStart(2, '0')}`;
+        const bounds = window.getCaracasMonthIsoBounds(prevYM);
+        return { mode, ...bounds, startYM: prevYM, endYM: prevYM, label: `Mes anterior (${prevYM})` };
+    }
+    if (mode === '30d') {
+        const startDate = new Date(Date.now() - 30 * 86400000);
+        const desdeStr = window.getCaracasDateString(startDate);
+        const hastaStr = window.getCaracasDateString(now);
+        return {
+            mode,
+            startIso: new Date(`${desdeStr}T00:00:00.000-04:00`).toISOString(),
+            endIso: new Date(`${hastaStr}T23:59:59.999-04:00`).toISOString(),
+            desdeStr,
+            hastaStr,
+            startYM: desdeStr.slice(0, 7),
+            endYM: hastaStr.slice(0, 7),
+            label: 'Últimos 30 días'
+        };
+    }
+    if (mode === 'custom') {
+        const fromEl = document.getElementById('admin-export-date-from');
+        const toEl = document.getElementById('admin-export-date-to');
+        const desdeStr = fromEl?.value || '';
+        const hastaStr = toEl?.value || '';
+        if (!desdeStr || !hastaStr || desdeStr > hastaStr) return null;
+        return {
+            mode,
+            startIso: new Date(`${desdeStr}T00:00:00.000-04:00`).toISOString(),
+            endIso: new Date(`${hastaStr}T23:59:59.999-04:00`).toISOString(),
+            desdeStr,
+            hastaStr,
+            startYM: desdeStr.slice(0, 7),
+            endYM: hastaStr.slice(0, 7),
+            label: `${desdeStr} a ${hastaStr}`
+        };
+    }
+    return { mode: 'all', startIso: null, endIso: null, desdeStr: '', hastaStr: '', startYM: '', endYM: '', label: 'Toda la base de datos' };
+};
+
+window.exportAdminSalesToExcel = async function () {
+    if (!window.isAdmin || !db) {
+        window.showToast?.('Debes iniciar sesión como administrador.');
+        return;
+    }
+    const cfg = window.getExportRangeConfig();
+    if (!cfg) {
+        window.showToast?.('Selecciona un rango de fechas válido para exportar.', 'info');
+        return;
+    }
+
+    const ordersRef = window.getOrdersCollectionRef();
+    const summariesRef = window.getSalesSummariesCollectionRef();
+    const btn = document.getElementById('btn-export-excel');
+    const prog = document.getElementById('admin-export-progress');
+    const setProg = (msg) => {
+        if (!prog) return;
+        if (msg) { prog.textContent = msg; prog.classList.remove('hidden'); }
+        else { prog.textContent = ''; prog.classList.add('hidden'); }
+    };
+
+    try {
+        if (cfg.mode === 'all') {
+            let approxText = 'Se leerá toda la colección de pedidos para generar el archivo Excel. Esto puede consumir muchas lecturas en tu cuota diaria de Firebase.';
+            try {
+                const countSnap = await getCountFromServer(ordersRef);
+                const count = Number(countSnap.data().count || 0);
+                approxText = `Se leerán aproximadamente ${count.toLocaleString('es-VE')} pedidos (${count.toLocaleString('es-VE')} lecturas en Firestore) para generar el archivo Excel.`;
+            } catch (e) { }
+            const ok = await window.confirmNativeExportAllDialog(approxText);
+            if (!ok) return;
+        }
+
+        if (btn) btn.disabled = true;
+        setProg('Leyendo pedidos… 0');
+
+        const constraints = [];
+        if (cfg.startIso) constraints.push(where('createdAt', '>=', cfg.startIso));
+        if (cfg.endIso) constraints.push(where('createdAt', '<=', cfg.endIso));
+        constraints.push(orderBy('createdAt', 'desc'));
+
+        const orders = await window.adminFetchAllDocs(ordersRef, {
+            pageSize: 500,
+            constraints,
+            onProgress: (count) => setProg(`Leyendo pedidos… ${count.toLocaleString('es-VE')}`)
+        });
+
+        setProg('Leyendo resúmenes mensuales…');
+        let summaries = [];
+        try {
+            const sumSnap = await getDocs(query(summariesRef, orderBy('mes', 'desc'), limit(60)));
+            sumSnap.forEach(d => summaries.push({ id: d.id, ...d.data() }));
+            if (cfg.startYM && cfg.endYM) {
+                summaries = summaries.filter(s => {
+                    const m = String(s.mes || s.id || '');
+                    return m >= cfg.startYM && m <= cfg.endYM;
+                });
+            }
+        } catch (sumErr) {
+            console.warn('No se pudieron leer resúmenes mensuales al exportar:', sumErr);
+        }
+
+        setProg('Cargando generador de Excel (SheetJS)…');
+        const info = await window.buildAndDownloadSalesWorkbook({
+            orders,
+            summaries,
+            filePrefix: 'milkarf-ventas',
+            desde: cfg.desdeStr,
+            hasta: cfg.hastaStr,
+            periodLabel: cfg.label
+        });
+
+        setProg(`Descargado: ${info.filename} (${info.totalOrders.toLocaleString('es-VE')} pedidos).`);
+        window.showToast?.(`Excel descargado: ${info.filename}`, 'success');
+    } catch (error) {
+        window.logFirestoreIndexHint?.(error, 'Exportar ventas Excel');
+        setProg('Error al generar Excel. Revisa consola.');
+        window.showToast?.('No se pudo exportar a Excel. Inténtalo de nuevo.');
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+};
+
+// Paso 1 + Paso 2 obligatorios de Limpieza
+window.startAdminCleanupScan = async function () {
+    if (!window.isAdmin || !db) {
+        window.showToast?.('Debes iniciar sesión como administrador.');
+        return;
+    }
+    const statusEl = document.getElementById('cleanup-status-box');
+    const step2Box = document.getElementById('cleanup-step2-box');
+    const step1Btn = document.getElementById('btn-start-cleanup');
+    const setStatus = (html) => {
+        if (statusEl) { statusEl.innerHTML = html; statusEl.classList.remove('hidden'); }
+    };
+
+    try {
+        if (step1Btn) step1Btn.disabled = true;
+        if (step2Box) step2Box.classList.add('hidden');
+        window.__adminCleanupState = null;
+
+        setStatus('<p class="text-xs font-bold text-purple dark:text-white">Consultando pedidos cerrados con más de 30 días… 0</p>');
+        const cutoffIso = new Date(Date.now() - window.ADMIN_CLEANUP_DAYS * 86400000).toISOString();
+        const ordersRef = window.getOrdersCollectionRef();
+
+        const oldOrders = await window.adminFetchAllDocs(ordersRef, {
+            pageSize: 500,
+            constraints: [where('createdAt', '<', cutoffIso), orderBy('createdAt', 'asc')],
+            onProgress: (count) => {
+                setStatus(`<p class="text-xs font-bold text-purple dark:text-white">Consultando pedidos antiguos… ${count.toLocaleString('es-VE')}</p>`);
+            }
+        });
+
+        // Solo estados cerrados ('completado' o 'cancelado'). Nunca se borran abiertos.
+        const eligibleAll = oldOrders.filter(o => {
+            const st = String(o.status || o.estado || '').toLowerCase();
+            return (st === 'completado' || st === 'cancelado') && o.createdAt && String(o.createdAt) < cutoffIso;
+        });
+
+        if (!eligibleAll.length) {
+            setStatus('<p class="text-xs font-bold text-green-dark dark:text-green">No hay pedidos cerrados con más de 30 días para archivar.</p>');
+            return;
+        }
+
+        const capped = eligibleAll.length > window.ADMIN_CLEANUP_DAILY_MAX;
+        const candidates = capped ? eligibleAll.slice(0, window.ADMIN_CLEANUP_DAILY_MAX) : eligibleAll;
+
+        const dates = candidates.map(o => window.getCaracasDateString(o.createdAt)).filter(Boolean).sort();
+        const desde = dates[0] || window.getCaracasDateString(new Date(cutoffIso));
+        const hasta = dates[dates.length - 1] || desde;
+        const totalSalesUSD = window.roundUSD(
+            candidates
+                .filter(o => String(o.status || o.estado || '').toLowerCase() === 'completado')
+                .reduce((acc, o) => acc + window.getOrderFinancials(o).ventasConDeliveryUSD, 0)
+        );
+        const affectedMonths = [...new Set(candidates.map(o => window.getCaracasYearMonth(o.createdAt)).filter(Boolean))].sort();
+
+        setStatus(`
+            <div class="space-y-1">
+                <p class="text-xs font-black text-purple-dark dark:text-white">Se archivarán ${candidates.length.toLocaleString('es-VE')} pedidos (de ${desde} a ${hasta}), total de ventas $${totalSalesUSD.toFixed(2)}</p>
+                ${capped ? `<p class="text-[11px] font-bold text-pink">Por límite diario del plan gratuito de Firebase, este lote incluye los ${window.ADMIN_CLEANUP_DAILY_MAX.toLocaleString('es-VE')} pedidos más antiguos. Podrás limpiar el resto mañana.</p>` : ''}
+                <p id="cleanup-backup-msg" class="text-[11px] font-semibold text-purple dark:text-green">Generando y descargando Excel de respaldo obligatorio…</p>
+            </div>`);
+
+        // Paso 2 obligatorio: generar y descargar Excel de respaldo antes de habilitar el borrado.
+        const summariesSnap = await getDocs(query(window.getSalesSummariesCollectionRef(), orderBy('mes', 'desc'), limit(60))).catch(() => null);
+        const summaries = [];
+        summariesSnap?.forEach(d => summaries.push({ id: d.id, ...d.data() }));
+
+        const backupInfo = await window.buildAndDownloadSalesWorkbook({
+            orders: candidates,
+            summaries: summaries.filter(s => affectedMonths.includes(String(s.mes || s.id || ''))),
+            filePrefix: 'milkarf-respaldo',
+            desde,
+            hasta,
+            periodLabel: `Respaldo previo a limpieza (${desde} a ${hasta})`
+        });
+
+        window.__adminCleanupState = {
+            candidates,
+            cutoffIso,
+            totalSalesUSD,
+            desde,
+            hasta,
+            affectedMonths,
+            backupFilename: backupInfo.filename,
+            backupDownloaded: true,
+            backupConfirmed: false
+        };
+
+        const msgEl = document.getElementById('cleanup-backup-msg');
+        if (msgEl) msgEl.textContent = `Respaldo descargado: ${backupInfo.filename}`;
+
+        if (step2Box) {
+            step2Box.classList.remove('hidden');
+            const chk = document.getElementById('cleanup-backup-confirm-check');
+            const proceedBtn = document.getElementById('cleanup-proceed-delete-btn');
+            if (chk) chk.checked = false;
+            if (proceedBtn) proceedBtn.disabled = true;
+        }
+        window.showToast?.(`Respaldo descargado: ${backupInfo.filename}`, 'success');
+    } catch (error) {
+        window.logFirestoreIndexHint?.(error, 'Limpieza de pedidos (respaldo/escaneo)');
+        window.__adminCleanupState = null;
+        setStatus('<p class="text-xs font-bold text-pink">El proceso se detuvo porque falló la consulta o la descarga del respaldo. No se borró ningún pedido.</p>');
+        window.showToast?.('Se detuvo la limpieza: falló la generación del respaldo.');
+    } finally {
+        if (step1Btn) step1Btn.disabled = false;
+    }
+};
+
+window.redownloadCleanupBackup = async function () {
+    const st = window.__adminCleanupState;
+    if (!st || !st.candidates?.length) return;
+    try {
+        const summariesSnap = await getDocs(query(window.getSalesSummariesCollectionRef(), orderBy('mes', 'desc'), limit(60))).catch(() => null);
+        const summaries = [];
+        summariesSnap?.forEach(d => summaries.push({ id: d.id, ...d.data() }));
+        const info = await window.buildAndDownloadSalesWorkbook({
+            orders: st.candidates,
+            summaries: summaries.filter(s => st.affectedMonths.includes(String(s.mes || s.id || ''))),
+            filePrefix: 'milkarf-respaldo',
+            desde: st.desde,
+            hasta: st.hasta,
+            periodLabel: `Respaldo previo a limpieza (${st.desde} a ${st.hasta})`
+        });
+        st.backupDownloaded = true;
+        window.showToast?.(`Respaldo descargado nuevamente: ${info.filename}`, 'success');
+    } catch (e) {
+        window.showToast?.('No se pudo volver a descargar el respaldo.');
+    }
+};
+
+window.onCleanupBackupCheckboxChange = function () {
+    const chk = document.getElementById('cleanup-backup-confirm-check');
+    const proceedBtn = document.getElementById('cleanup-proceed-delete-btn');
+    const st = window.__adminCleanupState;
+    const confirmed = Boolean(chk?.checked);
+    if (st) st.backupConfirmed = confirmed;
+    if (proceedBtn) proceedBtn.disabled = !(st?.backupDownloaded && confirmed);
+};
+
+// Paso 3 y Paso 4 obligatorios de Limpieza
+window.startCleanupDeleteStep3 = async function () {
+    const st = window.__adminCleanupState;
+    if (!st || !st.candidates?.length || !st.backupDownloaded || !st.backupConfirmed) {
+        window.showToast?.('Debes descargar el respaldo y marcar "Ya guardé el respaldo".');
+        return;
+    }
+
+    const proceedBtn = document.getElementById('cleanup-proceed-delete-btn');
+    const progressEl = document.getElementById('cleanup-step3-progress');
+    const setStep3Msg = (text, isErr = false) => {
+        if (!progressEl) return;
+        progressEl.textContent = text;
+        progressEl.classList.remove('hidden', 'text-pink', 'text-purple');
+        progressEl.classList.add(isErr ? 'text-pink' : 'text-purple');
+    };
+
+    try {
+        if (proceedBtn) proceedBtn.disabled = true;
+        // Paso 3: Consolidar resumenes_ventas marcando archivado: true antes de borrar.
+        for (let i = 0; i < st.affectedMonths.length; i++) {
+            const yyyyMM = st.affectedMonths[i];
+            setStep3Msg(`Archivando resumen mensual (${i + 1}/${st.affectedMonths.length}): ${yyyyMM}…`);
+            await window.recalcularResumenMes(yyyyMM, { archivado: true });
+        }
+        setStep3Msg(`Resúmenes mensuales archivados (${st.affectedMonths.join(', ')}).`);
+
+        // Paso 4: Diálogo nativo pidiendo escribir "BORRAR".
+        const dlg = document.getElementById('modal-admin-cleanup-confirm');
+        const summaryBox = document.getElementById('cleanup-modal-summary');
+        const wordInput = document.getElementById('cleanup-confirm-word');
+        const wordErr = document.getElementById('cleanup-confirm-word-error');
+        if (!dlg || typeof dlg.showModal !== 'function') {
+            throw new Error('Tu navegador no soporta el diálogo de confirmación.');
+        }
+
+        if (summaryBox) {
+            summaryBox.innerHTML = `
+                <p>Se archivarán y eliminarán <strong>${st.candidates.length.toLocaleString('es-VE')} pedidos cerrados</strong> (del <strong>${window.escapeHTML(st.desde)}</strong> al <strong>${window.escapeHTML(st.hasta)}</strong>).</p>
+                <p>Total de ventas archivadas: <strong>$${st.totalSalesUSD.toFixed(2)}</strong> · Meses consolidados: <strong>${window.escapeHTML(st.affectedMonths.join(', '))}</strong></p>
+                <p class="text-[10px] text-gray-500">Respaldo generado: ${window.escapeHTML(st.backupFilename)}</p>`;
+        }
+        if (wordInput) wordInput.value = '';
+        if (wordErr) { wordErr.textContent = ''; wordErr.classList.add('hidden'); }
+
+        dlg.addEventListener('close', () => {
+            const val = dlg.returnValue;
+            dlg.returnValue = '';
+            if (val === 'confirm') {
+                window.executeAdminCleanupBatches();
+            } else {
+                const chk = document.getElementById('cleanup-backup-confirm-check');
+                if (proceedBtn) proceedBtn.disabled = !(st?.backupDownloaded && chk?.checked);
+                window.showToast?.('Limpieza cancelada. No se borró ningún pedido.', 'info');
+            }
+        }, { once: true });
+
+        dlg.showModal();
+    } catch (error) {
+        console.error('Error en consolidación previa a limpieza:', error);
+        setStep3Msg('Error consolidando resumenes_ventas. Se detuvo la limpieza y no se borró nada.', true);
+        window.showToast?.('Falló la consolidación mensual. No se borró ningún pedido.');
+        if (proceedBtn) proceedBtn.disabled = !(st?.backupDownloaded && st?.backupConfirmed);
+    }
+};
+
+window.confirmAdminCleanupDialog = function () {
+    const dlg = document.getElementById('modal-admin-cleanup-confirm');
+    const wordInput = document.getElementById('cleanup-confirm-word');
+    const wordErr = document.getElementById('cleanup-confirm-word-error');
+    const typed = (wordInput?.value || '').trim().toUpperCase();
+    if (typed !== 'BORRAR') {
+        if (wordErr) {
+            wordErr.textContent = 'Debes escribir exactamente la palabra BORRAR para continuar.';
+            wordErr.classList.remove('hidden');
+        }
+        wordInput?.focus();
+        return;
+    }
+    if (wordErr) { wordErr.textContent = ''; wordErr.classList.add('hidden'); }
+    dlg?.close('confirm');
+};
+
+// Pasos 5 y 6 obligatorios de Limpieza
+window.executeAdminCleanupBatches = async function () {
+    const st = window.__adminCleanupState;
+    if (!st || !st.candidates?.length || !db) return;
+
+    const wrap = document.getElementById('cleanup-progress-wrap');
+    const bar = document.getElementById('cleanup-progress-bar');
+    const label = document.getElementById('cleanup-progress-label');
+    const statusBox = document.getElementById('cleanup-status-box');
+    const step2Box = document.getElementById('cleanup-step2-box');
+    const btnStart = document.getElementById('btn-start-cleanup');
+
+    if (wrap) wrap.classList.remove('hidden');
+    if (btnStart) btnStart.disabled = true;
+
+    // Doble verificación de seguridad: solo cerrados con >30 días.
+    const safeTargets = st.candidates.filter(o => {
+        const s = String(o.status || o.estado || '').toLowerCase();
+        return (s === 'completado' || s === 'cancelado') && o.createdAt && String(o.createdAt) < st.cutoffIso && o.id;
+    });
+
+    const total = safeTargets.length;
+    const batchSize = window.ADMIN_CLEANUP_BATCH_SIZE || 400;
+    let deleted = 0;
+
+    try {
+        for (let i = 0; i < total; i += batchSize) {
+            const chunk = safeTargets.slice(i, i + batchSize);
+            const batch = writeBatch(db);
+            chunk.forEach(o => batch.delete(window.getOrderDocRef(o.id)));
+            await batch.commit();
+            deleted += chunk.length;
+
+            // Purgar de cachés locales
+            const deletedIds = new Set(chunk.map(o => String(o.id)));
+            if (Array.isArray(window.adminCache?.orders)) {
+                window.adminCache.orders = window.adminCache.orders.filter(o => !deletedIds.has(String(o.id)));
+            }
+            deletedIds.forEach(id => {
+                window.adminOrdersState?.recentMap?.delete(id);
+                window.adminOrdersState?.openMap?.delete(id);
+                window.adminOrdersState?.rangeMap?.delete(id);
+            });
+
+            const pct = Math.min(100, Math.round((deleted / total) * 100));
+            if (bar) bar.style.width = `${pct}%`;
+            if (label) label.textContent = `Eliminando en lotes de ${batchSize}… ${deleted.toLocaleString('es-VE')} / ${total.toLocaleString('es-VE')} (${pct}%)`;
+        }
+
+        // Paso 6: Guardar config/mantenimiento
+        const maintPayload = {
+            ultimaLimpieza: new Date().toISOString(),
+            pedidosBorrados: deleted,
+            rango: { desde: st.desde, hasta: st.hasta },
+            mesesArchivados: st.affectedMonths,
+            actualizadoPor: window.currentUser?.email || 'Admin'
+        };
+        await setDoc(window.getConfigDocRef('mantenimiento'), maintPayload, { merge: true });
+        window.adminCache = window.adminCache || {};
+        window.adminCache.maintenance = maintPayload;
+        window.__adminCleanupState = null;
+
+        if (step2Box) step2Box.classList.add('hidden');
+        if (statusBox) {
+            statusBox.innerHTML = `<p class="text-xs font-black text-green-dark dark:text-green">Limpieza completada: se archivaron y eliminaron ${deleted.toLocaleString('es-VE')} pedidos cerrados (${st.desde} a ${st.hasta}).</p>`;
+        }
+        window.showToast?.(`Se eliminaron ${deleted.toLocaleString('es-VE')} pedidos archivados.`, 'success');
+        window.loadAdminTools?.();
+    } catch (error) {
+        console.error('Error durante borrado en lotes:', error);
+        window.showToast?.(`Error al eliminar tras borrar ${deleted} pedidos. El proceso se detuvo.`);
+        if (label) label.textContent = `Detenido por error (${deleted.toLocaleString('es-VE')} eliminados de ${total.toLocaleString('es-VE')}).`;
+    } finally {
+        if (btnStart) btnStart.disabled = false;
+    }
+};
+
+window.loadAdminTools = async function () {
     const container = document.getElementById('admin-tools-container');
     if (!container) return;
-    container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-5"><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 shadow-sm text-left"><div class="w-12 h-12 rounded-2xl bg-green/15 text-green-dark dark:text-green flex items-center justify-center mb-4"><i data-lucide="calculator" class="w-6 h-6"></i></div><h3 class="text-xl font-black text-purple-dark dark:text-white">Calculadora nutricional</h3><p class="text-xs text-gray-500 font-semibold leading-relaxed mt-2">Úsala para orientar pedidos o calcular una referencia inicial para una mascota.</p><button onclick="window.switchAdminTab('calculadora')" class="mt-5 w-full bg-green text-purple-dark font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl">Abrir calculadora</button></div><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 shadow-sm text-left"><div class="w-12 h-12 rounded-2xl bg-pink/10 text-pink flex items-center justify-center mb-4"><i data-lucide="info" class="w-6 h-6"></i></div><h3 class="text-xl font-black text-purple-dark dark:text-white">Guía de estados</h3><div class="space-y-3 mt-4 text-xs font-semibold text-gray-500"><p><strong class="text-pink">En proceso:</strong> pedido recibido, pendiente por confirmar.</p><p><strong class="text-green-dark dark:text-green">Confirmado:</strong> validado por administración y con puntos otorgados si aplica.</p><p><strong class="text-purple">Completado:</strong> pedido entregado/cerrado.</p></div></div><div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 shadow-sm text-left md:col-span-2"><h3 class="text-xl font-black text-purple-dark dark:text-white">Acciones rápidas</h3><div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4"><button onclick="window.switchAdminTab('pedidos')" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl">Revisar pedidos</button><button onclick="window.switchAdminTab('canjes')" class="bg-green/20 text-green-dark dark:text-green font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl">Ver canjes</button><button onclick="window.cerrarSesionAdmin()" class="bg-pink/10 text-pink font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl border border-pink/20">Cerrar sesión</button></div></div></div>`;
+    const maint = await window.fetchAdminMaintenanceStatus?.();
+    const bannerHtml = window.buildMaintenanceAlertCard ? window.buildMaintenanceAlertCard(maint) : '';
+    const todayStr = window.getCaracasDateString(new Date()) || new Date().toISOString().slice(0, 10);
+    const monthStartStr = `${todayStr.slice(0, 7)}-01`;
+    const lastCleanupInfo = maint?.ultimaLimpieza
+        ? `Última limpieza: <strong>${window.escapeHTML(window.formatVenezuelaDateTime(maint.ultimaLimpieza))}</strong> (${Number(maint.pedidosBorrados || 0).toLocaleString('es-VE')} pedidos del ${window.escapeHTML(maint.rango?.desde || '-')} al ${window.escapeHTML(maint.rango?.hasta || '-')})`
+        : 'Sin limpiezas registradas todavía.';
+
+    container.innerHTML = `
+        <div class="space-y-5">
+            ${bannerHtml}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <!-- EXPORTAR VENTAS A EXCEL -->
+                <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 shadow-sm text-left space-y-4">
+                    <div class="flex items-start gap-3">
+                        <div class="w-12 h-12 rounded-2xl bg-green/15 text-green-dark dark:text-green flex items-center justify-center shrink-0"><i data-lucide="file-spreadsheet" class="w-6 h-6"></i></div>
+                        <div>
+                            <h3 class="text-xl font-black text-purple-dark dark:text-white">Exportar ventas</h3>
+                            <p class="text-xs text-gray-500 font-semibold mt-1">Descarga un Excel con 6 hojas: Resumen, Pedidos, Detalle productos, Ventas por producto, Ventas por mes y Clientes.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="admin-export-range" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Rango a exportar</label>
+                        <select id="admin-export-range" onchange="window.updateExportRangeVisibility()" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-2xl p-3 text-sm font-bold outline-none focus:border-purple">
+                            <option value="mes_actual">Mes actual</option>
+                            <option value="mes_anterior">Mes anterior</option>
+                            <option value="30d">Últimos 30 días</option>
+                            <option value="custom">Rango personalizado</option>
+                            <option value="all">Todo lo que hay en la base</option>
+                        </select>
+                    </div>
+                    <div id="admin-export-custom-wrap" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label for="admin-export-date-from" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Desde</label>
+                            <input id="admin-export-date-from" type="date" value="${window.escapeHTML(monthStartStr)}" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-2.5 text-sm font-bold outline-none focus:border-purple">
+                        </div>
+                        <div>
+                            <label for="admin-export-date-to" class="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Hasta</label>
+                            <input id="admin-export-date-to" type="date" value="${window.escapeHTML(todayStr)}" class="w-full bg-purple-light dark:bg-[#0d0718] border border-purple-border/50 dark:border-purple/30 rounded-xl p-2.5 text-sm font-bold outline-none focus:border-purple">
+                        </div>
+                    </div>
+                    <p id="admin-export-progress" class="hidden text-xs font-bold text-purple dark:text-green bg-purple-light/60 dark:bg-purple/10 rounded-xl px-3 py-2"></p>
+                    <button id="btn-export-excel" type="button" onclick="window.exportAdminSalesToExcel()" class="w-full bg-green hover:bg-[#a6b621] text-purple-dark font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i> Descargar Excel
+                    </button>
+                </div>
+
+                <!-- ARCHIVAR Y LIMPIAR PEDIDOS CERRADOS > 30 DÍAS -->
+                <div id="admin-cleanup-card" class="bg-white dark:bg-darkcard border border-pink/30 rounded-3xl p-6 shadow-sm text-left space-y-4">
+                    <div class="flex items-start gap-3">
+                        <div class="w-12 h-12 rounded-2xl bg-pink/10 text-pink flex items-center justify-center shrink-0"><i data-lucide="archive" class="w-6 h-6"></i></div>
+                        <div>
+                            <h3 class="text-xl font-black text-purple-dark dark:text-white">Archivar y limpiar pedidos (&gt; 30 días)</h3>
+                            <p class="text-xs text-gray-500 font-semibold mt-1">Borra únicamente pedidos <strong>completados o cancelados</strong> con más de 30 días tras respaldar en Excel y consolidar resúmenes mensuales. Nunca borra pedidos abiertos.</p>
+                        </div>
+                    </div>
+                    <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 bg-purple-light/60 dark:bg-[#0d0718] rounded-xl px-3 py-2">${lastCleanupInfo}</p>
+                    <div id="cleanup-status-box" class="hidden bg-purple-light/80 dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 rounded-2xl p-3.5"></div>
+                    <div id="cleanup-step2-box" class="hidden bg-pink/5 border border-pink/25 rounded-2xl p-4 space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span class="text-[10px] font-black uppercase tracking-widest text-pink">Confirmación de respaldo</span>
+                            <button type="button" onclick="window.redownloadCleanupBackup()" class="text-[10px] font-black text-purple dark:text-green underline">Descargar respaldo otra vez</button>
+                        </div>
+                        <label class="flex items-center gap-2.5 text-xs font-bold text-purple-dark dark:text-white cursor-pointer select-none">
+                            <input id="cleanup-backup-confirm-check" type="checkbox" onchange="window.onCleanupBackupCheckboxChange()" class="w-4 h-4 accent-pink rounded">
+                            <span>Ya guardé el respaldo</span>
+                        </label>
+                        <p id="cleanup-step3-progress" class="hidden text-xs font-bold"></p>
+                        <button id="cleanup-proceed-delete-btn" type="button" disabled onclick="window.startCleanupDeleteStep3()" class="w-full bg-pink disabled:opacity-40 disabled:cursor-not-allowed hover:bg-pink-dark text-white font-black text-xs uppercase tracking-widest py-3 rounded-xl shadow-md transition-all">Consolidar meses y borrar archivados</button>
+                    </div>
+                    <div id="cleanup-progress-wrap" class="hidden space-y-1.5">
+                        <div class="w-full h-2.5 bg-purple-light dark:bg-[#0d0718] rounded-full overflow-hidden"><div id="cleanup-progress-bar" class="h-full bg-pink transition-all" style="width:0%"></div></div>
+                        <p id="cleanup-progress-label" class="text-[11px] font-bold text-gray-500"></p>
+                    </div>
+                    <button id="btn-start-cleanup" type="button" onclick="window.startAdminCleanupScan()" class="w-full bg-purple hover:bg-purple-dark text-white font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i> Archivar y limpiar
+                    </button>
+                </div>
+
+                <!-- CALCULADORA NUTRICIONAL -->
+                <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 shadow-sm text-left">
+                    <div class="w-12 h-12 rounded-2xl bg-green/15 text-green-dark dark:text-green flex items-center justify-center mb-4"><i data-lucide="calculator" class="w-6 h-6"></i></div>
+                    <h3 class="text-xl font-black text-purple-dark dark:text-white">Calculadora nutricional</h3>
+                    <p class="text-xs text-gray-500 font-semibold leading-relaxed mt-2">Úsala para orientar pedidos o calcular una referencia inicial para una mascota.</p>
+                    <button onclick="window.switchAdminTab('calculadora')" class="mt-5 w-full bg-green text-purple-dark font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl">Abrir calculadora</button>
+                </div>
+
+                <!-- GUÍA DE ESTADOS -->
+                <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 shadow-sm text-left">
+                    <div class="w-12 h-12 rounded-2xl bg-pink/10 text-pink flex items-center justify-center mb-4"><i data-lucide="info" class="w-6 h-6"></i></div>
+                    <h3 class="text-xl font-black text-purple-dark dark:text-white">Guía de estados</h3>
+                    <div class="space-y-3 mt-4 text-xs font-semibold text-gray-500">
+                        <p><strong class="text-pink">En proceso:</strong> pedido recibido, pendiente por confirmar.</p>
+                        <p><strong class="text-green-dark dark:text-green">Confirmado:</strong> validado por administración.</p>
+                        <p><strong class="text-purple">Completado:</strong> pedido entregado/cerrado y sumado al resumen mensual.</p>
+                        <p><strong class="text-gray-400">Cancelado:</strong> pedido anulado.</p>
+                    </div>
+                </div>
+
+                <!-- ACCIONES RÁPIDAS -->
+                <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-6 shadow-sm text-left lg:col-span-2">
+                    <h3 class="text-xl font-black text-purple-dark dark:text-white">Acciones rápidas</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+                        <button onclick="window.switchAdminTab('pedidos')" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl">Revisar pedidos</button>
+                        <button onclick="window.switchAdminTab('canjes')" class="bg-green/20 text-green-dark dark:text-green font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl">Ver canjes</button>
+                        <button onclick="window.cerrarSesionAdmin()" class="bg-pink/10 text-pink font-black text-xs uppercase tracking-widest py-3.5 rounded-2xl border border-pink/20">Cerrar sesión</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
     window.refreshIcons?.(container);
 };
 
@@ -8139,7 +9897,7 @@ window.toggleUserOrdersHistory = function (force) {
 };
 
 window.buildUserOrderCard = function (o, { compact = false } = {}) {
-    const status = String(o.status || 'en_proceso').toLowerCase();
+    const status = String(o.status || o.estado || 'en_proceso').toLowerCase();
     const info = window.getOrderStatusInfo(status);
     const date = o.createdAt ? new Date(o.createdAt).toLocaleString('es-VE', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Pedido reciente';
     const itemsArr = Array.isArray(o.items) ? o.items : [];
@@ -8176,9 +9934,21 @@ window.renderUserOrders = function (orders = []) {
     window.userOrdersCache = merged;
     window.setLocalUserOrders(merged);
 
-    const pendingStatuses = ['pendiente', 'en_proceso', 'solicitado'];
-    const pending = merged.filter(o => pendingStatuses.includes(String(o.status || 'en_proceso').toLowerCase()));
-    const history = merged.filter(o => !pendingStatuses.includes(String(o.status || 'en_proceso').toLowerCase()));
+    const pendingStatuses = ['pendiente', 'en_proceso', 'proceso', 'solicitado'];
+    const openOtherStatuses = ['confirmado', 'verificado'];
+    const pending = merged.filter(o => pendingStatuses.includes(String(o.status || o.estado || 'en_proceso').toLowerCase()));
+    const historyAll = merged.filter(o => !pendingStatuses.includes(String(o.status || o.estado || 'en_proceso').toLowerCase()));
+
+    // Mantiene visibles los pedidos abiertos (confirmados/verificados) aunque tengan >30 días,
+    // y limita el historial cerrado (completados/cancelados) a los últimos 30 días.
+    const cutoff30dMs = Date.now() - 30 * 86400000;
+    const history = historyAll.filter(o => {
+        const st = String(o.status || o.estado || '').toLowerCase();
+        if (openOtherStatuses.includes(st)) return true;
+        const createdMs = new Date(o.createdAt || 0).getTime();
+        if (!Number.isFinite(createdMs) || createdMs <= 0) return true;
+        return createdMs >= cutoff30dMs;
+    });
 
     if (pending.length) {
         activeContainer.innerHTML = window.buildUserOrderCard(pending[0], { compact: false });
@@ -8189,7 +9959,7 @@ window.renderUserOrders = function (orders = []) {
     if (historyContainer) {
         historyContainer.innerHTML = history.length
             ? history.slice(0, 12).map(o => window.buildUserOrderCard(o, { compact: true })).join('')
-            : '<p class="text-xs text-gray-500 font-medium bg-white dark:bg-darkcard border border-purple-border/30 rounded-2xl p-4">Aún no tienes pedidos completados o cancelados en el historial.</p>';
+            : '<p class="text-xs text-gray-500 font-medium bg-white dark:bg-darkcard border border-purple-border/30 rounded-2xl p-4">No tienes pedidos completados o cancelados en los últimos 30 días.</p>';
     }
     const hiddenLegacy = document.getElementById('user-orders-list');
     if (hiddenLegacy && hiddenLegacy !== activeContainer) hiddenLegacy.innerHTML = '';
@@ -8615,6 +10385,15 @@ window.queuePendingOrderForSync = function (order) {
     } catch (error) { console.warn('No se pudo guardar pedido pendiente de sincronizar:', error); }
 };
 
+window.removePendingOrderFromSync = function (orderId) {
+    if (!orderId) return;
+    try {
+        const pending = JSON.parse(localStorage.getItem(window.PENDING_ORDER_SYNC_KEY) || '[]');
+        const filtered = pending.filter(o => (o.localId || o.id) !== orderId);
+        localStorage.setItem(window.PENDING_ORDER_SYNC_KEY, JSON.stringify(filtered));
+    } catch (error) { }
+};
+
 window.syncPendingOrders = async function () {
     if (!db || !window.getOrderDocRef) return;
     let pending = [];
@@ -8635,8 +10414,10 @@ window.syncPendingOrders = async function () {
                 }
             }
             const guestUid = writeUid || (order.clientToken ? `guest_${order.clientToken}` : `guest_${orderId}`);
-            const effectiveUid = (order.uid && order.uid !== 'anonimo' && !String(order.uid).startsWith('local_')) ? order.uid : (writeUid || guestUid);
-            const isReallyRegistered = !!(order.registeredUser && effectiveUid && !String(effectiveUid).startsWith('guest_') && effectiveUid !== 'anonimo');
+            // Con sesión activa las reglas exigen uid == request.auth.uid: usar siempre la sesión actual
+            // (un uid guardado de una sesión anónima anterior haría fallar el pedido para siempre).
+            const effectiveUid = writeUid || ((order.uid && order.uid !== 'anonimo' && !String(order.uid).startsWith('local_')) ? order.uid : guestUid);
+            const isReallyRegistered = !!(order.registeredUser && writeUid && order.uid === writeUid && !auth?.currentUser?.isAnonymous);
             const cleanOrder = { ...order, uid: effectiveUid, localOnly: false, localId: orderId, registeredUser: isReallyRegistered };
             delete cleanOrder.id;
             await setDoc(window.getOrderDocRef(orderId), window.sanitizeClientOrderForWrite(cleanOrder), { merge: true });
@@ -8850,7 +10631,8 @@ window.adminSafeGetCollection = async function (label, collectionRef, max = wind
     try {
         if (!db) throw Object.assign(new Error('Firestore no está inicializado.'), { code: 'milkarf/no-db' });
         if (!collectionRef) throw Object.assign(new Error(`Referencia no disponible para ${label}.`), { code: 'milkarf/no-ref' });
-        const safeLimit = Math.min(Number(max) || window.ADMIN_QUERY_LIMIT || 50, window.ADMIN_QUERY_LIMIT || 50);
+        const numericMax = max === 'all' ? (window.ADMIN_QUERY_LIMIT || 50) : Number(max);
+        const safeLimit = Math.min(numericMax || window.ADMIN_QUERY_LIMIT || 50, window.ADMIN_QUERY_LIMIT || 50);
         const q = window.secureAdminQuery ? window.secureAdminQuery(collectionRef, safeLimit) : query(collectionRef, limit(safeLimit));
         const snap = await window.withAdminTimeout(getDocs(q), label, timeoutMs);
         const items = [];
@@ -8900,6 +10682,28 @@ window.ensureAdminSummaryHelpers = function () {
     }
 };
 
+window.recalcularMesActualSummary = async function (btnEl) {
+    if (!window.isAdmin || !db) return;
+    const currentYM = window.getCaracasYearMonth(new Date());
+    const btn = btnEl || document.getElementById('btn-recalc-current-month');
+    const origText = btn ? btn.textContent : '';
+    try {
+        if (btn) { btn.disabled = true; btn.textContent = 'Recalculando…'; }
+        const res = await window.recalcularResumenMes(currentYM);
+        if (res?.skippedBecauseArchived) {
+            window.showToast?.(`El mes ${currentYM} ya estaba archivado; no se sobrescribió.`, 'info');
+        } else {
+            window.showToast?.(`Resumen de ${window.formatMonthLabelES(currentYM)} actualizado.`, 'success');
+        }
+        await window.loadAdminSummary();
+    } catch (error) {
+        window.logFirestoreIndexHint?.(error, `Recalcular resumen ${currentYM}`);
+        window.showToast?.('No se pudo recalcular el resumen del mes actual.');
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = origText || 'Recalcular mes actual'; }
+    }
+};
+
 window.loadAdminSummary = async function () {
     window.ensureAdminSummaryHelpers?.();
     const container = document.getElementById('admin-summary-container');
@@ -8917,114 +10721,295 @@ window.loadAdminSummary = async function () {
 
     const runId = Date.now().toString(36);
     window.__adminSummaryRunId = runId;
-    container.innerHTML = window.adminLoadingState('Construyendo resumen operativo...');
+    container.innerHTML = window.adminLoadingState('Construyendo resumen operativo (bajo consumo)...');
 
-    // Watchdog visual: aunque Firestore tarde, el panel no queda pegado para siempre.
     const watchdog = setTimeout(() => {
         if (window.__adminSummaryRunId === runId && container.textContent.includes('Construyendo resumen operativo')) {
             container.innerHTML = `
-                        <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-8 text-center shadow-sm">
-                            <div class="w-14 h-14 mx-auto rounded-2xl bg-pink/10 text-pink flex items-center justify-center mb-4"><i data-lucide="wifi-off" class="w-7 h-7"></i></div>
-                            <h3 class="text-xl font-black text-purple-dark dark:text-white">Firestore está tardando en responder</h3>
-                            <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 mt-2 max-w-lg mx-auto leading-relaxed">El resumen no pudo completarse a tiempo. Revisa permisos, conexión o abre un módulo individual.</p>
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
-                                <button onclick="window.switchAdminTab('pedidos')" class="bg-pink/10 text-pink border border-pink/20 font-black text-xs uppercase tracking-widest py-3 rounded-2xl">Pedidos</button>
-                                <button onclick="window.switchAdminTab('usuarios')" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white font-black text-xs uppercase tracking-widest py-3 rounded-2xl">Clientes</button>
-                                <button onclick="window.switchAdminTab('canjes')" class="bg-green/15 text-green-dark dark:text-green font-black text-xs uppercase tracking-widest py-3 rounded-2xl">Canjes</button>
-                            </div>
-                            <button onclick="window.loadAdminSummary()" class="mt-4 text-[10px] font-black uppercase tracking-widest text-purple">Reintentar resumen</button>
-                        </div>`;
+                <div class="bg-white dark:bg-darkcard border border-purple-border/30 dark:border-purple/20 rounded-3xl p-8 text-center shadow-sm">
+                    <div class="w-14 h-14 mx-auto rounded-2xl bg-pink/10 text-pink flex items-center justify-center mb-4"><i data-lucide="wifi-off" class="w-7 h-7"></i></div>
+                    <h3 class="text-xl font-black text-purple-dark dark:text-white">Firestore está tardando en responder</h3>
+                    <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 mt-2 max-w-lg mx-auto leading-relaxed">El resumen no pudo completarse a tiempo. Revisa permisos, conexión o abre un módulo individual.</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+                        <button onclick="window.switchAdminTab('pedidos')" class="bg-pink/10 text-pink border border-pink/20 font-black text-xs uppercase tracking-widest py-3 rounded-2xl">Pedidos</button>
+                        <button onclick="window.switchAdminTab('usuarios')" class="bg-purple-light dark:bg-purple/20 text-purple dark:text-white font-black text-xs uppercase tracking-widest py-3 rounded-2xl">Clientes</button>
+                        <button onclick="window.switchAdminTab('canjes')" class="bg-green/15 text-green-dark dark:text-green font-black text-xs uppercase tracking-widest py-3 rounded-2xl">Canjes</button>
+                    </div>
+                    <button onclick="window.loadAdminSummary()" class="mt-4 text-[10px] font-black uppercase tracking-widest text-purple">Reintentar resumen</button>
+                </div>`;
             window.refreshIcons?.(container);
         }
-    }, 7200);
+    }, 7500);
 
     try {
-        const refs = {
-            pedidos: window.getOrdersCollectionRef?.(),
-            usuarios: window.getUsersCollectionRef?.(),
-            canjes: window.getRedeemsCollectionRef?.()
-        };
+        const ordersRef = window.getOrdersCollectionRef();
+        const usersRef = window.getUsersCollectionRef();
+        const redeemsRef = window.getRedeemsCollectionRef();
+        const summariesRef = window.getSalesSummariesCollectionRef();
 
-        const results = await Promise.allSettled([
-            window.adminSafeGetCollection('pedidos', refs.pedidos, 50, 6000),
-            window.adminSafeGetCollection('usuarios', refs.usuarios, 50, 6000),
-            window.adminSafeGetCollection('canjes', refs.canjes, 30, 6000)
+        const currentYM = window.getCaracasYearMonth(new Date());
+        const currentYear = currentYM.slice(0, 4);
+        const hasLoadedSec2Orders = Array.isArray(window.adminCache?.orders) && window.adminCache.orders.length > 0;
+
+        // Consultas ligeras en paralelo (decenas de lecturas, nunca la colección completa).
+        const [
+            maintRes,
+            summariesRes,
+            inProcessCountRes,
+            confirmedCountRes,
+            usersCountRes,
+            pendingRedeemsCountRes,
+            topUserRes,
+            recentOrdersRes,
+            recentRedeemsRes
+        ] = await Promise.allSettled([
+            window.fetchAdminMaintenanceStatus(true),
+            window.withAdminTimeout(getDocs(query(summariesRef, orderBy('mes', 'desc'), limit(24))), 'resumenes_ventas', 5500),
+            window.withAdminTimeout(getCountFromServer(query(ordersRef, where('status', 'in', ['en_proceso', 'pendiente', 'proceso', 'solicitado']))), 'conteo en_proceso', 4500),
+            window.withAdminTimeout(getCountFromServer(query(ordersRef, where('status', 'in', ['confirmado', 'verificado']))), 'conteo confirmados', 4500),
+            window.withAdminTimeout(getCountFromServer(usersRef), 'conteo clientes', 4500),
+            window.withAdminTimeout(getCountFromServer(query(redeemsRef, where('status', 'in', ['solicitado', 'pendiente']))), 'conteo canjes', 4500),
+            window.withAdminTimeout(getDocs(query(usersRef, orderBy('puntos_historicos', 'desc'), limit(1))), 'cliente top', 4500),
+            hasLoadedSec2Orders
+                ? Promise.resolve(null)
+                : window.withAdminTimeout(getDocs(query(ordersRef, orderBy('createdAt', 'desc'), limit(20))), 'pedidos recientes', 5500),
+            window.withAdminTimeout(getDocs(query(redeemsRef, orderBy('createdAt', 'desc'), limit(10))), 'canjes recientes', 5000)
         ]);
 
         if (window.__adminSummaryRunId !== runId) return;
         clearTimeout(watchdog);
 
-        const [ordersResult, usersResult, redeemsResult] = results.map((r, idx) => {
-            const label = ['pedidos', 'usuarios', 'canjes'][idx];
-            return r.status === 'fulfilled' ? r.value : { ok: false, label, items: [], error: r.reason };
-        });
+        const maintDoc = maintRes.status === 'fulfilled' ? maintRes.value : null;
+        const bannerHtml = window.buildMaintenanceAlertCard ? window.buildMaintenanceAlertCard(maintDoc) : '';
 
-        const orders = ordersResult.ok ? ordersResult.items : [];
-        const users = usersResult.ok ? usersResult.items : [];
-        const redeems = redeemsResult.ok ? redeemsResult.items : [];
+        // 1) Resúmenes mensuales (resumenes_ventas, máximo 24 lecturas)
+        const summaries = [];
+        let summariesError = null;
+        if (summariesRes.status === 'fulfilled' && summariesRes.value) {
+            summariesRes.value.forEach(d => summaries.push({ id: d.id, ...d.data() }));
+        } else if (summariesRes.status === 'rejected') {
+            summariesError = summariesRes.reason;
+            window.logFirestoreIndexHint?.(summariesError, 'resumenes_ventas');
+        }
         window.adminCache = window.adminCache || {};
-        Object.assign(window.adminCache, { orders, users, redeems });
+        window.adminCache.summaries = summaries;
 
-        const hardFailures = [ordersResult, usersResult].filter(r => !r.ok);
-        const softFailures = [redeemsResult].filter(r => !r.ok);
+        // 2) Pedidos recientes (reusa Sec 2 si ya está cargado, o limit(20))
+        let recentOrdersPool = [];
+        let ordersError = null;
+        if (hasLoadedSec2Orders) {
+            recentOrdersPool = [...window.adminCache.orders];
+        } else if (recentOrdersRes.status === 'fulfilled' && recentOrdersRes.value) {
+            recentOrdersRes.value.forEach(d => recentOrdersPool.push({ id: d.id, ...d.data() }));
+            window.adminCache.summaryRecentOrders = recentOrdersPool;
+        } else if (recentOrdersRes.status === 'rejected') {
+            ordersError = recentOrdersRes.reason;
+        }
+        recentOrdersPool.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        const recentOrders = recentOrdersPool.slice(0, 5);
 
-        if (hardFailures.length && !orders.length && !users.length) {
-            container.innerHTML = window.renderAdminSummaryFallback([ordersResult, usersResult, redeemsResult]);
-            window.refreshIcons?.(container);
-            return;
+        // 3) Canjes recientes (limit(10), con respaldo sin orderBy si falta índice/campo)
+        let redeems = [];
+        let redeemsError = null;
+        if (recentRedeemsRes.status === 'fulfilled' && recentRedeemsRes.value) {
+            recentRedeemsRes.value.forEach(d => redeems.push({ id: d.id, ...d.data() }));
+        } else {
+            const fallbackRedeems = await window.adminSafeGetCollection('canjes', redeemsRef, 10, 4500);
+            if (fallbackRedeems.ok) redeems = fallbackRedeems.items;
+            else redeemsError = recentRedeemsRes.reason || fallbackRedeems.error;
+        }
+        redeems.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        window.adminCache.redeems = redeems;
+        const recentRedeems = redeems.slice(0, 4);
+
+        // 4) Top cliente (1 lectura o respaldo)
+        let topUser = null;
+        if (topUserRes.status === 'fulfilled' && topUserRes.value && !topUserRes.value.empty) {
+            const d = topUserRes.value.docs[0];
+            topUser = { id: d.id, ...d.data() };
+        } else if (Array.isArray(window.adminCache?.users) && window.adminCache.users.length) {
+            topUser = window.adminCache.users.slice().sort((a, b) => Number(b.puntos_historicos || b.puntos || 0) - Number(a.puntos_historicos || a.puntos || 0))[0];
         }
 
+        // 5) Contadores operativos con fallback seguro a lo ya cargado (Sec 2 / limit(20))
         const getStatus = o => String(o.status || o.estado || 'en_proceso').toLowerCase();
-        const inProcess = orders.filter(o => ['pendiente', 'en_proceso', 'proceso', 'solicitado'].includes(getStatus(o))).length;
-        const confirmed = orders.filter(o => getStatus(o) === 'confirmado').length;
-        const completed = orders.filter(o => getStatus(o) === 'completado').length;
-        const pendingRedeems = redeems.filter(r => ['solicitado', 'pendiente'].includes(String(r.status || r.estado || '').toLowerCase())).length;
-        const totalCompleted = orders.filter(o => getStatus(o) === 'completado').reduce((sum, o) => sum + Number(o.totalWithDelivery || o.total || 0), 0);
+        const inProcessFallback = recentOrdersPool.filter(o => ['pendiente', 'en_proceso', 'proceso', 'solicitado'].includes(getStatus(o))).length;
+        const confirmedFallback = recentOrdersPool.filter(o => ['confirmado', 'verificado'].includes(getStatus(o))).length;
+        const inProcess = (inProcessCountRes.status === 'fulfilled')
+            ? Number(inProcessCountRes.value.data().count || 0)
+            : inProcessFallback;
+        const confirmed = (confirmedCountRes.status === 'fulfilled')
+            ? Number(confirmedCountRes.value.data().count || 0)
+            : confirmedFallback;
+        const usersCount = (usersCountRes.status === 'fulfilled')
+            ? Number(usersCountRes.value.data().count || 0)
+            : (Array.isArray(window.adminCache?.users) ? window.adminCache.users.length : 0);
+        const pendingRedeems = (pendingRedeemsCountRes.status === 'fulfilled')
+            ? Number(pendingRedeemsCountRes.value.data().count || 0)
+            : redeems.filter(r => ['solicitado', 'pendiente'].includes(String(r.status || r.estado || '').toLowerCase())).length;
 
-        const productCount = {};
-        orders.forEach(o => (Array.isArray(o.items) ? o.items : []).forEach(i => {
-            const name = i.name || i.producto || i.title || 'Producto';
-            productCount[name] = (productCount[name] || 0) + Number(i.qty || i.cantidad || 1);
-        }));
-        const topProduct = Object.entries(productCount).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Sin datos';
-        const topUser = users.slice().sort((a, b) => Number(b.puntos_historicos || b.puntosHistoricos || b.pointsHistorical || b.puntos || 0) - Number(a.puntos_historicos || a.puntosHistoricos || a.pointsHistorical || a.puntos || 0))[0];
-        const recentOrders = orders.slice().sort((a, b) => new Date(b.createdAt || b.created_at || 0) - new Date(a.createdAt || a.created_at || 0)).slice(0, 5);
-        const recentRedeems = redeems.slice().sort((a, b) => new Date(b.createdAt || b.created_at || 0) - new Date(a.createdAt || a.created_at || 0)).slice(0, 4);
+        // 6) Métricas del mes actual y total acumulado del año desde resumenes_ventas
+        const currentMonthDoc = summaries.find(s => String(s.mes || s.id || '') === currentYM) || {
+            mes: currentYM,
+            pedidosCompletados: 0,
+            pedidosCancelados: 0,
+            ventasProductosUSD: 0,
+            ventasConDeliveryUSD: 0,
+            deliveryUSD: 0,
+            descuentosUSD: 0,
+            unidadesPorProducto: {},
+            clientesUnicos: 0,
+            archivado: false
+        };
+
+        const ytdDocs = summaries.filter(s => String(s.mes || s.id || '').startsWith(`${currentYear}-`));
+        const ytd = ytdDocs.reduce((acc, s) => {
+            acc.pedidosCompletados += Number(s.pedidosCompletados || 0);
+            acc.pedidosCancelados += Number(s.pedidosCancelados || 0);
+            acc.ventasProductosUSD = window.roundUSD(acc.ventasProductosUSD + Number(s.ventasProductosUSD || 0));
+            acc.ventasConDeliveryUSD = window.roundUSD(acc.ventasConDeliveryUSD + Number(s.ventasConDeliveryUSD || 0));
+            acc.deliveryUSD = window.roundUSD(acc.deliveryUSD + Number(s.deliveryUSD || 0));
+            acc.descuentosUSD = window.roundUSD(acc.descuentosUSD + Number(s.descuentosUSD || 0));
+            return acc;
+        }, { pedidosCompletados: 0, pedidosCancelados: 0, ventasProductosUSD: 0, ventasConDeliveryUSD: 0, deliveryUSD: 0, descuentosUSD: 0 });
+
+        const getTopProd = (unitsMap = {}) => {
+            const top = Object.entries(unitsMap || {}).sort((a, b) => Number(b[1] || 0) - Number(a[1] || 0))[0];
+            return top ? `${top[0]} (${Number(top[1] || 0)})` : 'Sin datos';
+        };
+        const currentMonthTopProd = getTopProd(currentMonthDoc.unidadesPorProducto);
+
+        const errorsHtml = [summariesError, ordersError, redeemsError]
+            .filter(Boolean)
+            .map(err => window.renderFirestorePermissionHelp?.(err, 'Resumen') || '')
+            .join('');
+
+        const monthlyRowsHtml = summaries.length
+            ? summaries.map(s => {
+                const mesId = String(s.mes || s.id || '');
+                const label = window.formatMonthLabelES(mesId);
+                const topProdText = getTopProd(s.unidadesPorProducto);
+                const completedN = Number(s.pedidosCompletados || 0);
+                const cancelledN = Number(s.pedidosCancelados || 0);
+                const salesUsd = window.roundUSD(s.ventasConDeliveryUSD ?? s.ventasProductosUSD ?? 0);
+                const delivUsd = window.roundUSD(s.deliveryUSD || 0);
+                return `
+                    <tr>
+                        <th scope="row" class="px-3 py-3 text-xs font-black text-purple-dark dark:text-white whitespace-nowrap border-b border-purple-border/20">
+                            <div class="flex items-center gap-2">
+                                <span>${window.escapeHTML(label)}</span>
+                                ${s.archivado ? '<span class="px-2 py-0.5 rounded-full bg-purple-light dark:bg-purple/25 text-purple dark:text-purple-light text-[9px] font-black uppercase tracking-wider">Archivado</span>' : ''}
+                            </div>
+                        </th>
+                        <td class="px-3 py-3 text-xs font-bold text-purple-dark dark:text-gray-200 border-b border-purple-border/20">
+                            <span>${completedN}${cancelledN > 0 ? ` <em class="text-[10px] text-gray-400 not-italic">(${cancelledN} canc.)</em>` : ''}</span>
+                        </td>
+                        <td class="px-3 py-3 text-xs font-black text-green-dark dark:text-green border-b border-purple-border/20">$${salesUsd.toFixed(2)}</td>
+                        <td class="px-3 py-3 text-xs font-bold text-gray-600 dark:text-gray-300 border-b border-purple-border/20">$${delivUsd.toFixed(2)}</td>
+                        <td class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-300 border-b border-purple-border/20">${window.escapeHTML(topProdText)}</td>
+                    </tr>`;
+            }).join('')
+            : `<tr><th scope="row" class="px-3 py-4 text-xs text-gray-400 font-semibold" colspan="5">No hay documentos en resumenes_ventas todavía. Usa "Recalcular mes actual" para generar el de ${window.escapeHTML(currentYM)}.</th></tr>`;
 
         container.innerHTML = `
-                    ${[...hardFailures, ...softFailures].length ? `<div class="mb-5 space-y-3">${[...hardFailures, ...softFailures].map(r => window.renderFirestorePermissionHelp?.(r.error, r.label) || '').join('')}</div>` : ''}
-                    <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-6">
-                        ${window.adminMetricCard('En proceso', inProcess, 'clock', 'pink', "window.applyAdminOrderFilter('en_proceso')")}
-                        ${window.adminMetricCard('Confirmados', confirmed, 'check-circle', 'green', "window.applyAdminOrderFilter('confirmado')")}
-                        ${window.adminMetricCard('Completados', completed, 'package-check', 'purple', "window.applyAdminOrderFilter('completado')")}
-                        ${window.adminMetricCard('Clientes', users.length, 'users', 'purple', "window.switchAdminTab('usuarios')")}
-                        ${window.adminMetricCard('Canjes pendientes', pendingRedeems, 'gift', 'pink', "window.switchAdminTab('canjes')")}
-                        ${window.adminMetricCard('Ventas completadas', '$' + totalCompleted.toFixed(2), 'trending-up', 'green', "window.applyAdminOrderFilter('completado')")}
+            ${bannerHtml ? `<div class="mb-5">${bannerHtml}</div>` : ''}
+            ${errorsHtml ? `<div class="mb-5 space-y-3">${errorsHtml}</div>` : ''}
+
+            <!-- TARJETAS PRINCIPALES: MES ACTUAL + ACUMULADO DEL AÑO -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6 text-left">
+                <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/40 dark:border-purple/25 p-5 shadow-sm flex flex-col justify-between gap-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-purple/60 dark:text-gray-400">Mes actual · ${window.escapeHTML(window.formatMonthLabelES(currentYM))}</p>
+                            <h3 class="text-3xl font-black text-purple-dark dark:text-white mt-1">$${window.roundUSD(currentMonthDoc.ventasConDeliveryUSD).toFixed(2)}</h3>
+                            <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mt-1">Productos: $${window.roundUSD(currentMonthDoc.ventasProductosUSD).toFixed(2)} · Delivery: $${window.roundUSD(currentMonthDoc.deliveryUSD).toFixed(2)} · Descuentos: $${window.roundUSD(currentMonthDoc.descuentosUSD).toFixed(2)}</p>
+                        </div>
+                        <button id="btn-recalc-current-month" type="button" onclick="window.recalcularMesActualSummary(this)" class="shrink-0 bg-purple-light dark:bg-purple/20 hover:bg-purple hover:text-white text-purple dark:text-white font-black text-[10px] uppercase tracking-widest px-3.5 py-2.5 rounded-xl transition-all">Recalcular mes actual</button>
                     </div>
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
-                        <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-5 shadow-sm">
-                            <p class="text-[10px] font-black uppercase tracking-widest text-purple/50 mb-1">Producto más pedido</p>
-                            <h3 class="text-xl font-black text-purple-dark dark:text-white">${window.escapeHTML(topProduct)}</h3>
-                        </div>
-                        <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-5 shadow-sm">
-                            <p class="text-[10px] font-black uppercase tracking-widest text-purple/50 mb-1">Cliente con más puntos</p>
-                            <h3 class="text-xl font-black text-purple-dark dark:text-white">${window.escapeHTML(topUser?.nombre || topUser?.displayName || topUser?.email || 'Sin datos')}</h3>
-                        </div>
-                        <div class="bg-green/10 rounded-3xl border border-green/20 p-5 shadow-sm">
-                            <p class="text-[10px] font-black uppercase tracking-widest text-green-dark mb-1">Acción sugerida</p>
-                            <h3 class="text-base font-black text-purple-dark dark:text-white">Revisar pedidos en proceso y enviar nota de entrega.</h3>
-                        </div>
+                    <div class="grid grid-cols-3 gap-2 pt-3 border-t border-purple-border/20 text-xs">
+                        <div><span class="block text-[9px] uppercase tracking-widest text-gray-400 font-black">Completados</span><strong class="text-purple-dark dark:text-white font-black">${Number(currentMonthDoc.pedidosCompletados || 0)}</strong></div>
+                        <div><span class="block text-[9px] uppercase tracking-widest text-gray-400 font-black">Cancelados</span><strong class="text-purple-dark dark:text-white font-black">${Number(currentMonthDoc.pedidosCancelados || 0)}</strong></div>
+                        <div><span class="block text-[9px] uppercase tracking-widest text-gray-400 font-black">Clientes únicos</span><strong class="text-purple-dark dark:text-white font-black">${Number(currentMonthDoc.clientesUnicos || 0)}</strong></div>
                     </div>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                        <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-5 shadow-sm">
-                            <div class="flex items-center justify-between mb-4"><h3 class="text-sm font-black text-purple-dark dark:text-white uppercase tracking-widest">Pedidos recientes</h3><button onclick="window.switchAdminTab('pedidos')" class="text-[10px] font-black text-pink uppercase">Gestionar</button></div>
-                            <div class="space-y-3">${recentOrders.length ? recentOrders.map(o => window.buildAdminMiniOrder ? window.buildAdminMiniOrder(o) : `<div>${window.escapeHTML(o.id || 'Pedido')}</div>`).join('') : window.adminEmptyState('Sin pedidos', 'Cuando entren pedidos aparecerán aquí.', 'shopping-bag')}</div>
-                        </div>
-                        <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-5 shadow-sm">
-                            <div class="flex items-center justify-between mb-4"><h3 class="text-sm font-black text-purple-dark dark:text-white uppercase tracking-widest">Canjes recientes</h3><button onclick="window.switchAdminTab('canjes')" class="text-[10px] font-black text-pink uppercase">Gestionar</button></div>
-                            <div class="space-y-3">${recentRedeems.length ? recentRedeems.map(r => window.buildAdminRedeemMini ? window.buildAdminRedeemMini(r) : `<div>${window.escapeHTML(r.id || 'Canje')}</div>`).join('') : window.adminEmptyState('Sin canjes pendientes', 'Las solicitudes de puntos aparecerán aquí.', 'gift')}</div>
-                        </div>
-                    </div>`;
+                </div>
+
+                <div class="bg-gradient-to-br from-purple-light to-white dark:from-[#1f1235] dark:to-darkcard rounded-3xl border border-green/35 p-5 shadow-sm flex flex-col justify-between gap-4">
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-green-dark dark:text-green">Total acumulado ${window.escapeHTML(currentYear)}</p>
+                        <h3 class="text-3xl font-black text-purple-dark dark:text-white mt-1">$${ytd.ventasConDeliveryUSD.toFixed(2)}</h3>
+                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-300 mt-1">Productos: $${ytd.ventasProductosUSD.toFixed(2)} · Delivery: $${ytd.deliveryUSD.toFixed(2)} · Descuentos: $${ytd.descuentosUSD.toFixed(2)}</p>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 pt-3 border-t border-purple-border/20 text-xs">
+                        <div><span class="block text-[9px] uppercase tracking-widest text-gray-400 font-black">Completados</span><strong class="text-purple-dark dark:text-white font-black">${ytd.pedidosCompletados}</strong></div>
+                        <div><span class="block text-[9px] uppercase tracking-widest text-gray-400 font-black">Cancelados</span><strong class="text-purple-dark dark:text-white font-black">${ytd.pedidosCancelados}</strong></div>
+                        <div><span class="block text-[9px] uppercase tracking-widest text-gray-400 font-black">Meses en historial</span><strong class="text-purple-dark dark:text-white font-black">${ytdDocs.length}</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTADORES OPERATIVOS EN TIEMPO REAL / AGREGADOS -->
+            <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-6">
+                ${window.adminMetricCard('En proceso', inProcess, 'clock', 'pink', "window.applyAdminOrderFilter('en_proceso')")}
+                ${window.adminMetricCard('Confirmados', confirmed, 'check-circle', 'green', "window.applyAdminOrderFilter('confirmado')")}
+                ${window.adminMetricCard('Completados mes', Number(currentMonthDoc.pedidosCompletados || 0), 'package-check', 'purple', "window.applyAdminOrderFilter('completado')")}
+                ${window.adminMetricCard('Clientes', usersCount, 'users', 'purple', "window.switchAdminTab('usuarios')")}
+                ${window.adminMetricCard('Canjes pendientes', pendingRedeems, 'gift', 'pink', "window.switchAdminTab('canjes')")}
+                ${window.adminMetricCard('Ventas año ' + currentYear, '$' + ytd.ventasConDeliveryUSD.toFixed(2), 'trending-up', 'green', "window.switchAdminTab('herramientas')")}
+            </div>
+
+            <!-- DESTACADOS -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6 text-left">
+                <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-5 shadow-sm">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-purple/50 mb-1">Producto más vendido (${window.escapeHTML(window.formatMonthLabelES(currentYM))})</p>
+                    <h3 class="text-lg font-black text-purple-dark dark:text-white">${window.escapeHTML(currentMonthTopProd)}</h3>
+                </div>
+                <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-5 shadow-sm">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-purple/50 mb-1">Cliente con más puntos</p>
+                    <h3 class="text-lg font-black text-purple-dark dark:text-white truncate">${window.escapeHTML(topUser?.nombre || topUser?.displayName || topUser?.email || 'Sin datos')}</h3>
+                </div>
+                <div class="bg-green/10 rounded-3xl border border-green/20 p-5 shadow-sm">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-green-dark mb-1">Acción sugerida</p>
+                    <h3 class="text-base font-black text-purple-dark dark:text-white">Revisar pedidos abiertos y exportar cierre mensual.</h3>
+                </div>
+            </div>
+
+            <!-- TABLA RESPONSIVA: VENTAS POR MES (resumenes_ventas) -->
+            <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-5 shadow-sm mb-6 text-left">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h3 id="sales-by-month-heading" class="text-sm font-black text-purple-dark dark:text-white uppercase tracking-widest">Ventas por mes</h3>
+                        <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mt-0.5">Fuente: colección resumenes_ventas (incluye meses ya archivados y limpiados).</p>
+                    </div>
+                    <button type="button" onclick="window.switchAdminTab('herramientas')" class="text-[10px] font-black text-purple dark:text-green uppercase tracking-widest">Exportar Excel</button>
+                </div>
+                <div class="milkarf-table-wrapper custom-scroll" role="region" tabindex="0" aria-labelledby="sales-by-month-heading">
+                    <table class="milkarf-sales-table">
+                        <caption class="sr-only">Tabla mensual de pedidos completados, ventas en USD, delivery y producto más vendido</caption>
+                        <thead class="bg-purple-light dark:bg-[#23143c]">
+                            <tr>
+                                <th scope="col" class="px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-purple/70 dark:text-gray-300 text-left">Mes</th>
+                                <th scope="col" class="px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-purple/70 dark:text-gray-300 text-left">Completados</th>
+                                <th scope="col" class="px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-purple/70 dark:text-gray-300 text-left">Ventas USD</th>
+                                <th scope="col" class="px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-purple/70 dark:text-gray-300 text-left">Delivery USD</th>
+                                <th scope="col" class="px-3 py-2.5 text-[10px] font-black uppercase tracking-widest text-purple/70 dark:text-gray-300 text-left">Producto más vendido</th>
+                            </tr>
+                        </thead>
+                        <tbody>${monthlyRowsHtml}</tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- RECIENTES -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-5 shadow-sm">
+                    <div class="flex items-center justify-between mb-4"><h3 class="text-sm font-black text-purple-dark dark:text-white uppercase tracking-widest">Pedidos recientes</h3><button onclick="window.switchAdminTab('pedidos')" class="text-[10px] font-black text-pink uppercase">Gestionar</button></div>
+                    <div class="space-y-3">${recentOrders.length ? recentOrders.map(o => window.buildAdminMiniOrder ? window.buildAdminMiniOrder(o) : `<div>${window.escapeHTML(o.id || 'Pedido')}</div>`).join('') : window.adminEmptyState('Sin pedidos', 'Cuando entren pedidos aparecerán aquí.', 'shopping-bag')}</div>
+                </div>
+                <div class="bg-white dark:bg-darkcard rounded-3xl border border-purple-border/30 dark:border-purple/20 p-5 shadow-sm">
+                    <div class="flex items-center justify-between mb-4"><h3 class="text-sm font-black text-purple-dark dark:text-white uppercase tracking-widest">Canjes recientes</h3><button onclick="window.switchAdminTab('canjes')" class="text-[10px] font-black text-pink uppercase">Gestionar</button></div>
+                    <div class="space-y-3">${recentRedeems.length ? recentRedeems.map(r => window.buildAdminRedeemMini ? window.buildAdminRedeemMini(r) : `<div>${window.escapeHTML(r.id || 'Canje')}</div>`).join('') : window.adminEmptyState('Sin canjes pendientes', 'Las solicitudes de puntos aparecerán aquí.', 'gift')}</div>
+                </div>
+            </div>`;
         window.refreshIcons?.(container);
     } catch (error) {
         clearTimeout(watchdog);
@@ -9286,6 +11271,7 @@ window.savePreparedOrderNonBlocking = function (prepared) {
 
             await setDoc(window.getOrderDocRef(localOrderId), window.sanitizeClientOrderForWrite({ ...orderData, localId: localOrderId }), { merge: true });
             pendingOrder.localOnly = false;
+            window.removePendingOrderFromSync?.(localOrderId);
             window.lastOrderId = localOrderId;
             try { localStorage.setItem('milkarf_last_order_id', localOrderId); } catch (e) { }
             window.cacheUserOrderLocal?.(pendingOrder);
