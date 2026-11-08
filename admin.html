@@ -350,6 +350,49 @@
         </div>
     </div>
 
+    <!-- DIÁLOGOS MODALES NATIVOS (CONFIRMACIÓN DE LIMPIEZA Y EXPORTACIÓN COMPLETA) -->
+    <dialog id="modal-admin-cleanup-confirm" class="milkarf-dialog" aria-labelledby="cleanup-modal-title">
+        <div class="bg-white dark:bg-darkcard border-2 border-pink/40 rounded-[2rem] p-6 md:p-7 text-left shadow-2xl">
+            <div class="flex items-start gap-3 mb-4">
+                <div class="w-11 h-11 rounded-2xl bg-pink/15 text-pink flex items-center justify-center shrink-0">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 id="cleanup-modal-title" class="text-lg font-black text-purple-dark dark:text-white leading-tight">Confirmar archivo y eliminación permanente</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Esta operación eliminará pedidos cerrados de Firestore después de haberlos respaldado en Excel y guardado en resúmenes mensuales.</p>
+                </div>
+            </div>
+            <div id="cleanup-modal-summary" class="bg-purple-light/80 dark:bg-[#0d0718] border border-purple-border/40 dark:border-purple/20 rounded-2xl p-4 text-xs font-bold text-purple-dark dark:text-gray-200 space-y-1 mb-4"></div>
+            <div class="mb-5">
+                <label for="cleanup-confirm-word" class="block text-[10px] font-black uppercase tracking-widest text-pink mb-2">Escribe <span class="underline">BORRAR</span> para confirmar</label>
+                <input id="cleanup-confirm-word" type="text" autocomplete="off" spellcheck="false" placeholder="BORRAR" class="w-full bg-purple-light dark:bg-[#0d0718] border-2 border-purple-border/60 dark:border-purple/30 rounded-xl p-3 text-sm font-black tracking-widest uppercase outline-none focus:border-pink text-center">
+                <p id="cleanup-confirm-word-error" class="hidden text-xs font-bold text-pink mt-2"></p>
+            </div>
+            <form method="dialog" class="flex flex-col-reverse sm:flex-row justify-end gap-2.5">
+                <button type="submit" value="cancel" autofocus class="px-5 py-3 rounded-xl bg-purple-light dark:bg-purple/20 text-purple-dark dark:text-white font-black text-xs uppercase tracking-widest hover:bg-purple/10 transition-all">Cancelar</button>
+                <button type="button" id="cleanup-final-delete-btn" onclick="window.confirmAdminCleanupDialog()" class="px-5 py-3 rounded-xl bg-pink hover:bg-pink-dark text-white font-black text-xs uppercase tracking-widest shadow-md transition-all">Eliminar pedidos respaldados</button>
+            </form>
+        </div>
+    </dialog>
+
+    <dialog id="modal-admin-export-confirm" class="milkarf-dialog" aria-labelledby="export-confirm-modal-title">
+        <div class="bg-white dark:bg-darkcard border border-purple-border/50 dark:border-purple/30 rounded-[2rem] p-6 md:p-7 text-left shadow-2xl">
+            <div class="flex items-start gap-3 mb-4">
+                <div class="w-11 h-11 rounded-2xl bg-purple/10 text-purple dark:text-green flex items-center justify-center shrink-0">
+                    <i data-lucide="database" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 id="export-confirm-modal-title" class="text-lg font-black text-purple-dark dark:text-white leading-tight">Confirmar exportación completa</h3>
+                    <p id="export-confirm-modal-desc" class="text-xs text-gray-500 dark:text-gray-400 font-semibold mt-1">Se leerá toda la colección de pedidos para generar el archivo Excel.</p>
+                </div>
+            </div>
+            <form method="dialog" class="flex flex-col-reverse sm:flex-row justify-end gap-2.5 mt-5">
+                <button type="submit" value="cancel" autofocus class="px-5 py-3 rounded-xl bg-purple-light dark:bg-purple/20 text-purple-dark dark:text-white font-black text-xs uppercase tracking-widest hover:bg-purple/10 transition-all">Cancelar</button>
+                <button type="submit" value="confirm" class="px-5 py-3 rounded-xl bg-green hover:bg-[#a6b621] text-purple-dark font-black text-xs uppercase tracking-widest shadow-md transition-all">Continuar y descargar</button>
+            </form>
+        </div>
+    </dialog>
+
     <!-- CONTENEDOR OCULTO PARA GENERAR IMAGEN DE LA NOTA DE ENTREGA -->
     <div id="delivery-note-capture" class="fixed left-[-9999px] top-0 w-[600px] pointer-events-none z-[-1]"></div>
 
