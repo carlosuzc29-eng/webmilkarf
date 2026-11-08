@@ -3,13 +3,59 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ===============================================================
+    // Modelo de Datos Asumido e Invariantes de Seguridad (Milkarf)
+    // ===============================================================
+    // Espacios de nombres en espejo:
+    //   1) Colecciones top-level (activas por defecto en milkarf.com)
+    //   2) Equivalentes bajo /artifacts/{appId}/...
+    //
+    // Colecciones e invariantes:
+    //   - usuarios / users/{userId}: Perfil y PII del cliente (email, teléfono,
+    //     mascotas, carrito) y puntos de fidelidad.
+    //     * get/create/update: solo propietario o admin; list/delete: solo admin.
+    //     * Clientes nunca pueden escribir campos admin ni alterar puntos/nivel;
+    //       descuento_usado solo puede cambiar a true.
+    //   - pedidos/{pedidoId}: Pedidos de usuarios registrados o invitados.
+    //     * create: validado (estado inicial 'en_proceso'/'proceso', sin campos admin).
+    //     * get: propietario o admin; list: admin sin límite obligatorio (rango,
+    //       agregaciones getCountFromServer/getAggregateFromServer, exportación y
+    //       limpieza) y clientes máximo 50 solo sobre su propio uid.
+    //     * update/delete: solo admin.
+    //   - canjes/{canjeId}: Solicitudes de canje VIP (creación cliente pausada).
+    //     * get: propietario o admin; list: admin sin límite obligatorio y clientes
+    //       máximo 50 solo sobre su propio uid; create/update/delete: solo admin.
+    //   - config/{docId}: config/tienda legible públicamente (get) para catálogo y
+    //     precios dinámicos; config/mantenimiento, cualquier otro documento y
+    //     subcolecciones bajo config son exclusivos de admin.
+    //   - resumenes_ventas/{mes}: Resúmenes mensuales de ventas (soporta
+    //     increment(), serverTimestamp() y merge() del panel admin); solo admin.
+    //   - admins/{email}: Lista dinámica de administradores; solo admin para list/write.
+    //   - puntos_ajustes/{ajusteId}: Bitácora de ajustes manuales de puntos; solo admin.
+    //   - beneficiosCanje, catalogoCanjes, recompensas: Catálogos públicos de
+    //     lectura acotada (<= 100); escritura solo admin.
+    // ===============================================================
+
+    // ===============================================================
+    // Funciones Auxiliares
+    // ===============================================================
+
     function signedIn() {
       return request.auth != null;
     }
 
-    function isAdmin() {
+    // Comprueba de forma segura que el token contenga un correo válido
+    // (evita errores de evaluación en sesiones anónimas o sin claim email).
+    function hasTokenEmail() {
       return signedIn()
-        && request.auth.token.email != null
+        && request.auth.token != null
+        && 'email' in request.auth.token
+        && request.auth.token.email is string
+        && request.auth.token.email.size() > 0;
+    }
+
+    function isAdmin() {
+      return hasTokenEmail()
         && (
           request.auth.token.email in [
             'milkarffood@gmail.com',
@@ -21,10 +67,10 @@ service cloud.firestore {
             'carlosauv11@gmail.com',
             'carlosuzc29@gmail.com'
           ]
-          || (
-            exists(/databases/$(database)/documents/admins/$(request.auth.token.email))
-            || exists(/databases/$(database)/documents/artifacts/milkarf-app/admins/$(request.auth.token.email))
-          )
+          || exists(/databases/$(database)/documents/admins/$(request.auth.token.email))
+          || exists(/databases/$(database)/documents/admins/$(request.auth.token.email.lower()))
+          || exists(/databases/$(database)/documents/artifacts/milkarf-app/admins/$(request.auth.token.email))
+          || exists(/databases/$(database)/documents/artifacts/milkarf-app/admins/$(request.auth.token.email.lower()))
         );
     }
 
@@ -33,8 +79,38 @@ service cloud.firestore {
     }
 
     function hasSafeLimit(max) {
-      return request.query.limit != null && request.query.limit <= max;
+      return request.query.limit != null
+        && request.query.limit > 0
+        && request.query.limit <= max;
     }
+
+    function isOptionalString(field, maxLen) {
+      return !(field in request.resource.data)
+        || (request.resource.data[field] is string && request.resource.data[field].size() <= maxLen);
+    }
+
+    function isOptionalStringOnUpdate(field, maxLen) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([field])
+        || !(field in request.resource.data)
+        || (request.resource.data[field] is string && request.resource.data[field].size() <= maxLen);
+    }
+
+    function isOptionalTimestampOrString(field, maxLen) {
+      return !(field in request.resource.data)
+        || request.resource.data[field] is timestamp
+        || (request.resource.data[field] is string && request.resource.data[field].size() <= maxLen);
+    }
+
+    function isOptionalTimestampOrStringOnUpdate(field, maxLen) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([field])
+        || !(field in request.resource.data)
+        || request.resource.data[field] is timestamp
+        || (request.resource.data[field] is string && request.resource.data[field].size() <= maxLen);
+    }
+
+    // ===============================================================
+    // Validadores de Dominio: Usuarios
+    // ===============================================================
 
     function noAdminUserFields() {
       return !request.resource.data.keys().hasAny([
@@ -73,14 +149,24 @@ service cloud.firestore {
 
     function userCreateIsSafe(userId) {
       return isOwner(userId)
+        && request.resource.data.uid is string
         && request.resource.data.uid == userId
         && noAdminUserFields()
         && userPointFieldsAreInitialZero()
-        && (!('nombre' in request.resource.data) || (request.resource.data.nombre is string && request.resource.data.nombre.size() <= 200))
-        && (!('email' in request.resource.data) || (request.resource.data.email is string && request.resource.data.email.size() <= 320))
-        && (!('phone' in request.resource.data) || (request.resource.data.phone is string && request.resource.data.phone.size() <= 30))
-        && (!('telefono' in request.resource.data) || (request.resource.data.telefono is string && request.resource.data.telefono.size() <= 30))
-        && (!('whatsapp' in request.resource.data) || (request.resource.data.whatsapp is string && request.resource.data.whatsapp.size() <= 30))
+        && (!('descuento_usado' in request.resource.data) || request.resource.data.descuento_usado == false)
+        && isOptionalString('nombre', 200)
+        && isOptionalString('nombre_persona', 200)
+        && isOptionalString('userName', 200)
+        && isOptionalString('displayName', 200)
+        && isOptionalString('email', 320)
+        && isOptionalString('phone', 30)
+        && isOptionalString('telefono', 30)
+        && isOptionalString('whatsapp', 30)
+        && isOptionalString('clientToken', 128)
+        && isOptionalString('photoUrl', 2048)
+        && isOptionalString('photoURL', 2048)
+        && isOptionalTimestampOrString('updatedAt', 64)
+        && isOptionalTimestampOrString('lastLoginAt', 64)
         && (!('mascotas' in request.resource.data) || (request.resource.data.mascotas is list && request.resource.data.mascotas.size() <= 20))
         && (!('cart' in request.resource.data) || (request.resource.data.cart is list && request.resource.data.cart.size() <= 50))
         && request.resource.data.keys().hasOnly([
@@ -111,17 +197,28 @@ service cloud.firestore {
 
     function userUpdateIsSafe(userId) {
       return isOwner(userId)
-        && request.resource.data.uid == resource.data.uid
+        && (
+          ('uid' in resource.data && request.resource.data.uid == resource.data.uid)
+          || (!('uid' in resource.data) && (!('uid' in request.resource.data) || request.resource.data.uid == userId))
+        )
         && noAdminUserFields()
         && noClientSensitivePointFieldsChanged()
         // descuento_usado: solo puede cambiar a true, nunca de true a false
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['descuento_usado'])
             || request.resource.data.descuento_usado == true)
-        && (!('nombre' in request.resource.data) || (request.resource.data.nombre is string && request.resource.data.nombre.size() <= 200))
-        && (!('email' in request.resource.data) || (request.resource.data.email is string && request.resource.data.email.size() <= 320))
-        && (!('phone' in request.resource.data) || (request.resource.data.phone is string && request.resource.data.phone.size() <= 30))
-        && (!('telefono' in request.resource.data) || (request.resource.data.telefono is string && request.resource.data.telefono.size() <= 30))
-        && (!('whatsapp' in request.resource.data) || (request.resource.data.whatsapp is string && request.resource.data.whatsapp.size() <= 30))
+        && isOptionalString('nombre', 200)
+        && isOptionalStringOnUpdate('nombre_persona', 200)
+        && isOptionalStringOnUpdate('userName', 200)
+        && isOptionalStringOnUpdate('displayName', 200)
+        && isOptionalString('email', 320)
+        && isOptionalString('phone', 30)
+        && isOptionalString('telefono', 30)
+        && isOptionalString('whatsapp', 30)
+        && isOptionalStringOnUpdate('clientToken', 128)
+        && isOptionalStringOnUpdate('photoUrl', 2048)
+        && isOptionalStringOnUpdate('photoURL', 2048)
+        && isOptionalTimestampOrStringOnUpdate('updatedAt', 64)
+        && isOptionalTimestampOrStringOnUpdate('lastLoginAt', 64)
         && (!('mascotas' in request.resource.data) || (request.resource.data.mascotas is list && request.resource.data.mascotas.size() <= 20))
         && (!('cart' in request.resource.data) || (request.resource.data.cart is list && request.resource.data.cart.size() <= 50))
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
@@ -145,8 +242,15 @@ service cloud.firestore {
         ]);
     }
 
+    // ===============================================================
+    // Validadores de Dominio: Pedidos y Canjes
+    // ===============================================================
+
     function orderBelongsToUser() {
-      return signedIn() && resource.data.uid == request.auth.uid;
+      return signedIn()
+        && resource != null
+        && 'uid' in resource.data
+        && resource.data.uid == request.auth.uid;
     }
 
     function noClientAdminOrderFields() {
@@ -206,7 +310,10 @@ service cloud.firestore {
     }
 
     function canjeBelongsToUser() {
-      return signedIn() && resource.data.uid == request.auth.uid;
+      return signedIn()
+        && resource != null
+        && 'uid' in resource.data
+        && resource.data.uid == request.auth.uid;
     }
 
     function canjeCreateIsSafe() {
@@ -215,10 +322,16 @@ service cloud.firestore {
       return false;
     }
 
+    // ===============================================================
+    // Reglas por Colección (Top-level y Espejo /artifacts/{appId}/...)
+    // ===============================================================
+
+    // --- Usuarios ---
     match /usuarios/{userId} {
       allow create: if userCreateIsSafe(userId);
       allow get: if isAdmin() || isOwner(userId);
-      allow list: if isAdmin() && hasSafeLimit(100);
+      // Admin sin límite obligatorio; clientes no pueden listar usuarios.
+      allow list: if isAdmin();
       allow update: if isAdmin() || userUpdateIsSafe(userId);
       allow delete: if isAdmin();
     }
@@ -226,15 +339,19 @@ service cloud.firestore {
     match /artifacts/{appId}/users/{userId} {
       allow create: if userCreateIsSafe(userId);
       allow get: if isAdmin() || isOwner(userId);
-      allow list: if isAdmin() && hasSafeLimit(100);
+      // Admin sin límite obligatorio; clientes no pueden listar usuarios.
+      allow list: if isAdmin();
       allow update: if isAdmin() || userUpdateIsSafe(userId);
       allow delete: if isAdmin();
     }
 
+    // --- Pedidos ---
     match /pedidos/{pedidoId} {
       allow create: if orderCreateIsSafe();
       allow get: if isAdmin() || orderBelongsToUser();
-      allow list: if (isAdmin() && hasSafeLimit(100))
+      // Admin sin límite obligatorio (consultas por rango, conteos/sumas y exportación).
+      // Clientes: máximo 50 y solo sus propios documentos.
+      allow list: if isAdmin()
                   || (signedIn() && hasSafeLimit(50) && resource.data.uid == request.auth.uid);
       allow update, delete: if isAdmin();
     }
@@ -242,15 +359,20 @@ service cloud.firestore {
     match /artifacts/{appId}/public/data/pedidos/{pedidoId} {
       allow create: if orderCreateIsSafe();
       allow get: if isAdmin() || orderBelongsToUser();
-      allow list: if (isAdmin() && hasSafeLimit(100))
+      // Admin sin límite obligatorio (consultas por rango, conteos/sumas y exportación).
+      // Clientes: máximo 50 y solo sus propios documentos.
+      allow list: if isAdmin()
                   || (signedIn() && hasSafeLimit(50) && resource.data.uid == request.auth.uid);
       allow update, delete: if isAdmin();
     }
 
+    // --- Canjes ---
     match /canjes/{canjeId} {
       allow create: if isAdmin() || canjeCreateIsSafe();
       allow get: if isAdmin() || canjeBelongsToUser();
-      allow list: if (isAdmin() && hasSafeLimit(100))
+      // Admin sin límite obligatorio (consultas por rango, conteos/sumas y exportación).
+      // Clientes: máximo 50 y solo sus propios documentos.
+      allow list: if isAdmin()
                   || (signedIn() && hasSafeLimit(50) && resource.data.uid == request.auth.uid);
       allow update, delete: if isAdmin();
     }
@@ -258,11 +380,14 @@ service cloud.firestore {
     match /artifacts/{appId}/public/data/canjes/{canjeId} {
       allow create: if isAdmin() || canjeCreateIsSafe();
       allow get: if isAdmin() || canjeBelongsToUser();
-      allow list: if (isAdmin() && hasSafeLimit(100))
+      // Admin sin límite obligatorio (consultas por rango, conteos/sumas y exportación).
+      // Clientes: máximo 50 y solo sus propios documentos.
+      allow list: if isAdmin()
                   || (signedIn() && hasSafeLimit(50) && resource.data.uid == request.auth.uid);
       allow update, delete: if isAdmin();
     }
 
+    // --- Catálogos públicos de beneficios ---
     match /beneficiosCanje/{beneficioId} {
       allow get: if true;
       allow list: if hasSafeLimit(100);
@@ -281,30 +406,55 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
-    match /config/{document=**} {
-      allow get: if true;
-      allow list: if hasSafeLimit(100);
-      allow create, update, delete: if isAdmin();
+    // --- Configuración de la tienda y mantenimiento ---
+    // Solo config/tienda es legible públicamente (get) para precios/catálogo al iniciar;
+    // config/mantenimiento, cualquier otro documento y subcolecciones bajo config son solo admin.
+    match /config/{docId} {
+      allow get: if docId == 'tienda' || isAdmin();
+      allow list, create, update, delete: if isAdmin();
+
+      match /{subpath=**} {
+        allow read, write: if isAdmin();
+      }
     }
 
+    match /artifacts/{appId}/config/{docId} {
+      allow get: if docId == 'tienda' || isAdmin();
+      allow list, create, update, delete: if isAdmin();
+
+      match /{subpath=**} {
+        allow read, write: if isAdmin();
+      }
+    }
+
+    // --- Administradores ---
     match /admins/{email} {
-      allow get: if isAdmin() || (signedIn() && request.auth.token != null && (request.auth.token.email == email || request.auth.token.email.lower() == email.lower()));
+      allow get: if isAdmin()
+        || (
+          hasTokenEmail()
+          && (
+            request.auth.token.email == email
+            || request.auth.token.email.lower() == email.lower()
+          )
+        );
       allow list: if isAdmin() && hasSafeLimit(100);
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /artifacts/{appId}/config/{document=**} {
-      allow get: if true;
-      allow list: if hasSafeLimit(100);
       allow create, update, delete: if isAdmin();
     }
 
     match /artifacts/{appId}/admins/{email} {
-      allow get: if isAdmin() || (signedIn() && request.auth.token != null && (request.auth.token.email == email || request.auth.token.email.lower() == email.lower()));
+      allow get: if isAdmin()
+        || (
+          hasTokenEmail()
+          && (
+            request.auth.token.email == email
+            || request.auth.token.email.lower() == email.lower()
+          )
+        );
       allow list: if isAdmin() && hasSafeLimit(100);
       allow create, update, delete: if isAdmin();
     }
 
+    // --- Auditoría de ajustes manuales de puntos ---
     match /puntos_ajustes/{ajusteId} {
       allow read, write: if isAdmin();
     }
@@ -313,6 +463,22 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    match /artifacts/{appId}/puntos_ajustes/{ajusteId} {
+      allow read, write: if isAdmin();
+    }
+
+    // --- Resúmenes mensuales de ventas ---
+    // Se conservan aunque se archiven/borren pedidos; se mantiene isAdmin() sin validación rígida
+    // para soportar increment(), serverTimestamp() y merge() desde el panel admin.
+    match /resumenes_ventas/{mes} {
+      allow read, write: if isAdmin();
+    }
+
+    match /artifacts/{appId}/resumenes_ventas/{mes} {
+      allow read, write: if isAdmin();
+    }
+
+    // --- Denegación por defecto ---
     match /{document=**} {
       allow read, write: if false;
     }
