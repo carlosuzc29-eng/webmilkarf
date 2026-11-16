@@ -124,9 +124,9 @@ body {
     }
 }
 
-/* Desactivar huellas flotantes que compiten visualmente con el alimento */
+/* Huellas flotantes sutiles de fondo */
 #paws-container {
-    display: none !important;
+    pointer-events: none;
 }
 
 /* FIX DE COMPATIBILIDAD DE CSS */

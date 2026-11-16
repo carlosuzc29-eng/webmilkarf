@@ -5065,7 +5065,7 @@ window.renderDeliveryNoteCapture = function (payload = {}) {
                             Banco de Venezuela<br>
                             Cuenta: 0102 0443 7700 0093 1771<br>
                             C.I: 20.530.321<br>
-                            Pago móvil: 0414-179-1136<br><br>
+                            Pago móvil: 0412-1791137<br><br>
                             Pago en Bs. o divisas. Si pagas en divisas, puedes consultarnos por el descuento disponible.
                         </div>
                     </div>
@@ -9596,8 +9596,32 @@ function initApp() {
     window.applyWeightButtonStyle('weight-group-res', document.querySelector('#weight-group-res button'), window.currentWeightRes);
     window.resetMenuQuantities?.();
 
-    // Paws generation disabled for cleaner, modern performance-conscious UI
-    // (Container is also hidden via CSS #paws-container { display: none !important; })
+    // Iniciar huellitas flotantes de fondo
+    const pawsContainer = document.getElementById('paws-container');
+    if (pawsContainer && !pawsContainer.hasChildNodes()) {
+        const frag = document.createDocumentFragment();
+        const colors = ['#421d8e', '#b9cb25', '#d72b8f', '#2e1060'];
+        const count = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : (window.innerWidth < 768 ? 5 : 10);
+
+        for (let i = 0; i < count; i++) {
+            const size = 28 + Math.random() * 18;
+            const delay = Math.random() * 5;
+            const dur = 14 + Math.random() * 12;
+            const el = document.createElement('div');
+
+            el.innerHTML = `<svg viewBox="0 0 100 100" fill="${colors[i % colors.length]}" class="w-full h-full opacity-15"><path d="M50 88 C33 88 18 76 18 62 C18 50 32 42 50 42 C68 42 82 50 82 62 C82 76 67 88 50 88Z"/><ellipse cx="23" cy="35" rx="10.5" ry="13.5" transform="rotate(-28,23,35)"/><ellipse cx="38" cy="24" rx="10.5" ry="13.5" transform="rotate(-10,38,24)"/><ellipse cx="58" cy="24" rx="10.5" ry="13.5" transform="rotate(10,58,24)"/><ellipse cx="75" cy="35" rx="10.5" ry="13.5" transform="rotate(28,75,35)"/></svg>`;
+            el.style.cssText = `position:absolute; width:${size}px; height:${size}px; left:${Math.random() * 100}%; top:${100 + Math.random() * 50}%; transform: rotate(${Math.random() * 360}deg); animation: floatUp ${dur}s ${delay}s linear infinite; will-change: transform, opacity;`;
+            frag.appendChild(el);
+        }
+        pawsContainer.appendChild(frag);
+    }
+
+    if (!document.getElementById('paw-style')) {
+        const style = document.createElement('style');
+        style.id = 'paw-style';
+        style.textContent = `@keyframes floatUp { 0% { transform: translateY(0) rotate(0deg); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-150vh) rotate(180deg); opacity: 0; } }`;
+        document.head.appendChild(style);
+    }
 
     // Restore Global Listeners for Menu Links and Accordions
     document.querySelectorAll('.nav-link, .nav-btn, .nav-card').forEach(el => {
