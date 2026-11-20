@@ -1815,6 +1815,12 @@ window.openWhatsApp = function (type = 'general', data = {}) {
     window.openWhatsAppMessage(window.getWhatsAppTemplate(type, data), data.phone || window.WA_NUMBER);
 };
 
+// Consulta de suplementos (sin precio en catálogo: se confirma por WhatsApp)
+window.pedirSuplementoWhatsApp = function (producto) {
+    const msg = `¡Hola Milkarf! 🐾 Me interesa el suplemento Mimi Pet Lab: *${producto}* (90 masticables). ¿Me confirman precio y disponibilidad en Mérida?`;
+    window.openWhatsAppMessage(msg, window.WA_NUMBER);
+};
+
 window.getClientToken = function () {
     try {
         let token = localStorage.getItem('milkarf_client_token');
@@ -10543,6 +10549,7 @@ window.VIEW_ROUTES = {
     'view-perros': '#formulas',
     'view-gatos': '#menu-gatos',
     'view-snacks': '#snacks',
+    'view-suplementos': '#suplementos',
     'view-faq': '#ayuda',
     'view-dashboard': '#perfil',
     'view-redeems': '#milkarf-vip',
@@ -10576,6 +10583,7 @@ window.ROUTE_VIEWS = {
     '#canje-puntos': 'view-redeems',
     '#menu-gatos': 'view-gatos',
     '#snacks': 'view-snacks',
+    '#suplementos': 'view-suplementos',
     '#admin': 'view-admin',
     '#privacidad': 'view-privacidad',
     '#terminos': 'view-terminos',
@@ -10637,6 +10645,7 @@ window.VIEW_TITLES = {
     'view-redeems': 'Milkarf VIP | Milkarf',
     'view-gatos': 'Menú Felino | Milkarf',
     'view-snacks': 'Snacks Naturales | Milkarf',
+    'view-suplementos': 'Suplementos para Mascotas | Milkarf',
     'view-admin': 'Milkarf · Panel de Control',
     'view-privacidad': 'Política de Privacidad | Milkarf',
     'view-terminos': 'Términos y Condiciones | Milkarf',
